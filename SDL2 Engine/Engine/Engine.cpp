@@ -6,7 +6,7 @@ int Engine::SCREEN_WIDTH = 1280;
 int Engine::SCREEN_HEIGHT = 720;
 SDL_Window* Engine::window = NULL;
 SDL_Renderer* Engine::renderer = NULL;
-float Engine::dt = 0;
+SDL_Surface* Engine::surface = NULL;
 
 Engine::Engine()
 {
@@ -15,14 +15,18 @@ Engine::Engine()
 
 Engine::~Engine()
 {
-
+	SDL_FreeSurface(surface);
+	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(window);
+	SDL_Quit();
 }
 
 bool Engine::Initialize(char* windowTitle)
 {
 	SDL_Init(SDL_INIT_EVERYTHING);
-
 	window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_ALLOW_HIGHDPI);
+	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED); 
+	surface = SDL_GetWindowSurface(window);
 
 	if (window == nullptr) {
 		std::cout << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
@@ -33,49 +37,55 @@ bool Engine::Initialize(char* windowTitle)
 	return true;
 }
 
-void Engine::GameLoop()
+void Engine::Update()
 {
 	SDL_Event windowEvent;
 
-	while (true) {
-		if (SDL_PollEvent(&windowEvent)) {
-			switch (windowEvent.type) {
-			case SDL_QUIT:
-				return;
-			case SDL_KEYDOWN:
-			case SDL_KEYUP:
-				Keyboard::KeyCallback(windowEvent.key);
-				break;
-			case SDL_MOUSEBUTTONDOWN:
-			case SDL_MOUSEBUTTONUP:
-				Mouse::MouseButtonCallback(windowEvent.button);
-			case SDL_MOUSEMOTION:
-				Mouse::MousePosCallback(windowEvent.motion);
-				break;
-			}
+	if (SDL_PollEvent(&windowEvent)) {
+		switch (windowEvent.type) {
+		case SDL_QUIT:
+			active = false;
+			break;
+		case SDL_KEYDOWN:
+		case SDL_KEYUP:
+			Keyboard::KeyCallback(windowEvent.key);
+			break;
+		case SDL_MOUSEBUTTONDOWN:
+		case SDL_MOUSEBUTTONUP:
+			Mouse::MouseButtonCallback(windowEvent.button);
+		case SDL_MOUSEMOTION:
+			Mouse::MousePosCallback(windowEvent.motion);
+			break;
 		}
 	}
 }
 
-void Engine::Update()
-{
-}
-
 void Engine::BeginRender()
 {
+	SDL_RenderClear(renderer);
 }
 
 void Engine::EndRender()
 {
-	SDL_RenderClear(this->renderer);
+	SDL_RenderPresent(renderer);
 }
 
-SDL_Window* Engine::getSDLWindow()
+SDL_Window* Engine::GetWindow()
 {
 	return window;
 }
 
-float Engine::GetDT()
+SDL_Renderer* Engine::GetRenderer()
 {
-	return dt;
+	return renderer;
+}
+
+SDL_Surface* Engine::GetSurface()
+{
+	return surface;
+}
+
+bool Engine::GetActive()
+{
+	return this->active;
 }

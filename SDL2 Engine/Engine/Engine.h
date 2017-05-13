@@ -12,24 +12,24 @@ class Engine
 public:
 	static int SCREEN_WIDTH;
 	static int SCREEN_HEIGHT;
-	static SDL_Window* getSDLWindow();
-	static float GetDT();
+	static SDL_Window* GetWindow();
+	static SDL_Renderer* GetRenderer();
+	static SDL_Surface* GetSurface();
 
 	Engine();
 	~Engine();
 
 	bool Initialize(char* windowTitle);
-	void GameLoop();
 	void Update();
 	void BeginRender();
 	void EndRender();
+	bool GetActive();
 
 private:
 	static SDL_Window* window;
 	static SDL_Renderer* renderer;
-	static float dt;
-
-	float lastTime;
+	static SDL_Surface* surface;
+	bool active;
 };
 
 #endif
