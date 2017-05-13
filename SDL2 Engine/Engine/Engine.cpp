@@ -1,4 +1,6 @@
 #include "Engine.h"
+#include "IO/Mouse.h"
+#include "IO/Keyboard.h"
 
 int Engine::SCREEN_WIDTH = 1280;
 int Engine::SCREEN_HEIGHT = 720;
@@ -37,7 +39,18 @@ void Engine::GameLoop()
 
 	while (true) {
 		if (SDL_PollEvent(&windowEvent)) {
-			if (windowEvent.type == SDL_QUIT) {
+			switch (windowEvent.type) {
+			case SDL_QUIT:
+				return;
+			case SDL_KEYDOWN:
+			case SDL_KEYUP:
+				Keyboard::KeyCallback(windowEvent.key);
+				break;
+			case SDL_MOUSEBUTTONDOWN:
+			case SDL_MOUSEBUTTONUP:
+				Mouse::MouseButtonCallback(windowEvent.button);
+			case SDL_MOUSEMOTION:
+				Mouse::MousePosCallback(windowEvent.motion);
 				break;
 			}
 		}
