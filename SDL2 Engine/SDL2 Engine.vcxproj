@@ -227,8 +227,8 @@
     <None Include="SDL2.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="Libs\SDL2\lib\x86\SDL2.lib" />
-    <Library Include="Libs\SDL2\lib\x86\SDL2main.lib" />
+    <Library Include="Libs\SDL2\lib\SDL2.lib" />
+    <Library Include="Libs\SDL2\lib\SDL2main.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
