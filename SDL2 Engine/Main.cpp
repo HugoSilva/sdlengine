@@ -1,4 +1,6 @@
 #include "Engine/Engine.h"
+#include "Engine/Components/Sprite.h"
+
 
 #include <iostream>
 using namespace std;

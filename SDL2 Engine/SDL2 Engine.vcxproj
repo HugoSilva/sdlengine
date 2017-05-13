@@ -89,7 +89,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Projects\SDL2 Engine\SDL2 Engine\Libs\SDL2_image\include;C:\Projects\SDL2 Engine\SDL2 Engine\Libs\SDL2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -147,15 +147,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\Components\Sprite.cpp" />
+    <ClCompile Include="Engine\Components\Texture.cpp" />
     <ClCompile Include="Engine\Engine.cpp" />
     <ClCompile Include="Engine\IO\Keyboard.cpp" />
     <ClCompile Include="Engine\IO\Mouse.cpp" />
+    <ClCompile Include="Engine\Math\Vector3.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\Components\Sprite.h" />
+    <ClInclude Include="Engine\Components\Texture.h" />
     <ClInclude Include="Engine\Engine.h" />
     <ClInclude Include="Engine\IO\Keyboard.h" />
     <ClInclude Include="Engine\IO\Mouse.h" />
+    <ClInclude Include="Engine\Math\Vector3.h" />
     <ClInclude Include="Libs\SDL2\include\begin_code.h" />
     <ClInclude Include="Libs\SDL2\include\close_code.h" />
     <ClInclude Include="Libs\SDL2\include\SDL.h" />
@@ -226,13 +232,19 @@
     <ClInclude Include="Libs\SDL2\include\SDL_types.h" />
     <ClInclude Include="Libs\SDL2\include\SDL_version.h" />
     <ClInclude Include="Libs\SDL2\include\SDL_video.h" />
+    <ClInclude Include="Libs\SDL2_image\include\SDL_image.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="SDL2.dll" />
+    <None Include="SDL2_image.dll" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="Libs\SDL2\lib\SDL2.lib" />
     <Library Include="Libs\SDL2\lib\SDL2main.lib" />
+    <Library Include="Libs\SDL2_image\lib\SDL2_image.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Assets\Textures\texture.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
