@@ -147,21 +147,66 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\Components\Shader.cpp" />
     <ClCompile Include="Engine\Components\Sprite.cpp" />
     <ClCompile Include="Engine\Components\Texture.cpp" />
     <ClCompile Include="Engine\Engine.cpp" />
     <ClCompile Include="Engine\IO\Keyboard.cpp" />
     <ClCompile Include="Engine\IO\Mouse.cpp" />
+    <ClCompile Include="Engine\Math\Vector2.cpp" />
     <ClCompile Include="Engine\Math\Vector3.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\Components\Shader.h" />
     <ClInclude Include="Engine\Components\Sprite.h" />
     <ClInclude Include="Engine\Components\Texture.h" />
     <ClInclude Include="Engine\Engine.h" />
     <ClInclude Include="Engine\IO\Keyboard.h" />
     <ClInclude Include="Engine\IO\Mouse.h" />
+    <ClInclude Include="Engine\Math\Vector2.h" />
     <ClInclude Include="Engine\Math\Vector3.h" />
+    <ClInclude Include="Libs\Assimp\include\ai_assert.h" />
+    <ClInclude Include="Libs\Assimp\include\anim.h" />
+    <ClInclude Include="Libs\Assimp\include\camera.h" />
+    <ClInclude Include="Libs\Assimp\include\cexport.h" />
+    <ClInclude Include="Libs\Assimp\include\cfileio.h" />
+    <ClInclude Include="Libs\Assimp\include\cimport.h" />
+    <ClInclude Include="Libs\Assimp\include\color4.h" />
+    <ClInclude Include="Libs\Assimp\include\Compiler\poppack1.h" />
+    <ClInclude Include="Libs\Assimp\include\Compiler\pstdint.h" />
+    <ClInclude Include="Libs\Assimp\include\Compiler\pushpack1.h" />
+    <ClInclude Include="Libs\Assimp\include\config.h" />
+    <ClInclude Include="Libs\Assimp\include\DefaultLogger.hpp" />
+    <ClInclude Include="Libs\Assimp\include\defs.h" />
+    <ClInclude Include="Libs\Assimp\include\Exporter.hpp" />
+    <ClInclude Include="Libs\Assimp\include\Importer.hpp" />
+    <ClInclude Include="Libs\Assimp\include\importerdesc.h" />
+    <ClInclude Include="Libs\Assimp\include\IOStream.hpp" />
+    <ClInclude Include="Libs\Assimp\include\IOSystem.hpp" />
+    <ClInclude Include="Libs\Assimp\include\light.h" />
+    <ClInclude Include="Libs\Assimp\include\Logger.hpp" />
+    <ClInclude Include="Libs\Assimp\include\LogStream.hpp" />
+    <ClInclude Include="Libs\Assimp\include\material.h" />
+    <ClInclude Include="Libs\Assimp\include\matrix3x3.h" />
+    <ClInclude Include="Libs\Assimp\include\matrix4x4.h" />
+    <ClInclude Include="Libs\Assimp\include\mesh.h" />
+    <ClInclude Include="Libs\Assimp\include\metadata.h" />
+    <ClInclude Include="Libs\Assimp\include\NullLogger.hpp" />
+    <ClInclude Include="Libs\Assimp\include\port\AndroidJNI\AndroidJNIIOSystem.h" />
+    <ClInclude Include="Libs\Assimp\include\postprocess.h" />
+    <ClInclude Include="Libs\Assimp\include\ProgressHandler.hpp" />
+    <ClInclude Include="Libs\Assimp\include\quaternion.h" />
+    <ClInclude Include="Libs\Assimp\include\scene.h" />
+    <ClInclude Include="Libs\Assimp\include\texture.h" />
+    <ClInclude Include="Libs\Assimp\include\types.h" />
+    <ClInclude Include="Libs\Assimp\include\vector2.h" />
+    <ClInclude Include="Libs\Assimp\include\vector3.h" />
+    <ClInclude Include="Libs\Assimp\include\version.h" />
+    <ClInclude Include="Libs\Glew\include\eglew.h" />
+    <ClInclude Include="Libs\Glew\include\glew.h" />
+    <ClInclude Include="Libs\Glew\include\glxew.h" />
+    <ClInclude Include="Libs\Glew\include\wglew.h" />
     <ClInclude Include="Libs\SDL2\include\begin_code.h" />
     <ClInclude Include="Libs\SDL2\include\close_code.h" />
     <ClInclude Include="Libs\SDL2\include\SDL.h" />
@@ -235,10 +280,26 @@
     <ClInclude Include="Libs\SDL2_image\include\SDL_image.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="assimp-vc140-mt.dll" />
+    <None Include="libjpeg-9.dll" />
+    <None Include="libpng16-16.dll" />
+    <None Include="Libs\Assimp\include\color4.inl" />
+    <None Include="Libs\Assimp\include\material.inl" />
+    <None Include="Libs\Assimp\include\matrix3x3.inl" />
+    <None Include="Libs\Assimp\include\matrix4x4.inl" />
+    <None Include="Libs\Assimp\include\quaternion.inl" />
+    <None Include="Libs\Assimp\include\vector2.inl" />
+    <None Include="Libs\Assimp\include\vector3.inl" />
+    <None Include="libtiff-5.dll" />
+    <None Include="libwebp-4.dll" />
     <None Include="SDL2.dll" />
     <None Include="SDL2_image.dll" />
+    <None Include="zlib1.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Library Include="Libs\Assimp\lib\assimp-vc140-mt.lib" />
+    <Library Include="Libs\Assimp\lib\zlibstatic.lib" />
+    <Library Include="Libs\Glew\lib\glew32.lib" />
     <Library Include="Libs\SDL2\lib\SDL2.lib" />
     <Library Include="Libs\SDL2\lib\SDL2main.lib" />
     <Library Include="Libs\SDL2_image\lib\SDL2_image.lib" />

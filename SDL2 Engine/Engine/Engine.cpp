@@ -62,12 +62,12 @@ void Engine::Update()
 
 void Engine::BeginRender()
 {
-	SDL_RenderClear(renderer);
+	//SDL_RenderClear(renderer);
 }
 
 void Engine::EndRender()
 {
-	SDL_RenderPresent(renderer);
+	//SDL_RenderPresent(renderer);
 }
 
 SDL_Window* Engine::GetWindow()

@@ -35,9 +35,9 @@ void Sprite::Update()
 
 void Sprite::Render()
 {
-	//SDL_BlitSurface(texture.GetSurface(), NULL, Engine::GetSurface(), NULL);
-	//SDL_UpdateWindowSurface(Engine::GetWindow());
-	SDL_RenderCopy(Engine::GetRenderer(), texture.GetTexture(), NULL, NULL);
+	SDL_BlitSurface(texture.GetSurface(), NULL, Engine::GetSurface(), NULL);
+	SDL_UpdateWindowSurface(Engine::GetWindow());
+	//SDL_RenderCopy(Engine::GetRenderer(), texture.GetTexture(), NULL, NULL);
 }
 
 void Sprite::MoveTo(Vector3 v)
