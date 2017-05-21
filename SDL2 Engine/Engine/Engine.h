@@ -1,11 +1,14 @@
 #ifndef ENGINE
 #define ENGINE
 
-#include "../Libs/SDL2/include/SDL.h"
+#include <sdl2/sdl.h>
+#include <GL/glew.h>
 #pragma comment(lib, "opengl32.lib")
 
+#include "./Camera.h"
+#include <glm/glm.hpp>
+
 #include <iostream>
-using namespace std;
 
 class Engine
 {

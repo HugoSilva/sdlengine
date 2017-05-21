@@ -5,7 +5,7 @@
 #include "../Math/Vector2.h"
 #include "Shader.h"
 
-#include "..\..\Libs\Glew\include\glew.h"
+#include <GL/glew.h>
 
 #include <string>
 #include <fstream>

@@ -10,9 +10,9 @@
 
 #include "..\Math\Vector2.h"
 #include "Shader.h"
-#include "..\..\Libs\Assimp\include\Importer.hpp"
-#include "..\..\Libs\Assimp\include\scene.h"
-#include "..\..\Libs\Assimp\include\postprocess.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 #include "Mesh.h"
 
