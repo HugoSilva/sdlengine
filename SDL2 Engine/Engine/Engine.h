@@ -27,11 +27,14 @@ public:
 	void BeginRender();
 	void EndRender();
 	bool GetActive();
+	void ProcessCamera(SDL_KeyboardEvent event);
 
 private:
 	static SDL_Window* window;
 	static SDL_Renderer* renderer;
 	static SDL_Surface* surface;
+	static SDL_GLContext context;
+	Camera camera;
 	bool active;
 };
 
