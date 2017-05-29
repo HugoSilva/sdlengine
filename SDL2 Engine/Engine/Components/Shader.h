@@ -1,5 +1,5 @@
-#ifndef SHADER
-#define SHADER
+#ifndef SHADER_H
+#define SHADER_H
 
 #include <string>
 #include <fstream>
@@ -11,11 +11,10 @@
 class Shader
 {
 public:
-	// The program ID
 	GLuint Program;
-	// Constructor reads and builds the shader
-	Shader(const GLchar* vertexPath, const GLchar* fragmentPath);
-	// Use the program
+
+	Shader(const GLchar *vertexPath, const GLchar *fragmentPath);
+
 	void Use();
 };
 

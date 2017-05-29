@@ -1,6 +1,6 @@
 #include "Shader.h"
 
-Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
+Shader::Shader(const GLchar *vertexPath, const GLchar *fragmentPath)
 {
 	std::string vertexCode;
 	std::string fragmentCode;
@@ -28,8 +28,8 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
 	{
 		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
 	}
-	const GLchar* vShaderCode = vertexCode.c_str();
-	const GLchar* fShaderCode = fragmentCode.c_str();
+	const GLchar *vShaderCode = vertexCode.c_str();
+	const GLchar *fShaderCode = fragmentCode.c_str();
 
 	GLuint vertex, fragment;
 	GLint success;
@@ -38,16 +38,18 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
 	vertex = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertex, 1, &vShaderCode, NULL);
 	glCompileShader(vertex);
+
 	glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
 	if (!success)
 	{
 		glGetShaderInfoLog(vertex, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-	};
+	}
 
 	fragment = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragment, 1, &fShaderCode, NULL);
 	glCompileShader(fragment);
+
 	glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
 	if (!success)
 	{
@@ -69,6 +71,7 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
 
 	glDeleteShader(vertex);
 	glDeleteShader(fragment);
+
 }
 
 void Shader::Use()

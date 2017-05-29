@@ -1,11 +1,12 @@
 #ifndef MESH
 #define MESH
 
-#include "../Math/Vector3.h"
-#include "../Math/Vector2.h"
 #include "Shader.h"
 
 #include <GL/glew.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <assimp/Importer.hpp>
 
 #include <string>
 #include <fstream>
@@ -17,16 +18,17 @@ using namespace std;
 
 struct Vertex
 {
-	Vector3 Position;
-	Vector3 Normal;
-	Vector2 TexCoords;
+	glm::vec3 Position;
+	glm::vec3 Normal;
+	glm::vec3 Colors;
+	glm::vec2 TexCoords;
 };
 
 struct Texture
 {
 	GLuint id;
 	string type;
-	string path;
+	aiString path;
 };
 
 class Mesh
