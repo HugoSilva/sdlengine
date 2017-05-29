@@ -1,57 +1,17 @@
 #include "Engine/Engine.h"
 //#include "Engine/Components/Sprite.h"
-//#include "Engine/Components/Model.h"
-//#include "Engine/Components/Shader.h"
+#include "Engine/Camera.h"
+#include "Engine/Components/Model.h"
+#include "Engine/Components/Shader.h"
 
 #include <iostream>
 using namespace std;
 
-void drawCube() {
-	glBegin(GL_QUADS);
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
-	glColor3f(0.0f, 1.0f, 0.0f);     // Green
-	glVertex3f(1.0f, 1.0f, -1.0f);
-	glVertex3f(-1.0f, 1.0f, -1.0f);
-	glVertex3f(-1.0f, 1.0f, 1.0f);
-	glVertex3f(1.0f, 1.0f, 1.0f);
-
-	// Bottom face (y = -1.0f)
-	glColor3f(1.0f, 0.5f, 0.0f);     // Orange
-	glVertex3f(1.0f, -1.0f, 1.0f);
-	glVertex3f(-1.0f, -1.0f, 1.0f);
-	glVertex3f(-1.0f, -1.0f, -1.0f);
-	glVertex3f(1.0f, -1.0f, -1.0f);
-
-	// Front face  (z = 1.0f)
-	glColor3f(1.0f, 0.0f, 0.0f);     // Red
-	glVertex3f(1.0f, 1.0f, 1.0f);
-	glVertex3f(-1.0f, 1.0f, 1.0f);
-	glVertex3f(-1.0f, -1.0f, 1.0f);
-	glVertex3f(1.0f, -1.0f, 1.0f);
-
-	// Back face (z = -1.0f)
-	glColor3f(1.0f, 1.0f, 0.0f);     // Yellow
-	glVertex3f(1.0f, -1.0f, -1.0f);
-	glVertex3f(-1.0f, -1.0f, -1.0f);
-	glVertex3f(-1.0f, 1.0f, -1.0f);
-	glVertex3f(1.0f, 1.0f, -1.0f);
-
-	// Left face (x = -1.0f)
-	glColor3f(0.0f, 0.0f, 1.0f);     // Blue
-	glVertex3f(-1.0f, 1.0f, 1.0f);
-	glVertex3f(-1.0f, 1.0f, -1.0f);
-	glVertex3f(-1.0f, -1.0f, -1.0f);
-	glVertex3f(-1.0f, -1.0f, 1.0f);
-
-	// Right face (x = 1.0f)
-	glColor3f(1.0f, 0.0f, 1.0f);     // Magenta
-	glVertex3f(1.0f, 1.0f, -1.0f);
-	glVertex3f(1.0f, 1.0f, 1.0f);
-	glVertex3f(1.0f, -1.0f, 1.0f);
-	glVertex3f(1.0f, -1.0f, -1.0f);
-
-	glEnd();  // End of drawing color-cube
-}
+Camera camera(glm::vec3(0.0f, 0.0f, 4.0f));
 
 int main(int argc, char **argv)
 {
@@ -61,23 +21,41 @@ int main(int argc, char **argv)
 	if (validInit) {
 
 		//Sprite testSprite = Sprite("Assets/Textures/texture.png", Vector3(Engine::SCREEN_WIDTH / 2, Engine::SCREEN_HEIGHT / 2, 0));
-		//Shader shader("Assets/Shaders/Default.vs", "Assets/Shaders/Default.frag");
-		//Model model("Assets/Models/stormtrooper.fbx");
-		int i = 0;
+		Shader shader("Assets/Shaders/Default.vs", "Assets/Shaders/Default.frag");
+		Model ourmodel("Assets/Models/stormtrooper.obj");
+		float i = 0.0f;
+
+		engine.SetCamera(&camera);
+		glm::mat4 projection = glm::perspective(camera.GetZoom(), 1280.0f/720.0f, 0.1f, 100.0f);
+
+
+		long now, last = 0;
+		float deltaTime = 0.0;
+
 		while (engine.GetActive()) {
 
-			Uint32 deltaTime = SDL_GetTicks();
+			now = SDL_GetTicks();
+			deltaTime = ((float)(now - last)) / 1000;
+			last = now;
 
-			engine.Update();
+			engine.Update(deltaTime);
 			engine.BeginRender();
+
+			shader.Use();
+
+			glm::mat4 view = camera.GetViewMatrix();
+			glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+			glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+
+			glm::mat4 model;
+			model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f));
+			model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
+
+			model = glm::rotate(model, glm::radians(i++), glm::vec3(0.0f, 1.0f, 0.0f));
+			glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+			ourmodel.Draw(shader);
+
 			//testSprite.Render();
-			//model.Draw(shader);
-
-			glMatrixMode(GL_MODELVIEW);
-			glLoadIdentity();                 // Reset the model-view matrix
-			glRotatef(i++, 1.0f, 1.0f, 0.0f);
-			drawCube();
-
 			engine.EndRender();
 		}
 	}
