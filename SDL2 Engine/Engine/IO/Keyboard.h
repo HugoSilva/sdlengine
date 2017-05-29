@@ -1,7 +1,7 @@
 #ifndef KEYBOARD
 #define KEYBOARD
 
-#include <sdl2/SDL.h>
+#include <SDL.h>
 
 class Keyboard
 {

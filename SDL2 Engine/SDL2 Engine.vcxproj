@@ -1,5 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\GLMathematics.0.9.5.4\build\native\GLMathematics.props" Condition="Exists('..\packages\GLMathematics.0.9.5.4\build\native\GLMathematics.props')" />
+  <Import Project="..\packages\soil.1.16.0\build\native\soil.props" Condition="Exists('..\packages\soil.1.16.0\build\native\soil.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -154,8 +156,6 @@
     <ClCompile Include="Engine\Engine.cpp" />
     <ClCompile Include="Engine\IO\Keyboard.cpp" />
     <ClCompile Include="Engine\IO\Mouse.cpp" />
-    <ClCompile Include="Engine\Math\Vector2.cpp" />
-    <ClCompile Include="Engine\Math\Vector3.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -166,8 +166,6 @@
     <ClInclude Include="Engine\Engine.h" />
     <ClInclude Include="Engine\IO\Keyboard.h" />
     <ClInclude Include="Engine\IO\Mouse.h" />
-    <ClInclude Include="Engine\Math\Vector2.h" />
-    <ClInclude Include="Engine\Math\Vector3.h" />
     <ClInclude Include="Libs\Assimp\include\ai_assert.h" />
     <ClInclude Include="Libs\Assimp\include\anim.h" />
     <ClInclude Include="Libs\Assimp\include\camera.h" />
@@ -356,120 +354,10 @@
     <ClInclude Include="Libs\Glm\vec3.hpp" />
     <ClInclude Include="Libs\Glm\vec4.hpp" />
     <ClInclude Include="Libs\Glm\vector_relational.hpp" />
-    <ClInclude Include="Libs\include\assimp\ai_assert.h" />
-    <ClInclude Include="Libs\include\assimp\anim.h" />
-    <ClInclude Include="Libs\include\assimp\camera.h" />
-    <ClInclude Include="Libs\include\assimp\cexport.h" />
-    <ClInclude Include="Libs\include\assimp\cfileio.h" />
-    <ClInclude Include="Libs\include\assimp\cimport.h" />
-    <ClInclude Include="Libs\include\assimp\color4.h" />
-    <ClInclude Include="Libs\include\assimp\Compiler\poppack1.h" />
-    <ClInclude Include="Libs\include\assimp\Compiler\pstdint.h" />
-    <ClInclude Include="Libs\include\assimp\Compiler\pushpack1.h" />
-    <ClInclude Include="Libs\include\assimp\config.h" />
-    <ClInclude Include="Libs\include\assimp\DefaultLogger.hpp" />
-    <ClInclude Include="Libs\include\assimp\defs.h" />
-    <ClInclude Include="Libs\include\assimp\Exporter.hpp" />
-    <ClInclude Include="Libs\include\assimp\Importer.hpp" />
-    <ClInclude Include="Libs\include\assimp\importerdesc.h" />
-    <ClInclude Include="Libs\include\assimp\IOStream.hpp" />
-    <ClInclude Include="Libs\include\assimp\IOSystem.hpp" />
-    <ClInclude Include="Libs\include\assimp\light.h" />
-    <ClInclude Include="Libs\include\assimp\Logger.hpp" />
-    <ClInclude Include="Libs\include\assimp\LogStream.hpp" />
-    <ClInclude Include="Libs\include\assimp\material.h" />
-    <ClInclude Include="Libs\include\assimp\matrix3x3.h" />
-    <ClInclude Include="Libs\include\assimp\matrix4x4.h" />
-    <ClInclude Include="Libs\include\assimp\mesh.h" />
-    <ClInclude Include="Libs\include\assimp\metadata.h" />
-    <ClInclude Include="Libs\include\assimp\NullLogger.hpp" />
-    <ClInclude Include="Libs\include\assimp\port\AndroidJNI\AndroidJNIIOSystem.h" />
-    <ClInclude Include="Libs\include\assimp\postprocess.h" />
-    <ClInclude Include="Libs\include\assimp\ProgressHandler.hpp" />
-    <ClInclude Include="Libs\include\assimp\quaternion.h" />
-    <ClInclude Include="Libs\include\assimp\scene.h" />
-    <ClInclude Include="Libs\include\assimp\texture.h" />
-    <ClInclude Include="Libs\include\assimp\types.h" />
-    <ClInclude Include="Libs\include\assimp\vector2.h" />
-    <ClInclude Include="Libs\include\assimp\vector3.h" />
-    <ClInclude Include="Libs\include\assimp\version.h" />
-    <ClInclude Include="Libs\include\glm\glm.hpp" />
-    <ClInclude Include="Libs\include\glm\gtc\matrix_transform.hpp" />
     <ClInclude Include="Libs\include\GL\eglew.h" />
     <ClInclude Include="Libs\include\GL\glew.h" />
     <ClInclude Include="Libs\include\GL\glxew.h" />
     <ClInclude Include="Libs\include\GL\wglew.h" />
-    <ClInclude Include="Libs\include\sdl2\begin_code.h" />
-    <ClInclude Include="Libs\include\sdl2\close_code.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_assert.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_atomic.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_audio.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_bits.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_blendmode.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_clipboard.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_config.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_cpuinfo.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_egl.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_endian.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_error.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_events.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_filesystem.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_gamecontroller.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_gesture.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_haptic.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_hints.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_joystick.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_keyboard.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_keycode.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_loadso.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_log.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_main.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_messagebox.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_mouse.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_mutex.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_name.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_opengl.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_opengles.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_opengles2.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_opengles2_gl2.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_opengles2_gl2ext.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_opengles2_gl2platform.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_opengles2_khrplatform.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_opengl_glext.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_pixels.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_platform.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_power.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_quit.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_rect.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_render.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_revision.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_rwops.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_scancode.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_shape.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_stdinc.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_surface.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_system.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_syswm.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_test.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_test_assert.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_test_common.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_test_compare.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_test_crc32.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_test_font.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_test_fuzzer.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_test_harness.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_test_images.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_test_log.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_test_md5.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_test_random.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_thread.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_timer.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_touch.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_types.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_version.h" />
-    <ClInclude Include="Libs\include\sdl2\SDL_video.h" />
-    <ClInclude Include="Libs\include\sdl2_image\SDL_image.h" />
     <ClInclude Include="Libs\SDL2\include\begin_code.h" />
     <ClInclude Include="Libs\SDL2\include\close_code.h" />
     <ClInclude Include="Libs\SDL2\include\SDL.h" />
@@ -543,10 +431,9 @@
     <ClInclude Include="Libs\SDL2_image\include\SDL_image.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="assimp-vc140-mt.dll" />
+    <None Include="Assets\Shaders\Default.frag" />
+    <None Include="Assets\Shaders\Default.vs" />
     <None Include="glew32.dll" />
-    <None Include="libjpeg-9.dll" />
-    <None Include="libpng16-16.dll" />
     <None Include="Libs\Assimp\include\color4.inl" />
     <None Include="Libs\Assimp\include\material.inl" />
     <None Include="Libs\Assimp\include\matrix3x3.inl" />
@@ -668,31 +555,30 @@
     <None Include="Libs\Glm\gtx\vector_angle.inl" />
     <None Include="Libs\Glm\gtx\vector_query.inl" />
     <None Include="Libs\Glm\gtx\wrap.inl" />
-    <None Include="Libs\include\assimp\color4.inl" />
-    <None Include="Libs\include\assimp\material.inl" />
-    <None Include="Libs\include\assimp\matrix3x3.inl" />
-    <None Include="Libs\include\assimp\matrix4x4.inl" />
-    <None Include="Libs\include\assimp\quaternion.inl" />
-    <None Include="Libs\include\assimp\vector2.inl" />
-    <None Include="Libs\include\assimp\vector3.inl" />
-    <None Include="Libs\include\glm\gtc\matrix_transform.inl" />
-    <None Include="libtiff-5.dll" />
-    <None Include="libwebp-4.dll" />
-    <None Include="SDL2.dll" />
-    <None Include="SDL2_image.dll" />
-    <None Include="zlib1.dll" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\Textures\texture.png" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="Libs\lib\assimp\assimp-vc140-mt.lib" />
-    <Library Include="Libs\lib\assimp\zlibstatic.lib" />
     <Library Include="Libs\lib\glew\glew32.lib" />
-    <Library Include="Libs\lib\sdl2\SDL2.lib" />
-    <Library Include="Libs\lib\sdl2\SDL2main.lib" />
-    <Library Include="Libs\lib\sdl2_image\SDL2_image.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\Assimp.redist.3.0.0\build\native\Assimp.redist.targets" Condition="Exists('..\packages\Assimp.redist.3.0.0\build\native\Assimp.redist.targets')" />
+    <Import Project="..\packages\Assimp.3.0.0\build\native\Assimp.targets" Condition="Exists('..\packages\Assimp.3.0.0\build\native\Assimp.targets')" />
+    <Import Project="..\packages\sdl2.redist.2.0.5\build\native\sdl2.redist.targets" Condition="Exists('..\packages\sdl2.redist.2.0.5\build\native\sdl2.redist.targets')" />
+    <Import Project="..\packages\sdl2.2.0.5\build\native\sdl2.targets" Condition="Exists('..\packages\sdl2.2.0.5\build\native\sdl2.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\soil.1.16.0\build\native\soil.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\soil.1.16.0\build\native\soil.props'))" />
+    <Error Condition="!Exists('..\packages\GLMathematics.0.9.5.4\build\native\GLMathematics.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\GLMathematics.0.9.5.4\build\native\GLMathematics.props'))" />
+    <Error Condition="!Exists('..\packages\Assimp.redist.3.0.0\build\native\Assimp.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Assimp.redist.3.0.0\build\native\Assimp.redist.targets'))" />
+    <Error Condition="!Exists('..\packages\Assimp.3.0.0\build\native\Assimp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Assimp.3.0.0\build\native\Assimp.targets'))" />
+    <Error Condition="!Exists('..\packages\sdl2.redist.2.0.5\build\native\sdl2.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\sdl2.redist.2.0.5\build\native\sdl2.redist.targets'))" />
+    <Error Condition="!Exists('..\packages\sdl2.2.0.5\build\native\sdl2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\sdl2.2.0.5\build\native\sdl2.targets'))" />
+  </Target>
 </Project>
