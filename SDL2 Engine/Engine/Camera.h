@@ -1,14 +1,11 @@
-#pragma once
-
-// Std. Includes
-#include <vector>
-
-// GL Includes
-#define GLEW_STATIC
-#include <GL/glew.h>
+#ifndef CAMERA
+#define CAMERA
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include "Components\Shader.h"
 
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
 enum Camera_Movement
@@ -34,6 +31,8 @@ public:
 	Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), GLfloat yaw = YAW, GLfloat pitch = PITCH);
 	Camera(GLfloat posX, GLfloat posY, GLfloat posZ, GLfloat upX, GLfloat upY, GLfloat upZ, GLfloat yaw, GLfloat pitch);
 
+	void Update();
+	void Render(Shader shader);
 	glm::mat4 GetViewMatrix();
 	void ProcessKeyboard(Camera_Movement direction, GLfloat deltaTime);
 	void ProcessMouseMovement(GLfloat xOffset, GLfloat yOffset, GLboolean constrainPitch = true);
@@ -49,6 +48,8 @@ private:
 	glm::vec3 right;
 	glm::vec3 worldUp;
 
+	glm::mat4 projection;
+
 	GLfloat yaw;
 	GLfloat pitch;
 
@@ -58,3 +59,5 @@ private:
 
 	void updateCameraVectors();
 };
+
+#endif

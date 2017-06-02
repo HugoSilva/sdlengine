@@ -7,6 +7,8 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, GLfloat yaw, GLfloat pitch) : f
 	this->yaw = yaw;
 	this->pitch = pitch;
 	this->updateCameraVectors();
+	
+	projection = glm::perspective(GetZoom(), 1280.0f / 720.0f, 0.1f, 100.0f);
 }
 
 Camera::Camera(GLfloat posX, GLfloat posY, GLfloat posZ, GLfloat upX, GLfloat upY, GLfloat upZ, GLfloat yaw, GLfloat pitch) : front(glm::vec3(0.0f, 0.0f, -1.0f)), movementSpeed(SPEED), mouseSensitivity(SENSITIVTY), zoom(ZOOM)
@@ -16,6 +18,19 @@ Camera::Camera(GLfloat posX, GLfloat posY, GLfloat posZ, GLfloat upX, GLfloat up
 	this->yaw = yaw;
 	this->pitch = pitch;
 	this->updateCameraVectors();
+	
+	projection = glm::perspective(GetZoom(), 1280.0f / 720.0f, 0.1f, 100.0f);
+}
+
+void Camera::Update()
+{
+}
+
+void Camera::Render(Shader shader)
+{
+	glm::mat4 view = GetViewMatrix();
+	glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+	glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 }
 
 glm::mat4 Camera::GetViewMatrix()
