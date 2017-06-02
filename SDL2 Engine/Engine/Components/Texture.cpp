@@ -14,32 +14,49 @@ Texture::Texture(int _id)
 	}
 }
 
-Texture::Texture(string path)
+Texture::Texture(const char *path, string directory, string type)
 {
-	if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG))
-	{
-		std::cout << "Could not create window: " << IMG_GetError() << std::endl;
-		return;
-	}
+	//Generate texture ID and load texture data
+	string filename = string(path);
+	filename = directory + '/' + filename;
+	GLuint textureID;
+	glGenTextures(1, &textureID);
 
-	surface = IMG_Load(path.c_str());
-	texture = SDL_CreateTextureFromSurface(Engine::GetRenderer(), surface);
+	int width, height;
 
-	if (surface == nullptr)
-	{
-		cout << "Error loading image: " << path << endl;
-	}
-}
+	unsigned char *image = SOIL_load_image(filename.c_str(), &width, &height, 0, SOIL_LOAD_RGB);
 
-Texture::~Texture()
-{
-	//SDL_DestroyTexture(texture);
-	//SDL_FreeSurface(surface);
+	// Assign texture to ID
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	// Parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	SOIL_free_image_data(image);
+
+	this->id = textureID;
+	this->type = type;
+	this->path = path;
 }
 
 int Texture::GetID()
 {
 	return id;
+}
+
+string Texture::GetType()
+{
+	return type;
+}
+
+aiString Texture::GetPath()
+{
+	return path;
 }
 
 int Texture::GetWidth()
@@ -50,15 +67,4 @@ int Texture::GetWidth()
 int Texture::GetHeight()
 {
 	return height;
-}
-
-
-SDL_Surface* Texture::GetSurface()
-{
-	return surface;
-}
-
-SDL_Texture* Texture::GetTexture()
-{
-	return texture;
 }

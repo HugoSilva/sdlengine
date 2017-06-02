@@ -14,21 +14,16 @@
 #include <iostream>
 #include <vector>
 
+#include "Texture.h"
+
 using namespace std;
 
 struct Vertex
 {
 	glm::vec3 Position;
 	glm::vec3 Normal;
-	glm::vec3 Colors;
+	//glm::vec4 Colors;
 	glm::vec2 TexCoords;
-};
-
-struct Texture
-{
-	GLuint id;
-	string type;
-	aiString path;
 };
 
 class Mesh

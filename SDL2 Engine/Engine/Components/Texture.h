@@ -1,12 +1,13 @@
 #ifndef TEXTURE
 #define TEXTURE
 
-#include "../../Libs/SDL2/include/SDL.h"
-#include "../../Libs/SDL2/include/SDL_opengl.h"
-#include "../../Libs/SDL2_image/include/SDL_image.h"
+#include <assimp/Importer.hpp>
+#include "SOIL.h"
+
 #include "../Engine.h"
 #include <iostream>
 #include <string>
+
 using namespace std;
 
 class Texture
@@ -14,19 +15,19 @@ class Texture
 public:
 	Texture();
 	Texture(int _id);
-	Texture(string path);
-	~Texture();
+	Texture(const char *path, string directory, string type);
 
 	int GetID();
+	string GetType();
+	aiString GetPath();
 	int GetWidth();
 	int GetHeight();
-	SDL_Surface* GetSurface();
-	SDL_Texture* GetTexture();
 
 private:
-	SDL_Surface* surface;
-	SDL_Texture* texture;
-	int id;
+	GLuint id;
+	string type;
+	aiString path;
+
 	int width;
 	int height;
 };

@@ -20,7 +20,7 @@ void Mesh::Draw(Shader shader)
 
 		stringstream ss;
 		string number;
-		string name = this->textures[i].type;
+		string name = this->textures[i].GetType();
 
 		if (name == "texture_diffuse")
 		{
@@ -35,7 +35,7 @@ void Mesh::Draw(Shader shader)
 		number = ss.str();
 
 		glUniform1i(glGetUniformLocation(shader.Program, (name + number).c_str()), i);
-		glBindTexture(GL_TEXTURE_2D, this->textures[i].id);
+		glBindTexture(GL_TEXTURE_2D, this->textures[i].GetID());
 	}
 
 	glUniform1f(glGetUniformLocation(shader.Program, "material.shininess"), 16.0f);
