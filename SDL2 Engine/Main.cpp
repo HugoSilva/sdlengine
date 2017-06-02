@@ -22,7 +22,7 @@ int main(int argc, char **argv)
 
 		//Sprite testSprite = Sprite("Assets/Textures/texture.png", Vector3(Engine::SCREEN_WIDTH / 2, Engine::SCREEN_HEIGHT / 2, 0));
 		Shader shader("Assets/Shaders/Default.vs", "Assets/Shaders/Default.frag");
-		Model ourmodel("Assets/Models/stormtrooper.obj");
+		Model testModel("Assets/Models/nanosuit.obj");
 		float i = 0.0f;
 
 		engine.SetCamera(&camera);
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 
 			model = glm::rotate(model, glm::radians(i++), glm::vec3(0.0f, 1.0f, 0.0f));
 			glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-			ourmodel.Draw(shader);
+			testModel.Draw(shader);
 
 			//testSprite.Render();
 			engine.EndRender();
