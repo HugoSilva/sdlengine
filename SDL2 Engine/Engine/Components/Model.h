@@ -11,6 +11,7 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -24,9 +25,11 @@ class Model
 {
 public:
 	Model(GLchar *path);
-	void Draw(Shader shader);
+	void Update();
+	void Render(Shader shader);
 
 private:
+	float testRotation;
 	vector<Mesh> meshes;
 	string directory;
 	vector<Texture> textures_loaded;

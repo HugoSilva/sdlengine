@@ -1,13 +1,25 @@
-
 #include "Model.h"
 
 Model::Model(GLchar *path)
 {
 	this->loadModel(path);
+	testRotation = 0.0f;
 }
 
-void Model::Draw(Shader shader)
+void Model::Update()
 {
+	testRotation++;
+}
+
+void Model::Render(Shader shader)
+{
+	glm::mat4 model;
+	model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f));
+	model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
+	model = glm::rotate(model, glm::radians(testRotation), glm::vec3(0.0f, 1.0f, 0.0f));
+
+	glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
 	for (GLuint i = 0; i < this->meshes.size(); i++)
 	{
 		this->meshes[i].Draw(shader);
