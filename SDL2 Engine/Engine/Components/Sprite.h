@@ -2,7 +2,7 @@
 #define SPRITE
 
 #include "Texture.h"
-#include "../Math/Vector3.h"
+#include <glm/glm.hpp>
 #include "../Engine.h"
 
 #include <iostream>
@@ -14,31 +14,31 @@ class Sprite
 public:
 	Sprite();
 	Sprite(string imagePath);
-	Sprite(string imagePath, Vector3 _pos);
+	Sprite(string imagePath, glm::vec3 _pos);
 
 	void Update();
 	void Render();
 
-	void MoveTo(Vector3 v);
+	void MoveTo(glm::vec3 v);
 	void RotateTo(float x);
 
 	void SetScale(float x);
-	void SetScale(Vector3 v);
+	void SetScale(glm::vec3 v);
 
 	void FlipHorizontal();
 	void FlipVertical();
 
-	Vector3* GetPos();
+	glm::vec3* GetPos();
 	float* GetRot();
-	Vector3* GetScale();
-	Vector3* GetSize();
+	glm::vec3* GetScale();
+	glm::vec3* GetSize();
 
 private:
 	Texture texture;
-	Vector3 pos;
+	glm::vec3 pos;
 	float rot;
-	Vector3 scale;
-	Vector3 size;
+	glm::vec3 scale;
+	glm::vec3 size;
 };
 
 #endif

@@ -1,7 +1,7 @@
 #ifndef MOUSE
 #define MOUSE
 
-#include "../../Libs/SDL2/include/SDL.h"
+#include <SDL.h>
 
 class Mouse
 {
