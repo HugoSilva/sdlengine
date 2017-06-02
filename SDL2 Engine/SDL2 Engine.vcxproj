@@ -157,6 +157,8 @@
     <ClCompile Include="Engine\Engine.cpp" />
     <ClCompile Include="Engine\IO\Keyboard.cpp" />
     <ClCompile Include="Engine\IO\Mouse.cpp" />
+    <ClCompile Include="Engine\Scene.cpp" />
+    <ClCompile Include="Engine\Window.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -168,6 +170,8 @@
     <ClInclude Include="Engine\Engine.h" />
     <ClInclude Include="Engine\IO\Keyboard.h" />
     <ClInclude Include="Engine\IO\Mouse.h" />
+    <ClInclude Include="Engine\Scene.h" />
+    <ClInclude Include="Engine\Window.h" />
     <ClInclude Include="Libs\Assimp\include\ai_assert.h" />
     <ClInclude Include="Libs\Assimp\include\anim.h" />
     <ClInclude Include="Libs\Assimp\include\camera.h" />
