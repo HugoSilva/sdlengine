@@ -1,5 +1,6 @@
 #include "Sprite.h"
-#include "../Engine.h"
+
+using namespace std;
 
 Sprite::Sprite()
 {
@@ -12,7 +13,8 @@ Sprite::Sprite()
 
 Sprite::Sprite(string imagePath)
 {
-	texture = Texture(imagePath);
+	string directory = imagePath.substr(0, imagePath.find_last_of('/'));
+	texture = Texture(imagePath.c_str(), directory, "");
 	pos = glm::vec3(0);
 	scale = glm::vec3(1);
 	size = glm::vec3((float)texture.GetWidth(), (float)texture.GetHeight(), 1);
@@ -21,7 +23,8 @@ Sprite::Sprite(string imagePath)
 
 Sprite::Sprite(string imagePath, glm::vec3 v)
 {
-	texture = Texture(imagePath);
+	string directory = imagePath.substr(0, imagePath.find_last_of('/'));
+	texture = Texture(imagePath.c_str(), directory, "");
 	pos = v;
 	scale = glm::vec3(1);
 	size = glm::vec3((float)texture.GetWidth(), (float)texture.GetHeight(), 1);

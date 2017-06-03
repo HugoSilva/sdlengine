@@ -1,13 +1,12 @@
 #ifndef SPRITE
 #define SPRITE
 
-#include "Texture.h"
 #include <glm/glm.hpp>
-#include "../Engine.h"
-
 #include <iostream>
 #include <string>
-using namespace std;
+
+#include "Texture.h"
+#include "../Engine.h"
 
 class Sprite
 {
