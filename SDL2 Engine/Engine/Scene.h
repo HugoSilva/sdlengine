@@ -1,7 +1,10 @@
 #ifndef SCENE
 #define SCENE
 
-#include <SDL.h>
+#include "Components/Shader.h"
+//#include "Components/Sprite.h"
+#include "Components/Model.h"
+#include "Camera.h"
 
 class Scene
 {
@@ -9,8 +12,14 @@ public:
 	Scene();
 	~Scene();
 
-private:
+	void Update();
+	void Render();
 
+private:
+	Shader* shader;
+	//Sprite testsprite;
+	Model* testModel;
+	Camera* camera;
 };
 
 #endif
