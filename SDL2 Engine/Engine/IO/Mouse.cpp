@@ -7,13 +7,30 @@ bool Mouse::buttons[20] = { 0 };
 bool Mouse::buttonsDown[20] = { 0 };
 bool Mouse::buttonsUp[20] = { 0 };
 
+float lastX = 0, lastY = 0;
+float xOffset, yOffset;
+bool firstMouse = true;
+
 void Mouse::MousePosCallback(SDL_MouseMotionEvent event)
 {
 	int width, height;
 	SDL_GetWindowSize(SDL_GetWindowFromID(event.windowID), &width, &height);
 
 	x = event.x;
-	y = height - event.y;
+	y = event.y;
+
+	if (firstMouse)
+	{
+		lastX = x;
+		lastY = y;
+		firstMouse = false;
+	}
+
+	xOffset = x - lastX;
+	yOffset = lastY - y;  // Reversed since y-coordinates go from bottom to left
+
+	lastX = x;
+	lastY = y;
 }
 
 void Mouse::MouseButtonCallback(SDL_MouseButtonEvent event)
@@ -39,12 +56,12 @@ void Mouse::MouseButtonCallback(SDL_MouseButtonEvent event)
 
 double Mouse::GetMouseX()
 {
-	return x;
+	return xOffset;
 }
 
 double Mouse::GetMouseY()
 {
-	return y;
+	return yOffset;
 }
 
 bool Mouse::ButtonDown(int button)
