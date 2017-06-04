@@ -22,8 +22,45 @@ Camera::Camera(GLfloat posX, GLfloat posY, GLfloat posZ, GLfloat upX, GLfloat up
 	projection = glm::perspective(GetZoom(), 1280.0f / 720.0f, 0.1f, 100.0f);
 }
 
-void Camera::Update()
+void Camera::Update(float deltaTime)
 {
+	if (Keyboard::Key(SDL_SCANCODE_UP))
+	{
+		this->ProcessKeyboard(FORWARD, deltaTime);
+	}
+
+	if (Keyboard::Key(SDL_SCANCODE_DOWN))
+	{
+		this->ProcessKeyboard(BACKWARD, deltaTime);
+	}
+
+	if (Keyboard::Key(SDL_SCANCODE_LEFT))
+	{
+		this->ProcessKeyboard(LEFT, deltaTime);
+	}
+
+	if (Keyboard::Key(SDL_SCANCODE_RIGHT))
+	{
+		this->ProcessKeyboard(RIGHT, deltaTime);
+	}
+
+	double xPos = Mouse::GetMouseX();
+	double yPos = Mouse::GetMouseY();
+
+	//if (firstMouse)
+	//{
+	//	lastX = xPos;
+	//	lastY = yPos;
+	//	firstMouse = false;
+	//}
+
+	//GLfloat xOffset = xPos - lastX;
+	//GLfloat yOffset = lastY - yPos;  // Reversed since y-coordinates go from bottom to left
+
+	//lastX = xPos;
+	//lastY = yPos;
+
+	this->ProcessMouseMovement(xPos, yPos);
 }
 
 void Camera::Render(Shader shader)

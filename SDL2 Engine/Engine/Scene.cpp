@@ -12,8 +12,9 @@ Scene::~Scene()
 {
 }
 
-void Scene::Update()
+void Scene::Update(float deltaTime)
 {
+	camera->Update(deltaTime);
 	//testSprite.Update();
 	testModel->Update();
 }
