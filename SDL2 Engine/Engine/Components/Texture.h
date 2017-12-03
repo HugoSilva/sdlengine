@@ -4,9 +4,10 @@
 #include <assimp/Importer.hpp>
 #include "SOIL.h"
 
-#include "../Engine.h"
 #include <iostream>
 #include <string>
+#include <GL/glew.h>
+#pragma comment(lib, "opengl32.lib")
 
 using namespace std;
 

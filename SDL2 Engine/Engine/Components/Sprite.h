@@ -6,7 +6,6 @@
 #include <string>
 
 #include "Texture.h"
-#include "../Engine.h"
 
 class Sprite
 {
