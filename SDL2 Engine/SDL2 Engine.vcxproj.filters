@@ -57,6 +57,9 @@
     <ClCompile Include="Engine\Audio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Logger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Libs\SDL2\include\begin_code.h">
@@ -885,6 +888,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

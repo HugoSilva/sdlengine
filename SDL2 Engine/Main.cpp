@@ -1,16 +1,23 @@
 #include "Engine/Application.h"
+#include "Engine/Logger.h"
 
 #include <iostream>
 
 int main(int argc, char **argv)
 {
-	Application app;
+	try
+	{
+		Application app;
 
-	bool running = true;
-	do {
-		running = app.Run();
+		bool running = true;
+		do {
+			running = app.Run();
+		} while (running);
 	}
-	while (running);
+	catch (...)
+	{
+		Logger::error("Failed to start the application");
+	}
 
 	return EXIT_SUCCESS;
 }
