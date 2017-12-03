@@ -2,15 +2,14 @@
 #define ENGINE
 
 #include <SDL.h>
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
+#include <iostream>
 #include <GL/glew.h>
 #pragma comment(lib, "opengl32.lib")
 
-#include "./Camera.h"
+#include "Camera.h"
 #include "Components/Shader.h"
-#include <glm/glm.hpp>
-#include <glm/ext.hpp>
-
-#include <iostream>
 
 class Engine
 {

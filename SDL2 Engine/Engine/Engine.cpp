@@ -8,6 +8,8 @@ int Engine::SCREEN_WIDTH = 1280;
 int Engine::SCREEN_HEIGHT = 720;
 SDL_Window* Engine::window = NULL;
 SDL_GLContext Engine::context = NULL;
+GLfloat lastX = Engine::SCREEN_WIDTH/2, lastY = Engine::SCREEN_HEIGHT/2;
+bool firstMouse = true;
 
 Engine::Engine()
 {
@@ -95,9 +97,6 @@ void Engine::ProcessCamera(SDL_KeyboardEvent event, GLfloat deltaTime)
 		this->camera->ProcessKeyboard(RIGHT, deltaTime);
 	}
 }
-
-GLfloat lastX = 640, lastY = 360;
-bool firstMouse = true;
 
 void Engine::MouseCallback(SDL_MouseMotionEvent event)
 {
