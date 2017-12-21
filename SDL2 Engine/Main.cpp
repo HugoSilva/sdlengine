@@ -1,18 +1,21 @@
-#include "Engine/Application.h"
+#include "Engine/Graphics/Window.h"
 #include "Engine/Logger.h"
 
 #include <iostream>
 
 int main(int argc, char **argv)
 {
+	using namespace graphics;
+	
 	try
 	{
-		Application app;
+		Window window("SDL Example!", 1280, 720);
+		window.Init();
 
-		bool running = true;
-		do {
-			running = app.Run();
-		} while (running);
+		while (window.GetRunning())
+		{
+			window.Run();
+		}
 	}
 	catch (...)
 	{
