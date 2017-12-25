@@ -15,6 +15,7 @@ namespace graphics {
 
 		bool Init();
 		void Run();
+		void LoadScene(Scene* scene);
 		bool GetRunning();
 
 	private:
@@ -23,8 +24,8 @@ namespace graphics {
 		SDL_Event windowEvent;
 		SDL_Window * window;
 		SDL_GLContext context;
-		Scene* scene;
-		Input* input;
+		Scene* m_Scene;
+		Input* m_Input;
 		bool running;
 		long now, last = 0;
 		float deltaTime = 0.0;

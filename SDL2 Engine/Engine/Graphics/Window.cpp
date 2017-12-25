@@ -53,8 +53,7 @@ namespace graphics {
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
 
-		scene = new Scene();
-		input = new Input();
+		m_Input = new Input();
 
 		return true;
 	}
@@ -65,12 +64,12 @@ namespace graphics {
 		deltaTime = ((float)(now - last)) / 1000;
 		last = now;
 		this->HandleEvents();
-		scene->Update(deltaTime);
+		m_Scene->Update(deltaTime);
 
 		glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		scene->Render();
+		m_Scene->Render();
 
 		SDL_GL_SwapWindow(window);
 	}
@@ -84,16 +83,21 @@ namespace graphics {
 				break;
 			case SDL_KEYDOWN:
 			case SDL_KEYUP:
-				input->HandleKeyboard(windowEvent.key);
+				m_Input->HandleKeyboard(windowEvent.key);
 				break;
 			case SDL_MOUSEBUTTONDOWN:
 			case SDL_MOUSEBUTTONUP:
-				input->HandleMouseButton(windowEvent.button);
+				m_Input->HandleMouseButton(windowEvent.button);
 			case SDL_MOUSEMOTION:
-				input->HandleMouseMotion(windowEvent.motion);
+				m_Input->HandleMouseMotion(windowEvent.motion);
 				break;
 			}
 		}
+	}
+
+	void Window::LoadScene(Scene* scene)
+	{
+		m_Scene = scene;
 	}
 
 	bool Window::GetRunning()
