@@ -15,8 +15,8 @@ int main(int argc, char **argv)
 		Window window("SDL Example!", 1280, 720);
 		window.Init();
 
-		ModelTest* scene = new ModelTest();
-		//SpriteTest* scene = new SpriteTest();
+		//ModelTest* scene = new ModelTest();
+		SpriteTest* scene = new SpriteTest();
 		window.LoadScene(scene);
 
 		while (window.GetRunning())

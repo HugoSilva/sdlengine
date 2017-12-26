@@ -8,7 +8,8 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, GLfloat yaw, GLfloat pitch) : f
 	this->pitch = pitch;
 	this->updateCameraVectors();
 	
-	projection = glm::perspective(GetZoom(), 1280.0f / 720.0f, 0.1f, 100.0f);
+	//projection = glm::perspective(GetZoom(), 1280.0f / 720.0f, 0.1f, 100.0f);
+	projection = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f, -1.0f, 1.0f);
 }
 
 Camera::Camera(GLfloat posX, GLfloat posY, GLfloat posZ, GLfloat upX, GLfloat upY, GLfloat upZ, GLfloat yaw, GLfloat pitch) : front(glm::vec3(0.0f, 0.0f, -1.0f)), movementSpeed(SPEED), mouseSensitivity(SENSITIVTY), zoom(ZOOM)
@@ -19,7 +20,8 @@ Camera::Camera(GLfloat posX, GLfloat posY, GLfloat posZ, GLfloat upX, GLfloat up
 	this->pitch = pitch;
 	this->updateCameraVectors();
 	
-	projection = glm::perspective(GetZoom(), 1280.0f / 720.0f, 0.1f, 100.0f);
+	//projection = glm::perspective(GetZoom(), 1280.0f / 720.0f, 0.1f, 100.0f);
+	projection = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f, -1.0f, 1.0f);
 }
 
 void Camera::Update(float deltaTime)

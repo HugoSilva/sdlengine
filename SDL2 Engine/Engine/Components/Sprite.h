@@ -10,33 +10,22 @@
 class Sprite
 {
 public:
-	Sprite();
-	Sprite(string imagePath);
-	Sprite(string imagePath, glm::vec3 _pos);
+	Sprite(glm::vec3 position, glm::vec2 size, glm::vec4 color);
+	Sprite(glm::vec3 position, glm::vec2 size, Texture* texture);
 
 	void Update();
 	void Render();
 
 	void MoveTo(glm::vec3 v);
-	void RotateTo(float x);
 
-	void SetScale(float x);
-	void SetScale(glm::vec3 v);
-
-	void FlipHorizontal();
-	void FlipVertical();
-
-	glm::vec3* GetPos();
-	float* GetRot();
-	glm::vec3* GetScale();
-	glm::vec3* GetSize();
+	glm::vec3* GetPosition();
+	glm::vec2* GetSize();
 
 private:
-	Texture texture;
-	glm::vec3 pos;
-	float rot;
-	glm::vec3 scale;
-	glm::vec3 size;
+	glm::vec3 m_Position;
+	glm::vec2 m_Size;
+	glm::vec4 m_Color;
+	Texture* m_Texture;
 };
 
 #endif
