@@ -16,7 +16,7 @@ int main(int argc, char **argv)
 		window.Init();
 
 		//ModelTest* scene = new ModelTest();
-		SpriteTest* scene = new SpriteTest();
+		SpriteTest* scene = new SpriteTest(window.GetWindow());
 		window.LoadScene(scene);
 
 		while (window.GetRunning())

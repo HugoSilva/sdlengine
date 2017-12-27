@@ -5,6 +5,10 @@ using namespace std;
 Sprite::Sprite(glm::vec3 position, glm::vec2 size, glm::vec4 color)
 	: m_Position(position), m_Size(size), m_Color(color)
 {
+	texr.x = m_Position.x;
+	texr.y = m_Position.y;
+	texr.w = m_Size.x;
+	texr.h = m_Size.y;
 }
 
 Sprite::Sprite(glm::vec3 position, glm::vec2 size, Texture* texture)
@@ -17,8 +21,12 @@ void Sprite::Update()
 {
 }
 
-void Sprite::Render()
+void Sprite::Render(SDL_Renderer* renderer)
 {
+	//SDL_RenderCopy(renderer, NULL, NULL, &texr);
+	
+	SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+	SDL_RenderFillRect(renderer, &texr);
 }
 
 void Sprite::MoveTo(glm::vec3 v)

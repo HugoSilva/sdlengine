@@ -17,12 +17,13 @@ namespace graphics {
 		void Run();
 		void LoadScene(Scene* scene);
 		bool GetRunning();
+		SDL_Window* GetWindow() { return window; };
 
 	private:
 		void HandleEvents();
 
 		SDL_Event windowEvent;
-		SDL_Window * window;
+		SDL_Window* window;
 		SDL_GLContext context;
 		Scene* m_Scene;
 		Input* m_Input;

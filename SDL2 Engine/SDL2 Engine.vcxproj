@@ -177,6 +177,7 @@
     <ClInclude Include="Engine\IO\Keyboard.h" />
     <ClInclude Include="Engine\IO\Mouse.h" />
     <ClInclude Include="Engine\Logger.h" />
+    <ClInclude Include="Engine\Renderer2D.h" />
     <ClInclude Include="Engine\Scene.h" />
     <ClInclude Include="Engine\Graphics\Window.h" />
     <ClInclude Include="Examples\ModelTest.h" />
