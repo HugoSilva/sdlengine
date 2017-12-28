@@ -2,90 +2,44 @@
 
 using namespace std;
 
-Sprite::Sprite()
+Sprite::Sprite(glm::vec3 position, glm::vec2 size, glm::vec4 color)
+	: m_Position(position), m_Size(size), m_Color(color)
 {
-	pos = glm::vec3(0);
-	rot = 0;
-	scale = glm::vec3(1);
-	size = glm::vec3(0);
-	texture = Texture();
+	texr.x = m_Position.x;
+	texr.y = m_Position.y;
+	texr.w = m_Size.x;
+	texr.h = m_Size.y;
 }
 
-Sprite::Sprite(string imagePath)
+Sprite::Sprite(glm::vec3 position, glm::vec2 size, Texture* texture)
+	: m_Position(position), m_Size(size), m_Color(glm::vec4(1))
 {
-	string directory = imagePath.substr(0, imagePath.find_last_of('/'));
-	texture = Texture(imagePath.c_str(), directory, "");
-	pos = glm::vec3(0);
-	scale = glm::vec3(1);
-	size = glm::vec3((float)texture.GetWidth(), (float)texture.GetHeight(), 1);
-	rot = 0;
-}
-
-Sprite::Sprite(string imagePath, glm::vec3 v)
-{
-	string directory = imagePath.substr(0, imagePath.find_last_of('/'));
-	texture = Texture(imagePath.c_str(), directory, "");
-	pos = v;
-	scale = glm::vec3(1);
-	size = glm::vec3((float)texture.GetWidth(), (float)texture.GetHeight(), 1);
-	rot = 0;
+	m_Texture = texture;
 }
 
 void Sprite::Update()
 {
-
 }
 
-void Sprite::Render()
+void Sprite::Render(SDL_Renderer* renderer)
 {
+	//SDL_RenderCopy(renderer, NULL, NULL, &texr);
+	
+	SDL_SetRenderDrawColor(renderer, m_Color.r, m_Color.g, m_Color.b, m_Color.a);
+	SDL_RenderFillRect(renderer, &texr);
 }
 
 void Sprite::MoveTo(glm::vec3 v)
 {
-	pos = v;
+	m_Position = v;
 }
 
-void Sprite::RotateTo(float x)
+glm::vec3* Sprite::GetPosition()
 {
-	rot = x;
+	return &m_Position;
 }
 
-void Sprite::SetScale(float x)
+glm::vec2* Sprite::GetSize()
 {
-	scale = glm::vec3(x);
-}
-
-void Sprite::SetScale(glm::vec3 v)
-{
-	scale = v;
-}
-
-void Sprite::FlipHorizontal()
-{
-	scale.x = -scale.x;
-}
-
-void Sprite::FlipVertical()
-{
-	scale.y = -scale.y;
-}
-
-glm::vec3* Sprite::GetPos()
-{
-	return &pos;
-}
-
-float* Sprite::GetRot()
-{
-	return &rot;
-}
-
-glm::vec3* Sprite::GetScale()
-{
-	return &scale;
-}
-
-glm::vec3* Sprite::GetSize()
-{
-	return &size;
+	return &m_Size;
 }

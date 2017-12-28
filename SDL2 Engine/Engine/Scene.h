@@ -1,25 +1,17 @@
-#ifndef SCENE
-#define SCENE
+#pragma once
 
 #include "Components/Shader.h"
-//#include "Components/Sprite.h"
-#include "Components/Model.h"
 #include "Camera.h"
 
 class Scene
 {
 public:
-	Scene();
-	~Scene();
 
-	void Update(float deltaTime);
-	void Render();
+	virtual void Update(float deltaTime) = 0;
+
+	virtual void Render() = 0;
 
 private:
 	Shader* shader;
-	//Sprite testsprite;
-	Model* testModel;
 	Camera* camera;
 };
-
-#endif
