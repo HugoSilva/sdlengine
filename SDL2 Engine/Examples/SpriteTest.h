@@ -22,7 +22,6 @@ namespace examples {
 
 	private:
 		Shader* shader;
-		Sprite* testSprite;
 		Texture* testTexture;
 		Camera* camera;
 		Engine::Renderer2D* renderer;

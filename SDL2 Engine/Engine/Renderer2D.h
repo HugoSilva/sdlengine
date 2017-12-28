@@ -34,7 +34,8 @@ namespace Engine {
 
 		void flush()
 		{
-			for (int i = 0; i < m_Sprites.size(); i++)
+			int size = m_Sprites.size();
+			for (int i = 0; i < size; i++)
 			{
 				m_Sprites[i]->Render(m_Renderer);
 			}

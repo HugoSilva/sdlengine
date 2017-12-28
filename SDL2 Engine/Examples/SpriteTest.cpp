@@ -9,11 +9,19 @@ namespace examples {
 		//string directory = imagePath.substr(0, imagePath.find_last_of('/'));
 		//Texture* texture = new Texture(imagePath.c_str(), directory, "");
 
-		testSprite = new Sprite(glm::vec3(10, 10, 0), glm::vec2(200, 200), glm::vec4(1, 1, 1, 1));
-		camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
-
 		renderer = new Engine::Renderer2D(win);
-		renderer->submit(testSprite);
+
+		for (int i = 0; i < 210; i++ )
+		{
+			for (int j = 0; j < 119; j++)
+			{
+				int randNum = rand() % (255 - 100 + 1) + 100;
+				Sprite* iter = new Sprite(glm::vec3(i*6, j*6, 0), glm::vec2(5, 5), glm::vec4(1, 1, randNum, 255));
+				renderer->submit(iter);
+			}
+		}
+
+		camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
 	}
 
 	SpriteTest::~SpriteTest()
@@ -23,7 +31,6 @@ namespace examples {
 	void SpriteTest::Update(float deltaTime)
 	{
 		camera->Update(deltaTime);
-		testSprite->Update();
 	}
 
 	void SpriteTest::Render()
@@ -32,9 +39,7 @@ namespace examples {
 		camera->Render(*shader);
 
 		renderer->begin();
-
 		renderer->flush();
-
 		renderer->end();
 	}
 }

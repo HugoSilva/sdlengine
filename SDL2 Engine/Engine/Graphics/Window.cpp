@@ -55,13 +55,15 @@ namespace graphics {
 
 		m_Input = new Input();
 
+		std::cout << "OpenGL " << glGetString(GL_VERSION) << std::endl;
+
 		return true;
 	}
 
 	void Window::Run()
 	{
 		now = SDL_GetTicks();
-		deltaTime = ((float)(now - last)) / 1000;
+		deltaTime = (now - last) / 1000.0f;
 		last = now;
 		this->HandleEvents();
 		m_Scene->Update(deltaTime);
@@ -72,6 +74,16 @@ namespace graphics {
 		m_Scene->Render();
 
 		//SDL_GL_SwapWindow(window);
+
+		deltaAccumulator += deltaTime;
+		frames++;
+
+		if (deltaAccumulator > 1.0f)
+		{
+			printf("%d FPS\n", frames);
+			frames = 0;
+			deltaAccumulator = 0.f;
+		}
 	}
 
 	void Window::HandleEvents()

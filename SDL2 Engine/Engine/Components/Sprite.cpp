@@ -25,7 +25,7 @@ void Sprite::Render(SDL_Renderer* renderer)
 {
 	//SDL_RenderCopy(renderer, NULL, NULL, &texr);
 	
-	SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+	SDL_SetRenderDrawColor(renderer, m_Color.r, m_Color.g, m_Color.b, m_Color.a);
 	SDL_RenderFillRect(renderer, &texr);
 }
 

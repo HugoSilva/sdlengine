@@ -32,5 +32,8 @@ namespace graphics {
 		float deltaTime = 0.0;
 		const char *m_Title;
 		int m_Width, m_Height;
+
+		float deltaAccumulator = 0.0f;
+		int frames = 0;
 	};
 }
