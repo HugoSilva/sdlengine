@@ -4,10 +4,10 @@
 #include <GL/glew.h>
 #include <glm\glm.hpp>
 #include <vector>
-#include "Components\Sprite.h"
+#include "Renderable2D.h"
 
-namespace Engine {
-
+namespace graphics
+{
 	class Renderer2D
 	{
 	public:
@@ -22,9 +22,9 @@ namespace Engine {
 			SDL_RenderClear(m_Renderer);
 		}
 		
-		void submit(Sprite* sprite)
+		void submit(Renderable2D* renderable)
 		{
-			m_Sprites.push_back(sprite);
+			m_Renderables.push_back(renderable);
 		}
 
 		void end() 
@@ -34,15 +34,15 @@ namespace Engine {
 
 		void flush()
 		{
-			int size = m_Sprites.size();
+			int size = m_Renderables.size();
 			for (int i = 0; i < size; i++)
 			{
-				m_Sprites[i]->Render(m_Renderer);
+				m_Renderables[i]->Render(m_Renderer);
 			}
 		}
 
 	protected:
 		SDL_Renderer* m_Renderer = NULL;
-		std::vector<Sprite*> m_Sprites;
+		std::vector<Renderable2D*> m_Renderables;
 	};
 }

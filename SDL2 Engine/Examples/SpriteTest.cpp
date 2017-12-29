@@ -9,7 +9,7 @@ namespace examples {
 		//string directory = imagePath.substr(0, imagePath.find_last_of('/'));
 		//Texture* texture = new Texture(imagePath.c_str(), directory, "");
 
-		renderer = new Engine::Renderer2D(win);
+		renderer = new graphics::Renderer2D(win);
 
 		for (int i = 0; i < 210; i++ )
 		{
