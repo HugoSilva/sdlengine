@@ -22,6 +22,7 @@ namespace examples {
 		}
 
 		camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
+		shader->Enable();
 	}
 
 	SpriteTest::~SpriteTest()
@@ -35,7 +36,6 @@ namespace examples {
 
 	void SpriteTest::Render()
 	{
-		shader->Use();
 		camera->Render(*shader);
 
 		renderer->begin();

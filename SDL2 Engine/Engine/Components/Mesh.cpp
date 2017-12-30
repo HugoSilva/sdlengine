@@ -34,11 +34,11 @@ void Mesh::Draw(Shader shader)
 		}
 		number = ss.str();
 
-		glUniform1i(glGetUniformLocation(shader.Program, (name + number).c_str()), i);
+		glUniform1i(glGetUniformLocation(shader.GetShaderID(), (name + number).c_str()), i);
 		glBindTexture(GL_TEXTURE_2D, this->textures[i].GetID());
 	}
 
-	glUniform1f(glGetUniformLocation(shader.Program, "material.shininess"), 16.0f);
+	glUniform1f(glGetUniformLocation(shader.GetShaderID(), "material.shininess"), 16.0f);
 
 	glBindVertexArray(this->VAO);
 	glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);

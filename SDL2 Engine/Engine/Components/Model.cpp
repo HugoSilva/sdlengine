@@ -18,7 +18,7 @@ void Model::Render(Shader shader)
 	model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
 	model = glm::rotate(model, glm::radians(testRotation), glm::vec3(0.0f, 1.0f, 0.0f));
 
-	glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+	glUniformMatrix4fv(glGetUniformLocation(shader.GetShaderID(), "model"), 1, GL_FALSE, glm::value_ptr(model));
 
 	for (GLuint i = 0; i < this->meshes.size(); i++)
 	{
