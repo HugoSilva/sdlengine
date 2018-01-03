@@ -39,6 +39,7 @@ namespace graphics
 		SDL_Rect texr;
 
 	private:
+	protected:
 		glm::vec3 m_Position;
 		glm::vec2 m_Size;
 		glm::vec4 m_Color;

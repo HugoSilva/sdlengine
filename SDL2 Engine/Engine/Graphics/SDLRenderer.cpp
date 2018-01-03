@@ -15,23 +15,16 @@ namespace graphics
 
 	void SDLRenderer::submit(const Renderable2D* renderable)
 	{
-		m_Renderables.push_back(const_cast<Renderable2D*>(renderable));
+		const glm::vec4& color = renderable->getColor();
+
+		SDL_Rect texr = renderable->texr;
+
+		SDL_SetRenderDrawColor(m_Renderer, color.r * 255, color.g * 255, color.b * 255, color.a * 255);
+		SDL_RenderFillRect(m_Renderer, &texr);
 	}
 
 	void SDLRenderer::end()
 	{
-		int size = m_Renderables.size();
-		for (int i = 0; i < size; i++)
-		{
-			glm::vec4 color = m_Renderables[i]->getColor();
-			glm::vec3 position = m_Renderables[i]->getPosition();
-			glm::vec2 size = m_Renderables[i]->getSize();
-
-			SDL_Rect texr = m_Renderables[i]->texr;
-
-			SDL_SetRenderDrawColor(m_Renderer, color.r * 255, color.g * 255, color.b * 255, color.a * 255);
-			SDL_RenderFillRect(m_Renderer, &texr);
-		}
 	}
 
 	void SDLRenderer::flush()

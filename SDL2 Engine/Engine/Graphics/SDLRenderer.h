@@ -18,7 +18,6 @@ namespace graphics
 		void flush();
 
 	private:
-		SDL_Renderer * m_Renderer = NULL;
-		std::vector<Renderable2D*> m_Renderables;
+		SDL_Renderer* m_Renderer = NULL;
 	};
 }
