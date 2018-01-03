@@ -46,8 +46,8 @@ namespace graphics {
 
 		SDL_ShowCursor(SDL_DISABLE);
 		SDL_SetWindowGrab(window, SDL_TRUE);
-		//TODO verify the SDL_GL_SetSwapInterval setting
-		SDL_GL_SetSwapInterval(1);
+		//TODO Fix this, I had to Disabled VSync to test performance in release mode
+		SDL_GL_SetSwapInterval(0);
 
 		glViewport(0, 0, m_Width, m_Height);
 		glEnable(GL_DEPTH_TEST);
