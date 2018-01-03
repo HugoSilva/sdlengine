@@ -68,12 +68,7 @@ namespace graphics {
 		this->HandleEvents();
 		m_Scene->Update(deltaTime);
 
-		//glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 		m_Scene->Render();
-
-		//SDL_GL_SwapWindow(window);
 
 		deltaAccumulator += deltaTime;
 		frames++;

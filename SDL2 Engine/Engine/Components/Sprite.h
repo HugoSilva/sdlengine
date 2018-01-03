@@ -15,19 +15,9 @@ public:
 	void Update();
 	
 	void submit(graphics::Renderer2D* renderer) {};
-	void Render(SDL_Renderer* renderer);
-
-	void MoveTo(glm::vec3 v);
-
-	glm::vec3* GetPosition();
-	glm::vec2* GetSize();
 
 private:
-	glm::vec3 m_Position;
-	glm::vec2 m_Size;
-	glm::vec4 m_Color;
 	Texture* m_Texture;
-	SDL_Rect texr;
 };
 
 #endif
