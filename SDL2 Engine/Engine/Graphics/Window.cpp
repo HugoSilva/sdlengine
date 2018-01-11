@@ -29,7 +29,7 @@ namespace graphics {
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-		window = SDL_CreateWindow(m_Title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_Width, m_Height, SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL);
+		window = SDL_CreateWindow(m_Title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_Width, m_Height, SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 		if (window == nullptr) {
 			std::cout << "Failed to create SDL Window: " << SDL_GetError() << std::endl;
 			SDL_Quit();
@@ -44,8 +44,9 @@ namespace graphics {
 			std::cout << "Failed to initialize GLEW: " << glewGetErrorString(result) << std::endl;
 		}
 
-		SDL_ShowCursor(SDL_DISABLE);
-		SDL_SetWindowGrab(window, SDL_TRUE);
+		//TODO show cursor and window focus 
+		//SDL_ShowCursor(SDL_DISABLE);
+		//SDL_SetWindowGrab(window, SDL_TRUE);
 		//TODO Fix this, I had to Disabled VSync to test performance in release mode
 		SDL_GL_SetSwapInterval(0);
 
