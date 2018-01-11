@@ -1,23 +1,21 @@
-#ifndef SHADER_H
-#define SHADER_H
-
-#include <string>
-#include <GL/glew.h>
+#pragma once
 
 class Shader
 {
 public:
-	Shader(const GLchar *vertexPath, const GLchar *fragmentPath);
+	Shader(const char* vertexPath, const char* fragmentPath);
 
 	void Enable() const;
 	void Disable() const;
-	GLuint GetShaderID() const { return m_ShaderID; };
+
+	unsigned int Shader::getUniformLocation(const char* name);
+	void Shader::setUniform1iv(const char* name, int* value, int count);
+
+	unsigned int GetShaderID() const { return m_ShaderID; };
 
 private:
-	GLuint m_ShaderID;
+	unsigned int m_ShaderID;
 
-	const GLchar* m_VertPath;
-	const GLchar* m_FragPath;
+	const char* m_VertPath;
+	const char* m_FragPath;
 };
-
-#endif

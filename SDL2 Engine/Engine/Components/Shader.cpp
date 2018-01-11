@@ -1,7 +1,11 @@
 #include "Shader.h"
+
+#include <string>
+#include <GL/glew.h>
+
 #include "../Utils/File.h"
 
-Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
+Shader::Shader(const char* vertexPath, const char* fragmentPath)
 	:m_VertPath(vertexPath), m_FragPath(fragmentPath)
 {
 	std::string vertString = File::read(m_VertPath);
@@ -10,10 +14,10 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
 	const char* fShaderCode = fragString.c_str();
 
 	m_ShaderID = glCreateProgram();
-	GLuint vertex = glCreateShader(GL_VERTEX_SHADER);
-	GLuint fragment = glCreateShader(GL_FRAGMENT_SHADER);
-	GLint success;
-	GLchar infoLog[512];
+	unsigned int vertex = glCreateShader(GL_VERTEX_SHADER);
+	unsigned int fragment = glCreateShader(GL_FRAGMENT_SHADER);
+	int success;
+	char infoLog[512];
 
 	glShaderSource(vertex, 1, &vShaderCode, NULL);
 	glCompileShader(vertex);
@@ -65,4 +69,14 @@ void Shader::Enable() const
 void Shader::Disable() const
 {
 	glUseProgram(0);
+}
+
+unsigned int Shader::getUniformLocation(const char* name)
+{
+	return glGetUniformLocation(m_ShaderID, name);
+}
+
+void Shader::setUniform1iv(const char* name, int* value, int count)
+{
+	glUniform1iv(getUniformLocation(name), count, value);
 }
