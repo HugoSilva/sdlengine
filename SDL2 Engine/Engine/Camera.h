@@ -19,27 +19,27 @@ enum Camera_Movement
 };
 
 // Default camera values
-const GLfloat YAW = -90.0f;
-const GLfloat PITCH = 0.0f;
-const GLfloat SPEED = 10.0f;
-const GLfloat SENSITIVTY = 0.25f;
-const GLfloat ZOOM = 45.0f;
+const float YAW = -90.0f;
+const float PITCH = 0.0f;
+const float SPEED = 10.0f;
+const float SENSITIVTY = 0.25f;
+const float ZOOM = 45.0f;
 
 // An abstract camera class that processes input and calculates the corresponding Eular Angles, Vectors and Matrices for use in OpenGL
 class Camera
 {
 public:
 
-	Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), GLfloat yaw = YAW, GLfloat pitch = PITCH);
-	Camera(GLfloat posX, GLfloat posY, GLfloat posZ, GLfloat upX, GLfloat upY, GLfloat upZ, GLfloat yaw, GLfloat pitch);
+	Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH);
+	Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch);
 
 	void Update(float deltaTime);
 	void Render(Shader shader);
 	glm::mat4 GetViewMatrix();
-	void ProcessKeyboard(Camera_Movement direction, GLfloat deltaTime);
-	void ProcessMouseMovement(GLfloat xOffset, GLfloat yOffset, GLboolean constrainPitch = true);
-	void ProcessMouseScroll(GLfloat yOffset);
-	GLfloat GetZoom();
+	void ProcessKeyboard(Camera_Movement direction, float deltaTime);
+	void ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch = true);
+	void ProcessMouseScroll(float yOffset);
+	float GetZoom();
 	glm::vec3 GetPosition();
 	glm::vec3 GetFront();
 
@@ -52,12 +52,12 @@ private:
 
 	glm::mat4 projection;
 
-	GLfloat yaw;
-	GLfloat pitch;
+	float yaw;
+	float pitch;
 
-	GLfloat movementSpeed;
-	GLfloat mouseSensitivity;
-	GLfloat zoom;
+	float movementSpeed;
+	float mouseSensitivity;
+	float zoom;
 
 	void updateCameraVectors();
 };

@@ -1,6 +1,6 @@
 #include "Camera.h"
 
-Camera::Camera(glm::vec3 position, glm::vec3 up, GLfloat yaw, GLfloat pitch) : front(glm::vec3(0.0f, 0.0f, -1.0f)), movementSpeed(SPEED), mouseSensitivity(SENSITIVTY), zoom(ZOOM)
+Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch) : front(glm::vec3(0.0f, 0.0f, -1.0f)), movementSpeed(SPEED), mouseSensitivity(SENSITIVTY), zoom(ZOOM)
 {
 	this->position = position;
 	this->worldUp = up;
@@ -12,7 +12,7 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, GLfloat yaw, GLfloat pitch) : f
 	projection = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f, -1.0f, 1.0f);
 }
 
-Camera::Camera(GLfloat posX, GLfloat posY, GLfloat posZ, GLfloat upX, GLfloat upY, GLfloat upZ, GLfloat yaw, GLfloat pitch) : front(glm::vec3(0.0f, 0.0f, -1.0f)), movementSpeed(SPEED), mouseSensitivity(SENSITIVTY), zoom(ZOOM)
+Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : front(glm::vec3(0.0f, 0.0f, -1.0f)), movementSpeed(SPEED), mouseSensitivity(SENSITIVTY), zoom(ZOOM)
 {
 	this->position = glm::vec3(posX, posY, posZ);
 	this->worldUp = glm::vec3(upX, upY, upZ);
@@ -56,8 +56,8 @@ void Camera::Update(float deltaTime)
 	//	firstMouse = false;
 	//}
 
-	//GLfloat xOffset = xPos - lastX;
-	//GLfloat yOffset = lastY - yPos;  // Reversed since y-coordinates go from bottom to left
+	//float xOffset = xPos - lastX;
+	//float yOffset = lastY - yPos;  // Reversed since y-coordinates go from bottom to left
 
 	//lastX = xPos;
 	//lastY = yPos;
@@ -68,7 +68,7 @@ void Camera::Update(float deltaTime)
 void Camera::Render(Shader shader)
 {
 	glm::mat4 view = GetViewMatrix();
-	glUniformMatrix4fv(glGetUniformLocation(shader.GetShaderID(), "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+	shader.setUniformMat4("projection", glm::value_ptr(projection));
 	//glUniformMatrix4fv(glGetUniformLocation(shader.GetShaderID(), "view"), 1, GL_FALSE, glm::value_ptr(view));
 }
 
@@ -77,9 +77,9 @@ glm::mat4 Camera::GetViewMatrix()
 	return glm::lookAt(this->position, this->position + this->front, this->up);
 }
 
-void Camera::ProcessKeyboard(Camera_Movement direction, GLfloat deltaTime)
+void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
 {
-	GLfloat velocity = this->movementSpeed * deltaTime;
+	float velocity = this->movementSpeed * deltaTime;
 
 	if (direction == FORWARD)
 	{
@@ -102,7 +102,7 @@ void Camera::ProcessKeyboard(Camera_Movement direction, GLfloat deltaTime)
 	}
 }
 
-void Camera::ProcessMouseMovement(GLfloat xOffset, GLfloat yOffset, GLboolean constrainPitch)
+void Camera::ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch)
 {
 	xOffset *= this->mouseSensitivity;
 	yOffset *= this->mouseSensitivity;
@@ -126,12 +126,12 @@ void Camera::ProcessMouseMovement(GLfloat xOffset, GLfloat yOffset, GLboolean co
 	this->updateCameraVectors();
 }
 
-void Camera::ProcessMouseScroll(GLfloat yOffset)
+void Camera::ProcessMouseScroll(float yOffset)
 {
 
 }
 
-GLfloat Camera::GetZoom()
+float Camera::GetZoom()
 {
 	return this->zoom;
 }
