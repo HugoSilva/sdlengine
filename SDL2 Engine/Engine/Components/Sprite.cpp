@@ -1,8 +1,6 @@
 #include "Sprite.h"
 
-using namespace std;
-
-Sprite::Sprite(glm::vec3 position, glm::vec2 size, glm::vec4 color)
+Sprite::Sprite(glm::vec3 position, glm::vec2 size, unsigned int color)
 	: Renderable2D(position, size, color)
 {
 	texr.x = m_Position.x;
@@ -12,11 +10,7 @@ Sprite::Sprite(glm::vec3 position, glm::vec2 size, glm::vec4 color)
 }
 
 Sprite::Sprite(glm::vec3 position, glm::vec2 size, Texture* texture)
-	: Renderable2D(position, size, glm::vec4(1))
+	: Renderable2D(position, size, 0)
 {
 	m_Texture = texture;
-}
-
-void Sprite::Update()
-{
 }

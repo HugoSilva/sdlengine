@@ -15,11 +15,11 @@ namespace graphics
 
 	void SDLRenderer::submit(const Renderable2D* renderable)
 	{
-		const glm::vec4& color = renderable->getColor();
+		const unsigned int& color = renderable->getColor();
 
 		SDL_Rect texr = renderable->texr;
 
-		SDL_SetRenderDrawColor(m_Renderer, color.r * 255, color.g * 255, color.b * 255, color.a * 255);
+		SDL_SetRenderDrawColor(m_Renderer, color, color >> 8, color >> 16, color >> 24);
 		SDL_RenderFillRect(m_Renderer, &texr);
 	}
 

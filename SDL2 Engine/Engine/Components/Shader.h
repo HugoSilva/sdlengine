@@ -10,6 +10,7 @@ public:
 
 	unsigned int Shader::getUniformLocation(const char* name);
 	void Shader::setUniform1iv(const char* name, int* value, int count);
+	void Shader::setUniformMat4(const char* name, const float* matrix);
 
 	unsigned int GetShaderID() const { return m_ShaderID; };
 

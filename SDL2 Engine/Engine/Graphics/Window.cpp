@@ -1,5 +1,7 @@
 #include "Window.h"
 
+#include <GL/glew.h>
+
 namespace graphics {
 
 	Window::Window(const char *title, int width, int height)

@@ -19,7 +19,7 @@ namespace graphics
 	class Renderable2D
 	{
 	public:
-		Renderable2D(glm::vec3 position, glm::vec2 size, glm::vec4 color)
+		Renderable2D(glm::vec3 position, glm::vec2 size, unsigned int color)
 			: m_Position(position), m_Size(size), m_Color(color)
 		{
 		}
@@ -35,13 +35,13 @@ namespace graphics
 
 		inline const glm::vec3& getPosition() const { return m_Position; }
 		inline const glm::vec2& getSize() const { return m_Size; }
-		inline const glm::vec4& getColor() const { return m_Color; }
+		inline const unsigned int& getColor() const { return m_Color; }
 		SDL_Rect texr;
 
 	private:
 	protected:
 		glm::vec3 m_Position;
 		glm::vec2 m_Size;
-		glm::vec4 m_Color;
+		unsigned int m_Color;
 	};
 }

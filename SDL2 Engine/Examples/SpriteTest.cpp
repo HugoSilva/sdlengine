@@ -12,12 +12,17 @@ namespace examples {
 		//renderer = new graphics::SDLRenderer(win);
 		renderer = new graphics::OpenGLRenderer(win);
 
-		for (int i = 0; i < 210; i++ )
+		for (int i = 0; i < 32; i++ )
 		{
-			for (int j = 0; j < 119; j++)
+			for (int j = 0; j < 18; j++)
 			{
-				float randNum = rand() % 1000 / 1000.0f;
-				Sprite* iter = new Sprite(glm::vec3(i*6, j*6, 0), glm::vec2(5, 5), glm::vec4(randNum/1.1f, 0.9f, randNum, 1));
+				int r = rand() % 200;
+				int g = rand() % 256;
+				int b = rand() % 210;
+
+				unsigned int color = 0xff << 24 | b << 16 | g << 8 | r;
+
+				Sprite* iter = new Sprite(glm::vec3(i*40, j*40, 0), glm::vec2(40, 40), color);
 				m_Renderables.push_back(iter);
 			}
 		}
