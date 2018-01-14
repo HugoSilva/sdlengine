@@ -1,7 +1,5 @@
 #pragma once
 
-#include <SDL.h>
-
 namespace graphics
 {
 	class Renderable2D;
