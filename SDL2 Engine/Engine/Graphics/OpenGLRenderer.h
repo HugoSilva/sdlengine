@@ -37,5 +37,6 @@ namespace graphics
 		VertexData* m_Buffer;
 		IndexBuffer* m_IBO;
 		SDL_Window* m_Window;
+		std::vector<unsigned int> m_TextureSlots;
 	};
 }

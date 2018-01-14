@@ -4,6 +4,7 @@
 #include "Shader.h"
 
 #include <GL/glew.h>
+#pragma comment(lib, "opengl32.lib")
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <assimp/Importer.hpp>

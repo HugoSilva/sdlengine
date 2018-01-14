@@ -141,7 +141,7 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
 
 		for (GLuint j = 0; j < textures_loaded.size(); j++)
 		{
-			if (textures_loaded[j].GetPath() == str)
+			//if (textures_loaded[j].GetPath().c_str() == str.C_Str())
 			{
 				textures.push_back(textures_loaded[j]);
 				skip = true; // A texture with the same filepath has already been loaded, continue to next one. (optimization)
@@ -152,7 +152,7 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
 
 		if (!skip)
 		{   // If texture hasn't been loaded already, load it
-			Texture custom(str.C_Str(), this->directory, typeName);
+			Texture custom(str.C_Str());
 			textures.push_back(custom);
 
 			this->textures_loaded.push_back(custom);  // Store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.

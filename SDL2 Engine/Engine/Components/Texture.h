@@ -1,36 +1,25 @@
-#ifndef TEXTURE
-#define TEXTURE
+#pragma once
 
-#include <assimp/Importer.hpp>
-#include "SOIL.h"
+#include <SDL2_image\SDL_image.h>
 
-#include <iostream>
 #include <string>
 #include <GL/glew.h>
-#pragma comment(lib, "opengl32.lib")
-
-using namespace std;
 
 class Texture
 {
 public:
-	Texture();
-	Texture(int _id);
-	Texture(const char *path, string directory, string type);
+	Texture(const std::string pathname);
+	~Texture();
 
-	int GetID();
-	string GetType();
-	aiString GetPath();
-	int GetWidth();
-	int GetHeight();
+	void bind() const;
+	void unbind() const;
+
+	inline const unsigned int getID() const { return m_Id; }
+	inline const unsigned int getWidth() const { return m_Width; }
+	inline const unsigned int getHeight() const { return m_Height; }
 
 private:
-	GLuint id;
-	string type;
-	aiString path;
-
-	int width;
-	int height;
+	unsigned int m_Id;
+	std::string m_Filename;
+	int m_Width, m_Height;
 };
-
-#endif

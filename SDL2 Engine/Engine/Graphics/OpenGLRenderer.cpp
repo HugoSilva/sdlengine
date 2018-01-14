@@ -60,9 +60,34 @@ namespace graphics
 		const glm::vec2& size = renderable->getSize();
 		const unsigned int& color = renderable->getColor();
 		const std::vector<glm::vec2>& uv = renderable->getUV();
-
+		const unsigned int tid = renderable->getTId();
 
 		float ts = 0.0f;
+		if (tid > 0)
+		{
+			bool found = false;
+			for (int i = 0; i < m_TextureSlots.size(); i++)
+			{
+				if (m_TextureSlots[i] == tid)
+				{
+					ts = (float)(i + 1);
+					found = true;
+					break;
+				}
+			}
+
+			if (!found)
+			{
+				if (m_TextureSlots.size() >= 32)
+				{
+					end();
+					flush();
+					begin();
+				}
+				m_TextureSlots.push_back(tid);
+				ts = (float)(m_TextureSlots.size());
+			}
+		}
 
 		m_Buffer->vertex = position;
 		m_Buffer->uv = uv[0];
@@ -99,6 +124,12 @@ namespace graphics
 
 	void OpenGLRenderer::flush()
 	{
+		for (int i = 0; i < m_TextureSlots.size(); i++)
+		{
+			glActiveTexture(GL_TEXTURE0 + i);
+			glBindTexture(GL_TEXTURE_2D, m_TextureSlots[i]);
+		}
+
 		glBindVertexArray(m_VAO);
 		m_IBO->bind();
 
