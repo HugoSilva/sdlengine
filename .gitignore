@@ -252,4 +252,3 @@ paket-files/
 *.sln.iml
 
 /SDL2 Engine/Assets/Models
-/SDL2 Engine/Libs
