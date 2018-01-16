@@ -75,13 +75,13 @@
     <IncludePath>$(SolutionDir)$(ProjectName)\Libs\include\SDL2;$(SolutionDir)$(ProjectName)\Libs\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)bin\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)inter\$(Configuration)\$(Platform)\</IntDir>
-    <LibraryPath>$(SolutionDir)$(ProjectName)\Libs\lib\SDL2\$(Platform)\;$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_image\$(Platform)\;$(SolutionDir)$(ProjectName)\Libs\lib\glew\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)$(ProjectName)\Libs\lib\SDL2\$(Platform)\;$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_image\$(Platform)\;$(SolutionDir)$(ProjectName)\Libs\lib\glew\$(Platform)\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)inter\$(Configuration)\$(Platform)\</IntDir>
-    <LibraryPath>$(SolutionDir)$(ProjectName)\Libs\lib\SDL2\$(Platform)\;$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_image\$(Platform)\;$(SolutionDir)$(ProjectName)\Libs\lib\glew\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)$(ProjectName)\Libs\lib\SDL2\$(Platform)\;$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_image\$(Platform)\;$(SolutionDir)$(ProjectName)\Libs\lib\glew\$(Platform)\;$(LibraryPath)</LibraryPath>
     <IncludePath>$(SolutionDir)$(ProjectName)\Libs\include\SDL2;$(SolutionDir)$(ProjectName)\Libs\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -89,13 +89,13 @@
     <IncludePath>$(SolutionDir)$(ProjectName)\Libs\include\SDL2;$(SolutionDir)$(ProjectName)\Libs\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)bin\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)inter\$(Configuration)\$(Platform)\</IntDir>
-    <LibraryPath>$(SolutionDir)$(ProjectName)\Libs\lib\SDL2\$(Platform)\;$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_image\$(Platform)\;$(SolutionDir)$(ProjectName)\Libs\lib\glew\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)$(ProjectName)\Libs\lib\SDL2\$(Platform)\;$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_image\$(Platform)\;$(SolutionDir)$(ProjectName)\Libs\lib\glew\$(Platform)\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)inter\$(Configuration)\$(Platform)\</IntDir>
-    <LibraryPath>$(SolutionDir)$(ProjectName)\Libs\lib\SDL2\$(Platform)\;$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_image\$(Platform)\;$(SolutionDir)$(ProjectName)\Libs\lib\glew\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)$(ProjectName)\Libs\lib\SDL2\$(Platform)\;$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_image\$(Platform)\;$(SolutionDir)$(ProjectName)\Libs\lib\glew\$(Platform)\;$(LibraryPath)</LibraryPath>
     <IncludePath>$(SolutionDir)$(ProjectName)\Libs\include\SDL2;$(SolutionDir)$(ProjectName)\Libs\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -114,7 +114,7 @@
       <AdditionalDependencies>glew32.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)$(ProjectName)\Libs\lib\glew\*.dll"  "$(TargetDir)"
+      <Command>copy "$(SolutionDir)$(ProjectName)\Libs\lib\glew\$(Platform)\*.dll"  "$(TargetDir)"
 copy "$(SolutionDir)$(ProjectName)\Libs\lib\SDL2\$(Platform)\*.dll"  "$(TargetDir)"
 copy "$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_Image\$(Platform)\*.dll"  "$(TargetDir)"</Command>
     </PostBuildEvent>
@@ -134,7 +134,7 @@ copy "$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_Image\$(Platform)\*.dll"  "$(Ta
       <AdditionalDependencies>glew32.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)$(ProjectName)\Libs\lib\glew\*.dll"  "$(TargetDir)"
+      <Command>copy "$(SolutionDir)$(ProjectName)\Libs\lib\glew\$(Platform)\*.dll"  "$(TargetDir)"
 copy "$(SolutionDir)$(ProjectName)\Libs\lib\SDL2\$(Platform)\*.dll"  "$(TargetDir)"
 copy "$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_Image\$(Platform)\*.dll"  "$(TargetDir)"</Command>
     </PostBuildEvent>
@@ -162,7 +162,7 @@ copy "$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_Image\$(Platform)\*.dll"  "$(Ta
       <AdditionalDependencies>glew32.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)$(ProjectName)\Libs\lib\glew\*.dll"  "$(TargetDir)"
+      <Command>copy "$(SolutionDir)$(ProjectName)\Libs\lib\glew\$(Platform)\*.dll"  "$(TargetDir)"
 copy "$(SolutionDir)$(ProjectName)\Libs\lib\SDL2\$(Platform)\*.dll"  "$(TargetDir)"
 copy "$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_Image\$(Platform)\*.dll"  "$(TargetDir)"</Command>
     </PostBuildEvent>
@@ -186,7 +186,7 @@ copy "$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_Image\$(Platform)\*.dll"  "$(Ta
       <AdditionalDependencies>glew32.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)$(ProjectName)\Libs\lib\glew\*.dll"  "$(TargetDir)"
+      <Command>copy "$(SolutionDir)$(ProjectName)\Libs\lib\glew\$(Platform)\*.dll"  "$(TargetDir)"
 copy "$(SolutionDir)$(ProjectName)\Libs\lib\SDL2\$(Platform)\*.dll"  "$(TargetDir)"
 copy "$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_Image\$(Platform)\*.dll"  "$(TargetDir)"</Command>
     </PostBuildEvent>
