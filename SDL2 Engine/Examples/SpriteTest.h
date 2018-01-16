@@ -8,6 +8,7 @@
 #include "../Engine/Graphics/SDLRenderer.h"
 #include "../Engine/Graphics/OpenGLRenderer.h"
 #include <SDL.h>
+#include <SDL2_mixer\SDL_mixer.h>
 
 namespace examples {
 
@@ -27,5 +28,8 @@ namespace examples {
 		Camera* camera;
 		graphics::Renderer2D* renderer;
 		std::vector<graphics::Renderable2D*> m_Renderables;
+
+		Mix_Chunk *wave = NULL;
+		Mix_Music *music = NULL;
 	};
 }
