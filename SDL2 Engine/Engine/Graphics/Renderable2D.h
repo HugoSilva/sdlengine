@@ -45,10 +45,10 @@ namespace graphics
 	private:
 		void setUVDefaults()
 		{
-			m_UV.push_back(glm::vec2(0, 0));
 			m_UV.push_back(glm::vec2(0, 1));
-			m_UV.push_back(glm::vec2(1, 1));
+			m_UV.push_back(glm::vec2(0, 0));
 			m_UV.push_back(glm::vec2(1, 0));
+			m_UV.push_back(glm::vec2(1, 1));
 		}
 
 	protected:

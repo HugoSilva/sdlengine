@@ -1,79 +1,46 @@
 #include "Texture.h"
 
-int NearestPowerOf2(int n)
-{
-	if (!n) return n;
-	int x = 1;
-	while (x < n)
-	{
-		x <<= 1;
-	}
-	return x;
-}
-
 void* LoadImage(const char* filename, int* width, int* height, int* mode)
 {
 	int imgFlags = IMG_INIT_PNG;
 	if (!(IMG_Init(imgFlags) & imgFlags)) {
-		printf("SDL_image could not initialize. SDL_image Error: %s\n", IMG_GetError());
-		return false;
+		std::string imageError("SDL_image Error : %s\n", IMG_GetError());
+		Logger::error("SDL_image could not initialize. " + imageError);
+
+		return nullptr;
 	}
 
 	SDL_Surface* surface = IMG_Load(filename);
 
-	SDL_Surface* resizedSurface = NULL;
-
-	int newWidth = NearestPowerOf2(surface->w);
-	int newHeight = NearestPowerOf2(surface->h);
-
-	int bpp;
-	Uint32 Rmask, Gmask, Bmask, Amask;
-
-	SDL_PixelFormatEnumToMasks(
-		SDL_PIXELFORMAT_ABGR8888, &bpp,
-		&Rmask, &Gmask, &Bmask, &Amask
-	);
-
-	resizedSurface = SDL_CreateRGBSurface(0, newWidth, newHeight, bpp,
-		Rmask, Gmask, Bmask, Amask
-	);
-
-	SDL_Rect area;
-
-	area.x = 0;
-	area.y = 0;
-	area.w = surface->w;
-	area.h = surface->h;
-
-	SDL_SetSurfaceAlphaMod(surface, 0xFF);
-	SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
-	SDL_BlitSurface(surface, &area, resizedSurface, &area);
-
-	bool lock = SDL_MUSTLOCK(resizedSurface);
-	if (lock)
-		SDL_LockSurface(resizedSurface);  // should check that return value == 0
-								   // access pixel data, e.g. call glTexImage2D
-	if (lock)
-		SDL_UnlockSurface(resizedSurface);
-
-	//glTexImage2D(GL_TEXTURE_2D, 0, Mode, resizedSurface->w, resizedSurface->h, 0, Mode, GL_UNSIGNED_BYTE, resizedSurface->pixels);
-
-	if (resizedSurface->format->BytesPerPixel == 4) {
-		*mode = GL_RGBA;
-	}
-
-	*width = resizedSurface->w;
-	*height = resizedSurface->h;
-
-	return resizedSurface->pixels;
-
-	SDL_FreeSurface(resizedSurface);
-	SDL_FreeSurface(surface);
-
 	if (surface == NULL)
 	{
-		//throw Exception("ResourceManager::texture(name) - cannot load texture from file " + filename + ": " + IMG_GetError());
+		Logger::error("Cannot load texture from file: " + (std::string)filename);
+		return nullptr;
 	}
+
+	unsigned int bpp = surface->format->BytesPerPixel;
+
+	if (bpp == 4)
+	{
+		if (surface->format->Rmask == 0x000000ff)
+			*mode = GL_RGBA;
+		else
+			*mode = GL_BGRA;
+	}
+	else if (bpp == 3)
+	{
+		if (surface->format->Rmask == 0x000000ff)
+			*mode = GL_RGB;
+		else
+			*mode = GL_BGR;
+	}
+
+	*width = surface->w;
+	*height = surface->h;
+
+	SDL_FreeSurface(surface);
+
+	return surface->pixels;
 }
 
 Texture::Texture(std::string pathname)
