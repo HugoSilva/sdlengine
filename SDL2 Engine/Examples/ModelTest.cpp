@@ -21,7 +21,7 @@ namespace examples {
 
 	void ModelTest::Render()
 	{
-		shader->Use();
+		shader->Enable();
 		camera->Render(*shader);
 		testModel->Render(*shader);
 	}

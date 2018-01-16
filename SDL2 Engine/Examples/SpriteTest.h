@@ -5,7 +5,8 @@
 #include "../Engine/Components/Texture.h"
 #include "../Engine/Components/Sprite.h"
 #include "../Engine/Camera.h"
-#include "../Engine/Renderer2D.h"
+#include "../Engine/Graphics/SDLRenderer.h"
+#include "../Engine/Graphics/OpenGLRenderer.h"
 #include <SDL.h>
 
 namespace examples {
@@ -22,8 +23,9 @@ namespace examples {
 
 	private:
 		Shader* shader;
-		Texture* testTexture;
+		Texture* testTexture[4];
 		Camera* camera;
-		Engine::Renderer2D* renderer;
+		graphics::Renderer2D* renderer;
+		std::vector<graphics::Renderable2D*> m_Renderables;
 	};
 }

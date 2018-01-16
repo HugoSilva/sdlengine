@@ -1,5 +1,7 @@
 #include "Window.h"
 
+#include <GL/glew.h>
+
 namespace graphics {
 
 	Window::Window(const char *title, int width, int height)
@@ -29,7 +31,7 @@ namespace graphics {
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-		window = SDL_CreateWindow(m_Title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_Width, m_Height, SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL);
+		window = SDL_CreateWindow(m_Title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_Width, m_Height, SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 		if (window == nullptr) {
 			std::cout << "Failed to create SDL Window: " << SDL_GetError() << std::endl;
 			SDL_Quit();
@@ -44,14 +46,18 @@ namespace graphics {
 			std::cout << "Failed to initialize GLEW: " << glewGetErrorString(result) << std::endl;
 		}
 
-		SDL_ShowCursor(SDL_DISABLE);
-		SDL_SetWindowGrab(window, SDL_TRUE);
-		//TODO verify the SDL_GL_SetSwapInterval setting
-		SDL_GL_SetSwapInterval(1);
+		//TODO show cursor and window focus 
+		//SDL_ShowCursor(SDL_DISABLE);
+		//SDL_SetWindowGrab(window, SDL_TRUE);
+		//TODO Fix this, I had to Disabled VSync to test performance in release mode
+		SDL_GL_SetSwapInterval(0);
 
 		glViewport(0, 0, m_Width, m_Height);
 		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LEQUAL);
+		glDepthFunc(GL_LEQUAL); 
+		
+		//glEnable(GL_BLEND);
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		m_Input = new Input();
 
@@ -68,12 +74,7 @@ namespace graphics {
 		this->HandleEvents();
 		m_Scene->Update(deltaTime);
 
-		//glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 		m_Scene->Render();
-
-		//SDL_GL_SwapWindow(window);
 
 		deltaAccumulator += deltaTime;
 		frames++;

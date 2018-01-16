@@ -1,5 +1,4 @@
-#ifndef LOGGER
-#define LOGGER
+#pragma once
 
 #include <iostream>
 #include <fstream>
@@ -16,5 +15,3 @@ private:
 	static std::string errorPrefix;
 	static std::string warningPrefix;
 };
-
-#endif //LOGGER

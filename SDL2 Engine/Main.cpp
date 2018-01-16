@@ -1,6 +1,6 @@
 #include "Engine/Graphics/Window.h"
-#include "Engine/Logger.h"
-#include "Examples/ModelTest.h"
+#include "Engine/Utils/Logger.h"
+//#include "Examples/ModelTest.h"
 #include "Examples/SpriteTest.h"
 
 #include <iostream>

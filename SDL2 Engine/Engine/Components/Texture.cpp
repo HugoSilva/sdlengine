@@ -1,70 +1,79 @@
 #include "Texture.h"
 
-Texture::Texture()
+void* LoadImage(const char* filename, int* width, int* height, int* mode)
 {
-	id = -1;
-}
+	int imgFlags = IMG_INIT_PNG;
+	if (!(IMG_Init(imgFlags) & imgFlags)) {
+		std::string imageError("SDL_image Error : %s\n", IMG_GetError());
+		Logger::error("SDL_image could not initialize. " + imageError);
 
-Texture::Texture(int _id)
-{
-	id = _id;
-	if (id < 0)
-	{
-		cout << "Error loading image with ID: " << id << endl;
+		return nullptr;
 	}
+
+	SDL_Surface* surface = IMG_Load(filename);
+
+	if (surface == NULL)
+	{
+		Logger::error("Cannot load texture from file: " + (std::string)filename);
+		return nullptr;
+	}
+
+	unsigned int bpp = surface->format->BytesPerPixel;
+
+	if (bpp == 4)
+	{
+		if (surface->format->Rmask == 0x000000ff)
+			*mode = GL_RGBA;
+		else
+			*mode = GL_BGRA;
+	}
+	else if (bpp == 3)
+	{
+		if (surface->format->Rmask == 0x000000ff)
+			*mode = GL_RGB;
+		else
+			*mode = GL_BGR;
+	}
+
+	*width = surface->w;
+	*height = surface->h;
+
+	SDL_FreeSurface(surface);
+
+	return surface->pixels;
 }
 
-Texture::Texture(const char *path, string directory, string type)
+Texture::Texture(std::string pathname)
+	:m_Filename(pathname)
 {
-	//Generate texture ID and load texture data
-	string filename = string(path);
-	filename = directory + '/' + filename;
-	GLuint textureID;
-	glGenTextures(1, &textureID);
+	int Mode = GL_RGB;
+	void* pixels = LoadImage(m_Filename.c_str(), &m_Width, &m_Height, &Mode);
 
-	int width, height;
+	unsigned int result;
+	glGenTextures(1, &result);
+	glBindTexture(GL_TEXTURE_2D, result);
 
-	unsigned char *image = SOIL_load_image(filename.c_str(), &width, &height, 0, SOIL_LOAD_RGB);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	// Assign texture to ID
-	glBindTexture(GL_TEXTURE_2D, textureID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glGenerateMipmap(GL_TEXTURE_2D);
+	glTexImage2D(GL_TEXTURE_2D, 0, Mode, m_Width, m_Height, 0, Mode, GL_UNSIGNED_BYTE, pixels);
 
-	// Parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	SOIL_free_image_data(image);
 
-	this->id = textureID;
-	this->type = type;
-	this->path = path;
+	m_Id = result;
 }
 
-int Texture::GetID()
+Texture::~Texture()
 {
-	return id;
+
 }
 
-string Texture::GetType()
+void Texture::bind() const
 {
-	return type;
+	glBindTexture(GL_TEXTURE_2D, m_Id);
 }
 
-aiString Texture::GetPath()
+void Texture::unbind() const
 {
-	return path;
-}
-
-int Texture::GetWidth()
-{
-	return width;
-}
-
-int Texture::GetHeight()
-{
-	return height;
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
