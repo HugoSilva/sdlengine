@@ -10,7 +10,7 @@ Sprite::Sprite(glm::vec3 position, glm::vec2 size, unsigned int color)
 }
 
 Sprite::Sprite(glm::vec3 position, glm::vec2 size, Texture* texture)
-	: Renderable2D(position, size, 0)
+	: Renderable2D(position, size, 0xffffffff)
 {
 	m_Texture = texture;
 }
