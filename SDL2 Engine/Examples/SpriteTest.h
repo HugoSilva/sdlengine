@@ -23,7 +23,7 @@ namespace examples {
 
 	private:
 		Shader* shader;
-		Texture* testTexture;
+		Texture* testTexture[4];
 		Camera* camera;
 		graphics::Renderer2D* renderer;
 		std::vector<graphics::Renderable2D*> m_Renderables;
