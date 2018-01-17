@@ -4,8 +4,8 @@ namespace examples {
 
 	SpriteTest::SpriteTest(SDL_Window* win)
 	{
-		if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) == -1)
-			return;
+		audio::SoundManager::add(new audio::Sound("eff", "effect.wav"));
+		//m_Music = Mix_LoadMUS("background.ogg");
 
 		shader = new Shader("Assets/Shaders/Default.vs", "Assets/Shaders/Default.frag");
 
@@ -41,33 +41,12 @@ namespace examples {
 		shader->Enable();
 		shader->setUniform1iv("textures", texIDs, 4);
 
+		audio::SoundManager::get("eff")->play();
 		camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
-
-		wave = Mix_LoadWAV("effect.wav");
-		if (wave == NULL)
-			return;
-
-		music = Mix_LoadMUS("background.ogg");
-		if (music == NULL)
-			return;
-
-		if (Mix_PlayChannel(-1, wave, 0) == -1)
-			return;
-
-		if (Mix_PlayMusic(music, -1) == -1)
-			return;
-
-		//while (Mix_PlayingMusic());
 	}
 
 	SpriteTest::~SpriteTest()
 	{
-		// clean up our resources
-		Mix_FreeChunk(wave);
-		Mix_FreeMusic(music);
-
-		// quit SDL_mixer
-		Mix_CloseAudio();
 	}
 
 	void SpriteTest::Update(float deltaTime)
