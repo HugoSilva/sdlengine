@@ -4,8 +4,8 @@ void* LoadImage(const char* filename, int* width, int* height, int* mode)
 {
 	int imgFlags = IMG_INIT_PNG;
 	if (!(IMG_Init(imgFlags) & imgFlags)) {
-		std::string imageError("SDL_image Error : %s\n", IMG_GetError());
-		Logger::error("SDL_image could not initialize. " + imageError);
+		std::string imageError("error: %s\n", IMG_GetError());
+		Logger::error("SDL_image could not initialize, " + imageError);
 
 		return nullptr;
 	}

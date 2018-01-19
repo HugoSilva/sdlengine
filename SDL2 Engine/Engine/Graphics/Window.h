@@ -4,6 +4,7 @@
 #include <SDL.h>
 #include "../Scene.h"
 #include "../Input.h"
+#include "../Audio/SoundManager.h"
 
 namespace graphics {
 

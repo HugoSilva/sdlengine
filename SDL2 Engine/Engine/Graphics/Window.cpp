@@ -12,6 +12,8 @@ namespace graphics {
 
 	Window::~Window()
 	{
+		audio::SoundManager::clean();
+
 		SDL_DestroyWindow(window);
 		SDL_Quit();
 	}
@@ -45,6 +47,8 @@ namespace graphics {
 		{
 			std::cout << "Failed to initialize GLEW: " << glewGetErrorString(result) << std::endl;
 		}
+
+		audio::SoundManager::init();
 
 		//TODO show cursor and window focus 
 		//SDL_ShowCursor(SDL_DISABLE);
