@@ -7,6 +7,8 @@
 #include "../Engine/Camera.h"
 #include "../Engine/Graphics/SDLRenderer.h"
 #include "../Engine/Graphics/OpenGLRenderer.h"
+#include "../Engine/Audio/Sound.h"
+#include "../Engine/Audio/SoundManager.h"
 #include <SDL.h>
 
 namespace examples {
