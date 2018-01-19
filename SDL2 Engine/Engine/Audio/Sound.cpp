@@ -3,85 +3,56 @@
 namespace audio {
 
 	Sound::Sound(const std::string& name, const std::string& filename)
-		: m_Name(name), m_Filename(filename), m_Playing(false)
+		: m_Name(name), m_Filename(filename)
 	{
-		//m_Wave = Mix_LoadWAV(filename.c_str());
-		//if (m_Wave == nullptr)
-		//{
-		//	//log error
-		//	return;
-		//}
-
-		m_Music = Mix_LoadMUS(filename.c_str());
-		if (m_Music == nullptr)
+		m_Sound = Mix_LoadWAV(filename.c_str());
+		if (m_Sound == nullptr)
 		{
-			//log error
-			return;
+			Logger::error("SDL_mixer could not load filename " + m_Filename);
 		}
 	}
 
 	Sound::~Sound()
 	{
-		//Mix_FreeChunk(m_Wave);
-		Mix_FreeMusic(m_Music);
+		Mix_FreeChunk(m_Sound);
 	}
 
 	void Sound::play()
 	{
-		//if (Mix_PlayChannel(-1, m_Wave, 0) == -1)
-		if (Mix_PlayMusic(m_Music, 0) == -1)
+		m_Channel = Mix_PlayChannel(-1, m_Sound, 0);
+		if (m_Channel == -1)
 		{
-			//log error
+			Logger::error("SDL_mixer could not play filename " + m_Filename);
 		}
-		m_Playing = true;
 	}
 
 	void Sound::loop()
 	{
-		if (Mix_PlayMusic(m_Music, -1) == -1)
+		m_Channel = Mix_PlayChannel(-1, m_Sound, 0);
+		if (m_Channel == -1)
 		{
-			//log error
+			Logger::error("SDL_mixer could not loop filename " + m_Filename);
 		}
-		m_Playing = true;
 	}
 
 	void Sound::resume()
 	{
-		if (m_Playing)
-			return;
-
-		m_Playing = true;
-
-		//Mix_Resume
-		Mix_ResumeMusic();
+		Mix_Resume(m_Channel);
 	}
 
 	void Sound::pause()
 	{
-		if (!m_Playing)
-			return;
-
-		m_Playing = false;
-		Mix_PauseMusic();
+		Mix_Pause(m_Channel);
 	}
 
 	void Sound::stop()
 	{
-		if (!m_Playing)
-			return;
-
-		m_Playing = false;
-		Mix_HaltChannel(-1);
+		Mix_HaltChannel(m_Channel);
 	}
 
-	void Sound::setGain(float gain)
+	void Sound::setVolume(int volume)
 	{
-		if (!m_Playing)
-		{
-			//log Cannot set gain! Sound is not currently playing
-			return;
-		}
-		m_Gain = gain;
-		Mix_VolumeChunk(m_Wave, m_Gain);
+		m_Volume = volume;
+		Mix_VolumeChunk(m_Sound, m_Volume);
 	}
 }

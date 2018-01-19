@@ -196,6 +196,7 @@ copy "$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_mixer\$(Platform)\*.dll"  "$(Ta
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\Audio\Music.cpp" />
     <ClCompile Include="Engine\Audio\Sound.cpp" />
     <ClCompile Include="Engine\Audio\SoundManager.cpp" />
     <ClCompile Include="Engine\Camera.cpp" />
@@ -217,6 +218,7 @@ copy "$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_mixer\$(Platform)\*.dll"  "$(Ta
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\Audio\Music.h" />
     <ClInclude Include="Engine\Audio\Sound.h" />
     <ClInclude Include="Engine\Audio\SoundManager.h" />
     <ClInclude Include="Engine\Camera.h" />
