@@ -28,7 +28,7 @@ namespace audio {
 
 	void Sound::loop()
 	{
-		m_Channel = Mix_PlayChannel(-1, m_Sound, 0);
+		m_Channel = Mix_PlayChannel(-1, m_Sound, -1);
 		if (m_Channel == -1)
 		{
 			Logger::error("SDL_mixer could not loop filename " + m_Filename);

@@ -3,7 +3,9 @@
 #include <vector>
 #include <SDL2_mixer\SDL_mixer.h>
 
-#include "sound.h"
+#include "Sound.h"
+#include "Music.h"
+#include "../Utils/Logger.h"
 
 namespace audio {
 
@@ -12,13 +14,14 @@ namespace audio {
 	public:
 		static void init();
 		static void add(Sound* sound);
-		static Sound* get(const std::string& name);
-		static void update();
+		static void add(Music* music);
+		static Sound* getSound(const std::string& name);
+		static Music* getMusic(const std::string& name);
 		static void clean();
+
 	private:
 		SoundManager() { }
-
 		static std::vector<Sound*> m_Sounds;
+		static std::vector<Music*> m_Music;
 	};
-
 }

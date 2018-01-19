@@ -5,7 +5,7 @@ namespace examples {
 	SpriteTest::SpriteTest(SDL_Window* win)
 	{
 		audio::SoundManager::add(new audio::Sound("eff", "effect.wav"));
-		//m_Music = Mix_LoadMUS("background.ogg");
+		audio::SoundManager::add(new audio::Music("bgm", "background.ogg"));
 
 		shader = new Shader("Assets/Shaders/Default.vs", "Assets/Shaders/Default.frag");
 
@@ -41,7 +41,8 @@ namespace examples {
 		shader->Enable();
 		shader->setUniform1iv("textures", texIDs, 4);
 
-		audio::SoundManager::get("eff")->play();
+		audio::SoundManager::getMusic("bgm")->play();
+		audio::SoundManager::getSound("eff")->loop();
 		camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
 	}
 
