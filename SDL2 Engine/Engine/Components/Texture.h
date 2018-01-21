@@ -1,10 +1,8 @@
 #pragma once
 
-#include <SDL2_image\SDL_image.h>
-
 #include <string>
 #include <GL/glew.h>
-#include "../Utils/Logger.h"
+#include "../Utils/Image.h"
 
 class Texture
 {
