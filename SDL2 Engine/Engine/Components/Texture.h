@@ -2,12 +2,14 @@
 
 #include <string>
 #include <GL/glew.h>
+#include "../Graphics/Font.h"
 #include "../Utils/Image.h"
 
 class Texture
 {
 public:
 	Texture(const std::string pathname);
+	Texture(graphics::Font* font, const std::string text, unsigned int color);
 	~Texture();
 
 	void bind() const;

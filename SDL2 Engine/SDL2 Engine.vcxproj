@@ -221,6 +221,7 @@ copy "$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_ttf\$(Platform)\*.dll"  "$(Targ
     <ClCompile Include="Engine\Graphics\Window.cpp" />
     <ClCompile Include="Examples\ModelTest.cpp" />
     <ClCompile Include="Examples\SpriteTest.cpp" />
+    <ClCompile Include="Engine\Components\Label.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -243,12 +244,14 @@ copy "$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_ttf\$(Platform)\*.dll"  "$(Targ
     <ClInclude Include="Engine\IO\Keyboard.h" />
     <ClInclude Include="Engine\IO\Mouse.h" />
     <ClInclude Include="Engine\Utils\File.h" />
+    <ClInclude Include="Engine\Utils\Image.h" />
     <ClInclude Include="Engine\Utils\Logger.h" />
     <ClInclude Include="Engine\Graphics\Renderer2D.h" />
     <ClInclude Include="Engine\Scene.h" />
     <ClInclude Include="Engine\Graphics\Window.h" />
     <ClInclude Include="Examples\ModelTest.h" />
     <ClInclude Include="Examples\SpriteTest.h" />
+    <ClInclude Include="Engine\Components\Label.h" />
     <ClInclude Include="Libs\Assimp\include\ai_assert.h" />
     <ClInclude Include="Libs\Assimp\include\anim.h" />
     <ClInclude Include="Libs\Assimp\include\camera.h" />

@@ -41,6 +41,16 @@ namespace examples {
 		shader->Enable();
 		shader->setUniform1iv("textures", texIDs, 4);
 
+		graphics::FontManager::add(new graphics::Font("testFont", "arial.ttf", 24));
+
+		int r = rand() % 200;
+		int g = rand() % 256;
+		int b = rand() % 210;
+
+		unsigned int color = 0xff << 24 | b << 16 | g << 8 | r;
+		Label* iter = new Label("hello world aaaaaaaaaaaa", glm::vec3(100, 100, 0), graphics::FontManager::get("testFont"), color);
+		m_Renderables.push_back(iter);
+
 		audio::SoundManager::getMusic("bgm")->play();
 		audio::SoundManager::getSound("eff")->loop();
 		camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
