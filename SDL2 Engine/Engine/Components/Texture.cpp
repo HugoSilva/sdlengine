@@ -22,7 +22,7 @@ Texture::Texture(std::string pathname)
 
 Texture::Texture(graphics::Font* font, const std::string text, unsigned int color)
 {
-	SDL_Color textColor = { 255, 100, 100, 1 };
+	SDL_Color textColor = { color, color>>8, color>>16, color>>24 };
 	int Mode = GL_RGB;
 	void* pixels = Image::LoadFont(font->getFTFont(), text.c_str(), textColor, &m_Width, &m_Height, &Mode);
 

@@ -10,7 +10,6 @@ class Image
 public:
 	static void* LoadFont(TTF_Font* font, const char* text, SDL_Color textColor, int* width, int* height, int* mode)
 	{
-		SDL_Color bgColor = { 255, 100, 200, 255 };
 		SDL_Surface* surface = TTF_RenderText_Blended(font, text, textColor);
 
 		if (surface == NULL)

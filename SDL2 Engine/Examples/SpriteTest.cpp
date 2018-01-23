@@ -42,13 +42,7 @@ namespace examples {
 		shader->setUniform1iv("textures", texIDs, 5);
 
 		graphics::FontManager::add(new graphics::Font("testFont", "arial.ttf", 24));
-
-		int r = rand() % 200;
-		int g = rand() % 256;
-		int b = rand() % 210;
-
-		unsigned int color = 0xff << 24 | b << 16 | g << 8 | r;
-		Label* iter = new Label("hello world aaaaaaaaaaaa", glm::vec3(100, 100, 0), graphics::FontManager::get("testFont"), color);
+		Label* iter = new Label("FPS test", glm::vec3(20, 670, 0), graphics::FontManager::get("testFont"), 0xffffffff);
 		m_Renderables.push_back(iter);
 
 		audio::SoundManager::getMusic("bgm")->play();
