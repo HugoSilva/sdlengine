@@ -35,11 +35,11 @@ namespace examples {
 
 		GLint texIDs[] =
 		{
-			0, 1, 2, 3
+			0, 1, 2, 3, 4
 		};
 
 		shader->Enable();
-		shader->setUniform1iv("textures", texIDs, 4);
+		shader->setUniform1iv("textures", texIDs, 5);
 
 		graphics::FontManager::add(new graphics::Font("testFont", "arial.ttf", 24));
 
