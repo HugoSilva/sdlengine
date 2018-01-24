@@ -9,5 +9,5 @@ Label::Label(std::string text, glm::vec3 position, graphics::Font* font, unsigne
 
 void Label::submit(graphics::Renderer2D* renderer) const
 {
-	renderer->drawString(this);
+	renderer->submit(this);
 }

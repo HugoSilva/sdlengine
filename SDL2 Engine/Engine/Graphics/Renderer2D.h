@@ -16,8 +16,6 @@ namespace graphics
 		virtual void begin() {}
 
 		virtual void submit(const Renderable2D* renderable) = 0;
-		
-		virtual void drawString(const Renderable2D* renderable) = 0;
 
 		virtual void end() {}
 
