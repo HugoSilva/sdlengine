@@ -28,6 +28,7 @@ namespace graphics
 
 		void begin();
 		void submit(const Renderable2D* renderable);
+		void drawString(const Renderable2D* renderable);
 		void end();
 		void flush();
 

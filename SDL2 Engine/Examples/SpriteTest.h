@@ -9,6 +9,9 @@
 #include "../Engine/Graphics/OpenGLRenderer.h"
 #include "../Engine/Audio/Sound.h"
 #include "../Engine/Audio/SoundManager.h"
+#include "../Engine/Graphics/FontManager.h"
+#include "../Engine/Graphics/Font.h"
+#include "../Engine/Components/Label.h"
 #include <SDL.h>
 
 namespace examples {

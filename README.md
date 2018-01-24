@@ -1,16 +1,11 @@
-# sdlengine
-Generic C++ / SDL2 game engine
-
+# RSE (RockSlide Engine) Alpha 0.12
+Is a small C++ game engine that is heavily reliant on SDL2, it is work in progress with not many features available, the main objective is to gain knowledge on what it takes to create a stable 2D game engine following the KISS principle.
 ## Build target
-The project should be self sustained with every dependency in the libs folder.
-
-## Dependencies
-I tried to keep very dependency within the project 
-### Glew - [Glew 2.1.0](http://glew.sourceforge.net/)
-Library responsible for accessing OpenGL methods
-### SDL - [SDL 2.0.7](https://www.libsdl.org/)
-Library responsible for creating the application window
-### SDL_Image - [SDL_image 2.0.2](https://www.libsdl.org/projects/SDL_image/)
-Library responsible for loading images
-### Assimp - [Assimp 3.3.1](http://assimp.sourceforge.net/)
-Library responsible for loading 3D models
+The project should be self-sustained with every dependency in the libs folder, currently it only supports x86 and x64 builds.
+## Library dependencies
+##### [Glew 2.1.0](http://glew.sourceforge.net/) - OpenGL extensions and methods
+##### [SDL 2.0.7](https://www.libsdl.org/) - Creating the window
+##### [SDL_image 2.0.2](https://www.libsdl.org/projects/SDL_image/) - Reading images
+##### [SDL_mixer 2.0.2](https://www.libsdl.org/projects/SDL_mixer/) - Loading sounds
+##### [SDL_ttf 2.0.14](https://www.libsdl.org/projects/SDL_ttf/) - Rendering fonts
+##### [Assimp 3.3.1](http://assimp.sourceforge.net/) - Loading 3D models
