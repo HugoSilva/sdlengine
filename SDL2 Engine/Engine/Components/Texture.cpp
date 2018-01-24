@@ -1,7 +1,7 @@
 #include "Texture.h"
 
-Texture::Texture(std::string pathname)
-	:m_Filename(pathname)
+Texture::Texture(const std::string& name, const std::string& filename)
+	: m_Name(name), m_Filename(filename)
 {
 	int Mode = GL_RGB;
 	void* pixels = Image::LoadImage(m_Filename.c_str(), &m_Width, &m_Height, &Mode);
@@ -20,7 +20,8 @@ Texture::Texture(std::string pathname)
 	m_Id = result;
 }
 
-Texture::Texture(graphics::Font* font, const std::string text, unsigned int color)
+Texture::Texture(const std::string& name, graphics::Font* font, const std::string text, unsigned int color)
+	: m_Name(name)
 {
 	SDL_Color textColor = { color, color>>8, color>>16, color>>24 };
 	int Mode = GL_RGB;
