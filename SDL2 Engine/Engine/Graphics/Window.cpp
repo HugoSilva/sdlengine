@@ -14,6 +14,7 @@ namespace graphics {
 	{
 		audio::SoundManager::clean();
 		graphics::FontManager::clean();
+		TextureManager::clean();
 
 		SDL_DestroyWindow(window);
 		SDL_Quit();
@@ -51,6 +52,7 @@ namespace graphics {
 
 		audio::SoundManager::init();
 		graphics::FontManager::init();
+		TextureManager::init();
 
 		//TODO show cursor and window focus 
 		//SDL_ShowCursor(SDL_DISABLE);
