@@ -9,10 +9,10 @@ namespace examples {
 
 		shader = new Shader("Assets/Shaders/Default.vs", "Assets/Shaders/Default.frag");
 
-		testTexture[0] = new Texture("tex1.jpg");
-		testTexture[1] = new Texture("tex2.png");
-		testTexture[2] = new Texture("tex3.png");
-		testTexture[3] = new Texture("tex4.png");
+		TextureManager::add(new Texture("test00", "tex1.jpg"));
+		TextureManager::add(new Texture("test01", "tex2.png"));
+		TextureManager::add(new Texture("test02", "tex3.png"));
+		TextureManager::add(new Texture("test03", "tex4.png"));
 
 		//renderer = new graphics::SDLRenderer(win);
 		renderer = new graphics::OpenGLRenderer(win);
@@ -28,7 +28,7 @@ namespace examples {
 				unsigned int color = 0xff << 24 | b << 16 | g << 8 | r;
 
 				//Sprite* iter = new Sprite(glm::vec3(i*40, j*40, 0), glm::vec2(40, 40), color);
-				Sprite* iter = new Sprite(glm::vec3(i * 40, j * 40, 0), glm::vec2(40, 40), testTexture[rand() % 4]);
+				Sprite* iter = new Sprite(glm::vec3(i * 40, j * 40, 0), glm::vec2(40, 40), TextureManager::get("test0" + std::to_string(rand() % 4)));
 				m_Renderables.push_back(iter);
 			}
 		}

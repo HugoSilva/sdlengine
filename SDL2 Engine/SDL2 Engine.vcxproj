@@ -223,6 +223,7 @@ copy "$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_ttf\$(Platform)\*.dll"  "$(Targ
     <ClCompile Include="Examples\SpriteTest.cpp" />
     <ClCompile Include="Engine\Components\Label.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Engine\Components\TextureManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Audio\Music.h" />
@@ -442,6 +443,7 @@ copy "$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_ttf\$(Platform)\*.dll"  "$(Targ
     <ClInclude Include="Libs\Glm\vector_relational.hpp" />
     <ClInclude Include="Libs\SDL2\include\begin_code.h" />
     <ClInclude Include="Libs\SDL2\include\close_code.h" />
+    <ClInclude Include="Engine\Components\TextureManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\Default.frag" />

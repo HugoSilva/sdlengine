@@ -12,6 +12,7 @@
 #include "../Engine/Graphics/FontManager.h"
 #include "../Engine/Graphics/Font.h"
 #include "../Engine/Components/Label.h"
+#include "../Engine/Components/TextureManager.h"
 #include <SDL.h>
 
 namespace examples {
@@ -28,7 +29,6 @@ namespace examples {
 
 	private:
 		Shader* shader;
-		Texture* testTexture[4];
 		Camera* camera;
 		graphics::Renderer2D* renderer;
 		std::vector<graphics::Renderable2D*> m_Renderables;
