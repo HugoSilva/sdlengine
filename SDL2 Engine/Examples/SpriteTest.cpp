@@ -35,11 +35,15 @@ namespace examples {
 
 		GLint texIDs[] =
 		{
-			0, 1, 2, 3
+			0, 1, 2, 3, 4
 		};
 
 		shader->Enable();
-		shader->setUniform1iv("textures", texIDs, 4);
+		shader->setUniform1iv("textures", texIDs, 5);
+
+		graphics::FontManager::add(new graphics::Font("testFont", "arial.ttf", 24));
+		Label* iter = new Label("FPS test", glm::vec3(20, 670, 0), graphics::FontManager::get("testFont"), 0xffffffff);
+		m_Renderables.push_back(iter);
 
 		audio::SoundManager::getMusic("bgm")->play();
 		audio::SoundManager::getSound("eff")->loop();

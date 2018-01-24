@@ -13,6 +13,7 @@ namespace graphics {
 	Window::~Window()
 	{
 		audio::SoundManager::clean();
+		graphics::FontManager::clean();
 
 		SDL_DestroyWindow(window);
 		SDL_Quit();
@@ -49,6 +50,7 @@ namespace graphics {
 		}
 
 		audio::SoundManager::init();
+		graphics::FontManager::init();
 
 		//TODO show cursor and window focus 
 		//SDL_ShowCursor(SDL_DISABLE);
@@ -60,8 +62,8 @@ namespace graphics {
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL); 
 		
-		//glEnable(GL_BLEND);
-		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		m_Input = new Input();
 
