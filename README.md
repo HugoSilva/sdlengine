@@ -1,4 +1,4 @@
-# RSE (RockSlide Engine)
+# RSE (RockSlide Engine) Alpha 0.12
 Is a small C++ game engine that is heavily reliant on SDL2, it is work in progress with not many features available, the main objective is to gain knowledge on what it takes to create a stable 2D game engine following the KISS principle.
 ## Build target
 The project should be self-sustained with every dependency in the libs folder, currently it only supports x86 and x64 builds.
