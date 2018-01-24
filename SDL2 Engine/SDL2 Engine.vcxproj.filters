@@ -1115,10 +1115,10 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="packages.config" />
-    <None Include="Assets\Shaders\Default.vs">
+    <None Include="Assets\Shaders\Default.frag">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Assets\Shaders\Default.frag">
+    <None Include="Assets\Shaders\Default.vert">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

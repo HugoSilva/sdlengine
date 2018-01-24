@@ -447,7 +447,7 @@ copy "$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_ttf\$(Platform)\*.dll"  "$(Targ
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\Default.frag" />
-    <None Include="Assets\Shaders\Default.vs" />
+    <None Include="Assets\Shaders\Default.vert" />
     <None Include="Libs\Assimp\include\color4.inl" />
     <None Include="Libs\Assimp\include\material.inl" />
     <None Include="Libs\Assimp\include\matrix3x3.inl" />

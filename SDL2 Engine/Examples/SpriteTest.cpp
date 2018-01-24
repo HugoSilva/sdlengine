@@ -7,7 +7,7 @@ namespace examples {
 		audio::SoundManager::add(new audio::Sound("eff", "effect.wav"));
 		audio::SoundManager::add(new audio::Music("bgm", "background.ogg"));
 
-		shader = new Shader("Assets/Shaders/Default.vs", "Assets/Shaders/Default.frag");
+		shader = new Shader("Assets/Shaders/Default.vert", "Assets/Shaders/Default.frag");
 
 		TextureManager::add(new Texture("test00", "tex1.jpg"));
 		TextureManager::add(new Texture("test01", "tex2.png"));
@@ -35,11 +35,14 @@ namespace examples {
 
 		GLint texIDs[] =
 		{
-			0, 1, 2, 3, 4
+			0,  1,  2,  3,  4,  5,  6,  7,  8,  9,
+			10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+			20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+			30, 31
 		};
 
 		shader->Enable();
-		shader->setUniform1iv("textures", texIDs, 5);
+		shader->setUniform1iv("textures", texIDs, 32);
 
 		graphics::FontManager::add(new graphics::Font("testFont", "arial.ttf", 24));
 		Label* iter = new Label("FPS test", glm::vec3(20, 670, 0), graphics::FontManager::get("testFont"), 0xffffffff);
