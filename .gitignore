@@ -251,4 +251,4 @@ paket-files/
 .idea/
 *.sln.iml
 
-/SDL2 Engine/Assets/Models
+/Engine/Assets/Models
