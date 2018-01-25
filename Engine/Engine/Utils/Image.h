@@ -1,7 +1,7 @@
 #pragma once
 
-#include <SDL2_image\SDL_image.h>
-#include <SDL2_ttf\SDL_ttf.h>
+#include <SDL_image.h>
+#include <SDL_ttf.h>
 #include <GL/glew.h>
 #include "Logger.h"
 

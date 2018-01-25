@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <SDL2_mixer\SDL_mixer.h>
+#include <SDL_mixer.h>
 
 #include "Sound.h"
 #include "Music.h"

@@ -2,17 +2,17 @@
 
 #include <iostream>
 #include <string>
-#include <SDL2_mixer\SDL_mixer.h>
+#include <SDL_mixer.h>
 
 #include "../Utils/Logger.h"
 
 namespace audio {
 
-	class Music
+	class Sound
 	{
 	public:
-		Music(const std::string& name, const std::string& filename);
-		~Music();
+		Sound(const std::string& name, const std::string& filename);
+		~Sound();
 
 		void play();
 		void loop();
@@ -22,7 +22,7 @@ namespace audio {
 
 		void setVolume(int volume);
 
-		inline const bool isPlaying() const { return Mix_PlayingMusic() != 0; }
+		inline const bool isPlaying() const { return Mix_Playing(m_Channel) != 0; }
 		inline const int getVolume() const { return m_Volume; }
 		inline const std::string& getName() const { return m_Name; }
 		inline const std::string& getFileName() const { return m_Filename; }
@@ -30,8 +30,8 @@ namespace audio {
 	private:
 		std::string m_Name;
 		std::string m_Filename;
-		Mix_Music* m_Music;
+		Mix_Chunk* m_Sound;
 		int m_Volume;
+		int m_Channel;
 	};
-
 }
