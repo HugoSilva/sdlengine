@@ -78,69 +78,7 @@ namespace graphics
 
 			if (!found)
 			{
-				if (m_TextureSlots.size() >= 32)
-				{
-					end();
-					flush();
-					begin();
-				}
-				m_TextureSlots.push_back(tid);
-				ts = (float)(m_TextureSlots.size());
-			}
-		}
-
-		m_Buffer->vertex = position;
-		m_Buffer->uv = uv[0];
-		m_Buffer->tid = ts;
-		m_Buffer->color = color;
-		m_Buffer++;
-
-		m_Buffer->vertex = glm::vec3(position.x, position.y + size.y, position.z);
-		m_Buffer->uv = uv[1];
-		m_Buffer->tid = ts;
-		m_Buffer->color = color;
-		m_Buffer++;
-
-		m_Buffer->vertex = glm::vec3(position.x + size.x, position.y + size.y, position.z);
-		m_Buffer->uv = uv[2];
-		m_Buffer->tid = ts;
-		m_Buffer->color = color;
-		m_Buffer++;
-
-		m_Buffer->vertex = glm::vec3(position.x + size.x, position.y, position.z);
-		m_Buffer->uv = uv[3];
-		m_Buffer->tid = ts;
-		m_Buffer->color = color;
-		m_Buffer++;
-
-		m_IndexCount += 6;
-	}
-
-	void OpenGLRenderer::drawString(const Renderable2D* renderable)
-	{
-		const glm::vec3& position = renderable->getPosition();
-		const glm::vec2& size = renderable->getSize();
-		const unsigned int& color = renderable->getColor();
-		const std::vector<glm::vec2>& uv = renderable->getUV();
-		const unsigned int tid = renderable->getTId();
-
-		float ts = 0.0f;
-		if (tid > 0)
-		{
-			bool found = false;
-			for (int i = 0; i < m_TextureSlots.size(); i++)
-			{
-				if (m_TextureSlots[i] == tid)
-				{
-					ts = (float)(i + 1);
-					found = true;
-					break;
-				}
-			}
-
-			if (!found)
-			{
-				if (m_TextureSlots.size() >= 32)
+				if (m_TextureSlots.size() >= RENDERER_MAX_TEXTURES)
 				{
 					end();
 					flush();

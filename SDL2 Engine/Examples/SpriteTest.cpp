@@ -7,15 +7,15 @@ namespace examples {
 		audio::SoundManager::add(new audio::Sound("eff", "effect.wav"));
 		audio::SoundManager::add(new audio::Music("bgm", "background.ogg"));
 
-		shader = new Shader("Assets/Shaders/Default.vs", "Assets/Shaders/Default.frag");
+		shader = new Shader("Assets/Shaders/Default.vert", "Assets/Shaders/Default.frag");
 
-		testTexture[0] = new Texture("tex1.jpg");
-		testTexture[1] = new Texture("tex2.png");
-		testTexture[2] = new Texture("tex3.png");
-		testTexture[3] = new Texture("tex4.png");
+		TextureManager::add(new Texture("test00", "tex1.jpg"));
+		TextureManager::add(new Texture("test01", "tex2.png"));
+		TextureManager::add(new Texture("test02", "tex3.png"));
+		TextureManager::add(new Texture("test03", "tex4.png"));
 
-		//renderer = new graphics::SDLRenderer(win);
-		renderer = new graphics::OpenGLRenderer(win);
+		//m_BaseLayer = new graphics::Layer(new graphics::SDLRenderer(win), shader);
+		m_BaseLayer = new graphics::Layer(new graphics::OpenGLRenderer(win), shader);
 
 		for (int i = 0; i < 32; i++ )
 		{
@@ -28,22 +28,14 @@ namespace examples {
 				unsigned int color = 0xff << 24 | b << 16 | g << 8 | r;
 
 				//Sprite* iter = new Sprite(glm::vec3(i*40, j*40, 0), glm::vec2(40, 40), color);
-				Sprite* iter = new Sprite(glm::vec3(i * 40, j * 40, 0), glm::vec2(40, 40), testTexture[rand() % 4]);
-				m_Renderables.push_back(iter);
+				Sprite* iter = new Sprite(glm::vec3(i * 40, j * 40, 0), glm::vec2(40, 40), TextureManager::get("test0" + std::to_string(rand() % 4)));
+				m_BaseLayer->add(iter);
 			}
 		}
 
-		GLint texIDs[] =
-		{
-			0, 1, 2, 3, 4
-		};
-
-		shader->Enable();
-		shader->setUniform1iv("textures", texIDs, 5);
-
 		graphics::FontManager::add(new graphics::Font("testFont", "arial.ttf", 24));
 		Label* iter = new Label("FPS test", glm::vec3(20, 670, 0), graphics::FontManager::get("testFont"), 0xffffffff);
-		m_Renderables.push_back(iter);
+		m_BaseLayer->add(iter);
 
 		audio::SoundManager::getMusic("bgm")->play();
 		audio::SoundManager::getSound("eff")->loop();
@@ -62,14 +54,6 @@ namespace examples {
 	void SpriteTest::Render()
 	{
 		camera->Render(*shader);
-		shader->Enable();
-
-		renderer->begin();
-
-		for (const graphics::Renderable2D* renderable : m_Renderables)
-			renderable->submit(renderer);
-
-		renderer->end();
-		renderer->flush();
+		m_BaseLayer->render();
 	}
 }

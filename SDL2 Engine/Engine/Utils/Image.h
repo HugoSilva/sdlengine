@@ -43,14 +43,6 @@ public:
 
 	static void* LoadImage(const char* filename, int* width, int* height, int* mode)
 	{
-		int imgFlags = IMG_INIT_PNG;
-		if (!(IMG_Init(imgFlags) & imgFlags)) {
-			std::string imageError("error: %s\n", IMG_GetError());
-			Logger::error("SDL_image could not initialize, " + imageError);
-
-			return nullptr;
-		}
-
 		SDL_Surface* surface = IMG_Load(filename);
 
 		if (surface == NULL)

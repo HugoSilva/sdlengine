@@ -222,7 +222,9 @@ copy "$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_ttf\$(Platform)\*.dll"  "$(Targ
     <ClCompile Include="Examples\ModelTest.cpp" />
     <ClCompile Include="Examples\SpriteTest.cpp" />
     <ClCompile Include="Engine\Components\Label.cpp" />
+    <ClCompile Include="Engine\Graphics\Layer.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Engine\Components\TextureManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Audio\Music.h" />
@@ -252,6 +254,7 @@ copy "$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_ttf\$(Platform)\*.dll"  "$(Targ
     <ClInclude Include="Examples\ModelTest.h" />
     <ClInclude Include="Examples\SpriteTest.h" />
     <ClInclude Include="Engine\Components\Label.h" />
+    <ClInclude Include="Engine\Graphics\Layer.h" />
     <ClInclude Include="Libs\Assimp\include\ai_assert.h" />
     <ClInclude Include="Libs\Assimp\include\anim.h" />
     <ClInclude Include="Libs\Assimp\include\camera.h" />
@@ -442,10 +445,11 @@ copy "$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_ttf\$(Platform)\*.dll"  "$(Targ
     <ClInclude Include="Libs\Glm\vector_relational.hpp" />
     <ClInclude Include="Libs\SDL2\include\begin_code.h" />
     <ClInclude Include="Libs\SDL2\include\close_code.h" />
+    <ClInclude Include="Engine\Components\TextureManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\Default.frag" />
-    <None Include="Assets\Shaders\Default.vs" />
+    <None Include="Assets\Shaders\Default.vert" />
     <None Include="Libs\Assimp\include\color4.inl" />
     <None Include="Libs\Assimp\include\material.inl" />
     <None Include="Libs\Assimp\include\matrix3x3.inl" />

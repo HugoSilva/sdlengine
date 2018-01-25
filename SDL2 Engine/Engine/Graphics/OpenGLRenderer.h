@@ -13,13 +13,14 @@ namespace graphics
 	#define RENDERER_VERTEX_SIZE	sizeof(VertexData)
 	#define RENDERER_SPRITE_SIZE	RENDERER_VERTEX_SIZE * 4
 	#define RENDERER_BUFFER_SIZE	RENDERER_SPRITE_SIZE * RENDERER_MAX_SPRITES
+	#define RENDERER_INDICES_SIZE	RENDERER_MAX_SPRITES * 6
+	#define RENDERER_MAX_TEXTURES	32
 
 	#define SHADER_VERTEX_INDEX 0
 	#define SHADER_UV_INDEX		1
 	#define SHADER_TID_INDEX	2
 	#define SHADER_COLOR_INDEX	3
 
-	#define RENDERER_INDICES_SIZE	RENDERER_MAX_SPRITES * 6
 
 	class OpenGLRenderer : public Renderer2D
 	{
@@ -28,7 +29,6 @@ namespace graphics
 
 		void begin();
 		void submit(const Renderable2D* renderable);
-		void drawString(const Renderable2D* renderable);
 		void end();
 		void flush();
 
