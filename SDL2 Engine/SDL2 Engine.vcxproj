@@ -222,6 +222,7 @@ copy "$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_ttf\$(Platform)\*.dll"  "$(Targ
     <ClCompile Include="Examples\ModelTest.cpp" />
     <ClCompile Include="Examples\SpriteTest.cpp" />
     <ClCompile Include="Engine\Components\Label.cpp" />
+    <ClCompile Include="Engine\Graphics\Layer.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Engine\Components\TextureManager.cpp" />
   </ItemGroup>
@@ -253,6 +254,7 @@ copy "$(SolutionDir)$(ProjectName)\Libs\lib\SDL2_ttf\$(Platform)\*.dll"  "$(Targ
     <ClInclude Include="Examples\ModelTest.h" />
     <ClInclude Include="Examples\SpriteTest.h" />
     <ClInclude Include="Engine\Components\Label.h" />
+    <ClInclude Include="Engine\Graphics\Layer.h" />
     <ClInclude Include="Libs\Assimp\include\ai_assert.h" />
     <ClInclude Include="Libs\Assimp\include\anim.h" />
     <ClInclude Include="Libs\Assimp\include\camera.h" />
