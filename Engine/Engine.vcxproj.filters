@@ -54,12 +54,6 @@
     <ClCompile Include="Engine\Graphics\Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Examples\SpriteTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Examples\ModelTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Utils\Logger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -96,6 +90,9 @@
     <ClCompile Include="Engine\Graphics\Layer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Core.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\IO\Keyboard.h">
@@ -123,12 +120,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Input.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Examples\SpriteTest.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Examples\ModelTest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Graphics\IndexBuffer.h">
@@ -185,6 +176,9 @@
     <ClInclude Include="Engine\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Core.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -194,10 +188,5 @@
     <None Include="Assets\Shaders\Default.vert">
       <Filter>Resource Files</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Assets\Textures\texture.png">
-      <Filter>Resource Files</Filter>
-    </Image>
   </ItemGroup>
 </Project>
