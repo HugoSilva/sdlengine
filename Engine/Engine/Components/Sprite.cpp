@@ -3,10 +3,10 @@
 Sprite::Sprite(glm::vec3 position, glm::vec2 size, unsigned int color)
 	: Renderable2D(position, size, color)
 {
-	texr.x = m_Position.x;
-	texr.y = m_Position.y;
-	texr.w = m_Size.x;
-	texr.h = m_Size.y;
+	texr.x = round(m_Position.x);
+	texr.y = round(m_Position.y);
+	texr.w = round(m_Size.x);
+	texr.h = round(m_Size.y);
 }
 
 Sprite::Sprite(glm::vec3 position, glm::vec2 size, Texture* texture)

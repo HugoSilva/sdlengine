@@ -7,8 +7,8 @@ bool Mouse::buttons[20] = { 0 };
 bool Mouse::buttonsDown[20] = { 0 };
 bool Mouse::buttonsUp[20] = { 0 };
 
-float lastX = 0, lastY = 0;
-float xOffset, yOffset;
+double lastX = 0, lastY = 0;
+double xOffset, yOffset;
 bool firstMouse = true;
 
 void Mouse::MousePosCallback(SDL_MouseMotionEvent event)
