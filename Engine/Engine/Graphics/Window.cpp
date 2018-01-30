@@ -79,20 +79,8 @@ namespace graphics {
 		now = SDL_GetTicks();
 		deltaTime = (now - last) / 1000.0f;
 		last = now;
+
 		this->HandleEvents();
-		m_Scene->Update(deltaTime);
-
-		m_Scene->Render();
-
-		deltaAccumulator += deltaTime;
-		frames++;
-
-		if (deltaAccumulator > 1.0f)
-		{
-			printf("%d FPS\n", frames);
-			frames = 0;
-			deltaAccumulator = 0.f;
-		}
 	}
 
 	void Window::HandleEvents()
@@ -114,11 +102,6 @@ namespace graphics {
 				break;
 			}
 		}
-	}
-
-	void Window::LoadScene(Scene* scene)
-	{
-		m_Scene = scene;
 	}
 
 	bool Window::GetRunning()

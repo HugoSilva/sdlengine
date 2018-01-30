@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\GLMathematics.0.9.5.4\build\native\GLMathematics.props" Condition="Exists('..\packages\GLMathematics.0.9.5.4\build\native\GLMathematics.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -73,7 +72,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)inter\$(ProjectName)\$(Configuration)\$(Platform)\</IntDir>
     <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(LibraryPath)</LibraryPath>
@@ -83,11 +82,11 @@
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)inter\$(ProjectName)\$(Configuration)\$(Platform)\</IntDir>
     <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)inter\$(ProjectName)\$(Configuration)\$(Platform)\</IntDir>
     <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(LibraryPath)</LibraryPath>
@@ -97,7 +96,7 @@
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)inter\$(ProjectName)\$(Configuration)\$(Platform)\</IntDir>
     <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -270,7 +269,6 @@ copy "$(SolutionDir)Thirdparty\SDL2_ttf\bin\$(Platform)\*.dll"  "$(TargetDir)"</
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\GLMathematics.0.9.5.4\build\native\GLMathematics.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\GLMathematics.0.9.5.4\build\native\GLMathematics.props'))" />
     <Error Condition="!Exists('..\packages\Assimp.redist.3.0.0\build\native\Assimp.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Assimp.redist.3.0.0\build\native\Assimp.redist.targets'))" />
     <Error Condition="!Exists('..\packages\Assimp.3.0.0\build\native\Assimp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Assimp.3.0.0\build\native\Assimp.targets'))" />
   </Target>

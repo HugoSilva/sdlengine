@@ -1,20 +1,21 @@
 #include "Core.h"
 
 Core::Core()
-	: m_FramesPerSecond(0), m_UpdatesPerSecond(0)
+	: m_FramesPerSecond(0)
 {
 
 }
 
 Core::~Core()
 {
-	delete m_Timer;
+	//delete m_Timer;
 	delete m_Window;
 }
 
 graphics::Window* Core::createWindow(const char *name, int width, int height)
 {
 	m_Window = new graphics::Window(name, width, height);
+	m_Window->Init();
 	return m_Window;
 }
 
@@ -26,34 +27,27 @@ void Core::start()
 
 void Core::run()
 {
-	m_Timer = new Timer();
-	float timer = 0.0f;
-	float updateTimer = 0.0f;
-	float updateTick = 1.0f / 60.0f;
-	unsigned int frames = 0;
-	unsigned int updates = 0;
+	now = SDL_GetTicks();
+	deltaTime = (now - last) / 1000.0f;
+	last = now;
 
-	while (!m_Window->closed())
+	m_Scene->Update(deltaTime);
+
+	m_Scene->Render();
+
+	deltaAccumulator += deltaTime;
+	frames++;
+
+	if (deltaAccumulator > 1.0f)
 	{
-		m_Window->clear();
-		if (m_Timer->elapsed() - updateTimer > updateTick)
-		{
-			m_Window->updateInput();
-			update();
-			updates++;
-			updateTimer += updateTick;
-		}
-		render();
-		frames++;
-		m_Window->update();
-		if (m_Timer->elapsed() - timer > 1.0f)
-		{
-			timer += 1.0f;
-			m_FramesPerSecond = frames;
-			m_UpdatesPerSecond = updates;
-			frames = 0;
-			updates = 0;
-			tick();
-		}
+		m_FramesPerSecond = frames;
+		frames = 0;
+		deltaAccumulator = 0.f;
+		tick();
 	}
+}
+
+void Core::LoadScene(Scene* scene)
+{
+	m_Scene = scene;
 }

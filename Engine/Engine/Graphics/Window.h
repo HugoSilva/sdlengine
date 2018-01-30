@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <SDL.h>
-#include "../Scene.h"
 #include "../Input.h"
 #include "../Audio/SoundManager.h"
 #include "../Graphics/FontManager.h"
@@ -18,7 +17,6 @@ namespace graphics {
 
 		bool Init();
 		void Run();
-		void LoadScene(Scene* scene);
 		bool GetRunning();
 		SDL_Window* GetWindow() { return window; };
 
@@ -28,15 +26,11 @@ namespace graphics {
 		SDL_Event windowEvent;
 		SDL_Window* window;
 		SDL_GLContext context;
-		Scene* m_Scene;
 		Input* m_Input;
 		bool running;
 		long now, last = 0;
 		float deltaTime = 0.0;
 		const char *m_Title;
 		int m_Width, m_Height;
-
-		float deltaAccumulator = 0.0f;
-		int frames = 0;
 	};
 }

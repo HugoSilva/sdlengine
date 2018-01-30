@@ -7,10 +7,13 @@
 #include "Graphics\Window.h"
 #include "Graphics\Layer.h"
 #include "Components\TextureManager.h"
+#include "Scene.h"
 
 #include "Audio\Music.h"
 #include "Audio\Sound.h"
 #include "Audio\SoundManager.h"
+
+#include <glm\glm.hpp>
 
 class Core
 {
@@ -29,12 +32,18 @@ protected:
 	virtual void render() = 0;
 
 	const unsigned int getFPS() const { return m_FramesPerSecond; }
-	const unsigned int getUPS() const { return m_UpdatesPerSecond; }
+
+	void LoadScene(Scene* scene);
 
 private:
 	void run();
 
 	graphics::Window* m_Window;
-	Timer* m_Timer;
-	unsigned int m_FramesPerSecond, m_UpdatesPerSecond;
-}
+	long now, last = 0;
+	float deltaTime = 0.0;
+	float deltaAccumulator = 0.0f;
+	int frames = 0;
+	unsigned int m_FramesPerSecond;
+
+	Scene* m_Scene;
+};
