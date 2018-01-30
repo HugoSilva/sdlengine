@@ -1,3 +1,4 @@
+/*
 #include "Engine/Graphics/Window.h"
 #include "Engine/Utils/Logger.h"
 //#include "Examples/ModelTest.h"
@@ -31,3 +32,4 @@ int main(int argc, char **argv)
 
 	return EXIT_SUCCESS;
 }
+*/
