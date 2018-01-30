@@ -27,7 +27,7 @@ public:
 
 		m_Shader = new Shader("shaders/basic.vert", "shaders/basic.frag");
 
-		m_Layer = new Layer(new OpenGLRenderer(m_Window), m_Shader);
+		m_Layer = new Layer(new OpenGLRenderer(m_Window->GetWindow()), m_Shader);
 
 		TextureManager::add(new Texture("test00", "tex1.jpg"));
 
@@ -35,11 +35,15 @@ public:
 
 		m_Layer->add(m_Sprite);
 
-		m_Fps = new Label("", -15.5f, 7.8f, 0xffffffff);
+		m_Fps = new Label("FPS test", glm::vec3(20, 670, 0), graphics::FontManager::get("Arial"), 0xffffffff);
 		m_Layer->add(m_Fps);
 
 		SoundManager::add(new Sound("eff", "effect.wav"));
 		SoundManager::add(new Music("bgm", "background.ogg"));
+	}
+
+	void render() override
+	{
 	}
 
 private:
@@ -50,7 +54,7 @@ private:
 	Shader* m_Shader;
 };
 
-int main()
+int main(int argc, char **argv)
 {
 	Game game;
 	game.start();
