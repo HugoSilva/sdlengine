@@ -66,7 +66,7 @@ namespace graphics
 		if (tid > 0)
 		{
 			bool found = false;
-			for (int i = 0; i < m_TextureSlots.size(); i++)
+			for (unsigned int i = 0; i < m_TextureSlots.size(); i++)
 			{
 				if (m_TextureSlots[i] == tid)
 				{
@@ -124,7 +124,7 @@ namespace graphics
 
 	void OpenGLRenderer::flush()
 	{
-		for (int i = 0; i < m_TextureSlots.size(); i++)
+		for (unsigned int i = 0; i < m_TextureSlots.size(); i++)
 		{
 			glActiveTexture(GL_TEXTURE0 + i);
 			glBindTexture(GL_TEXTURE_2D, m_TextureSlots[i]);
