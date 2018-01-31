@@ -114,11 +114,8 @@
       <AdditionalDependencies>glew32.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)Thirdparty\Glew\bin\$(Platform)\*.dll"  "$(TargetDir)"
-copy "$(SolutionDir)Thirdparty\SDL2\bin\$(Platform)\*.dll"  "$(TargetDir)"
-copy "$(SolutionDir)Thirdparty\SDL2_image\bin\$(Platform)\*.dll"  "$(TargetDir)"
-copy "$(SolutionDir)Thirdparty\SDL2_mixer\bin\$(Platform)\*.dll"  "$(TargetDir)"
-copy "$(SolutionDir)Thirdparty\SDL2_ttf\bin\$(Platform)\*.dll"  "$(TargetDir)"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -136,11 +133,8 @@ copy "$(SolutionDir)Thirdparty\SDL2_ttf\bin\$(Platform)\*.dll"  "$(TargetDir)"</
       <AdditionalDependencies>glew32.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)Thirdparty\Glew\bin\$(Platform)\*.dll"  "$(TargetDir)"
-copy "$(SolutionDir)Thirdparty\SDL2\bin\$(Platform)\*.dll"  "$(TargetDir)"
-copy "$(SolutionDir)Thirdparty\SDL2_image\bin\$(Platform)\*.dll"  "$(TargetDir)"
-copy "$(SolutionDir)Thirdparty\SDL2_mixer\bin\$(Platform)\*.dll"  "$(TargetDir)"
-copy "$(SolutionDir)Thirdparty\SDL2_ttf\bin\$(Platform)\*.dll"  "$(TargetDir)"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -166,11 +160,8 @@ copy "$(SolutionDir)Thirdparty\SDL2_ttf\bin\$(Platform)\*.dll"  "$(TargetDir)"</
       <AdditionalDependencies>glew32.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)Thirdparty\Glew\bin\$(Platform)\*.dll"  "$(TargetDir)"
-copy "$(SolutionDir)Thirdparty\SDL2\bin\$(Platform)\*.dll"  "$(TargetDir)"
-copy "$(SolutionDir)Thirdparty\SDL2_image\bin\$(Platform)\*.dll"  "$(TargetDir)"
-copy "$(SolutionDir)Thirdparty\SDL2_mixer\bin\$(Platform)\*.dll"  "$(TargetDir)"
-copy "$(SolutionDir)Thirdparty\SDL2_ttf\bin\$(Platform)\*.dll"  "$(TargetDir)"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -192,11 +183,8 @@ copy "$(SolutionDir)Thirdparty\SDL2_ttf\bin\$(Platform)\*.dll"  "$(TargetDir)"</
       <AdditionalDependencies>glew32.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)Thirdparty\Glew\bin\$(Platform)\*.dll"  "$(TargetDir)"
-copy "$(SolutionDir)Thirdparty\SDL2\bin\$(Platform)\*.dll"  "$(TargetDir)"
-copy "$(SolutionDir)Thirdparty\SDL2_image\bin\$(Platform)\*.dll"  "$(TargetDir)"
-copy "$(SolutionDir)Thirdparty\SDL2_mixer\bin\$(Platform)\*.dll"  "$(TargetDir)"
-copy "$(SolutionDir)Thirdparty\SDL2_ttf\bin\$(Platform)\*.dll"  "$(TargetDir)"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
