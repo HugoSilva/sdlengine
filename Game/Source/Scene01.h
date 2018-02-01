@@ -1,22 +1,20 @@
 #pragma once
 
 #include <Core.h>
+#include <SDL.h>
 
-namespace examples {
+class SpriteTest : public Scene
+{
 
-	class SpriteTest : public Scene
-	{
+public:
+	SpriteTest(SDL_Window* win);
+	~SpriteTest();
 
-	public:
-		SpriteTest(SDL_Window* win);
-		~SpriteTest();
+	void Update(float deltaTime);
+	void Render();
 
-		void Update(float deltaTime);
-		void Render();
-
-	private:
-		Shader* shader;
-		Camera* camera;
-		graphics::Layer* m_BaseLayer;
-	};
-}
+private:
+	Shader* shader;
+	Camera* camera;
+	graphics::Layer* m_BaseLayer;
+};
