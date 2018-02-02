@@ -76,28 +76,7 @@ namespace graphics
 
 	void Window::Run()
 	{
-		this->HandleEvents();
-	}
-
-	void Window::HandleEvents()
-	{
-		if (SDL_PollEvent(&windowEvent)) {
-			switch (windowEvent.type) {
-			case SDL_QUIT:
-				running = false;
-				break;
-			case SDL_KEYDOWN:
-			case SDL_KEYUP:
-				m_Input->HandleKeyboard(windowEvent.key);
-				break;
-			case SDL_MOUSEBUTTONDOWN:
-			case SDL_MOUSEBUTTONUP:
-				m_Input->HandleMouseButton(windowEvent.button);
-			case SDL_MOUSEMOTION:
-				m_Input->HandleMouseMotion(windowEvent.motion);
-				break;
-			}
-		}
+		m_Input->Update();
 	}
 
 	bool Window::GetRunning()

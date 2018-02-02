@@ -21,8 +21,6 @@ namespace graphics
 		SDL_Window* GetWindow() { return window; };
 
 	private:
-		void HandleEvents();
-
 		SDL_Event windowEvent;
 		SDL_Window* window;
 		SDL_GLContext context;
