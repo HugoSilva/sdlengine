@@ -4,8 +4,8 @@
 #include "Font.h"
 #include "../Utils/Logger.h"
 
-namespace graphics {
-
+namespace graphics
+{
 	class FontManager
 	{
 	public:

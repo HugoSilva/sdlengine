@@ -4,8 +4,8 @@
 #include "Mouse.h"
 #include "Keyboard.h"
 
-namespace IO {
-
+namespace IO
+{
 	class InputManager
 	{
 	public:

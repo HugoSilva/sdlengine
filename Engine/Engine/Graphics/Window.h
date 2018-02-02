@@ -2,13 +2,13 @@
 
 #include <iostream>
 #include <SDL.h>
-#include "../Input.h"
+#include "../IO/InputManager.h"
 #include "../Audio/SoundManager.h"
 #include "../Graphics/FontManager.h"
 #include "../Components/TextureManager.h"
 
-namespace graphics {
-
+namespace graphics
+{
 	class Window
 	{
 	public:
@@ -26,7 +26,7 @@ namespace graphics {
 		SDL_Event windowEvent;
 		SDL_Window* window;
 		SDL_GLContext context;
-		Input* m_Input;
+		IO::InputManager* m_Input;
 		bool running;
 
 		const char *m_Title;

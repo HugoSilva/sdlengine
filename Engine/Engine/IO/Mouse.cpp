@@ -1,7 +1,7 @@
 #include "Mouse.h"
 
-namespace IO {
-
+namespace IO
+{
 	double Mouse::x = 0;
 	double Mouse::y = 0;
 	// TODO: fix the initialization of the buttons

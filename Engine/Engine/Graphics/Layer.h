@@ -4,8 +4,8 @@
 #include "renderable2d.h"
 #include "../Components/Shader.h"
 
-namespace graphics {
-
+namespace graphics
+{
 	class Layer
 	{
 	public:

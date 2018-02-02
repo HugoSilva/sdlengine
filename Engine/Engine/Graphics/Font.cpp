@@ -1,7 +1,7 @@
 #include "Font.h"
 
-namespace graphics {
-
+namespace graphics
+{
 	Font::Font(std::string name, std::string filename, int size)
 		: m_Name(name), m_Filename(filename), m_Size(size)
 	{

@@ -1,7 +1,7 @@
 #include "SoundManager.h"
 
-namespace audio {
-
+namespace audio
+{
 	std::vector<Sound*> SoundManager::m_Sounds;
 	std::vector<Music*> SoundManager::m_Music;
 

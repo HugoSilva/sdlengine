@@ -1,7 +1,7 @@
 #include "InputManager.h"
 
-namespace IO {
-
+namespace IO
+{
 	InputManager::InputManager()
 	{
 		// TODO: check available input devices

@@ -1,7 +1,7 @@
 #include "FontManager.h"
 
-namespace graphics {
-
+namespace graphics
+{
 	std::vector<Font*> FontManager::m_Fonts;
 	
 	void FontManager::init()

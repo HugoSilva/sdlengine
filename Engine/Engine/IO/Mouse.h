@@ -2,8 +2,8 @@
 
 #include <SDL.h>
 
-namespace IO {
-
+namespace IO
+{
 	class Mouse
 	{
 	public:

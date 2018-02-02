@@ -2,8 +2,8 @@
 
 #include <GL/glew.h>
 
-namespace graphics {
-
+namespace graphics
+{
 	Window::Window(const char *title, int width, int height)
 		: m_Title(title), m_Width(width), m_Height(height)
 	{
@@ -67,7 +67,7 @@ namespace graphics {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		m_Input = new Input();
+		m_Input = new IO::InputManager();
 
 		std::cout << "OpenGL " << glGetString(GL_VERSION) << std::endl;
 

@@ -1,7 +1,7 @@
 #include "Keyboard.h"
 
-namespace IO {
-
+namespace IO
+{
 	bool Keyboard::keys[SDL_NUM_SCANCODES] = { 0 };
 	bool Keyboard::keysDown[SDL_NUM_SCANCODES] = { 0 };
 	bool Keyboard::keysUp[SDL_NUM_SCANCODES] = { 0 };

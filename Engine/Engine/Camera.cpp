@@ -26,6 +26,8 @@ Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float u
 
 void Camera::Update(float deltaTime)
 {
+	using namespace IO;
+
 	if (Keyboard::Key(SDL_SCANCODE_UP))
 	{
 		this->ProcessKeyboard(FORWARD, deltaTime);

@@ -2,8 +2,8 @@
 
 #include <GL/glew.h>
 
-namespace graphics {
-
+namespace graphics
+{
 	class IndexBuffer
 	{
 	private:
@@ -18,5 +18,4 @@ namespace graphics {
 
 		inline GLuint getCount() const { return m_Count; }
 	};
-
 }

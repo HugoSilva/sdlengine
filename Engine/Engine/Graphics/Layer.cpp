@@ -1,7 +1,7 @@
 #include "layer.h"
 
-namespace graphics {
-
+namespace graphics
+{
 	Layer::Layer(Renderer2D* renderer, Shader* shader)
 		: m_Renderer(renderer), m_Shader(shader)
 	{

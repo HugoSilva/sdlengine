@@ -4,8 +4,8 @@
 #include <glm/glm.hpp>
 #include <SDL_ttf.h>
 
-namespace graphics {
-
+namespace graphics
+{
 	class Font
 	{
 	public:

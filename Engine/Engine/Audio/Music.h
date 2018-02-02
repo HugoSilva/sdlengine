@@ -6,8 +6,8 @@
 
 #include "../Utils/Logger.h"
 
-namespace audio {
-
+namespace audio
+{
 	class Music
 	{
 	public:

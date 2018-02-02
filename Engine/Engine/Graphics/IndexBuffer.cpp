@@ -1,7 +1,7 @@
 #include "indexbuffer.h"
 
-namespace graphics {
-
+namespace graphics
+{
 	IndexBuffer::IndexBuffer(GLushort* data, GLsizei count)
 		: m_Count(count)
 	{

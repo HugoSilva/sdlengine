@@ -7,8 +7,8 @@
 #include "Music.h"
 #include "../Utils/Logger.h"
 
-namespace audio {
-
+namespace audio
+{
 	class SoundManager
 	{
 	public:
