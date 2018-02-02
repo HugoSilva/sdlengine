@@ -210,7 +210,6 @@
     <ClCompile Include="Engine\Graphics\Window.cpp" />
     <ClCompile Include="Engine\Components\Label.cpp" />
     <ClCompile Include="Engine\Graphics\Layer.cpp" />
-    <ClCompile Include="Main.cpp" />
     <ClCompile Include="Engine\Components\TextureManager.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -1,28 +1,28 @@
-#ifndef MOUSE
-#define MOUSE
+#pragma once
 
 #include <SDL.h>
 
-class Mouse
-{
-public:
-	static void MousePosCallback(SDL_MouseMotionEvent event);
-	static void MouseButtonCallback(SDL_MouseButtonEvent event);
+namespace IO {
 
-	static double GetMouseX();
-	static double GetMouseY();
+	class Mouse
+	{
+	public:
+		static void MousePosCallback(SDL_MouseMotionEvent event);
+		static void MouseButtonCallback(SDL_MouseButtonEvent event);
 
-	static bool ButtonDown(int button);
-	static bool ButtonUp(int button);
-	static bool Button(int button);
+		static double GetMouseX();
+		static double GetMouseY();
 
-private:
-	static double x;
-	static double y;
+		static bool ButtonDown(int button);
+		static bool ButtonUp(int button);
+		static bool Button(int button);
 
-	static bool buttons[];
-	static bool buttonsDown[];
-	static bool buttonsUp[];
-};
+	private:
+		static double x;
+		static double y;
 
-#endif
+		static bool buttons[];
+		static bool buttonsDown[];
+		static bool buttonsUp[];
+	};
+}
