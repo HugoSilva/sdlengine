@@ -76,10 +76,6 @@ namespace graphics {
 
 	void Window::Run()
 	{
-		now = SDL_GetTicks();
-		deltaTime = (now - last) / 1000.0f;
-		last = now;
-
 		this->HandleEvents();
 	}
 

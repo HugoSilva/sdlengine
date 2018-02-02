@@ -28,8 +28,7 @@ namespace graphics {
 		SDL_GLContext context;
 		Input* m_Input;
 		bool running;
-		long now, last = 0;
-		float deltaTime = 0.0;
+
 		const char *m_Title;
 		int m_Width, m_Height;
 	};

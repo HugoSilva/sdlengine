@@ -14,7 +14,10 @@ public:
 	void Render();
 
 private:
-	Shader* shader;
-	Camera* camera;
-	graphics::Layer* m_BaseLayer;
+	graphics::Layer* m_Layer;
+	Label* m_Fps;
+	Sprite* m_Sprite;
+	Shader* m_Shader;
+
+	Camera* m_Camera;
 };

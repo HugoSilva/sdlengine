@@ -1,19 +1,22 @@
 #pragma once
 
+#include <vector>
+#include <glm\glm.hpp>
+
 #include "Components\Label.h"
 #include "Components\Sprite.h"
 #include "Graphics\Renderer2D.h"
 #include "Graphics\OpenGLRenderer.h"
 #include "Graphics\Window.h"
 #include "Graphics\Layer.h"
+#include "Graphics\Font.h"
+#include "Graphics\FontManager.h"
 #include "Components\TextureManager.h"
 #include "Scene.h"
 
 #include "Audio\Music.h"
 #include "Audio\Sound.h"
 #include "Audio\SoundManager.h"
-
-#include <glm\glm.hpp>
 
 class Core
 {
@@ -33,7 +36,8 @@ protected:
 
 	const unsigned int getFPS() const { return m_FramesPerSecond; }
 
-	void LoadScene(Scene* scene);
+	bool AddScene(Scene* scene);
+	bool ChangeScene(Scene* newScene);
 
 private:
 	void run();
@@ -44,6 +48,7 @@ private:
 	float deltaAccumulator = 0.0f;
 	int frames = 0;
 	unsigned int m_FramesPerSecond;
-
-	Scene* m_Scene;
+	
+	std::vector<Scene*> m_Scenes;
+	unsigned int m_ActiveScene;
 };

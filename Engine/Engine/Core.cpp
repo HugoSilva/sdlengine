@@ -1,7 +1,6 @@
 #include "Core.h"
 
-Core::Core()
-	: m_FramesPerSecond(0)
+Core::Core() : m_FramesPerSecond(0)
 {
 
 }
@@ -22,7 +21,18 @@ graphics::Window* Core::createWindow(const char *name, int width, int height)
 void Core::start()
 {
 	init();
-	run();
+	try
+	{
+		while (m_Window->GetRunning())
+		{
+			m_Window->Run();
+			run();
+		}
+	}
+	catch (...)
+	{
+		Logger::error("Failed to start the application");
+	}
 }
 
 void Core::run()
@@ -31,9 +41,9 @@ void Core::run()
 	deltaTime = (now - last) / 1000.0f;
 	last = now;
 
-	m_Scene->Update(deltaTime);
+	m_Scenes.at(m_ActiveScene)->Update(deltaTime);
 
-	m_Scene->Render();
+	m_Scenes.at(m_ActiveScene)->Render();
 
 	deltaAccumulator += deltaTime;
 	frames++;
@@ -47,7 +57,26 @@ void Core::run()
 	}
 }
 
-void Core::LoadScene(Scene* scene)
+bool Core::AddScene(Scene* scene)
 {
-	m_Scene = scene;
+	if (true)
+	{
+		m_Scenes.push_back(scene);
+		m_ActiveScene = m_Scenes.size()-1;
+		return true;
+	}
+	return false;
+}
+
+bool Core::ChangeScene(Scene* newScene)
+{
+	for (unsigned int i = 0; i < m_Scenes.size(); i++)
+	{
+		if (m_Scenes.at(i) == newScene)
+		{
+			m_ActiveScene = i;
+			return true;
+		}
+	}
+	return false;
 }
