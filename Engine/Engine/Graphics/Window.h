@@ -24,10 +24,8 @@ namespace graphics
 		SDL_Event windowEvent;
 		SDL_Window* window;
 		SDL_GLContext context;
-		IO::InputManager* m_Input;
-		bool running;
 
-		const char *m_Title;
+		const char* m_Title;
 		int m_Width, m_Height;
 	};
 }

@@ -28,22 +28,22 @@ void Camera::Update(float deltaTime)
 {
 	using namespace IO;
 
-	if (Keyboard::Key(SDL_SCANCODE_UP))
+	if (Keyboard::IsKeyPressed(SDL_SCANCODE_UP))
 	{
 		this->ProcessKeyboard(FORWARD, deltaTime);
 	}
 
-	if (Keyboard::Key(SDL_SCANCODE_DOWN))
+	if (Keyboard::IsKeyPressed(SDL_SCANCODE_DOWN))
 	{
 		this->ProcessKeyboard(BACKWARD, deltaTime);
 	}
 
-	if (Keyboard::Key(SDL_SCANCODE_LEFT))
+	if (Keyboard::IsKeyPressed(SDL_SCANCODE_LEFT))
 	{
 		this->ProcessKeyboard(LEFT, deltaTime);
 	}
 
-	if (Keyboard::Key(SDL_SCANCODE_RIGHT))
+	if (Keyboard::IsKeyPressed(SDL_SCANCODE_RIGHT))
 	{
 		this->ProcessKeyboard(RIGHT, deltaTime);
 	}

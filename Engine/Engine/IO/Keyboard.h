@@ -8,10 +8,10 @@ namespace IO
 	{
 	public:
 		static void KeyCallback(SDL_KeyboardEvent event);
+		static bool IsKeyDown(int key);
+		static bool IsKeyUp(int key);
+		static bool IsKeyPressed(int key);
 
-		static bool KeyDown(int key);
-		static bool KeyUp(int key);
-		static bool Key(int key);
 	private:
 		static bool keys[];
 		static bool keysDown[];

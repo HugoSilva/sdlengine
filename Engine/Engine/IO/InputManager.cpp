@@ -2,13 +2,21 @@
 
 namespace IO
 {
-	InputManager::InputManager()
-		: m_Locked(false)
+	bool InputManager::m_AvailableKeyboard;
+	bool InputManager::m_AvailableMouse;
+	bool InputManager::m_AvailableController;
+	bool InputManager::m_Locked;
+	bool InputManager::m_QuitRequested;
+
+	void InputManager::Init()
 	{
 		// TODO: check available input devices
-		availableKeyboard = true;
-		availableMouse = true;
-		availableController = false;
+		m_AvailableKeyboard = true;
+		m_AvailableMouse = true;
+		m_AvailableController = false;
+		
+		m_Locked = false;
+		m_QuitRequested = false;
 	}
 
 	void InputManager::Update()
@@ -29,8 +37,14 @@ namespace IO
 			case SDL_MOUSEMOTION:
 				HandleMouseMotion(event.motion);
 				break;
+			case SDL_CONTROLLERBUTTONDOWN:
+			case SDL_CONTROLLERBUTTONUP:
+				HandleControllerButton(event.cbutton);
+			case SDL_CONTROLLERAXISMOTION:
+				HandleControllerAxis(event.caxis);
+				break;
 			case SDL_QUIT:
-				//End application
+				m_QuitRequested = true;
 				break;
 			case SDL_MOUSEWHEEL:
 				// event.x; // Ammount scrolled horizontally
@@ -47,53 +61,61 @@ namespace IO
 
 	void InputManager::HandleKeyboard(SDL_KeyboardEvent keyEvent)
 	{
-		if (availableKeyboard) {
+		if (m_AvailableKeyboard) {
 			Keyboard::KeyCallback(keyEvent);
 		}
 	}
 
 	void InputManager::HandleMouseButton(SDL_MouseButtonEvent mouseEvent)
 	{
-		if (availableMouse) {
+		if (m_AvailableMouse) {
 			Mouse::MouseButtonCallback(mouseEvent);
 		}
 	}
 
 	void InputManager::HandleMouseMotion(SDL_MouseMotionEvent mouseEvent)
 	{
-		if (availableMouse) {
+		if (m_AvailableMouse) {
 			Mouse::MousePosCallback(mouseEvent);
 		}
 	}
 
-	bool InputManager::isKeyDown(int key)
+	void InputManager::HandleControllerButton(SDL_ControllerButtonEvent event)
+	{
+	}
+
+	void InputManager::HandleControllerAxis(SDL_ControllerAxisEvent event)
+	{
+	}
+
+	bool InputManager::IsKeyDown(int key)
 	{
 		if (m_Locked)
 		{
 			return false;
 		}
 
-		return Keyboard::KeyCallback(key);
+		return Keyboard::IsKeyDown(key);
 	}
 
-	bool InputManager::isKeyUp(int key)
+	bool InputManager::IsKeyUp(int key)
 	{
 		if (m_Locked)
 		{
 			return false;
 		}
 
-		return Keyboard::KeyCallback(key);
+		return Keyboard::IsKeyUp(key);
 	}
 
-	bool InputManager::isKeyPressed(SDL_Scancode key)
+	bool InputManager::IsKeyPressed(SDL_Scancode key)
 	{
 		if (m_Locked)
 		{
 			return false;
 		}
 		
-		return Keyboard::KeyCallback(key);
+		return Keyboard::IsKeyPressed(key);
 	}
 
 	void InputManager::Lock()

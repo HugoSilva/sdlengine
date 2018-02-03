@@ -4,6 +4,8 @@
 
 namespace IO
 {
+	#define MAX_BUTTON_SIZE 32
+
 	class Mouse
 	{
 	public:
@@ -12,10 +14,9 @@ namespace IO
 
 		static double GetMouseX();
 		static double GetMouseY();
-
-		static bool ButtonDown(int button);
-		static bool ButtonUp(int button);
-		static bool Button(int button);
+		static bool IsButtonDown(int button);
+		static bool IsButtonUp(int button);
+		static bool IsButtonPressed(int button);
 
 	private:
 		static double x;

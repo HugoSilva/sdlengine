@@ -27,22 +27,30 @@ namespace IO
 		keys[key] = event.state != SDL_RELEASED;
 	}
 
-	bool Keyboard::KeyDown(int key)
+	bool Keyboard::IsKeyDown(int key)
 	{
-		bool x = keysDown[key];
-		keysDown[key] = false;
-		return x;
+		if (key < 0 || key >= SDL_NUM_SCANCODES)
+		{
+			return false;
+		}
+		return keysDown[key];
 	}
 
-	bool Keyboard::KeyUp(int key)
+	bool Keyboard::IsKeyUp(int key)
 	{
-		bool x = keysUp[key];
-		keysUp[key] = false;
-		return x;
+		if (key < 0 || key >= SDL_NUM_SCANCODES)
+		{
+			return false;
+		}
+		return keysUp[key];
 	}
 
-	bool Keyboard::Key(int key)
+	bool Keyboard::IsKeyPressed(int key)
 	{
+		if (key < 0 || key >= SDL_NUM_SCANCODES)
+		{
+			return false;
+		}
 		return keys[key];
 	}
 }

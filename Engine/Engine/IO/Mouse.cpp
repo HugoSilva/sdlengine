@@ -5,9 +5,9 @@ namespace IO
 	double Mouse::x = 0;
 	double Mouse::y = 0;
 	// TODO: fix the initialization of the buttons
-	bool Mouse::buttons[20] = { 0 };
-	bool Mouse::buttonsDown[20] = { 0 };
-	bool Mouse::buttonsUp[20] = { 0 };
+	bool Mouse::buttons[MAX_BUTTON_SIZE] = { 0 };
+	bool Mouse::buttonsDown[MAX_BUTTON_SIZE] = { 0 };
+	bool Mouse::buttonsUp[MAX_BUTTON_SIZE] = { 0 };
 
 	double lastX = 0, lastY = 0;
 	double xOffset, yOffset;
@@ -66,22 +66,30 @@ namespace IO
 		return yOffset;
 	}
 
-	bool Mouse::ButtonDown(int button)
+	bool Mouse::IsButtonDown(int button)
 	{
-		bool x = buttonsDown[button];
-		buttonsDown[button] = false;
-		return x;
+		if (button < 0 || button >= MAX_BUTTON_SIZE)
+		{
+			return false;
+		}
+		return buttonsDown[button];
 	}
 
-	bool Mouse::ButtonUp(int button)
+	bool Mouse::IsButtonUp(int button)
 	{
-		bool x = buttonsUp[button];
-		buttonsUp[button] = false;
-		return x;
+		if (button < 0 || button >= MAX_BUTTON_SIZE)
+		{
+			return false;
+		}
+		return buttonsUp[button];
 	}
 
-	bool Mouse::Button(int button)
+	bool Mouse::IsButtonPressed(int button)
 	{
+		if (button < 0 || button >= MAX_BUTTON_SIZE)
+		{
+			return false;
+		}
 		return buttons[button];
 	}
 }

@@ -7,7 +7,7 @@ namespace graphics
 	Window::Window(const char *title, int width, int height)
 		: m_Title(title), m_Width(width), m_Height(height)
 	{
-		running = true;
+
 	}
 
 	Window::~Window()
@@ -53,6 +53,7 @@ namespace graphics
 		audio::SoundManager::init();
 		graphics::FontManager::init();
 		TextureManager::init();
+		IO::InputManager::Init();
 
 		//TODO show cursor and window focus 
 		//SDL_ShowCursor(SDL_DISABLE);
@@ -67,8 +68,6 @@ namespace graphics
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		m_Input = new IO::InputManager();
-
 		std::cout << "OpenGL " << glGetString(GL_VERSION) << std::endl;
 
 		return true;
@@ -76,11 +75,11 @@ namespace graphics
 
 	void Window::Run()
 	{
-		m_Input->Update();
+		IO::InputManager::Update();
 	}
 
 	bool Window::GetRunning()
 	{
-		return running;
+		return !IO::InputManager::IsQuitRequested();
 	}
 }
