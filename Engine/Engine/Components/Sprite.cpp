@@ -1,7 +1,7 @@
 #include "Sprite.h"
 
 Sprite::Sprite(glm::vec3 position, glm::vec2 size, unsigned int color)
-	: Renderable2D(position, size, color)
+	: Renderable2D(position, size, color), position(m_Position)
 {
 	texr.x = round(m_Position.x);
 	texr.y = round(m_Position.y);
@@ -10,7 +10,7 @@ Sprite::Sprite(glm::vec3 position, glm::vec2 size, unsigned int color)
 }
 
 Sprite::Sprite(glm::vec3 position, glm::vec2 size, Texture* texture)
-	: Renderable2D(position, size, 0xffffffff)
+	: Renderable2D(position, size, 0xffffffff), position(m_Position)
 {
 	m_Texture = texture;
 }

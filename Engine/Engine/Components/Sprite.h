@@ -11,4 +11,5 @@ public:
 	Sprite(glm::vec3 position, glm::vec2 size, Texture* texture);
 	
 	void submit(graphics::Renderer2D* renderer) {};
+	glm::vec3& position;
 };

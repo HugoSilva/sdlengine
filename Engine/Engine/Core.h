@@ -5,13 +5,14 @@
 
 #include "Components\Label.h"
 #include "Components\Sprite.h"
+#include "Components\TextureManager.h"
 #include "Graphics\Renderer2D.h"
 #include "Graphics\OpenGLRenderer.h"
 #include "Graphics\Window.h"
 #include "Graphics\Layer.h"
 #include "Graphics\Font.h"
 #include "Graphics\FontManager.h"
-#include "Components\TextureManager.h"
+#include "IO\InputManager.h"
 #include "Scene.h"
 
 #include "Audio\Music.h"

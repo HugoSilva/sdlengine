@@ -36,6 +36,17 @@ SpriteTest::~SpriteTest()
 void SpriteTest::Update(float deltaTime)
 {
 	m_Camera->Update(deltaTime);
+
+	float speed = 0.5f;
+	if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_UP))
+		m_Sprite->position.y += speed;
+	else if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_DOWN))
+		m_Sprite->position.y -= speed;
+	if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_LEFT))
+		m_Sprite->position.x -= speed;
+	else if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_RIGHT))
+		m_Sprite->position.x += speed;
+
 }
 
 void SpriteTest::Render()

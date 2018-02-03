@@ -12,11 +12,11 @@ namespace IO
 		static void Init();
 		static void Update();
 
-		bool IsKeyDown(int key);
-		bool IsKeyUp(int key);
-		bool IsKeyPressed(SDL_Scancode key);
-		void Lock();
-		void Unlock();
+		static bool IsKeyDown(int key);
+		static bool IsKeyUp(int key);
+		static bool IsKeyPressed(SDL_Scancode key);
+		static void Lock();
+		static void Unlock();
 
 		static inline const bool IsQuitRequested() { return m_QuitRequested; }
 
