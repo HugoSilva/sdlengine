@@ -34,8 +34,8 @@ namespace graphics
 		void flush();
 
 	private:
-		GLuint m_VAO, m_VBO;
-		GLsizei m_IndexCount;
+		unsigned int m_VAO, m_VBO;
+		int m_IndexCount;
 		VertexData* m_Buffer;
 		IndexBuffer* m_IBO;
 		SDL_Window* m_Window;

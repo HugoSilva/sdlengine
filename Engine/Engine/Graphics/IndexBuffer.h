@@ -6,16 +6,17 @@ namespace graphics
 {
 	class IndexBuffer
 	{
-	private:
-		GLuint m_BufferID;
-		GLuint m_Count;
 	public:
-		IndexBuffer(GLushort* data, GLsizei count);
-		IndexBuffer(GLuint* data, GLsizei count);
+		IndexBuffer(unsigned short* data, int count);
+		IndexBuffer(unsigned int* data, int count);
 		~IndexBuffer();
 		void bind() const;
 		void unbind() const;
 
-		inline GLuint getCount() const { return m_Count; }
+		inline unsigned int getCount() const { return m_Count; }
+
+	private:
+		unsigned int m_BufferID;
+		unsigned int m_Count;
 	};
 }

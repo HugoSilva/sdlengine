@@ -24,7 +24,7 @@ namespace graphics
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-		GLuint* indices = new GLuint[RENDERER_INDICES_SIZE];
+		unsigned int* indices = new unsigned int[RENDERER_INDICES_SIZE];
 
 		int offset = 0;
 		for (int i = 0; i < RENDERER_INDICES_SIZE; i += 6)
