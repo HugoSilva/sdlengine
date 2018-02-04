@@ -26,6 +26,7 @@ namespace graphics
 	{
 	public:
 		OpenGLRenderer(SDL_Window* win);
+		~OpenGLRenderer();
 
 		void begin();
 		void submit(const Renderable2D* renderable);
