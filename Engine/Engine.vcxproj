@@ -215,8 +215,10 @@
     <ClCompile Include="Engine\Components\Label.cpp" />
     <ClCompile Include="Engine\Graphics\Layer.cpp" />
     <ClCompile Include="Engine\Components\TextureManager.cpp" />
+    <ClCompile Include="Engine\Ecs\Entity.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\Ecs\Component.h" />
     <ClInclude Include="Engine\Core.h" />
     <ClInclude Include="Engine\Audio\Music.h" />
     <ClInclude Include="Engine\Audio\Sound.h" />
@@ -245,6 +247,7 @@
     <ClInclude Include="Engine\Components\Label.h" />
     <ClInclude Include="Engine\Graphics\Layer.h" />
     <ClInclude Include="Engine\Components\TextureManager.h" />
+    <ClInclude Include="Engine\Ecs\Entity.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\Default.frag" />
