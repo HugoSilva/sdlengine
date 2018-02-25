@@ -43,7 +43,7 @@ Texture::Texture(const std::string& name, graphics::Font* font, const std::strin
 
 Texture::~Texture()
 {
-
+	glDeleteTextures(1, &m_Id);
 }
 
 void Texture::bind() const

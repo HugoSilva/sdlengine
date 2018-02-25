@@ -30,7 +30,7 @@ public:
 		{
 			std::string failedFile(filepath);
 			Logger::error("Failed to read file: " + failedFile);
-			return NULL;
+			return "";
 		}
 	}
 };

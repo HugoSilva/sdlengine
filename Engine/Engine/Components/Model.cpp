@@ -131,15 +131,15 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
 {
 	vector<Texture> textures;
 
-	for (GLuint i = 0; i < mat->GetTextureCount(type); i++)
+	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
 	{
 		aiString str;
 		mat->GetTexture(type, i, &str);
 
 		// Check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
-		GLboolean skip = false;
+		bool skip = false;
 
-		for (GLuint j = 0; j < textures_loaded.size(); j++)
+		for (unsigned int j = 0; j < textures_loaded.size(); j++)
 		{
 			//if (textures_loaded[j].GetPath().c_str() == str.C_Str())
 			{

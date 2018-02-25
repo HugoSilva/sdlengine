@@ -24,7 +24,7 @@ namespace graphics
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-		GLuint* indices = new GLuint[RENDERER_INDICES_SIZE];
+		unsigned int* indices = new unsigned int[RENDERER_INDICES_SIZE];
 
 		int offset = 0;
 		for (int i = 0; i < RENDERER_INDICES_SIZE; i += 6)
@@ -43,6 +43,13 @@ namespace graphics
 		m_IBO = new IndexBuffer(indices, RENDERER_INDICES_SIZE);
 
 		glBindVertexArray(0);
+	}
+
+	OpenGLRenderer::~OpenGLRenderer()
+	{
+		delete m_IBO;
+		glDeleteBuffers(1, &m_VBO);
+		glDeleteVertexArrays(1, &m_VAO);
 	}
 
 	void OpenGLRenderer::begin()
