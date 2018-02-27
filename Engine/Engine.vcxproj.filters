@@ -105,6 +105,9 @@
     <ClCompile Include="..\Thirdparty\imgui\include\imgui_impl_sdl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Components\Imgui.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\IO\Keyboard.h">
@@ -216,6 +219,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Thirdparty\imgui\include\stb_truetype.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Components\Imgui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

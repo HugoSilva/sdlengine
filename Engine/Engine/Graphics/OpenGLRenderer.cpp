@@ -1,4 +1,6 @@
 #include "OpenGLRenderer.h"
+#include "imgui.h"
+#include "imgui_impl_sdl.h"
 
 namespace graphics
 {
@@ -54,6 +56,8 @@ namespace graphics
 
 	void OpenGLRenderer::begin()
 	{
+		ImGui_ImplSdlGL2_NewFrame(m_Window);
+
 		glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 		m_Buffer = (VertexData*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 
@@ -146,6 +150,8 @@ namespace graphics
 		glBindVertexArray(0);
 
 		m_IndexCount = 0;
+
+		ImGui::Render();
 		SDL_GL_SwapWindow(m_Window);
 	}
 }

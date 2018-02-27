@@ -18,6 +18,9 @@ namespace graphics
 		graphics::FontManager::clean();
 		TextureManager::clean();
 
+		ImGui_ImplSdlGL2_Shutdown();
+		//ImGui::DestroyContext();
+
 		SDL_DestroyWindow(window);
 		SDL_Quit();
 	}
@@ -72,7 +75,10 @@ namespace graphics
 
 		std::cout << "OpenGL " << glGetString(GL_VERSION) << std::endl;
 
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		ImGui_ImplSdlGL2_Init(window);
+		ImGui::StyleColorsDark();
 
 		return true;
 	}
@@ -80,8 +86,6 @@ namespace graphics
 	void Window::Run()
 	{
 		IO::InputManager::Update();
-		ImGui_ImplSdlGL2_NewFrame(window);
-		ImGui::Render();
 	}
 
 	bool Window::GetRunning()
