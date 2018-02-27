@@ -1,5 +1,7 @@
 #include "Window.h"
 
+#include "imgui.h"
+#include "imgui_impl_sdl.h"
 #include <GL/glew.h>
 
 namespace graphics
@@ -70,12 +72,16 @@ namespace graphics
 
 		std::cout << "OpenGL " << glGetString(GL_VERSION) << std::endl;
 
+		ImGui_ImplSdlGL2_Init(window);
+
 		return true;
 	}
 
 	void Window::Run()
 	{
 		IO::InputManager::Update();
+		ImGui_ImplSdlGL2_NewFrame(window);
+		ImGui::Render();
 	}
 
 	bool Window::GetRunning()
