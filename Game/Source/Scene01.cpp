@@ -15,7 +15,6 @@ SpriteTest::SpriteTest(SDL_Window* win)
 	TextureManager::add(new Texture("test00", "Resources/tex3.png"));
 
 	m_Sprite = new Sprite(glm::vec3(40, 40, 0), glm::vec2(40, 40), TextureManager::get("test00"));
-
 	m_Layer->add(m_Sprite);
 
 	m_Fps = new Label("FPS test", glm::vec3(20, 670, 0), graphics::FontManager::get("Arial"), 0xffffffff);

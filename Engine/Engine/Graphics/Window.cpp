@@ -1,7 +1,7 @@
 #include "Window.h"
 
 #include "imgui.h"
-#include "imgui_impl_sdl.h"
+#include "imgui_impl_sdl_gl3.h"
 #include <GL/glew.h>
 
 namespace graphics
@@ -18,7 +18,7 @@ namespace graphics
 		graphics::FontManager::clean();
 		TextureManager::clean();
 
-		ImGui_ImplSdlGL2_Shutdown();
+		ImGui_ImplSdlGL3_Shutdown();
 		//ImGui::DestroyContext();
 
 		SDL_DestroyWindow(window);
@@ -77,7 +77,7 @@ namespace graphics
 
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		ImGui_ImplSdlGL2_Init(window);
+		ImGui_ImplSdlGL3_Init(window);
 		ImGui::StyleColorsDark();
 
 		return true;
