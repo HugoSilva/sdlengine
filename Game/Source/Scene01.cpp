@@ -1,10 +1,11 @@
 #include "Scene01.h"
 
-using namespace graphics;
-using namespace audio;
 
 SpriteTest::SpriteTest(SDL_Window* win)
 {
+	using namespace graphics;
+	using namespace audio;
+
 	FontManager::add(new Font("Arial", "Resources/arial.ttf", 24));
 
 	m_Shader = new Shader("Resources/Default.vert", "Resources/Default.frag");
@@ -15,17 +16,19 @@ SpriteTest::SpriteTest(SDL_Window* win)
 	TextureManager::add(new Texture("test00", "Resources/tex3.png"));
 
 	m_Sprite = new Sprite(glm::vec3(40, 40, 0), glm::vec2(40, 40), TextureManager::get("test00"));
-
 	m_Layer->add(m_Sprite);
 
-	m_Fps = new Label("FPS test", glm::vec3(20, 670, 0), graphics::FontManager::get("Arial"), 0xffffffff);
+	m_Fps = new Label("FPS test", glm::vec3(20, 670, 0), FontManager::get("Arial"), 0xffffffff);
 	m_Layer->add(m_Fps);
+
+	Imgui* testImgui = new Imgui();
+	m_Layer->add(testImgui);
 
 	SoundManager::add(new Sound("eff", "Resources/effect.wav"));
 	SoundManager::add(new Music("bgm", "Resources/background.ogg"));
 
-	audio::SoundManager::getMusic("bgm")->play();
-	audio::SoundManager::getSound("eff")->loop();
+	SoundManager::getMusic("bgm")->play();
+	SoundManager::getSound("eff")->play();
 	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
 }
 

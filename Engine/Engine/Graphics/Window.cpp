@@ -1,5 +1,7 @@
 #include "Window.h"
 
+#include "imgui.h"
+#include "imgui_impl_sdl_gl3.h"
 #include <GL/glew.h>
 
 namespace graphics
@@ -15,6 +17,9 @@ namespace graphics
 		audio::SoundManager::clean();
 		graphics::FontManager::clean();
 		TextureManager::clean();
+
+		ImGui_ImplSdlGL3_Shutdown();
+		//ImGui::DestroyContext();
 
 		SDL_DestroyWindow(window);
 		SDL_Quit();
@@ -69,6 +74,11 @@ namespace graphics
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		std::cout << "OpenGL " << glGetString(GL_VERSION) << std::endl;
+
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		ImGui_ImplSdlGL3_Init(window);
+		ImGui::StyleColorsDark();
 
 		return true;
 	}
