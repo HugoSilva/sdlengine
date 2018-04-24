@@ -30,6 +30,8 @@ SpriteTest::SpriteTest(SDL_Window* win)
 	SoundManager::getMusic("bgm")->play();
 	SoundManager::getSound("eff")->play();
 	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
+
+	m_TestBox2d = new Box2D();
 }
 
 SpriteTest::~SpriteTest()
@@ -39,6 +41,7 @@ SpriteTest::~SpriteTest()
 void SpriteTest::Update(float deltaTime)
 {
 	m_Camera->Update(deltaTime);
+	m_TestBox2d->Update(deltaTime);
 
 	float speed = 0.5f;
 	if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_UP))

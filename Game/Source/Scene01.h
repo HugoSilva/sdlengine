@@ -18,6 +18,7 @@ private:
 	Label* m_Fps;
 	Sprite* m_Sprite;
 	Shader* m_Shader;
+	Box2D* m_TestBox2d;
 
 	Camera* m_Camera;
 };
