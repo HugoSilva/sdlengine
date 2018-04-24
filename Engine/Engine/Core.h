@@ -14,6 +14,7 @@
 #include "Graphics\Font.h"
 #include "Graphics\FontManager.h"
 #include "IO\InputManager.h"
+#include "Physics\Box2D.h"
 #include "Scene.h"
 
 #include "Audio\Music.h"
