@@ -1,5 +1,7 @@
 #pragma once
 
+#include "..\Components\Sprite.h"
+
 namespace physics 
 {
 	class Updatable
@@ -9,6 +11,6 @@ namespace physics
 
 		virtual ~Updatable() { }
 
-		virtual void Update(float deltaTime) { }
+		virtual void Update(float deltaTime, Sprite sprite) { }
 	};
 }

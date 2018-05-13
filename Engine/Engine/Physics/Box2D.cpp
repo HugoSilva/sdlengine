@@ -23,8 +23,8 @@ Box2D::Box2D()
 	// Define the dynamic body. We set its position and call the body factory.
 	b2BodyDef bodyDef;
 	bodyDef.type = b2_dynamicBody;
-	bodyDef.position.Set(0.0f, 4.0f);
-	b2Body* body = m_world.CreateBody(&bodyDef);
+	bodyDef.position.Set(0.0f, 400.0f);
+	m_body = m_world.CreateBody(&bodyDef);
 
 	// Define another box shape for our dynamic body.
 	b2PolygonShape dynamicBox;
@@ -41,13 +41,19 @@ Box2D::Box2D()
 	fixtureDef.friction = 0.3f;
 
 	// Add the shape to the body.
-	body->CreateFixture(&fixtureDef);
+	m_body->CreateFixture(&fixtureDef);
 }
 
-void Box2D::Update(float deltaTime)
+void Box2D::Update(float deltaTime, Sprite sprite)
 {
 	// Prepare for simulation. Typically we use a time step of 1/60 of a
 	// second (60Hz) and 10 iterations. This provides a high quality simulation
 	// in most game scenarios.
 	m_world.Step(timeStep, velocityIterations, positionIterations);
+
+	b2Vec2 position = m_body->GetPosition();
+	float32 angle = m_body->GetAngle();
+
+	sprite.position = glm::vec3(position.x, position.y, 0);
+	printf("%4.2f %4.2f %4.2f\n", position.x, position.y, angle);
 }
