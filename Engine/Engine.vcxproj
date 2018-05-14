@@ -216,6 +216,8 @@
     <ClCompile Include="Engine\IO\InputManager.cpp" />
     <ClCompile Include="Engine\IO\Keyboard.cpp" />
     <ClCompile Include="Engine\IO\Mouse.cpp" />
+    <ClCompile Include="Engine\Physics\Collider.cpp" />
+    <ClCompile Include="Engine\Physics\Rigidbody.cpp" />
     <ClCompile Include="Engine\Utils\Logger.cpp" />
     <ClCompile Include="Engine\Graphics\Window.cpp" />
     <ClCompile Include="Engine\Components\Label.cpp" />
@@ -254,6 +256,8 @@
     <ClInclude Include="Engine\IO\InputManager.h" />
     <ClInclude Include="Engine\IO\Keyboard.h" />
     <ClInclude Include="Engine\IO\Mouse.h" />
+    <ClInclude Include="Engine\Physics\Collider.h" />
+    <ClInclude Include="Engine\Physics\Rigidbody.h" />
     <ClInclude Include="Engine\Physics\Updatable.h" />
     <ClInclude Include="Engine\Utils\File.h" />
     <ClInclude Include="Engine\Utils\Image.h" />
