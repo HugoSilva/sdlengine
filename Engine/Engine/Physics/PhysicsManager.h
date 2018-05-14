@@ -4,15 +4,17 @@
 #include "Updatable.h"
 #include "..\Components\Sprite.h"
 
-class Box2D : public physics::Updatable
+class PhysicsManager : public physics::Updatable
 {
 public:
-	Box2D();
+	static void init();
 	void Update(float deltaTime, Sprite sprite) override;
+	static b2World* GetWorldObject();
+
 private:
-	b2Vec2 m_gravity{ 0.0f, -10.0f };
-	b2World m_world{ m_gravity };
-	b2Body* m_body;
+	PhysicsManager() { }
+	static b2Vec2 m_gravity;
+	static b2World m_world;
 
 	float32 timeStep = 1.0f / 60.0f;
 	int32 velocityIterations = 6;

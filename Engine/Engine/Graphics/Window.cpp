@@ -59,6 +59,7 @@ namespace graphics
 		graphics::FontManager::init();
 		TextureManager::init();
 		IO::InputManager::Init();
+		PhysicsManager::init();
 
 		//TODO show cursor and window focus 
 		//SDL_ShowCursor(SDL_DISABLE);
