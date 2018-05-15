@@ -1,6 +1,8 @@
 #include "Rigidbody.h"
+#include "PhysicsManager.h"
 
-Rigidbody::Rigidbody(glm::vec2 position, glm::vec2 size, bool useType, bool useFixture)
+Rigidbody::Rigidbody(Sprite* sprite, glm::vec2 position, glm::vec2 size, bool useType, bool useFixture)
+	: m_Sprite(sprite)
 {
 	b2BodyDef bodyDefinition;
 	if (useType)
@@ -29,8 +31,8 @@ Rigidbody::Rigidbody(glm::vec2 position, glm::vec2 size, bool useType, bool useF
 	}
 }
 
-void Rigidbody::Update(float deltaTime, Sprite sprite)
+void Rigidbody::Update(float deltaTime)
 {
 	b2Vec2 position = m_body->GetPosition();
-	sprite.position = glm::vec3(position.x, position.y, 0);
+	m_Sprite->position = glm::vec3(position.x, position.y, 0);
 }

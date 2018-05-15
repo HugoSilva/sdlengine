@@ -11,6 +11,6 @@ namespace physics
 
 		virtual ~Updatable() { }
 
-		virtual void Update(float deltaTime, Sprite sprite) { }
+		virtual void Update(float deltaTime) { }
 	};
 }

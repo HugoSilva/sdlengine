@@ -5,7 +5,7 @@ Collider::Collider()
 
 }
 
-void Collider::Update(float deltaTime, Sprite sprite)
+void Collider::Update(float deltaTime)
 {
 
 }
