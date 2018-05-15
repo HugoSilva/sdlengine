@@ -33,8 +33,8 @@ SpriteTest::SpriteTest(SDL_Window* win)
 	SoundManager::getSound("eff")->play();
 	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
 
-	m_rbGround = new Rigidbody(glm::vec2(0.0f, -10.0f), glm::vec2(50.0f, 10.0f));
-	//m_rbSprite = new Rigidbody(glm::vec2(0.0f, 400.0f), glm::vec2(1.0f, 1.0f), true, false);
+	PhysicsManager::add(new Rigidbody(glm::vec2(0.0f, -10.0f), glm::vec2(50.0f, 10.0f)));
+	PhysicsManager::add(new Rigidbody(glm::vec2(0.0f, 400.0f), glm::vec2(1.0f, 1.0f), true, true));
 }
 
 SpriteTest::~SpriteTest()
@@ -44,8 +44,7 @@ SpriteTest::~SpriteTest()
 void SpriteTest::Update(float deltaTime)
 {
 	m_Camera->Update(deltaTime);
-	m_rbGround->Update(deltaTime, *m_Sprite);
-	//m_rbSprite->Update(deltaTime, *m_Sprite);
+	PhysicsManager::Update(deltaTime, *m_Sprite);
 
 	float speed = 0.5f;
 	if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_UP))

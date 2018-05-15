@@ -2,10 +2,16 @@
 
 b2Vec2 PhysicsManager::m_gravity{ 0.0f, -10.0f };
 b2World PhysicsManager::m_world{ m_gravity };
+std::vector<Rigidbody*> PhysicsManager::m_Rigidbodies;
 
 void PhysicsManager::init()
 {
 	m_world = b2World{ m_gravity };
+}
+
+void PhysicsManager::add(Rigidbody* rb)
+{
+	m_Rigidbodies.push_back(rb);
 }
 
 void PhysicsManager::Update(float deltaTime, Sprite sprite)

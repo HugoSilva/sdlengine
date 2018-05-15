@@ -18,8 +18,6 @@ private:
 	Label* m_Fps;
 	Sprite* m_Sprite;
 	Shader* m_Shader;
-	Rigidbody* m_rbGround;
-	Rigidbody* m_rbSprite;
 
 	Camera* m_Camera;
 };
