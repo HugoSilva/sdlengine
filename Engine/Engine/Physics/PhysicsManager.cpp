@@ -3,6 +3,9 @@
 b2Vec2 PhysicsManager::m_gravity{ 0.0f, -10.0f };
 b2World PhysicsManager::m_world{ m_gravity };
 std::vector<Rigidbody*> PhysicsManager::m_Rigidbodies;
+float32 PhysicsManager::timeStep = 1.0f / 60.0f;
+int32 PhysicsManager::velocityIterations = 6;
+int32 PhysicsManager::positionIterations = 2;
 
 void PhysicsManager::init()
 {
@@ -21,6 +24,14 @@ void PhysicsManager::Update(float deltaTime)
 	// in most game scenarios.
 	m_world.Step(timeStep, velocityIterations, positionIterations);
 	
+	for (Rigidbody* rb : m_Rigidbodies)
+		rb->Update(deltaTime);
+}
+
+void PhysicsManager::UpdateObjects(float deltaTime)
+{
+	m_world.Step(timeStep, velocityIterations, positionIterations);
+
 	for (Rigidbody* rb : m_Rigidbodies)
 		rb->Update(deltaTime);
 }

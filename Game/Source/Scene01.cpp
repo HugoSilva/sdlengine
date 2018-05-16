@@ -34,7 +34,7 @@ SpriteTest::SpriteTest(SDL_Window* win)
 	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
 
 	//PhysicsManager::add(new Rigidbody(m_Sprite, glm::vec2(0.0f, -10.0f), glm::vec2(50.0f, 10.0f)));
-	//PhysicsManager::add(new Rigidbody(m_Sprite, glm::vec2(0.0f, 400.0f), glm::vec2(1.0f, 1.0f), true, true));
+	PhysicsManager::add(new Rigidbody(m_Sprite, glm::vec2(0.0f, 400.0f), glm::vec2(1.0f, 1.0f), true, true));
 }
 
 SpriteTest::~SpriteTest()
@@ -44,7 +44,7 @@ SpriteTest::~SpriteTest()
 void SpriteTest::Update(float deltaTime)
 {
 	m_Camera->Update(deltaTime);
-	PhysicsManager::Update(deltaTime);
+	PhysicsManager::UpdateObjects(deltaTime);
 
 	float speed = 0.5f;
 	if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_UP))

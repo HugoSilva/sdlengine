@@ -11,6 +11,7 @@ public:
 	static void init();
 	static void add(Rigidbody* rb);
 	void Update(float deltaTime) override;
+	static void UpdateObjects(float deltaTime);
 	static b2World* GetWorldObject();
 
 private:
@@ -19,7 +20,7 @@ private:
 	static b2Vec2 m_gravity;
 	static b2World m_world;
 
-	float32 timeStep = 1.0f / 60.0f;
-	int32 velocityIterations = 6;
-	int32 positionIterations = 2;
+	static float32 timeStep;
+	static int32 velocityIterations;
+	static int32 positionIterations;
 };
