@@ -15,10 +15,11 @@ SpriteTest::SpriteTest(SDL_Window* win)
 
 	TextureManager::add(new Texture("test00", "Resources/tex3.png"));
 
-	m_Sprite = new Sprite(glm::vec3(40, 40, 0), glm::vec2(40, 40), TextureManager::get("test00"));
+	m_GroundSprite = new Sprite(glm::vec3(40, 40, 0), glm::vec2(40, 40), TextureManager::get("test00"));
+	m_PlayerSprite = new Sprite(glm::vec3(40, 40, 0), glm::vec2(40, 40), 0xaa0011ff);
 
-	m_Sprite = new Sprite(glm::vec3(40, 40, 0), glm::vec2(40, 40), 0xaa0011ff);
-	m_Layer->add(m_Sprite);
+	m_Layer->add(m_GroundSprite);
+	m_Layer->add(m_PlayerSprite);
 
 	m_Fps = new Label("FPS test", glm::vec3(20, 670, 0), FontManager::get("Arial"), 0xffffffff);
 	m_Layer->add(m_Fps);
@@ -33,8 +34,8 @@ SpriteTest::SpriteTest(SDL_Window* win)
 	SoundManager::getSound("eff")->play();
 	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
 
-	//PhysicsManager::add(new Rigidbody(m_Sprite, glm::vec2(0.0f, -10.0f), glm::vec2(50.0f, 10.0f)));
-	PhysicsManager::add(new Rigidbody(m_Sprite, glm::vec2(0.0f, 400.0f), glm::vec2(1.0f, 1.0f), true, true));
+	PhysicsManager::add(new Rigidbody(m_GroundSprite, glm::vec2(0.0f, 0.0f), glm::vec2(20.0f, 20.0f)));
+	PhysicsManager::add(new Rigidbody(m_PlayerSprite, glm::vec2(0.0f, 400.0f), glm::vec2(20.0f, 20.0f), true, true));
 }
 
 SpriteTest::~SpriteTest()
@@ -46,15 +47,15 @@ void SpriteTest::Update(float deltaTime)
 	m_Camera->Update(deltaTime);
 	PhysicsManager::UpdateObjects(deltaTime);
 
-	float speed = 0.5f;
+	float speed = 0.1f;
 	if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_UP))
-		m_Sprite->position.y += speed;
+		m_PlayerSprite->position.y += speed;
 	else if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_DOWN))
-		m_Sprite->position.y -= speed;
+		m_PlayerSprite->position.y -= speed;
 	if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_LEFT))
-		m_Sprite->position.x -= speed;
+		m_PlayerSprite->position.x -= speed;
 	else if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_RIGHT))
-		m_Sprite->position.x += speed;
+		m_PlayerSprite->position.x += speed;
 
 }
 

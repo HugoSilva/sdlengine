@@ -12,13 +12,14 @@ public:
 	static void add(Rigidbody* rb);
 	void Update(float deltaTime) override;
 	static void UpdateObjects(float deltaTime);
+	static void Clean();
 	static b2World* GetWorldObject();
 
 private:
 	PhysicsManager() { }
 	static std::vector<Rigidbody*> m_Rigidbodies;
 	static b2Vec2 m_gravity;
-	static b2World m_world;
+	static b2World* m_world;
 
 	static float32 timeStep;
 	static int32 velocityIterations;

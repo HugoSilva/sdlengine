@@ -17,6 +17,7 @@ namespace graphics
 		audio::SoundManager::clean();
 		graphics::FontManager::clean();
 		TextureManager::clean();
+		PhysicsManager::Clean();
 
 		ImGui_ImplSdlGL3_Shutdown();
 		//ImGui::DestroyContext();
