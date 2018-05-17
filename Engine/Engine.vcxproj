@@ -72,31 +72,31 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(SolutionDir)Thirdparty\Box2D\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)inter\$(ProjectName)\$(Configuration)\$(Platform)\</IntDir>
-    <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(SolutionDir)Thirdparty\Box2D\lib\$(Platform)\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)inter\$(ProjectName)\$(Configuration)\$(Platform)\</IntDir>
-    <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(SolutionDir)Thirdparty\Box2D\lib\$(Platform)\;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(SolutionDir)Thirdparty\Box2D\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(SolutionDir)Thirdparty\Box2D\include;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)inter\$(ProjectName)\$(Configuration)\$(Platform)\</IntDir>
-    <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(SolutionDir)Thirdparty\Box2D\lib\$(Platform)\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)inter\$(ProjectName)\$(Configuration)\$(Platform)\</IntDir>
-    <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(SolutionDir)Thirdparty\Box2D\lib\$(Platform)\;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(SolutionDir)Thirdparty\Box2D\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -196,6 +196,7 @@
     <ClCompile Include="..\Thirdparty\imgui\include\imgui_demo.cpp" />
     <ClCompile Include="..\Thirdparty\imgui\include\imgui_draw.cpp" />
     <ClCompile Include="..\Thirdparty\imgui\include\imgui_impl_sdl_gl3.cpp" />
+    <ClCompile Include="Engine\Physics\PhysicsManager.cpp" />
     <ClCompile Include="Engine\Components\Imgui.cpp" />
     <ClCompile Include="Engine\Core.cpp" />
     <ClCompile Include="Engine\Audio\Music.cpp" />
@@ -215,6 +216,8 @@
     <ClCompile Include="Engine\IO\InputManager.cpp" />
     <ClCompile Include="Engine\IO\Keyboard.cpp" />
     <ClCompile Include="Engine\IO\Mouse.cpp" />
+    <ClCompile Include="Engine\Physics\Collider.cpp" />
+    <ClCompile Include="Engine\Physics\Rigidbody.cpp" />
     <ClCompile Include="Engine\Utils\Logger.cpp" />
     <ClCompile Include="Engine\Graphics\Window.cpp" />
     <ClCompile Include="Engine\Components\Label.cpp" />
@@ -230,7 +233,9 @@
     <ClInclude Include="..\Thirdparty\imgui\include\stb_rect_pack.h" />
     <ClInclude Include="..\Thirdparty\imgui\include\stb_textedit.h" />
     <ClInclude Include="..\Thirdparty\imgui\include\stb_truetype.h" />
+    <ClInclude Include="Engine\Physics\PhysicsManager.h" />
     <ClInclude Include="Engine\Components\Imgui.h" />
+    <ClInclude Include="Engine\Components\Test.h" />
     <ClInclude Include="Engine\Ecs\Component.h" />
     <ClInclude Include="Engine\Core.h" />
     <ClInclude Include="Engine\Audio\Music.h" />
@@ -251,6 +256,9 @@
     <ClInclude Include="Engine\IO\InputManager.h" />
     <ClInclude Include="Engine\IO\Keyboard.h" />
     <ClInclude Include="Engine\IO\Mouse.h" />
+    <ClInclude Include="Engine\Physics\Collider.h" />
+    <ClInclude Include="Engine\Physics\Rigidbody.h" />
+    <ClInclude Include="Engine\Physics\Updatable.h" />
     <ClInclude Include="Engine\Utils\File.h" />
     <ClInclude Include="Engine\Utils\Image.h" />
     <ClInclude Include="Engine\Utils\Logger.h" />

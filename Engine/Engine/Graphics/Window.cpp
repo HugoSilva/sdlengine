@@ -17,6 +17,7 @@ namespace graphics
 		audio::SoundManager::clean();
 		graphics::FontManager::clean();
 		TextureManager::clean();
+		PhysicsManager::Clean();
 
 		ImGui_ImplSdlGL3_Shutdown();
 		//ImGui::DestroyContext();
@@ -59,6 +60,7 @@ namespace graphics
 		graphics::FontManager::init();
 		TextureManager::init();
 		IO::InputManager::Init();
+		PhysicsManager::init();
 
 		//TODO show cursor and window focus 
 		//SDL_ShowCursor(SDL_DISABLE);

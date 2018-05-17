@@ -14,6 +14,9 @@
 #include "Graphics\Font.h"
 #include "Graphics\FontManager.h"
 #include "IO\InputManager.h"
+#include "Physics\PhysicsManager.h"
+#include "Physics\Collider.h"
+#include "Physics\Rigidbody.h"
 #include "Scene.h"
 
 #include "Audio\Music.h"

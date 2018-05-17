@@ -6,6 +6,7 @@
 #include "../Audio/SoundManager.h"
 #include "../Graphics/FontManager.h"
 #include "../Components/TextureManager.h"
+#include "../Physics/PhysicsManager.h"
 
 namespace graphics
 {

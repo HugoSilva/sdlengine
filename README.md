@@ -9,4 +9,6 @@ The project should be self-sustained with every dependency in the libs folder, c
 ##### [SDL_mixer 2.0.2](https://www.libsdl.org/projects/SDL_mixer/) - Loading sounds
 ##### [SDL_ttf 2.0.14](https://www.libsdl.org/projects/SDL_ttf/) - Rendering fonts
 ##### [GLM 0.9.9-a2](https://glm.g-truc.net/) - Math library
+##### [IMGUI 1.60](https://github.com/ocornut/imgui) - GUI framework
+##### [Box2D 2.3.1](http://box2d.org/) - 2D Physics engine
 ##### [Assimp 3.3.1](http://assimp.sourceforge.net/) - Loading 3D models

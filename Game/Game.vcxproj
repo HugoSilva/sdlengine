@@ -72,26 +72,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)inter\$(ProjectName)\$(Configuration)\$(Platform)\</IntDir>
-    <IncludePath>$(SolutionDir)Engine\Engine\;$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(SolutionDir)bin\Engine\$(Configuration)\$(Platform)\;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)Engine\Engine\;$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(SolutionDir)Thirdparty\Box2D\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(SolutionDir)Thirdparty\Box2D\lib\$(Platform)\;$(SolutionDir)bin\Engine\$(Configuration)\$(Platform)\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)inter\$(ProjectName)\$(Configuration)\$(Platform)\</IntDir>
-    <IncludePath>$(SolutionDir)Engine\Engine\;$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(SolutionDir)bin\Engine\$(Configuration)\$(Platform)\;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)Engine\Engine\;$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(SolutionDir)Thirdparty\Box2D\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(SolutionDir)Thirdparty\Box2D\lib\$(Platform)\;$(SolutionDir)bin\Engine\$(Configuration)\$(Platform)\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)inter\$(ProjectName)\$(Configuration)\$(Platform)\</IntDir>
-    <IncludePath>$(SolutionDir)Engine\Engine\;$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(SolutionDir)bin\Engine\$(Configuration)\$(Platform)\;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)Engine\Engine\;$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(SolutionDir)Thirdparty\Box2D\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(SolutionDir)Thirdparty\Box2D\lib\$(Platform)\;$(SolutionDir)bin\Engine\$(Configuration)\$(Platform)\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)inter\$(ProjectName)\$(Configuration)\$(Platform)\</IntDir>
-    <IncludePath>$(SolutionDir)Engine\Engine\;$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(SolutionDir)bin\Engine\$(Configuration)\$(Platform)\;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)Engine\Engine\;$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(SolutionDir)Thirdparty\Box2D\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(SolutionDir)Thirdparty\Box2D\lib\$(Platform)\;$(SolutionDir)bin\Engine\$(Configuration)\$(Platform)\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -103,7 +103,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>glew32.lib;opengl32.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;Engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;opengl32.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;Box2D_d.lib;Engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
@@ -124,7 +124,7 @@ copy "$(SolutionDir)Thirdparty\SDL2_ttf\bin\$(Platform)\*.dll"  "$(TargetDir)"</
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>glew32.lib;opengl32.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;Engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;opengl32.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;Box2D_d.lib;Engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
@@ -151,7 +151,7 @@ copy "$(SolutionDir)Thirdparty\SDL2_ttf\bin\$(Platform)\*.dll"  "$(TargetDir)"</
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>glew32.lib;opengl32.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;Engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;opengl32.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;Box2D.lib;Engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
@@ -178,7 +178,7 @@ copy "$(SolutionDir)Thirdparty\SDL2_ttf\bin\$(Platform)\*.dll"  "$(TargetDir)"</
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>glew32.lib;opengl32.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;Engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;opengl32.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;Box2D.lib;Engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
