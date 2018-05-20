@@ -1,6 +1,11 @@
 #pragma once
 
-#include <GL/glew.h>
+#ifdef EMSCRIPTEN
+	#define GLFW_INCLUDE_ES3
+	#include <GLFW/glfw3.h>
+#else
+	#include <GL/glew.h>
+#endif // EMSCRIPTEN
 
 namespace graphics
 {

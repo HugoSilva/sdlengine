@@ -2,7 +2,12 @@
 
 #include <SDL_image.h>
 #include <SDL_ttf.h>
-#include <GL/glew.h>
+#ifdef EMSCRIPTEN
+	#define GLFW_INCLUDE_ES3
+	#include <GLFW/glfw3.h>
+#else
+	#include <GL/glew.h>
+#endif // EMSCRIPTEN
 #include "Logger.h"
 
 class Image

@@ -1,7 +1,12 @@
 #pragma once
 
 #include <string>
-#include <GL/glew.h>
+#ifdef EMSCRIPTEN
+	#define GLFW_INCLUDE_ES3
+	#include <GLFW/glfw3.h>
+#else
+	#include <GL/glew.h>
+#endif // EMSCRIPTEN
 #include "../Graphics/Font.h"
 #include "../Utils/Image.h"
 

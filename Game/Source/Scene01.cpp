@@ -8,7 +8,11 @@ SpriteTest::SpriteTest(SDL_Window* win)
 
 	FontManager::add(new Font("Arial", "Resources/arial.ttf", 24));
 
+#ifdef EMSCRIPTEN
+	m_Shader = new Shader("Resources/ES3.vert", "Resources/ES3.frag");
+#else
 	m_Shader = new Shader("Resources/Default.vert", "Resources/Default.frag");
+#endif // EMSCRIPTEN
 
 	//m_Layer = new Layer(new SDLRenderer(win), m_Shader);
 	m_Layer = new Layer(new OpenGLRenderer(win), m_Shader);

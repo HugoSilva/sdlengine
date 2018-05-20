@@ -3,7 +3,12 @@
 
 #include "Shader.h"
 
-#include <GL/glew.h>
+#ifdef EMSCRIPTEN
+	#define GLFW_INCLUDE_ES3
+	#include <GLFW/glfw3.h>
+#else
+	#include <GL/glew.h>
+#endif // EMSCRIPTEN
 //#pragma comment(lib, "opengl32.lib")
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
