@@ -214,6 +214,7 @@ copy "$(SolutionDir)Thirdparty\SDL2_ttf\bin\$(Platform)\*.dll"  "$(TargetDir)"</
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
+      <PreprocessorDefinitions>EMSCRIPTEN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
