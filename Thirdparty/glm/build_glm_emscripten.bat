@@ -1,0 +1,1 @@
+call emcc --std=c++11 "include\glm\glm.hpp" -O3 -o glm.bc
