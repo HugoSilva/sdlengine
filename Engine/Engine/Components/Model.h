@@ -9,8 +9,7 @@
 #include <vector>
 
 #ifdef EMSCRIPTEN
-	#define GLFW_INCLUDE_ES3
-	#include <GLFW/glfw3.h>
+	#include <SDL_opengles2.h>
 #else
 	#include <GL/glew.h>
 #endif // EMSCRIPTEN

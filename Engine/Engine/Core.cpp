@@ -1,4 +1,13 @@
 #include "Core.h"
+#include <functional>
+
+#ifdef EMSCRIPTEN
+static void DispatchLoop(void* fp)
+{
+	std::function<void()>* func = (std::function<void()>*)fp;
+	(*func)();
+}
+#endif
 
 Core::Core() : m_FramesPerSecond(0)
 {
@@ -7,7 +16,6 @@ Core::Core() : m_FramesPerSecond(0)
 
 Core::~Core()
 {
-	//delete m_Timer;
 	delete m_Window;
 }
 
@@ -23,11 +31,21 @@ void Core::start()
 	init();
 	try
 	{
+#ifdef EMSCRIPTEN
+		std::function<void()> fGameLoop = [&]() {
+#else
 		while (m_Window->GetRunning())
 		{
+#endif
 			m_Window->Run();
 			run();
+
+#ifdef EMSCRIPTEN
+		};
+		emscripten_set_main_loop_arg(DispatchLoop, &fGameLoop, 0, 1);
+#else
 		}
+#endif
 	}
 	catch (...)
 	{

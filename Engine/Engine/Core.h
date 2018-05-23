@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef EMSCRIPTEN
+	#include <emscripten/emscripten.h>
+#endif
+
 #include <vector>
 #include <glm\glm.hpp>
 
