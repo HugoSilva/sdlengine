@@ -1,0 +1,1 @@
+call emcc --std=c++11 -I"include/" "include/imgui.cpp" "include/imgui_draw.cpp" "include/imgui_demo.cpp" -O3 -o imgui.bc
