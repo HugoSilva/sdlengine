@@ -1,6 +1,6 @@
 #include "OpenGLRenderer.h"
-#include "imgui.h"
-#include "imgui_impl_sdl_gl3.h"
+#include <imgui.h>
+#include "../Utils/imgui_impl_sdl_gl3.h"
 
 namespace graphics
 {
@@ -45,6 +45,11 @@ namespace graphics
 		m_IBO = new IndexBuffer(indices, RENDERER_INDICES_SIZE);
 
 		glBindVertexArray(0);
+
+		#ifdef EMSCRIPTEN
+			m_BufferBase = new VertexData[RENDERER_MAX_SPRITES * 4];
+		#endif // EMSCRIPTEN
+
 	}
 
 	OpenGLRenderer::~OpenGLRenderer()
@@ -59,7 +64,11 @@ namespace graphics
 		ImGui_ImplSdlGL3_NewFrame(m_Window);
 
 		glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-		m_Buffer = (VertexData*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+		#ifdef EMSCRIPTEN
+			m_Buffer = m_BufferBase;
+		#else
+			m_Buffer = (VertexData*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+		#endif // EMSCRIPTEN
 
 		glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -129,7 +138,14 @@ namespace graphics
 
 	void OpenGLRenderer::end()
 	{
-		glUnmapBuffer(GL_ARRAY_BUFFER);
+		#ifdef EMSCRIPTEN
+			glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+			glBufferSubData(GL_ARRAY_BUFFER, 0, (m_Buffer - m_BufferBase) * RENDERER_VERTEX_SIZE, m_BufferBase);
+			m_Buffer = m_BufferBase;
+		#else
+			glUnmapBuffer(GL_ARRAY_BUFFER);
+		#endif // EMSCRIPTEN
+
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 

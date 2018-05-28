@@ -291,7 +291,6 @@
     <ClCompile Include="..\Thirdparty\imgui\include\imgui.cpp" />
     <ClCompile Include="..\Thirdparty\imgui\include\imgui_demo.cpp" />
     <ClCompile Include="..\Thirdparty\imgui\include\imgui_draw.cpp" />
-    <ClCompile Include="..\Thirdparty\imgui\include\imgui_impl_sdl_gl3.cpp" />
     <ClCompile Include="Engine\Physics\PhysicsManager.cpp" />
     <ClCompile Include="Engine\Components\Imgui.cpp" />
     <ClCompile Include="Engine\Core.cpp" />
@@ -314,6 +313,7 @@
     <ClCompile Include="Engine\IO\Mouse.cpp" />
     <ClCompile Include="Engine\Physics\Collider.cpp" />
     <ClCompile Include="Engine\Physics\Rigidbody.cpp" />
+    <ClCompile Include="Engine\Utils\imgui_impl_sdl_gl3.cpp" />
     <ClCompile Include="Engine\Utils\Logger.cpp" />
     <ClCompile Include="Engine\Graphics\Window.cpp" />
     <ClCompile Include="Engine\Components\Label.cpp" />
@@ -324,7 +324,6 @@
   <ItemGroup>
     <ClInclude Include="..\Thirdparty\imgui\include\imconfig.h" />
     <ClInclude Include="..\Thirdparty\imgui\include\imgui.h" />
-    <ClInclude Include="..\Thirdparty\imgui\include\imgui_impl_sdl_gl3.h" />
     <ClInclude Include="..\Thirdparty\imgui\include\imgui_internal.h" />
     <ClInclude Include="..\Thirdparty\imgui\include\stb_rect_pack.h" />
     <ClInclude Include="..\Thirdparty\imgui\include\stb_textedit.h" />
@@ -356,6 +355,7 @@
     <ClInclude Include="Engine\Physics\Updatable.h" />
     <ClInclude Include="Engine\Utils\File.h" />
     <ClInclude Include="Engine\Utils\Image.h" />
+    <ClInclude Include="Engine\Utils\imgui_impl_sdl_gl3.h" />
     <ClInclude Include="Engine\Utils\Logger.h" />
     <ClInclude Include="Engine\Graphics\Renderer2D.h" />
     <ClInclude Include="Engine\Scene.h" />

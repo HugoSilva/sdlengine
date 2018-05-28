@@ -12,7 +12,7 @@
 class Image
 {
 public:
-	static void CheckImageType(int* mode, SDL_Surface* surface)
+	static void CheckImageMode(int* mode, SDL_Surface* surface)
 	{
 		unsigned int bpp = surface->format->BytesPerPixel;
 
@@ -52,7 +52,7 @@ public:
 			return nullptr;
 		}
 
-		CheckImageType(mode, surface);
+		CheckImageMode(mode, surface);
 
 		*width = surface->w;
 		*height = surface->h;
@@ -72,7 +72,7 @@ public:
 			return nullptr;
 		}
 
-		CheckImageType(mode, surface);
+		CheckImageMode(mode, surface);
 
 		*width = surface->w;
 		*height = surface->h;
