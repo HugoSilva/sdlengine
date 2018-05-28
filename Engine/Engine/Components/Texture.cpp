@@ -23,7 +23,7 @@ Texture::Texture(const std::string& name, const std::string& filename)
 Texture::Texture(const std::string& name, graphics::Font* font, const std::string text, unsigned int color)
 	: m_Name(name)
 {
-	SDL_Color textColor = { color, color>>8, color>>16, color>>24 };
+	SDL_Color textColor = { static_cast<unsigned char>(color), static_cast<unsigned char>(color>>8), static_cast<unsigned char>(color>>16), static_cast<unsigned char>(color>>24) };
 	int Mode = GL_RGB;
 	void* pixels = Image::LoadFont(font->getFTFont(), text.c_str(), textColor, &m_Width, &m_Height, &Mode);
 

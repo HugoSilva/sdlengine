@@ -1,7 +1,7 @@
 #pragma once
 
-#include "renderer2d.h"
-#include "renderable2d.h"
+#include "Renderer2D.h"
+#include "Renderable2D.h"
 #include "../Components/Shader.h"
 
 namespace graphics

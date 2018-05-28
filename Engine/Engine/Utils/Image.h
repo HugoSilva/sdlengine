@@ -12,6 +12,36 @@
 class Image
 {
 public:
+	static void CheckImageType(int* mode, SDL_Surface* surface)
+	{
+		unsigned int bpp = surface->format->BytesPerPixel;
+
+		if (bpp == 4) {
+			if (surface->format->Rmask == 0x000000ff)
+				*mode = GL_RGBA;
+			else
+			{
+				#ifdef EMSCRIPTEN
+					*mode = GL_RGBA;
+				#else
+					*mode = GL_BGRA;
+				#endif // EMSCRIPTEN
+			}
+	}
+		else {
+			if (surface->format->Rmask == 0x000000ff)
+				*mode = GL_RGB;
+			else
+			{
+				#ifdef EMSCRIPTEN
+					*mode = GL_RGB;
+				#else
+					*mode = GL_BGR;
+				#endif // EMSCRIPTEN
+			}
+		}
+	}
+
 	static void* LoadFont(TTF_Font* font, const char* text, SDL_Color textColor, int* width, int* height, int* mode)
 	{
 		SDL_Surface* surface = TTF_RenderText_Blended(font, text, textColor);
@@ -22,20 +52,7 @@ public:
 			return nullptr;
 		}
 
-		unsigned int bpp = surface->format->BytesPerPixel;
-
-		if (bpp == 4) {
-			if (surface->format->Rmask == 0x000000ff)
-				*mode = GL_RGBA;
-			else
-				*mode = GL_BGRA;
-		}
-		else {
-			if (surface->format->Rmask == 0x000000ff)
-				*mode = GL_RGB;
-			else
-				*mode = GL_BGR;
-		}
+		CheckImageType(mode, surface);
 
 		*width = surface->w;
 		*height = surface->h;
@@ -55,22 +72,7 @@ public:
 			return nullptr;
 		}
 
-		unsigned int bpp = surface->format->BytesPerPixel;
-
-		if (bpp == 4)
-		{
-			if (surface->format->Rmask == 0x000000ff)
-				*mode = GL_RGBA;
-			else
-				*mode = GL_BGRA;
-		}
-		else if (bpp == 3)
-		{
-			if (surface->format->Rmask == 0x000000ff)
-				*mode = GL_RGB;
-			else
-				*mode = GL_BGR;
-		}
+		CheckImageType(mode, surface);
 
 		*width = surface->w;
 		*height = surface->h;

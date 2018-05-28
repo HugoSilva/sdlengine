@@ -13,6 +13,8 @@ namespace graphics
 		Renderer2D() {};
 
 	public:
+		virtual ~Renderer2D() { }
+
 		virtual void begin() {}
 
 		virtual void submit(const Renderable2D* renderable) = 0;

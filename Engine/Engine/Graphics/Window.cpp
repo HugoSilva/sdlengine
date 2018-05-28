@@ -53,12 +53,14 @@ namespace graphics
 
 		context = SDL_GL_CreateContext(window);
 
-		glewExperimental = GL_TRUE;
-		GLenum result = glewInit();
-		if (result != GLEW_OK)
-		{
-			std::cout << "Failed to initialize GLEW: " << glewGetErrorString(result) << std::endl;
-		}
+		#ifndef EMSCRIPTEN
+			glewExperimental = GL_TRUE;
+			GLenum result = glewInit();
+			if (result != GLEW_OK)
+			{
+				std::cout << "Failed to initialize GLEW: " << glewGetErrorString(result) << std::endl;
+			}
+		#endif
 
 		audio::SoundManager::init();
 		graphics::FontManager::init();

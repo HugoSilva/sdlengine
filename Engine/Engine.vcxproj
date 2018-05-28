@@ -331,7 +331,6 @@
     <ClInclude Include="..\Thirdparty\imgui\include\stb_truetype.h" />
     <ClInclude Include="Engine\Physics\PhysicsManager.h" />
     <ClInclude Include="Engine\Components\Imgui.h" />
-    <ClInclude Include="Engine\Components\Test.h" />
     <ClInclude Include="Engine\Ecs\Component.h" />
     <ClInclude Include="Engine\Core.h" />
     <ClInclude Include="Engine\Audio\Music.h" />

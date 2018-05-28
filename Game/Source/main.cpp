@@ -1,5 +1,3 @@
-#pragma once
-
 #include <Core.h>
 #include <glm\glm.hpp>
 #include "Scene01.h"
