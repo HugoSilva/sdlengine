@@ -1,6 +1,10 @@
 #include "OpenGLRenderer.h"
 #include <imgui.h>
-#include "../Utils/imgui_impl_sdl_gl3.h"
+#ifdef EMSCRIPTEN
+	#include "../Utils/ImguiGL2.h"
+#else
+	#include "../Utils/imgui_impl_sdl_gl3.h"
+#endif // EMSCRIPTEN
 
 namespace graphics
 {
@@ -61,7 +65,7 @@ namespace graphics
 
 	void OpenGLRenderer::begin()
 	{
-		ImGui_ImplSdlGL3_NewFrame(m_Window);
+		ImGui_ImplSdlGL_NewFrame(m_Window);
 
 		glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 		#ifdef EMSCRIPTEN
@@ -168,7 +172,7 @@ namespace graphics
 		m_IndexCount = 0;
 
 		ImGui::Render();
-		ImGui_ImplSdlGL3_RenderDrawData(ImGui::GetDrawData());
+		ImGui_ImplSdlGL_RenderDrawData(ImGui::GetDrawData());
 		SDL_GL_SwapWindow(m_Window);
 	}
 }

@@ -1,11 +1,12 @@
 #include "Window.h"
 
 #include <imgui.h>
-#include "../Utils/imgui_impl_sdl_gl3.h"
 #ifdef EMSCRIPTEN
 	#include <SDL_opengles2.h>
+	#include "../Utils/ImguiGL2.h"
 #else
 	#include <GL/glew.h>
+	#include "../Utils/imgui_impl_sdl_gl3.h"
 #endif // EMSCRIPTEN
 
 namespace graphics
@@ -23,7 +24,7 @@ namespace graphics
 		TextureManager::clean();
 		PhysicsManager::Clean();
 
-		ImGui_ImplSdlGL3_Shutdown();
+		ImGui_ImplSdlGL_Shutdown();
 		//ImGui::DestroyContext();
 
 		SDL_DestroyWindow(window);
@@ -85,7 +86,7 @@ namespace graphics
 
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		ImGui_ImplSdlGL3_Init(window);
+		ImGui_ImplSdlGL_Init(window);
 		ImGui::StyleColorsDark();
 
 		return true;
