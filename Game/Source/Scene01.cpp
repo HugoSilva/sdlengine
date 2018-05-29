@@ -28,7 +28,7 @@ SpriteTest::SpriteTest(SDL_Window* win)
 	m_Fps = new Label("FPS test", glm::vec3(20, 670, 0), FontManager::get("Arial"), 0xffffffff);
 	m_Layer->add(m_Fps);
 
-	Imgui* testImgui = new Imgui();
+	ImguiMenuBar* testImgui = new ImguiMenuBar();
 	m_Layer->add(testImgui);
 
 	SoundManager::add(new Sound("eff", "Resources/effect.wav"));

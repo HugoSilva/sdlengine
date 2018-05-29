@@ -7,7 +7,7 @@
 #include <vector>
 #include <glm\glm.hpp>
 
-#include "Components\Imgui.h"
+#include "Components\ImguiMenuBar.h"
 #include "Components\Label.h"
 #include "Components\Sprite.h"
 #include "Components\TextureManager.h"

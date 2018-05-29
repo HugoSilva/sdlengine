@@ -292,7 +292,7 @@
     <ClCompile Include="..\Thirdparty\imgui\include\imgui_demo.cpp" />
     <ClCompile Include="..\Thirdparty\imgui\include\imgui_draw.cpp" />
     <ClCompile Include="Engine\Physics\PhysicsManager.cpp" />
-    <ClCompile Include="Engine\Components\Imgui.cpp" />
+    <ClCompile Include="Engine\Components\ImguiMenuBar.cpp" />
     <ClCompile Include="Engine\Core.cpp" />
     <ClCompile Include="Engine\Audio\Music.cpp" />
     <ClCompile Include="Engine\Audio\Sound.cpp" />
@@ -313,6 +313,7 @@
     <ClCompile Include="Engine\IO\Mouse.cpp" />
     <ClCompile Include="Engine\Physics\Collider.cpp" />
     <ClCompile Include="Engine\Physics\Rigidbody.cpp" />
+    <ClCompile Include="Engine\Utils\Image.cpp" />
     <ClCompile Include="Engine\Utils\ImguiGL2.cpp" />
     <ClCompile Include="Engine\Utils\imgui_impl_sdl_gl3.cpp" />
     <ClCompile Include="Engine\Utils\Logger.cpp" />
@@ -330,7 +331,7 @@
     <ClInclude Include="..\Thirdparty\imgui\include\stb_textedit.h" />
     <ClInclude Include="..\Thirdparty\imgui\include\stb_truetype.h" />
     <ClInclude Include="Engine\Physics\PhysicsManager.h" />
-    <ClInclude Include="Engine\Components\Imgui.h" />
+    <ClInclude Include="Engine\Components\ImguiMenuBar.h" />
     <ClInclude Include="Engine\Ecs\Component.h" />
     <ClInclude Include="Engine\Core.h" />
     <ClInclude Include="Engine\Audio\Music.h" />
