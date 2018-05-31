@@ -25,7 +25,6 @@ void Core::start()
 	{
 		while (m_Window->GetRunning())
 		{
-			m_Window->Run();
 			run();
 		}
 	}
@@ -41,6 +40,8 @@ void Core::run()
 	deltaTime = (now - last) / 1000.0f;
 	last = now;
 
+	IO::InputManager::Update();
+	PhysicsManager::UpdateObjects(deltaTime);
 	m_Scenes.at(m_ActiveScene)->Update(deltaTime);
 
 	m_Scenes.at(m_ActiveScene)->Render();

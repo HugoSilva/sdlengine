@@ -17,7 +17,6 @@ namespace graphics
 		~Window();
 
 		bool Init();
-		void Run();
 		bool GetRunning();
 		SDL_Window* GetWindow() { return window; };
 

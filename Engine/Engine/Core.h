@@ -3,6 +3,9 @@
 #include <vector>
 #include <glm\glm.hpp>
 
+#include "Audio\Music.h"
+#include "Audio\Sound.h"
+#include "Audio\SoundManager.h"
 #include "Components\Imgui.h"
 #include "Components\Label.h"
 #include "Components\Sprite.h"
@@ -18,10 +21,7 @@
 #include "Physics\Collider.h"
 #include "Physics\Rigidbody.h"
 #include "Scene.h"
-
-#include "Audio\Music.h"
-#include "Audio\Sound.h"
-#include "Audio\SoundManager.h"
+#include "ThreadManager.h"
 
 class Core
 {
