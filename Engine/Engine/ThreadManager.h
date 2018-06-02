@@ -1,7 +1,8 @@
 #pragma once
 
-#include <vector>
+#include <mutex>
 #include <thread>
+#include <vector>
 
 class ThreadManager
 {
@@ -15,4 +16,5 @@ private:
 
 	static unsigned int m_AvailableThreads;
 	static std::vector<std::thread*> m_Threads;
+	static std::vector<std::mutex*> m_Mutexes;
 };

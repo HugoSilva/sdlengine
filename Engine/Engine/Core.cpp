@@ -40,7 +40,7 @@ void Core::run()
 	deltaTime = (now - last) / 1000.0f;
 	last = now;
 
-	IO::InputManager::Update();
+	//IO::InputManager::Update();
 	PhysicsManager::UpdateObjects(deltaTime);
 	m_Scenes.at(m_ActiveScene)->Update(deltaTime);
 

@@ -2,6 +2,9 @@
 
 #include <vector>
 #include <glm\glm.hpp>
+#if _WIN32
+#include <Windows.h>
+#endif
 
 #include "Audio\Music.h"
 #include "Audio\Sound.h"
