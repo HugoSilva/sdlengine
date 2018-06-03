@@ -8,7 +8,7 @@ class Rigidbody : public physics::Updatable
 {
 public:
 	Rigidbody(Sprite* sprite, glm::vec2 position, glm::vec2 size, bool useType = false, bool useFixture = false);
-	void Update(float deltaTime) override;
+	void Update() override;
 
 private:
 	b2Body* m_body;

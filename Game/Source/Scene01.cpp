@@ -49,7 +49,6 @@ SpriteTest::~SpriteTest()
 void SpriteTest::Update(float deltaTime)
 {
 	m_Camera->Update(deltaTime);
-	PhysicsManager::UpdateObjects(deltaTime);
 
 	float speed = 0.1f;
 	if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_UP))

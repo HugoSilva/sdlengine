@@ -8,7 +8,7 @@ class Collider : public physics::Updatable
 {
 public:
 	Collider();
-	void Update(float deltaTime) override;
+	void Update() override;
 
 private:
 	b2Body* m_body;

@@ -9,6 +9,8 @@ static void DispatchLoop(void* fp)
 }
 #endif
 
+bool Core::m_Running = true;
+
 Core::Core() : m_FramesPerSecond(0)
 {
 
@@ -37,7 +39,6 @@ void Core::start()
 		while (m_Window->GetRunning())
 		{
 #endif
-			m_Window->Run();
 			run();
 
 #ifdef EMSCRIPTEN
@@ -45,6 +46,7 @@ void Core::start()
 		emscripten_set_main_loop_arg(DispatchLoop, &fGameLoop, 0, 1);
 #else
 		}
+		m_Running = false;
 #endif
 	}
 	catch (...)
@@ -58,6 +60,8 @@ void Core::run()
 	now = SDL_GetTicks();
 	deltaTime = (now - last) / 1000.0f;
 	last = now;
+
+	IO::InputManager::Update();
 
 	m_Scenes.at(m_ActiveScene)->Update(deltaTime);
 

@@ -22,7 +22,7 @@ namespace IO
 	void InputManager::Update()
 	{
 		SDL_Event event;
-
+		//Cannot be called outside of the main thread
 		if (SDL_PollEvent(&event))
 		{
 			switch (event.type)
