@@ -64,7 +64,7 @@ void Camera::Update(float deltaTime)
 	//lastX = xPos;
 	//lastY = yPos;
 
-	this->ProcessMouseMovement(xPos, yPos);
+	this->ProcessMouseMovement(static_cast<float>(xPos), static_cast<float>(yPos));
 }
 
 void Camera::Render(Shader shader)

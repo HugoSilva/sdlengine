@@ -15,7 +15,7 @@ void ThreadManager::Start()
 {
 	m_Threads.push_back(new std::thread(IO::InputManager::Update));
 
-	for (int num = 0; num < m_AvailableThreads; num++)
+	for (unsigned int num = 0; num < m_AvailableThreads; num++)
 	{
 		//m_Threads.push_back(&threadIO);
 	}
@@ -23,7 +23,7 @@ void ThreadManager::Start()
 
 void ThreadManager::Clean()
 {
-	for (int i = 0; i < m_AvailableThreads; i++)
+	for (unsigned int i = 0; i < m_AvailableThreads; i++)
 	{
 		m_Threads[i]->join();
 		//delete m_Threads[i];
