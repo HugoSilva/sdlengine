@@ -85,11 +85,6 @@ namespace graphics
 		return true;
 	}
 
-	void Window::Run()
-	{
-		IO::InputManager::Update();
-	}
-
 	bool Window::GetRunning()
 	{
 		return !IO::InputManager::IsQuitRequested();

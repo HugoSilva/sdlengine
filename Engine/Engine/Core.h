@@ -2,7 +2,13 @@
 
 #include <vector>
 #include <glm\glm.hpp>
+#if _WIN32
+#include <Windows.h>
+#endif
 
+#include "Audio\Music.h"
+#include "Audio\Sound.h"
+#include "Audio\SoundManager.h"
 #include "Components\Imgui.h"
 #include "Components\Label.h"
 #include "Components\Sprite.h"
@@ -18,15 +24,13 @@
 #include "Physics\Collider.h"
 #include "Physics\Rigidbody.h"
 #include "Scene.h"
-
-#include "Audio\Music.h"
-#include "Audio\Sound.h"
-#include "Audio\SoundManager.h"
+#include "ThreadManager.h"
 
 class Core
 {
 public:
 	void start();
+	static bool getRunning() { return m_Running; }
 
 protected:
 	Core();
@@ -56,4 +60,5 @@ private:
 	
 	std::vector<Scene*> m_Scenes;
 	unsigned int m_ActiveScene;
+	static bool m_Running;
 };

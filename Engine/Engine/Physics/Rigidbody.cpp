@@ -31,7 +31,7 @@ Rigidbody::Rigidbody(Sprite* sprite, glm::vec2 position, glm::vec2 size, bool us
 	}
 }
 
-void Rigidbody::Update(float deltaTime)
+void Rigidbody::Update()
 {
 	b2Vec2 position = m_body->GetPosition();
 	m_Sprite->position = glm::vec3(position.x, position.y, 0);

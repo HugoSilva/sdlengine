@@ -1,5 +1,7 @@
 #include "Core.h"
 
+bool Core::m_Running = true;
+
 Core::Core() : m_FramesPerSecond(0)
 {
 
@@ -25,9 +27,9 @@ void Core::start()
 	{
 		while (m_Window->GetRunning())
 		{
-			m_Window->Run();
 			run();
 		}
+		m_Running = false;
 	}
 	catch (...)
 	{
@@ -40,6 +42,8 @@ void Core::run()
 	now = SDL_GetTicks();
 	deltaTime = (now - last) / 1000.0f;
 	last = now;
+
+	IO::InputManager::Update();
 
 	m_Scenes.at(m_ActiveScene)->Update(deltaTime);
 

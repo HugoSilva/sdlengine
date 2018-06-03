@@ -1,9 +1,11 @@
 #include "PhysicsManager.h"
+#include "../Core.h"
 
 b2Vec2 PhysicsManager::m_gravity{ 0.0f, -10.0f };
 b2World* PhysicsManager::m_world;
 std::vector<Rigidbody*> PhysicsManager::m_Rigidbodies;
-float32 PhysicsManager::timeStep = 1.0f / 60.0f;
+// Needs to be dynamic to reflect the fps count
+float32 PhysicsManager::timeStep = 1.0f / 6000.0f;
 int32 PhysicsManager::velocityIterations = 6;
 int32 PhysicsManager::positionIterations = 2;
 
@@ -17,7 +19,7 @@ void PhysicsManager::add(Rigidbody* rb)
 	m_Rigidbodies.push_back(rb);
 }
 
-void PhysicsManager::Update(float deltaTime)
+void PhysicsManager::Update()
 {
 	// Prepare for simulation. Typically we use a time step of 1/60 of a
 	// second (60Hz) and 10 iterations. This provides a high quality simulation
@@ -25,12 +27,15 @@ void PhysicsManager::Update(float deltaTime)
 	m_world->Step(timeStep, velocityIterations, positionIterations);
 }
 
-void PhysicsManager::UpdateObjects(float deltaTime)
+void PhysicsManager::UpdateObjects()
 {
-	m_world->Step(timeStep, velocityIterations, positionIterations);
+	while (Core::getRunning())
+	{
+		m_world->Step(timeStep, velocityIterations, positionIterations);
 
-	for (Rigidbody* rb : m_Rigidbodies)
-		rb->Update(deltaTime);
+		for (Rigidbody* rb : m_Rigidbodies)
+			rb->Update();
+	}
 }
 
 void PhysicsManager::Clean()
