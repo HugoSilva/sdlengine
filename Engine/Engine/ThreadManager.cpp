@@ -13,7 +13,7 @@ void ThreadManager::Init()
 
 void ThreadManager::Start()
 {
-	m_Threads.push_back(new std::thread(IO::InputManager::Update));
+	m_Threads.push_back(new std::thread(PhysicsManager::UpdateObjects));
 
 	for (unsigned int num = 0; num < m_AvailableThreads; num++)
 	{

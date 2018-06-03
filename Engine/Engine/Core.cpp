@@ -1,5 +1,7 @@
 #include "Core.h"
 
+bool Core::m_Running = true;
+
 Core::Core() : m_FramesPerSecond(0)
 {
 
@@ -27,6 +29,7 @@ void Core::start()
 		{
 			run();
 		}
+		m_Running = false;
 	}
 	catch (...)
 	{
@@ -40,8 +43,8 @@ void Core::run()
 	deltaTime = (now - last) / 1000.0f;
 	last = now;
 
-	//IO::InputManager::Update();
-	PhysicsManager::UpdateObjects(deltaTime);
+	IO::InputManager::Update();
+
 	m_Scenes.at(m_ActiveScene)->Update(deltaTime);
 
 	m_Scenes.at(m_ActiveScene)->Render();

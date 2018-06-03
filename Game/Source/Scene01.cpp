@@ -34,8 +34,8 @@ SpriteTest::SpriteTest(SDL_Window* win)
 	SoundManager::getSound("eff")->play();
 	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
 
-	//PhysicsManager::add(new Rigidbody(m_GroundSprite, glm::vec2(0.0f, 0.0f), glm::vec2(20.0f, 20.0f)));
-	//PhysicsManager::add(new Rigidbody(m_PlayerSprite, glm::vec2(0.0f, 400.0f), glm::vec2(20.0f, 20.0f), true, true));
+	PhysicsManager::add(new Rigidbody(m_GroundSprite, glm::vec2(0.0f, 0.0f), glm::vec2(20.0f, 20.0f)));
+	PhysicsManager::add(new Rigidbody(m_PlayerSprite, glm::vec2(0.0f, 400.0f), glm::vec2(20.0f, 20.0f), true, true));
 }
 
 SpriteTest::~SpriteTest()

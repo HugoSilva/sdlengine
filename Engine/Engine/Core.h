@@ -30,6 +30,7 @@ class Core
 {
 public:
 	void start();
+	static bool getRunning() { return m_Running; }
 
 protected:
 	Core();
@@ -59,4 +60,5 @@ private:
 	
 	std::vector<Scene*> m_Scenes;
 	unsigned int m_ActiveScene;
+	static bool m_Running;
 };
