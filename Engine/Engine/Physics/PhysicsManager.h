@@ -10,8 +10,8 @@ class PhysicsManager : public physics::Updatable
 public:
 	static void init();
 	static void add(Rigidbody* rb);
-	void Update(float deltaTime) override;
 	static void UpdateObjects(float deltaTime);
+	void Update() override;
 	static void Clean();
 	static b2World* GetWorldObject();
 

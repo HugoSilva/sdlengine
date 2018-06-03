@@ -17,7 +17,7 @@ void PhysicsManager::add(Rigidbody* rb)
 	m_Rigidbodies.push_back(rb);
 }
 
-void PhysicsManager::Update(float deltaTime)
+void PhysicsManager::Update()
 {
 	// Prepare for simulation. Typically we use a time step of 1/60 of a
 	// second (60Hz) and 10 iterations. This provides a high quality simulation
