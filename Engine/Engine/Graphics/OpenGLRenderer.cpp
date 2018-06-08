@@ -45,6 +45,8 @@ namespace graphics
 		m_IBO = new IndexBuffer(indices, RENDERER_INDICES_SIZE);
 
 		glBindVertexArray(0);
+
+		clearColor = new Test::TestClearColor();
 	}
 
 	OpenGLRenderer::~OpenGLRenderer()
@@ -61,8 +63,8 @@ namespace graphics
 		glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 		m_Buffer = (VertexData*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 
-		glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		clearColor->OnRender();
+		clearColor->OnImguiRender();
 	}
 
 	void OpenGLRenderer::submit(const Renderable2D* renderable)

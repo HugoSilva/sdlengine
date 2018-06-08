@@ -225,6 +225,7 @@
     <ClCompile Include="Engine\Components\TextureManager.cpp" />
     <ClCompile Include="Engine\Ecs\Entity.cpp" />
     <ClCompile Include="Engine\ThreadManager.cpp" />
+    <ClCompile Include="Tests\TestClearColor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Thirdparty\imgui\include\imconfig.h" />
@@ -271,6 +272,8 @@
     <ClInclude Include="Engine\Components\TextureManager.h" />
     <ClInclude Include="Engine\Ecs\Entity.h" />
     <ClInclude Include="Engine\ThreadManager.h" />
+    <ClInclude Include="Tests\TestClearColor.h" />
+    <ClInclude Include="Tests\Test.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\Default.frag" />
