@@ -23,6 +23,7 @@
 #include "Renderable2D.h"
 #include "Renderer2D.h"
 #include "IndexBuffer.h"
+#include "../../Tests/TestClearColor.h"
 
 namespace graphics
 {
@@ -57,10 +58,9 @@ namespace graphics
 		IndexBuffer* m_IBO;
 		SDL_Window* m_Window;
 		std::vector<unsigned int> m_TextureSlots;
-
+		Test::TestClearColor* clearColor;
 #ifdef EMSCRIPTEN
 		VertexData* m_BufferBase;
 #endif // EMSCRIPTEN
-
 	};
 }

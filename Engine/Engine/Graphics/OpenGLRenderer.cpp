@@ -50,10 +50,10 @@ namespace graphics
 
 		glBindVertexArray(0);
 
+		clearColor = new Test::TestClearColor();
 		#ifdef EMSCRIPTEN
 			m_BufferBase = new VertexData[RENDERER_MAX_SPRITES * 4];
 		#endif // EMSCRIPTEN
-
 	}
 
 	OpenGLRenderer::~OpenGLRenderer()
@@ -74,8 +74,8 @@ namespace graphics
 			m_Buffer = (VertexData*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 		#endif // EMSCRIPTEN
 
-		glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		clearColor->OnRender();
+		clearColor->OnImguiRender();
 	}
 
 	void OpenGLRenderer::submit(const Renderable2D* renderable)
