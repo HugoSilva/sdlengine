@@ -27,8 +27,11 @@ public:
 	{
 		m_Window = createWindow("RockSlide Engine", 1280, 720);
 		AddScene(new SpriteTest(m_Window->GetWindow()));
-		ThreadManager::Init();
-		ThreadManager::Start();
+		#ifdef EMSCRIPTEN
+		#else
+			ThreadManager::Init();
+			ThreadManager::Start();
+		#endif
 	}
 
 	void render() override
