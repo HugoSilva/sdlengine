@@ -1,7 +1,7 @@
 #include "OpenGLRenderer.h"
 #include <imgui.h>
 #ifdef EMSCRIPTEN
-	#include "../Utils/ImguiGL2.h"
+	#include "../Utils/imgui_impl_sdl_gl3.h"
 #else
 	#include "../Utils/imgui_impl_sdl_gl3.h"
 #endif // EMSCRIPTEN

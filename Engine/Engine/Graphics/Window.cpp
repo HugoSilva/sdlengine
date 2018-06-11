@@ -3,7 +3,7 @@
 #include <imgui.h>
 #ifdef EMSCRIPTEN
 	#include <SDL_opengles2.h>
-	#include "../Utils/ImguiGL2.h"
+	#include "../Utils/imgui_impl_sdl_gl3.h"
 #else
 	#include <GL/glew.h>
 	#include "../Utils/imgui_impl_sdl_gl3.h"
@@ -25,7 +25,6 @@ namespace graphics
 		PhysicsManager::Clean();
 
 		ImGui_ImplSdlGL_Shutdown();
-		//ImGui::DestroyContext();
 
 		SDL_DestroyWindow(window);
 		SDL_Quit();
