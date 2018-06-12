@@ -45,12 +45,7 @@
 // SDL,GL3W
 #include <SDL.h>
 #include <SDL_syswm.h>
-//#include <GL/gl3w.h>    // This example is using gl3w to access OpenGL functions (because it is small). You may use glew/glad/glLoadGen/etc. whatever already works for you.
-#ifdef EMSCRIPTEN
-	#include <SDL_opengles2.h>
-#else
-	#include <GL/glew.h>
-#endif // EMSCRIPTEN
+#include <GL/glew.h>
 
 // SDL data
 static Uint64       g_Time = 0;

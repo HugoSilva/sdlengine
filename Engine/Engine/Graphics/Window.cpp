@@ -3,7 +3,7 @@
 #include <imgui.h>
 #ifdef EMSCRIPTEN
 	#include <SDL_opengles2.h>
-	#include "../Utils/imgui_impl_sdl_gl3.h"
+	#include "../Utils/imgui_impl_sdl_gles2.h"
 #else
 	#include <GL/glew.h>
 	#include "../Utils/imgui_impl_sdl_gl3.h"
