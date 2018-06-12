@@ -314,7 +314,7 @@
     <ClCompile Include="Engine\Physics\Collider.cpp" />
     <ClCompile Include="Engine\Physics\Rigidbody.cpp" />
     <ClCompile Include="Engine\Utils\Image.cpp" />
-    <ClCompile Include="Engine\Utils\ImguiGL2.cpp" />
+    <ClCompile Include="Engine\Utils\imgui_impl_sdl_gles2.cpp" />
     <ClCompile Include="Engine\Utils\imgui_impl_sdl_gl3.cpp" />
     <ClCompile Include="Engine\Utils\Logger.cpp" />
     <ClCompile Include="Engine\Graphics\Window.cpp" />
@@ -359,7 +359,7 @@
     <ClInclude Include="Engine\Physics\Updatable.h" />
     <ClInclude Include="Engine\Utils\File.h" />
     <ClInclude Include="Engine\Utils\Image.h" />
-    <ClInclude Include="Engine\Utils\ImguiGL2.h" />
+    <ClInclude Include="Engine\Utils\imgui_impl_sdl_gles2.h" />
     <ClInclude Include="Engine\Utils\imgui_impl_sdl_gl3.h" />
     <ClInclude Include="Engine\Utils\Logger.h" />
     <ClInclude Include="Engine\Graphics\Renderer2D.h" />
