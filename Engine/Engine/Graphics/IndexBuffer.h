@@ -1,11 +1,5 @@
 #pragma once
 
-#ifdef EMSCRIPTEN
-	#include <SDL_opengles2.h>
-#else
-	#include <GL/glew.h>
-#endif // EMSCRIPTEN
-
 namespace graphics
 {
 	class IndexBuffer

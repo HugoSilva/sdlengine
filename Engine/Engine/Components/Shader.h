@@ -9,6 +9,7 @@ public:
 	void Disable() const;
 
 	unsigned int getUniformLocation(const char* name);
+	void setUniform1i(const char* name, int value);
 	void setUniform1iv(const char* name, int* value, int count);
 	void setUniformMat4(const char* name, const float* matrix);
 

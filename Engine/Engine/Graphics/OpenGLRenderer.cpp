@@ -170,6 +170,7 @@ namespace graphics
 		glBindVertexArray(0);
 
 		m_IndexCount = 0;
+		m_TextureSlots.clear();
 
 		ImGui::Render();
 		ImGui_ImplSdlGL_RenderDrawData(ImGui::GetDrawData());

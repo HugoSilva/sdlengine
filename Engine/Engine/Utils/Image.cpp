@@ -6,7 +6,9 @@ void Image::CheckImageMode(int* mode, SDL_Surface* surface)
 
 	if (bpp == 4) {
 		if (surface->format->Rmask == 0x000000ff)
+		{
 			*mode = GL_RGBA;
+		}
 		else
 		{
 			#ifdef EMSCRIPTEN
@@ -19,7 +21,9 @@ void Image::CheckImageMode(int* mode, SDL_Surface* surface)
 	else 
 	{
 		if (surface->format->Rmask == 0x000000ff)
+		{
 			*mode = GL_RGB;
+		}
 		else
 		{
 			#ifdef EMSCRIPTEN

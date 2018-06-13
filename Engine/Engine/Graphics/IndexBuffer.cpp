@@ -1,5 +1,11 @@
 #include "IndexBuffer.h"
 
+#ifdef EMSCRIPTEN
+#include <SDL_opengles2.h>
+#else
+#include <GL/glew.h>
+#endif // EMSCRIPTEN
+
 namespace graphics
 {
 	IndexBuffer::IndexBuffer(unsigned short* data, int count)
@@ -7,7 +13,7 @@ namespace graphics
 	{
 		glGenBuffers(1, &m_BufferID);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(GLushort), data, GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(unsigned short), data, GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
@@ -16,7 +22,7 @@ namespace graphics
 	{
 		glGenBuffers(1, &m_BufferID);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(GLuint), data, GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(unsigned int), data, GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
@@ -34,6 +40,4 @@ namespace graphics
 	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
-
-
 }
