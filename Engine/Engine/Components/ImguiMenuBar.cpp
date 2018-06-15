@@ -1,11 +1,11 @@
-#include "Imgui.h"
+#include "ImguiMenuBar.h"
 
-Imgui::Imgui()
+ImguiMenuBar::ImguiMenuBar()
 	: Renderable2D(glm::vec3(0), glm::vec2(0), 0)
 {
 }
 
-void Imgui::submit(graphics::Renderer2D* renderer) const
+void ImguiMenuBar::submit(graphics::Renderer2D* renderer) const
 {
 	if (ImGui::BeginMainMenuBar())
 	{

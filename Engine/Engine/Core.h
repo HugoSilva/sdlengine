@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef EMSCRIPTEN
+	#include <emscripten/emscripten.h>
+#endif
+
 #include <vector>
 #include <glm\glm.hpp>
 #if _WIN32
@@ -9,7 +13,7 @@
 #include "Audio\Music.h"
 #include "Audio\Sound.h"
 #include "Audio\SoundManager.h"
-#include "Components\Imgui.h"
+#include "Components\ImguiMenuBar.h"
 #include "Components\Label.h"
 #include "Components\Sprite.h"
 #include "Components\TextureManager.h"

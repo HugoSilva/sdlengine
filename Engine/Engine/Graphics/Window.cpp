@@ -1,8 +1,13 @@
 #include "Window.h"
 
-#include "imgui.h"
-#include "imgui_impl_sdl_gl3.h"
-#include <GL/glew.h>
+#include <imgui.h>
+#ifdef EMSCRIPTEN
+	#include <SDL_opengles2.h>
+	#include "../Utils/imgui_impl_sdl_gles2.h"
+#else
+	#include <GL/glew.h>
+	#include "../Utils/imgui_impl_sdl_gl3.h"
+#endif // EMSCRIPTEN
 
 namespace graphics
 {
@@ -19,8 +24,7 @@ namespace graphics
 		TextureManager::clean();
 		PhysicsManager::Clean();
 
-		ImGui_ImplSdlGL3_Shutdown();
-		//ImGui::DestroyContext();
+		ImGui_ImplSdlGL_Shutdown();
 
 		SDL_DestroyWindow(window);
 		SDL_Quit();
@@ -49,12 +53,14 @@ namespace graphics
 
 		context = SDL_GL_CreateContext(window);
 
-		glewExperimental = GL_TRUE;
-		GLenum result = glewInit();
-		if (result != GLEW_OK)
-		{
-			std::cout << "Failed to initialize GLEW: " << glewGetErrorString(result) << std::endl;
-		}
+		#ifndef EMSCRIPTEN
+			glewExperimental = GL_TRUE;
+			GLenum result = glewInit();
+			if (result != GLEW_OK)
+			{
+				std::cout << "Failed to initialize GLEW: " << glewGetErrorString(result) << std::endl;
+			}
+		#endif
 
 		audio::SoundManager::init();
 		graphics::FontManager::init();
@@ -79,7 +85,7 @@ namespace graphics
 
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		ImGui_ImplSdlGL3_Init(window);
+		ImGui_ImplSdlGL_Init(window);
 		ImGui::StyleColorsDark();
 
 		return true;

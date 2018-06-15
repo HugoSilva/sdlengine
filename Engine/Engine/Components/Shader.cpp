@@ -1,7 +1,11 @@
 #include "Shader.h"
 
 #include <string>
-#include <GL/glew.h>
+#ifdef EMSCRIPTEN
+	#include <SDL_opengles2.h>
+#else
+	#include <GL/glew.h>
+#endif // EMSCRIPTEN
 
 #include "../Utils/File.h"
 
@@ -74,6 +78,11 @@ void Shader::Disable() const
 unsigned int Shader::getUniformLocation(const char* name)
 {
 	return glGetUniformLocation(m_ShaderID, name);
+}
+
+void Shader::setUniform1i(const char* name, int value)
+{
+	glUniform1i(getUniformLocation(name), value);
 }
 
 void Shader::setUniform1iv(const char* name, int* value, int count)

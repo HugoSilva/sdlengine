@@ -39,13 +39,12 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-#include "imgui.h"
+#include <imgui.h>
 #include "imgui_impl_sdl_gl3.h"
 
 // SDL,GL3W
 #include <SDL.h>
 #include <SDL_syswm.h>
-//#include <GL/gl3w.h>    // This example is using gl3w to access OpenGL functions (because it is small). You may use glew/glad/glLoadGen/etc. whatever already works for you.
 #include <GL/glew.h>
 
 // SDL data
@@ -64,7 +63,7 @@ static unsigned int g_VboHandle = 0,g_ElementsHandle = 0;
 // This is the main rendering function that you have to implement and provide to ImGui (via setting up 'RenderDrawListsFn' in the ImGuiIO structure)
 // Note that this implementation is little overcomplicated because we are saving/setting up/restoring every OpenGL state explicitly, in order to be able to run within any OpenGL engine that doesn't do so. 
 // If text or lines are blurry when integrating ImGui in your engine: in your Render function, try translating your projection matrix by (0.5f,0.5f) or (0.375f,0.375f)
-void ImGui_ImplSdlGL3_RenderDrawData(ImDrawData* draw_data)
+void ImGui_ImplSdlGL_RenderDrawData(ImDrawData* draw_data)
 {
     // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
     ImGuiIO& io = ImGui::GetIO();
@@ -182,12 +181,12 @@ void ImGui_ImplSdlGL3_RenderDrawData(ImDrawData* draw_data)
     glScissor(last_scissor_box[0], last_scissor_box[1], (GLsizei)last_scissor_box[2], (GLsizei)last_scissor_box[3]);
 }
 
-static const char* ImGui_ImplSdlGL3_GetClipboardText(void*)
+static const char* ImGui_ImplSdlGL_GetClipboardText(void*)
 {
     return SDL_GetClipboardText();
 }
 
-static void ImGui_ImplSdlGL3_SetClipboardText(void*, const char* text)
+static void ImGui_ImplSdlGL_SetClipboardText(void*, const char* text)
 {
     SDL_SetClipboardText(text);
 }
@@ -196,7 +195,7 @@ static void ImGui_ImplSdlGL3_SetClipboardText(void*, const char* text)
 // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
 // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
 // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
-bool ImGui_ImplSdlGL3_ProcessEvent(SDL_Event* event)
+bool ImGui_ImplSdlGL_ProcessEvent(SDL_Event* event)
 {
     ImGuiIO& io = ImGui::GetIO();
     switch (event->type)
@@ -237,7 +236,7 @@ bool ImGui_ImplSdlGL3_ProcessEvent(SDL_Event* event)
     return false;
 }
 
-void ImGui_ImplSdlGL3_CreateFontsTexture()
+void ImGui_ImplSdlGL_CreateFontsTexture()
 {
     // Build texture atlas
     ImGuiIO& io = ImGui::GetIO();
@@ -262,7 +261,7 @@ void ImGui_ImplSdlGL3_CreateFontsTexture()
     glBindTexture(GL_TEXTURE_2D, last_texture);
 }
 
-bool ImGui_ImplSdlGL3_CreateDeviceObjects()
+bool ImGui_ImplSdlGL_CreateDeviceObjects()
 {
     // Backup GL state
     GLint last_texture, last_array_buffer, last_vertex_array;
@@ -317,7 +316,7 @@ bool ImGui_ImplSdlGL3_CreateDeviceObjects()
     glGenBuffers(1, &g_VboHandle);
     glGenBuffers(1, &g_ElementsHandle);
 
-    ImGui_ImplSdlGL3_CreateFontsTexture();
+    ImGui_ImplSdlGL_CreateFontsTexture();
 
     // Restore modified GL state
     glBindTexture(GL_TEXTURE_2D, last_texture);
@@ -327,7 +326,7 @@ bool ImGui_ImplSdlGL3_CreateDeviceObjects()
     return true;
 }
 
-void    ImGui_ImplSdlGL3_InvalidateDeviceObjects()
+void    ImGui_ImplSdlGL_InvalidateDeviceObjects()
 {
     if (g_VboHandle) glDeleteBuffers(1, &g_VboHandle);
     if (g_ElementsHandle) glDeleteBuffers(1, &g_ElementsHandle);
@@ -352,7 +351,7 @@ void    ImGui_ImplSdlGL3_InvalidateDeviceObjects()
     }
 }
 
-bool    ImGui_ImplSdlGL3_Init(SDL_Window* window, const char* glsl_version)
+bool    ImGui_ImplSdlGL_Init(SDL_Window* window, const char* glsl_version)
 {
     // Store GL version string so we can refer to it later in case we recreate shaders.
     if (glsl_version == NULL)
@@ -388,8 +387,8 @@ bool    ImGui_ImplSdlGL3_Init(SDL_Window* window, const char* glsl_version)
     io.KeyMap[ImGuiKey_Y] = SDL_SCANCODE_Y;
     io.KeyMap[ImGuiKey_Z] = SDL_SCANCODE_Z;
 
-    io.SetClipboardTextFn = ImGui_ImplSdlGL3_SetClipboardText;
-    io.GetClipboardTextFn = ImGui_ImplSdlGL3_GetClipboardText;
+    io.SetClipboardTextFn = ImGui_ImplSdlGL_SetClipboardText;
+    io.GetClipboardTextFn = ImGui_ImplSdlGL_GetClipboardText;
     io.ClipboardUserData = NULL;
 
     g_MouseCursors[ImGuiMouseCursor_Arrow] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
@@ -412,7 +411,7 @@ bool    ImGui_ImplSdlGL3_Init(SDL_Window* window, const char* glsl_version)
     return true;
 }
 
-void ImGui_ImplSdlGL3_Shutdown()
+void ImGui_ImplSdlGL_Shutdown()
 {
     // Destroy SDL mouse cursors
     for (ImGuiMouseCursor cursor_n = 0; cursor_n < ImGuiMouseCursor_COUNT; cursor_n++)
@@ -420,13 +419,13 @@ void ImGui_ImplSdlGL3_Shutdown()
     memset(g_MouseCursors, 0, sizeof(g_MouseCursors));
 
     // Destroy OpenGL objects
-    ImGui_ImplSdlGL3_InvalidateDeviceObjects();
+    ImGui_ImplSdlGL_InvalidateDeviceObjects();
 }
 
-void ImGui_ImplSdlGL3_NewFrame(SDL_Window* window)
+void ImGui_ImplSdlGL_NewFrame(SDL_Window* window)
 {
     if (!g_FontTexture)
-        ImGui_ImplSdlGL3_CreateDeviceObjects();
+        ImGui_ImplSdlGL_CreateDeviceObjects();
 
     ImGuiIO& io = ImGui::GetIO();
 

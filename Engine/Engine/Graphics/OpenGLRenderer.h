@@ -1,9 +1,26 @@
 #pragma once
 
-#include <SDL.h>
+#ifdef EMSCRIPTEN
+#define GL_GLEXT_PROTOTYPES
+#include <SDL_opengles2.h>
+
+// OES_vertex_array_object
+#define glGenVertexArrays glGenVertexArraysOES
+#define glBindVertexArray glBindVertexArrayOES
+#define glDeleteVertexArrays glDeleteVertexArraysOES
+
+// OES_mapbuffer
+#define glMapBuffer glMapBufferOES
+#define glUnmapBuffer glUnmapBufferOES
+#define GL_WRITE_ONLY GL_WRITE_ONLY_OES
+
+#else
+#include <GL/glew.h>
+#endif // EMSCRIPTEN
+
 #include <glm\glm.hpp>
 #include <vector>
-#include "Renderable2d.h"
+#include "Renderable2D.h"
 #include "Renderer2D.h"
 #include "IndexBuffer.h"
 #include "../../Tests/TestClearColor.h"
@@ -42,5 +59,8 @@ namespace graphics
 		SDL_Window* m_Window;
 		std::vector<unsigned int> m_TextureSlots;
 		Test::TestClearColor* clearColor;
+#ifdef EMSCRIPTEN
+		VertexData* m_BufferBase;
+#endif // EMSCRIPTEN
 	};
 }

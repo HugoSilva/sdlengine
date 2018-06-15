@@ -8,7 +8,11 @@ SpriteTest::SpriteTest(SDL_Window* win)
 
 	FontManager::add(new Font("Arial", "Resources/arial.ttf", 24));
 
+#ifdef EMSCRIPTEN
+	m_Shader = new Shader("Resources/ES3.vert", "Resources/ES3.frag");
+#else
 	m_Shader = new Shader("Resources/Default.vert", "Resources/Default.frag");
+#endif // EMSCRIPTEN
 
 	//m_Layer = new Layer(new SDLRenderer(win), m_Shader);
 	m_Layer = new Layer(new OpenGLRenderer(win), m_Shader);
@@ -24,14 +28,14 @@ SpriteTest::SpriteTest(SDL_Window* win)
 	m_Fps = new Label("FPS test", glm::vec3(20, 670, 0), FontManager::get("Arial"), 0xffffffff);
 	m_Layer->add(m_Fps);
 
-	Imgui* testImgui = new Imgui();
+	ImguiMenuBar* testImgui = new ImguiMenuBar();
 	m_Layer->add(testImgui);
 
-	SoundManager::add(new Sound("eff", "Resources/effect.wav"));
-	SoundManager::add(new Music("bgm", "Resources/background.ogg"));
+	//SoundManager::add(new Sound("eff", "./Resources/effect.wav"));
+	//SoundManager::add(new Music("bgm", "Resources/background.ogg"));
 
-	SoundManager::getMusic("bgm")->play();
-	SoundManager::getSound("eff")->play();
+	//SoundManager::getMusic("bgm")->play();
+	//SoundManager::getSound("eff")->play();
 	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
 
 	PhysicsManager::add(new Rigidbody(m_GroundSprite, glm::vec2(0.0f, 0.0f), glm::vec2(20.0f, 20.0f)));

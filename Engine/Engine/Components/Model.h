@@ -8,7 +8,11 @@
 #include <map>
 #include <vector>
 
-#include <GL/glew.h>
+#ifdef EMSCRIPTEN
+	#include <SDL_opengles2.h>
+#else
+	#include <GL/glew.h>
+#endif // EMSCRIPTEN
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>

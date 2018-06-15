@@ -1,6 +1,10 @@
 #include "OpenGLRenderer.h"
-#include "imgui.h"
-#include "imgui_impl_sdl_gl3.h"
+#include <imgui.h>
+#ifdef EMSCRIPTEN
+	#include "../Utils/imgui_impl_sdl_gles2.h"
+#else
+	#include "../Utils/imgui_impl_sdl_gl3.h"
+#endif // EMSCRIPTEN
 
 namespace graphics
 {
@@ -20,9 +24,9 @@ namespace graphics
 		glEnableVertexAttribArray(SHADER_COLOR_INDEX);
 
 		glVertexAttribPointer(SHADER_VERTEX_INDEX, 3, GL_FLOAT, GL_FALSE, RENDERER_VERTEX_SIZE, (const GLvoid*)0);
-		glVertexAttribPointer(SHADER_UV_INDEX, 2, GL_FLOAT, GL_FALSE, RENDERER_VERTEX_SIZE, (const GLvoid*)(offsetof(VertexData, VertexData::uv)));
-		glVertexAttribPointer(SHADER_TID_INDEX, 1, GL_FLOAT, GL_FALSE, RENDERER_VERTEX_SIZE, (const GLvoid*)(offsetof(VertexData, VertexData::tid)));
-		glVertexAttribPointer(SHADER_COLOR_INDEX, 4, GL_UNSIGNED_BYTE, GL_TRUE, RENDERER_VERTEX_SIZE, (const GLvoid*)(offsetof(VertexData, VertexData::color)));
+		glVertexAttribPointer(SHADER_UV_INDEX, 2, GL_FLOAT, GL_FALSE, RENDERER_VERTEX_SIZE, (const GLvoid*)(offsetof(VertexData, uv)));
+		glVertexAttribPointer(SHADER_TID_INDEX, 1, GL_FLOAT, GL_FALSE, RENDERER_VERTEX_SIZE, (const GLvoid*)(offsetof(VertexData, tid)));
+		glVertexAttribPointer(SHADER_COLOR_INDEX, 4, GL_UNSIGNED_BYTE, GL_TRUE, RENDERER_VERTEX_SIZE, (const GLvoid*)(offsetof(VertexData, color)));
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -47,6 +51,9 @@ namespace graphics
 		glBindVertexArray(0);
 
 		clearColor = new Test::TestClearColor();
+		#ifdef EMSCRIPTEN
+			m_BufferBase = new VertexData[RENDERER_MAX_SPRITES * 4];
+		#endif // EMSCRIPTEN
 	}
 
 	OpenGLRenderer::~OpenGLRenderer()
@@ -58,10 +65,14 @@ namespace graphics
 
 	void OpenGLRenderer::begin()
 	{
-		ImGui_ImplSdlGL3_NewFrame(m_Window);
+		ImGui_ImplSdlGL_NewFrame(m_Window);
 
 		glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-		m_Buffer = (VertexData*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+		#ifdef EMSCRIPTEN
+			m_Buffer = m_BufferBase;
+		#else
+			m_Buffer = (VertexData*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+		#endif // EMSCRIPTEN
 
 		clearColor->OnRender();
 		clearColor->OnImguiRender();
@@ -131,7 +142,14 @@ namespace graphics
 
 	void OpenGLRenderer::end()
 	{
-		glUnmapBuffer(GL_ARRAY_BUFFER);
+		#ifdef EMSCRIPTEN
+			glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+			glBufferSubData(GL_ARRAY_BUFFER, 0, (m_Buffer - m_BufferBase) * RENDERER_VERTEX_SIZE, m_BufferBase);
+			m_Buffer = m_BufferBase;
+		#else
+			glUnmapBuffer(GL_ARRAY_BUFFER);
+		#endif // EMSCRIPTEN
+
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
@@ -152,9 +170,10 @@ namespace graphics
 		glBindVertexArray(0);
 
 		m_IndexCount = 0;
+		m_TextureSlots.clear();
 
 		ImGui::Render();
-		ImGui_ImplSdlGL3_RenderDrawData(ImGui::GetDrawData());
+		ImGui_ImplSdlGL_RenderDrawData(ImGui::GetDrawData());
 		SDL_GL_SwapWindow(m_Window);
 	}
 }
