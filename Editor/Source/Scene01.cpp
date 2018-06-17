@@ -1,45 +1,39 @@
 #include "Scene01.h"
 
+#include "ImguiDialog.h"
 
 SpriteTest::SpriteTest(SDL_Window* win)
 {
+	/*
+	Editor Work::
+	----------------------------
+	- Work flow
+	-- Select which project to work
+	-- Load Workspace
+	-- Load last scene
+	*/
+
+	if (File::exists("default.cfg"))
+	{
+		File::read("default.cfg");
+	}
+	else
+	{
+		File::write("default.cfg", "definitions should be passed here");
+	}
+
 	using namespace graphics;
-	using namespace audio;
 
-	FontManager::add(new Font("Arial", "Resources/arial.ttf", 24));
-
-#ifdef EMSCRIPTEN
-	m_Shader = new Shader("Resources/ES3.vert", "Resources/ES3.frag");
-#else
 	m_Shader = new Shader("Resources/Default.vert", "Resources/Default.frag");
-#endif // EMSCRIPTEN
-
-	//m_Layer = new Layer(new SDLRenderer(win), m_Shader);
 	m_Layer = new Layer(new OpenGLRenderer(win), m_Shader);
 
-	TextureManager::add(new Texture("test00", "Resources/tex3.png"));
+	ImguiMenuBar* menubar = new ImguiMenuBar();
+	m_Layer->add(menubar);
 
-	m_GroundSprite = new Sprite(glm::vec3(40, 40, 0), glm::vec2(40, 40), TextureManager::get("test00"));
-	m_PlayerSprite = new Sprite(glm::vec3(40, 40, 0), glm::vec2(40, 40), 0xaa0011ff);
+	ImguiDialog* dialog = new ImguiDialog();
+	m_Layer->add(dialog);
 
-	m_Layer->add(m_GroundSprite);
-	m_Layer->add(m_PlayerSprite);
-
-	m_Fps = new Label("FPS test", glm::vec3(20, 670, 0), FontManager::get("Arial"), 0xffffffff);
-	m_Layer->add(m_Fps);
-
-	ImguiMenuBar* testImgui = new ImguiMenuBar();
-	m_Layer->add(testImgui);
-
-	//SoundManager::add(new Sound("eff", "./Resources/effect.wav"));
-	//SoundManager::add(new Music("bgm", "Resources/background.ogg"));
-
-	//SoundManager::getMusic("bgm")->play();
-	//SoundManager::getSound("eff")->play();
 	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
-
-	PhysicsManager::add(new Rigidbody(m_GroundSprite, glm::vec2(0.0f, 0.0f), glm::vec2(20.0f, 20.0f)));
-	PhysicsManager::add(new Rigidbody(m_PlayerSprite, glm::vec2(0.0f, 400.0f), glm::vec2(20.0f, 20.0f), true, true));
 }
 
 SpriteTest::~SpriteTest()

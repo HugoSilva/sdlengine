@@ -1,5 +1,7 @@
 #include "ImguiMenuBar.h"
 
+#include <imgui.h>
+
 ImguiMenuBar::ImguiMenuBar()
 	: Renderable2D(glm::vec3(0), glm::vec2(0), 0)
 {

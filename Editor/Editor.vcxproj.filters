@@ -21,9 +21,15 @@
     <ClCompile Include="Source\Scene01.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\ImguiDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Scene01.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ImguiDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

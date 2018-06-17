@@ -27,6 +27,7 @@
 #include "Physics\PhysicsManager.h"
 #include "Physics\Collider.h"
 #include "Physics\Rigidbody.h"
+#include "Utils\File.h"
 #include "Scene.h"
 #include "ThreadManager.h"
 

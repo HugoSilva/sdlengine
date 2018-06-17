@@ -33,4 +33,26 @@ public:
 			return "";
 		}
 	}
+
+	static bool exists(const char* filepath)
+	{
+		struct stat buffer;
+		return (stat(filepath, &buffer) == 0);
+	}
+
+	static bool write(const char* filepath, const char* content)
+	{
+		std::ofstream file(filepath);
+
+		if (file.is_open())
+		{
+			file << content;
+			file.close();
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
 };
