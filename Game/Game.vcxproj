@@ -285,12 +285,10 @@ copy "$(SolutionDir)Thirdparty\SDL2_ttf\bin\$(Platform)\*.dll"  "$(TargetDir)"</
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Thirdparty\imgui\include\imgui.cpp" />
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Scene01.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Thirdparty\imgui\include\imgui.h" />
     <ClInclude Include="Source\Scene01.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

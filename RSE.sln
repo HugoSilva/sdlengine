@@ -14,7 +14,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTests", "UnitTests\Unit
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Editor", "Editor\Editor.vcxproj", "{E16C0409-C61F-4BFD-A4CF-59D88C15ED21}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Thirdparty", "Thirdparty\Thirdparty.vcxitems", "{F9753AD2-82D4-467F-8BBE-BC898BB6D218}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Thirdparty\Thirdparty.vcxitems*{358a9710-2256-4a34-b6cd-7d8921eb0bfb}*SharedItemsImports = 4
+		Thirdparty\Thirdparty.vcxitems*{f9753ad2-82d4-467f-8bbe-bc898bb6d218}*SharedItemsImports = 9
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86

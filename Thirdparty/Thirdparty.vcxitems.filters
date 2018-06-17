@@ -1,0 +1,376 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Imgui">
+      <UniqueIdentifier>{95854120-e583-41c1-ada8-1d98b2773296}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDL2">
+      <UniqueIdentifier>{5a8c60b3-1882-4ef5-a934-fa1f286adbe4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="glm">
+      <UniqueIdentifier>{26c67f63-60a9-4372-adeb-29b95be189c7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui\include\imconfig.h">
+      <Filter>Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui\include\imgui.h">
+      <Filter>Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui\include\imgui_internal.h">
+      <Filter>Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui\include\stb_rect_pack.h">
+      <Filter>Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui\include\stb_textedit.h">
+      <Filter>Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui\include\stb_truetype.h">
+      <Filter>Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\begin_code.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\close_code.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_assert.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_atomic.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_audio.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_bits.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_blendmode.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_clipboard.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config_android.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config_iphoneos.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config_macosx.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config_minimal.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config_pandora.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config_psp.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config_windows.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config_winrt.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config_wiz.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_copying.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_cpuinfo.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_egl.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_endian.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_error.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_events.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_filesystem.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_gamecontroller.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_gesture.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_haptic.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_hints.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_joystick.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_keyboard.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_keycode.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_loadso.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_log.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_main.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_messagebox.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_mouse.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_mutex.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_name.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_opengl.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_opengl_glext.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_opengles.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_opengles2.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_opengles2_gl2.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_opengles2_gl2ext.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_opengles2_gl2platform.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_opengles2_khrplatform.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_pixels.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_platform.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_power.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_quit.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_rect.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_render.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_revision.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_rwops.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_scancode.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_shape.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_stdinc.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_surface.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_system.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_syswm.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_assert.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_common.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_compare.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_crc32.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_font.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_fuzzer.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_harness.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_images.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_log.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_md5.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_memory.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_random.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_thread.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_timer.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_touch.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_types.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_version.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_video.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_vulkan.h">
+      <Filter>SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\common.hpp">
+      <Filter>glm</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\exponential.hpp">
+      <Filter>glm</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\ext.hpp">
+      <Filter>glm</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\fwd.hpp">
+      <Filter>glm</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\geometric.hpp">
+      <Filter>glm</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\glm.hpp">
+      <Filter>glm</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\integer.hpp">
+      <Filter>glm</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\mat2x2.hpp">
+      <Filter>glm</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\mat2x3.hpp">
+      <Filter>glm</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\mat2x4.hpp">
+      <Filter>glm</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\mat3x2.hpp">
+      <Filter>glm</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\mat3x3.hpp">
+      <Filter>glm</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\mat3x4.hpp">
+      <Filter>glm</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\mat4x2.hpp">
+      <Filter>glm</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\mat4x3.hpp">
+      <Filter>glm</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\mat4x4.hpp">
+      <Filter>glm</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\matrix.hpp">
+      <Filter>glm</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\packing.hpp">
+      <Filter>glm</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\trigonometric.hpp">
+      <Filter>glm</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\vec2.hpp">
+      <Filter>glm</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\vec3.hpp">
+      <Filter>glm</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\vec4.hpp">
+      <Filter>glm</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\vector_relational.hpp">
+      <Filter>glm</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)imgui\include\imgui.cpp">
+      <Filter>Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)imgui\include\imgui_demo.cpp">
+      <Filter>Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)imgui\include\imgui_draw.cpp">
+      <Filter>Imgui</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config.h.cmake">
+      <Filter>SDL2</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config.h.in">
+      <Filter>SDL2</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config_macosx.h.orig">
+      <Filter>SDL2</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="$(MSBuildThisFileDirectory)glm\include\glm\CMakeLists.txt">
+      <Filter>glm</Filter>
+    </Text>
+  </ItemGroup>
+</Project>
