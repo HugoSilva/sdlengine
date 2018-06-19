@@ -1,6 +1,7 @@
 #include "Scene01.h"
 
 #include "ImguiDialog.h"
+#include "ImguiCreate.h"
 
 SpriteTest::SpriteTest(SDL_Window* win)
 {
@@ -32,6 +33,9 @@ SpriteTest::SpriteTest(SDL_Window* win)
 
 	ImguiDialog* dialog = new ImguiDialog();
 	m_Layer->add(dialog);
+
+	ImguiCreate* create = new ImguiCreate();
+	m_Layer->add(create);
 
 	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
 }

@@ -1,5 +1,14 @@
 #include "InputManager.h"
 
+#include <imgui.h>
+#ifdef EMSCRIPTEN
+#include <SDL_opengles2.h>
+#include "../Utils/imgui_impl_sdl_gles2.h"
+#else
+#include <GL/glew.h>
+#include "../Utils/imgui_impl_sdl_gl3.h"
+#endif // EMSCRIPTEN
+
 namespace IO
 {
 	bool InputManager::m_AvailableKeyboard;
@@ -56,6 +65,7 @@ namespace IO
 				// // If positive, scrolled up
 				break;
 			}
+			ImGui_ImplSdlGL_ProcessEvent(&event);
 		}
 	}
 

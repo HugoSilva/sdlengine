@@ -176,11 +176,13 @@ copy "$(SolutionDir)Thirdparty\SDL2_ttf\bin\$(Platform)\*.dll"  "$(TargetDir)"</
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\ImguiCreate.cpp" />
     <ClCompile Include="Source\ImguiDialog.cpp" />
     <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\Scene01.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\ImguiCreate.h" />
     <ClInclude Include="Source\ImguiDialog.h" />
     <ClInclude Include="Source\Scene01.h" />
   </ItemGroup>
