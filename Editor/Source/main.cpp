@@ -1,6 +1,6 @@
 #include <Core.h>
 #include <glm\glm.hpp>
-#include "Scene01.h"
+#include "./Views/SetupView.h"
 
 #if _WIN32
 extern "C"
@@ -26,7 +26,7 @@ public:
 	void init() override
 	{
 		m_Window = createWindow("RockSlide Engine", 1280, 720);
-		AddScene(new SpriteTest(m_Window->GetWindow()));
+		AddScene(new SetupView(m_Window->GetWindow()));
 		#ifdef EMSCRIPTEN
 		#else
 			ThreadManager::Init();

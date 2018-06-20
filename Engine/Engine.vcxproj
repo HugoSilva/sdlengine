@@ -290,7 +290,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Physics\PhysicsManager.cpp" />
-    <ClCompile Include="Engine\Components\ImguiMenuBar.cpp" />
     <ClCompile Include="Engine\Core.cpp" />
     <ClCompile Include="Engine\Audio\Music.cpp" />
     <ClCompile Include="Engine\Audio\Sound.cpp" />
@@ -325,7 +324,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Physics\PhysicsManager.h" />
-    <ClInclude Include="Engine\Components\ImguiMenuBar.h" />
     <ClInclude Include="Engine\Ecs\Component.h" />
     <ClInclude Include="Engine\Core.h" />
     <ClInclude Include="Engine\Audio\Music.h" />

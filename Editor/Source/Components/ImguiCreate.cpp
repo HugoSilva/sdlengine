@@ -20,7 +20,7 @@ void ImguiCreate::submit(graphics::Renderer2D* renderer) const
 		ImGui::Text("Project Name:");
 		ImGui::InputText("##name", name, IM_ARRAYSIZE(name));
 
-		static char path[64] = "Path";
+		static char path[64] = "C:\\Projects\\";
 		ImGui::Text("Project Path:");
 		ImGui::InputText("##path", path, IM_ARRAYSIZE(path));
 

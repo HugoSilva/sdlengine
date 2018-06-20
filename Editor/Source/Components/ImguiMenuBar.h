@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Graphics/Renderable2D.h"
+#include <Graphics/Renderable2D.h>
 
 class ImguiMenuBar : public graphics::Renderable2D
 {
