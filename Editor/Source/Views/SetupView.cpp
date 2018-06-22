@@ -22,6 +22,8 @@ SetupView::SetupView(SDL_Window* win)
 void SetupView::Update(float deltaTime)
 {
 	m_Camera->Update(deltaTime);
+
+	SceneManager::get("");
 }
 
 void SetupView::Render()

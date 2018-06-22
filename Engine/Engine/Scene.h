@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Components/Shader.h"
-#include "Camera.h"
 
 class Scene
 {
@@ -11,7 +10,10 @@ public:
 
 	virtual void Render() = 0;
 
+	inline const std::string& getName() const { return m_Name; }
+
 private:
-	Shader* shader;
-	Camera* camera;
+	std::string m_Name;
+protected:
+	Shader* m_Shader;
 };

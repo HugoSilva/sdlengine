@@ -27,7 +27,9 @@
 #include "Physics\Collider.h"
 #include "Physics\Rigidbody.h"
 #include "Utils\File.h"
+#include "Camera.h"
 #include "Scene.h"
+#include "SceneManager.h"
 #include "ThreadManager.h"
 
 class Core
