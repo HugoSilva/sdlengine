@@ -51,9 +51,6 @@ protected:
 
 	const unsigned int getFPS() const { return m_FramesPerSecond; }
 
-	bool AddScene(Scene* scene);
-	bool ChangeScene(Scene* newScene);
-
 private:
 	void run();
 
@@ -63,8 +60,5 @@ private:
 	float deltaAccumulator = 0.0f;
 	int frames = 0;
 	unsigned int m_FramesPerSecond;
-	
-	std::vector<Scene*> m_Scenes;
-	unsigned int m_ActiveScene;
 	static bool m_Running;
 };

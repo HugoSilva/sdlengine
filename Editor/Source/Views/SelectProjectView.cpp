@@ -3,7 +3,7 @@
 #include "../Components/ImguiDialog.h"
 #include "../Components/ImguiCreate.h"
 
-SelectProjectView::SelectProjectView(SDL_Window* win)
+SelectProjectView::SelectProjectView(std::string name, SDL_Window* win)
 {
 	using namespace graphics;
 
@@ -17,6 +17,7 @@ SelectProjectView::SelectProjectView(SDL_Window* win)
 	m_Layer->add(create);
 
 	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
+	m_Name = name;
 }
 
 void SelectProjectView::Update(float deltaTime)

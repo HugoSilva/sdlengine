@@ -7,7 +7,7 @@ class WorkSpaceView : public Scene
 {
 
 public:
-	WorkSpaceView(SDL_Window* win);
+	WorkSpaceView(std::string name, SDL_Window* win);
 
 	void Update(float deltaTime);
 	void Render();

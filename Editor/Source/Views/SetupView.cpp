@@ -1,6 +1,6 @@
 #include "SetupView.h"
 
-SetupView::SetupView(SDL_Window* win)
+SetupView::SetupView(std::string name, SDL_Window* win)
 {
 	if (File::exists("default.cfg"))
 	{
@@ -17,13 +17,14 @@ SetupView::SetupView(SDL_Window* win)
 	m_Layer = new Layer(new OpenGLRenderer(win), m_Shader);
 
 	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
+	m_Name = name;
 }
 
 void SetupView::Update(float deltaTime)
 {
 	m_Camera->Update(deltaTime);
 
-	SceneManager::get("");
+	SceneManager::change("SelectProject");
 }
 
 void SetupView::Render()

@@ -63,9 +63,8 @@ void Core::run()
 
 	IO::InputManager::Update();
 
-	m_Scenes.at(m_ActiveScene)->Update(deltaTime);
-
-	m_Scenes.at(m_ActiveScene)->Render();
+	SceneManager::update(deltaTime);
+	SceneManager::render();
 
 	deltaAccumulator += deltaTime;
 	frames++;
@@ -77,28 +76,4 @@ void Core::run()
 		deltaAccumulator = 0.f;
 		tick();
 	}
-}
-
-bool Core::AddScene(Scene* scene)
-{
-	if (true)
-	{
-		m_Scenes.push_back(scene);
-		m_ActiveScene = m_Scenes.size()-1;
-		return true;
-	}
-	return false;
-}
-
-bool Core::ChangeScene(Scene* newScene)
-{
-	for (unsigned int i = 0; i < m_Scenes.size(); i++)
-	{
-		if (m_Scenes.at(i) == newScene)
-		{
-			m_ActiveScene = i;
-			return true;
-		}
-	}
-	return false;
 }

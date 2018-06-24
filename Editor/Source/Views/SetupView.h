@@ -7,7 +7,7 @@ class SetupView : public Scene
 {
 
 public:
-	SetupView(SDL_Window* win);
+	SetupView(std::string name, SDL_Window* win);
 
 	void Update(float deltaTime);
 	void Render();

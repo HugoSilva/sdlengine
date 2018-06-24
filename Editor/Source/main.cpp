@@ -1,6 +1,8 @@
 #include <Core.h>
 #include <glm\glm.hpp>
 #include "./Views/SetupView.h"
+#include "./Views/SelectProjectView.h"
+#include "./Views/WorkSpaceView.h"
 
 #if _WIN32
 extern "C"
@@ -26,8 +28,11 @@ public:
 	void init() override
 	{
 		m_Window = createWindow("RockSlide Engine", 1280, 720);
-		SceneManager::add(new SetupView(m_Window->GetWindow()));
-		//AddScene();
+
+		SceneManager::add(new SetupView("Setup", m_Window->GetWindow()));
+		SceneManager::add(new SelectProjectView("SelectProject", m_Window->GetWindow()));
+		SceneManager::add(new WorkSpaceView("WorkSpace", m_Window->GetWindow()));
+
 		#ifdef EMSCRIPTEN
 		#else
 			ThreadManager::Init();

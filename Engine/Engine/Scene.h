@@ -12,8 +12,7 @@ public:
 
 	inline const std::string& getName() const { return m_Name; }
 
-private:
-	std::string m_Name;
 protected:
+	std::string m_Name;
 	Shader* m_Shader;
 };

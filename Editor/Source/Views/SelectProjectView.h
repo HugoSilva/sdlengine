@@ -7,7 +7,7 @@ class SelectProjectView : public Scene
 {
 
 public:
-	SelectProjectView(SDL_Window* win);
+	SelectProjectView(std::string name, SDL_Window* win);
 
 	void Update(float deltaTime);
 	void Render();

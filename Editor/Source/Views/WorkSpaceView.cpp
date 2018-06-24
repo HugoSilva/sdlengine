@@ -2,7 +2,7 @@
 
 #include "../Components/ImguiMenuBar.h"
 
-WorkSpaceView::WorkSpaceView(SDL_Window* win)
+WorkSpaceView::WorkSpaceView(std::string name, SDL_Window* win)
 {
 	using namespace graphics;
 
@@ -13,6 +13,7 @@ WorkSpaceView::WorkSpaceView(SDL_Window* win)
 	m_Layer->add(menubar);
 
 	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
+	m_Name = name;
 }
 
 void WorkSpaceView::Update(float deltaTime)
