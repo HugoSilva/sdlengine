@@ -43,7 +43,7 @@ void SceneManager::clean()
 
 void SceneManager::update(float deltaTime)
 {
-	if (m_Scenes.size > 0)
+	if (m_Scenes.size() > 0)
 	{
 		m_Scenes[m_ActiveScene]->Update(deltaTime);
 	}
@@ -51,7 +51,7 @@ void SceneManager::update(float deltaTime)
 
 void SceneManager::render()
 {
-	if (m_Scenes.size > 0)
+	if (m_Scenes.size() > 0)
 	{
 		m_Scenes[m_ActiveScene]->Render();
 	}

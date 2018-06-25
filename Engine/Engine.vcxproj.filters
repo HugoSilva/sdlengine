@@ -120,6 +120,15 @@
     <ClCompile Include="Engine\SceneManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Event.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\EventHandler.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\EventManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\IO\Keyboard.h">
@@ -240,6 +249,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\SceneManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\EventManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

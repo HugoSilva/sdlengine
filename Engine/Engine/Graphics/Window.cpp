@@ -1,6 +1,13 @@
 #include "Window.h"
 
 #include <imgui.h>
+
+#include "../IO/InputManager.h"
+#include "../Audio/SoundManager.h"
+#include "../Graphics/FontManager.h"
+#include "../Components/TextureManager.h"
+#include "../Physics/PhysicsManager.h"
+
 #ifdef EMSCRIPTEN
 	#include <SDL_opengles2.h>
 	#include "../Utils/imgui_impl_sdl_gles2.h"

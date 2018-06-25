@@ -12,7 +12,10 @@ public:
 	void Update(float deltaTime);
 	void Render();
 
+	void NewProject();
+
 private:
+
 	graphics::Layer* m_Layer;
 	Shader* m_Shader;
 	Camera* m_Camera;

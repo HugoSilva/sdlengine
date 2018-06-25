@@ -1,6 +1,7 @@
 #include "ImguiDialog.h"
 
 #include <imgui.h>
+#include <EventManager.h>
 
 ImguiDialog::ImguiDialog() : Renderable2D(glm::vec3(0), glm::vec2(0), 0)
 {
@@ -38,6 +39,7 @@ void ImguiDialog::submit(graphics::Renderer2D* renderer) const
 
 		if (ImGui::Button("New"))
 		{
+			EventManager::Dispatch("CreateProject");
 		}
 		ImGui::SameLine();
 
