@@ -43,6 +43,10 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)imgui\include\stb_rect_pack.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)imgui\include\stb_textedit.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)imgui\include\stb_truetype.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)rapidxml\rapidxml.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)rapidxml\rapidxml_iterators.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)rapidxml\rapidxml_print.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)rapidxml\rapidxml_utils.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\begin_code.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\close_code.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL.h" />

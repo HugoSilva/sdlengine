@@ -5,6 +5,8 @@
 #include <array>
 #include "Component.h"
 
+#include "rapidxml\rapidxml.hpp"
+
 namespace ecs
 {
 	typedef unsigned int EntityId;
@@ -29,6 +31,14 @@ namespace ecs
 
 		template <class T>
 		bool HasComponent() const;
+
+		void writeXML(rapidxml::xml_document<>* doc, rapidxml::xml_node<>* parentNode)
+		{
+		}
+
+		void readXML(rapidxml::xml_document<>* doc, rapidxml::xml_node<>* node)
+		{
+		}
 
 	protected:
 		EntityId id;

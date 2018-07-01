@@ -10,6 +10,9 @@
     <Filter Include="glm">
       <UniqueIdentifier>{26c67f63-60a9-4372-adeb-29b95be189c7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="rapidxml">
+      <UniqueIdentifier>{7dc44c97-13b5-4470-ab43-323c29493247}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)imgui\include\imconfig.h">
@@ -344,6 +347,18 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\vector_relational.hpp">
       <Filter>glm</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)rapidxml\rapidxml.hpp">
+      <Filter>rapidxml</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)rapidxml\rapidxml_iterators.hpp">
+      <Filter>rapidxml</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)rapidxml\rapidxml_print.hpp">
+      <Filter>rapidxml</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)rapidxml\rapidxml_utils.hpp">
+      <Filter>rapidxml</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
