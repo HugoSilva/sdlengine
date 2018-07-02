@@ -32,13 +32,9 @@ namespace ecs
 		template <class T>
 		bool HasComponent() const;
 
-		void writeXML(rapidxml::xml_document<>* doc, rapidxml::xml_node<>* parentNode)
-		{
-		}
+		void writeXML(rapidxml::xml_document<>* doc, rapidxml::xml_node<>* parentNode);
 
-		void readXML(rapidxml::xml_document<>* doc, rapidxml::xml_node<>* node)
-		{
-		}
+		void readXML(rapidxml::xml_document<>* doc, rapidxml::xml_node<>* node);
 
 	protected:
 		EntityId id;
