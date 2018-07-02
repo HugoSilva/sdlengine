@@ -324,6 +324,8 @@
     <ClCompile Include="Engine\Event.h" />
     <ClCompile Include="Engine\EventHandler.h" />
     <ClCompile Include="Engine\EventManager.cpp" />
+    <ClCompile Include="Engine\Resource.cpp" />
+    <ClCompile Include="Engine\ResourceManager.cpp" />
     <ClCompile Include="Tests\TestClearColor.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -366,6 +368,8 @@
     <ClInclude Include="Engine\ThreadManager.h" />
     <ClInclude Include="Engine\SceneManager.h" />
     <ClInclude Include="Engine\EventManager.h" />
+    <ClInclude Include="Engine\Resource.h" />
+    <ClInclude Include="Engine\ResourceManager.h" />
     <ClInclude Include="Tests\TestClearColor.h" />
     <ClInclude Include="Tests\Test.h" />
   </ItemGroup>
