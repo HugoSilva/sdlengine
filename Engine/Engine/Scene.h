@@ -3,7 +3,7 @@
 #include "Components/Shader.h"
 #include "Ecs/Entity.h"
 
-#include "rapidxml\rapidxml.hpp"
+#include "rapidxml.hpp"
 
 class Scene
 {
@@ -46,8 +46,10 @@ public:
 		}
 	}
 
-private:
+protected:
 	std::string m_Name;
-	std::vector<ecs::Entity*> m_Entities;
 	Shader* m_Shader;
+
+private:
+	std::vector<ecs::Entity*> m_Entities;
 };

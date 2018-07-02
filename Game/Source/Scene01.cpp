@@ -28,11 +28,11 @@ SpriteTest::SpriteTest(SDL_Window* win)
 	m_Fps = new Label("FPS test", glm::vec3(20, 670, 0), FontManager::get("Arial"), 0xffffffff);
 	m_Layer->add(m_Fps);
 
-	//SoundManager::add(new Sound("eff", "./Resources/effect.wav"));
-	//SoundManager::add(new Music("bgm", "Resources/background.ogg"));
+	SoundManager::add(new Sound("eff", "./Resources/effect.wav"));
+	SoundManager::add(new Music("bgm", "Resources/background.ogg"));
 
-	//SoundManager::getMusic("bgm")->play();
-	//SoundManager::getSound("eff")->play();
+	SoundManager::getMusic("bgm")->play();
+	SoundManager::getSound("eff")->play();
 	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
 
 	PhysicsManager::add(new Rigidbody(m_GroundSprite, glm::vec2(0.0f, 0.0f), glm::vec2(20.0f, 20.0f)));

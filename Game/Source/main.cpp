@@ -26,7 +26,7 @@ public:
 	void init() override
 	{
 		m_Window = createWindow("RockSlide Engine", 1280, 720);
-		AddScene(new SpriteTest(m_Window->GetWindow()));
+		SceneManager::add(new SpriteTest(m_Window->GetWindow()));
 		#ifdef EMSCRIPTEN
 		#else
 			ThreadManager::Init();

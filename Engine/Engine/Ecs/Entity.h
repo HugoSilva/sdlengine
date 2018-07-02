@@ -5,7 +5,7 @@
 #include <array>
 #include "Component.h"
 
-#include "rapidxml\rapidxml.hpp"
+#include "rapidxml.hpp"
 
 namespace ecs
 {
