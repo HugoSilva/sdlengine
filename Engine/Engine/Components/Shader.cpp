@@ -17,52 +17,18 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
 	std::string fragString = File::read(m_FragPath);
 	const char* fShaderCode = fragString.c_str();
 
-	m_ShaderID = glCreateProgram();
-	unsigned int vertex = glCreateShader(GL_VERTEX_SHADER);
-	unsigned int fragment = glCreateShader(GL_FRAGMENT_SHADER);
-	int success;
-	char infoLog[512];
+	m_ShaderID = Load(vShaderCode, fShaderCode);
+}
 
-	glShaderSource(vertex, 1, &vShaderCode, NULL);
-	glCompileShader(vertex);
+Shader::Shader(const char* name, const char* vertexSource, const char* fragmentSource)
+	: m_Name(name), m_VertSource(vertexSource), m_FragSource(fragmentSource)
+{
+	m_ShaderID = Load(m_VertSource, m_FragSource);
+}
 
-	glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertex, 512, NULL, infoLog);
-		Logger::error("Shader error vertex compilation failed");
-		std::string log(infoLog);
-		Logger::warning(log);
-	}
-
-	glShaderSource(fragment, 1, &fShaderCode, NULL);
-	glCompileShader(fragment);
-
-	glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(fragment, 512, NULL, infoLog);
-		Logger::error("Shader error fragment compilation failed");
-		std::string log(infoLog);
-		Logger::warning(log);
-	}
-
-	glAttachShader(m_ShaderID, vertex);
-	glAttachShader(m_ShaderID, fragment);
-
-	glLinkProgram(m_ShaderID);
-
-	glGetProgramiv(m_ShaderID, GL_LINK_STATUS, &success);
-	if (!success)
-	{
-		glGetProgramInfoLog(m_ShaderID, 512, NULL, infoLog);
-		Logger::error("Shader error linking failed");
-		std::string log(infoLog);
-		Logger::warning(log);
-	}
-
-	glDeleteShader(vertex);
-	glDeleteShader(fragment);
+Shader::~Shader()
+{
+	glDeleteProgram(m_ShaderID);
 }
 
 void Shader::Enable() const
@@ -77,7 +43,12 @@ void Shader::Disable() const
 
 unsigned int Shader::getUniformLocation(const char* name)
 {
-	return glGetUniformLocation(m_ShaderID, name);
+	int result = glGetUniformLocation(m_ShaderID, name);
+	if (result == -1)
+	{
+		Logger::error((std::string)m_Name + "Could not find uniform " + (std::string)name + " in shader!");
+	}
+	return result;
 }
 
 void Shader::setUniform1i(const char* name, int value)
@@ -93,4 +64,71 @@ void Shader::setUniform1iv(const char* name, int* value, int count)
 void Shader::setUniformMat4(const char* name, const float* matrix)
 {
 	glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, matrix);
+}
+
+Shader* Shader::FromFile(const char* vertexPath, const char* fragmentPath)
+{
+	return new Shader(vertexPath, fragmentPath);
+}
+
+Shader* Shader::FromSource(const char* vertexSource, const char* fragmentSource)
+{
+	return new Shader(vertexSource, fragmentSource);
+}
+
+Shader* Shader::FromSource(const char* name, const char* vertexSource, const char* fragmentSource)
+{
+	return new Shader(name, vertexSource, fragmentSource);
+}
+
+unsigned int Shader::Load(const char* vertexSource, const char* fragmentSource)
+{
+	unsigned int program = glCreateProgram();
+	unsigned int vertex = glCreateShader(GL_VERTEX_SHADER);
+	unsigned int fragment = glCreateShader(GL_FRAGMENT_SHADER);
+	int success;
+	char infoLog[512];
+
+	glShaderSource(vertex, 1, &vertexSource, NULL);
+	glCompileShader(vertex);
+
+	glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(vertex, 512, NULL, infoLog);
+		Logger::error("Shader error vertex compilation failed");
+		std::string log(infoLog);
+		Logger::warning(log);
+	}
+
+	glShaderSource(fragment, 1, &fragmentSource, NULL);
+	glCompileShader(fragment);
+
+	glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(fragment, 512, NULL, infoLog);
+		Logger::error("Shader error fragment compilation failed");
+		std::string log(infoLog);
+		Logger::warning(log);
+	}
+
+	glAttachShader(program, vertex);
+	glAttachShader(program, fragment);
+
+	glLinkProgram(program);
+
+	glGetProgramiv(program, GL_LINK_STATUS, &success);
+	if (!success)
+	{
+		glGetProgramInfoLog(program, 512, NULL, infoLog);
+		Logger::error("Shader error linking failed");
+		std::string log(infoLog);
+		Logger::warning(log);
+	}
+
+	glDeleteShader(vertex);
+	glDeleteShader(fragment);
+
+	return program;
 }

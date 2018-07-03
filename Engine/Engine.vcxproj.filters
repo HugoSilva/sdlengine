@@ -108,31 +108,34 @@
     <ClCompile Include="Engine\Utils\Image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\ThreadManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Tests\TestClearColor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Utils\imgui_impl_sdl_gles2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\SceneManager.cpp">
+    <ClCompile Include="Engine\Core\Event.h">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Event.h">
+    <ClCompile Include="Engine\Core\EventHandler.h">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\EventHandler.h">
+    <ClCompile Include="Engine\Core\EventManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\EventManager.cpp">
+    <ClCompile Include="Engine\Core\Resource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Resource.cpp">
+    <ClCompile Include="Engine\Core\ResourceManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\ResourceManager.cpp">
+    <ClCompile Include="Engine\Core\SceneManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Core\ThreadManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Components\ShaderFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -153,9 +156,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Components\Texture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Components\Sprite.h">
@@ -242,9 +242,6 @@
     <ClInclude Include="Engine\Utils\imgui_impl_sdl_gl3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\ThreadManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Tests\Test.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -254,16 +251,25 @@
     <ClInclude Include="Engine\Utils\imgui_impl_sdl_gles2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\SceneManager.h">
+    <ClInclude Include="Engine\Core\EventManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\EventManager.h">
+    <ClInclude Include="Engine\Core\Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\ResourceManager.h">
+    <ClInclude Include="Engine\Core\ResourceManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Resource.h">
+    <ClInclude Include="Engine\Core\Scene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Core\SceneManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Core\ThreadManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Components\ShaderFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

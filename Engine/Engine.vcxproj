@@ -319,13 +319,14 @@
     <ClCompile Include="Engine\Graphics\Layer.cpp" />
     <ClCompile Include="Engine\Components\TextureManager.cpp" />
     <ClCompile Include="Engine\Ecs\Entity.cpp" />
-    <ClCompile Include="Engine\ThreadManager.cpp" />
-    <ClCompile Include="Engine\SceneManager.cpp" />
-    <ClCompile Include="Engine\Event.h" />
-    <ClCompile Include="Engine\EventHandler.h" />
-    <ClCompile Include="Engine\EventManager.cpp" />
-    <ClCompile Include="Engine\Resource.cpp" />
-    <ClCompile Include="Engine\ResourceManager.cpp" />
+    <ClCompile Include="Engine\Core\ThreadManager.cpp" />
+    <ClCompile Include="Engine\Core\SceneManager.cpp" />
+    <ClCompile Include="Engine\Core\Event.h" />
+    <ClCompile Include="Engine\Core\EventHandler.h" />
+    <ClCompile Include="Engine\Core\EventManager.cpp" />
+    <ClCompile Include="Engine\Core\Resource.cpp" />
+    <ClCompile Include="Engine\Core\ResourceManager.cpp" />
+    <ClCompile Include="Engine\Components\ShaderFactory.cpp" />
     <ClCompile Include="Tests\TestClearColor.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -359,17 +360,18 @@
     <ClInclude Include="Engine\Utils\imgui_impl_sdl_gl3.h" />
     <ClInclude Include="Engine\Utils\Logger.h" />
     <ClInclude Include="Engine\Graphics\Renderer2D.h" />
-    <ClInclude Include="Engine\Scene.h" />
+    <ClInclude Include="Engine\Core\Scene.h" />
     <ClInclude Include="Engine\Graphics\Window.h" />
     <ClInclude Include="Engine\Components\Label.h" />
     <ClInclude Include="Engine\Graphics\Layer.h" />
     <ClInclude Include="Engine\Components\TextureManager.h" />
     <ClInclude Include="Engine\Ecs\Entity.h" />
-    <ClInclude Include="Engine\ThreadManager.h" />
-    <ClInclude Include="Engine\SceneManager.h" />
-    <ClInclude Include="Engine\EventManager.h" />
-    <ClInclude Include="Engine\Resource.h" />
-    <ClInclude Include="Engine\ResourceManager.h" />
+    <ClInclude Include="Engine\Core\ThreadManager.h" />
+    <ClInclude Include="Engine\Core\SceneManager.h" />
+    <ClInclude Include="Engine\Core\EventManager.h" />
+    <ClInclude Include="Engine\Core\Resource.h" />
+    <ClInclude Include="Engine\Core\ResourceManager.h" />
+    <ClInclude Include="Engine\Components\ShaderFactory.h" />
     <ClInclude Include="Tests\TestClearColor.h" />
     <ClInclude Include="Tests\Test.h" />
   </ItemGroup>
