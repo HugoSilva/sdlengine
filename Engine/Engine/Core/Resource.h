@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "Utils/Logger.h"
+#include "../Utils/Logger.h"
 
 class Resource
 {

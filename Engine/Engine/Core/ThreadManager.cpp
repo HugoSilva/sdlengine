@@ -1,6 +1,6 @@
 #include "ThreadManager.h"
-#include "IO\InputManager.h"
-#include "Physics\PhysicsManager.h"
+#include "..\IO\InputManager.h"
+#include "..\Physics\PhysicsManager.h"
 
 unsigned int ThreadManager::m_AvailableThreads;
 std::vector<std::thread*> ThreadManager::m_Threads;

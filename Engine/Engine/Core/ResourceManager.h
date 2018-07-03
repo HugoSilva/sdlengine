@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "Resource.h"
-#include "Utils/Logger.h"
+#include "../Utils/Logger.h"
 
 class ResourceManager
 {

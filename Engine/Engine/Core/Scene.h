@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Components/Shader.h"
-#include "Ecs/Entity.h"
+#include "../Components/Shader.h"
+#include "../Ecs/Entity.h"
 
 #include "rapidxml.hpp"
 

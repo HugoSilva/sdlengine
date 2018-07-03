@@ -11,7 +11,7 @@ void ResourceManager::add(Resource* resource)
 	for (std::vector<Resource*>::iterator it = m_Resources.begin(); it != m_Resources.end(); ++it)
 	{
 		Resource* res = *it;
-		if (res->getFileName.compare(resource->getFileName()) == 0)
+		if (res->getFileName().compare(resource->getFileName()) == 0)
 			return;
 	}
 
@@ -23,7 +23,7 @@ Resource* ResourceManager::get(const std::string& name)
 	for (std::vector<Resource*>::iterator it = m_Resources.begin(); it != m_Resources.end(); ++it)
 	{
 		Resource* res = *it;
-		if (res->getFileName.compare(name) == 0)
+		if (res->getFileName().compare(name) == 0)
 			return res;
 	}
 	return nullptr;

@@ -28,10 +28,10 @@
 #include "Physics\Rigidbody.h"
 #include "Utils\File.h"
 #include "Camera.h"
-#include "EventManager.h"
-#include "Scene.h"
-#include "SceneManager.h"
-#include "ThreadManager.h"
+#include "Core\EventManager.h"
+#include "Core\Scene.h"
+#include "Core\SceneManager.h"
+#include "Core\ThreadManager.h"
 
 class Core
 {

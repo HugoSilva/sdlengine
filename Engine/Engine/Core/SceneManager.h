@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "Scene.h"
-#include "Utils/Logger.h"
+#include "../Utils/Logger.h"
 
 class SceneManager
 {
