@@ -13,11 +13,9 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
 	:m_VertPath(vertexPath), m_FragPath(fragmentPath)
 {
 	std::string vertString = File::read(m_VertPath);
-	const char* vShaderCode = vertString.c_str();
 	std::string fragString = File::read(m_FragPath);
-	const char* fShaderCode = fragString.c_str();
 
-	m_ShaderID = Load(vShaderCode, fShaderCode);
+	m_ShaderID = Load(vertString.c_str(), fragString.c_str());
 }
 
 Shader::Shader(const char* name, const char* vertexSource, const char* fragmentSource)
@@ -46,7 +44,7 @@ unsigned int Shader::getUniformLocation(const char* name)
 	int result = glGetUniformLocation(m_ShaderID, name);
 	if (result == -1)
 	{
-		Logger::error((std::string)m_Name + "Could not find uniform " + (std::string)name + " in shader!");
+		Logger::error("Could not find uniform " + (std::string)name + " in shader!");
 	}
 	return result;
 }

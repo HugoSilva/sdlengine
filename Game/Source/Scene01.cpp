@@ -61,6 +61,6 @@ void SpriteTest::Update(float deltaTime)
 
 void SpriteTest::Render()
 {
-	m_Camera->Render(*m_Shader);
+	m_Camera->Render(m_Shader);
 	m_Layer->render();
 }

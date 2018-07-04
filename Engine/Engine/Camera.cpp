@@ -67,10 +67,10 @@ void Camera::Update(float deltaTime)
 	this->ProcessMouseMovement(static_cast<float>(xPos), static_cast<float>(yPos));
 }
 
-void Camera::Render(Shader shader)
+void Camera::Render(Shader* shader)
 {
 	glm::mat4 view = GetViewMatrix();
-	shader.setUniformMat4("projection", glm::value_ptr(projection));
+	shader->setUniformMat4("projection", glm::value_ptr(projection));
 	//glUniformMatrix4fv(glGetUniformLocation(shader.GetShaderID(), "view"), 1, GL_FALSE, glm::value_ptr(view));
 }
 
