@@ -2,10 +2,13 @@
 
 namespace ecs
 {
-	static unsigned int componentID = 0;
+	std::vector<std::tuple<ComponentCreateFunction, ComponentFreeFunction, size_t> > ComponentBase::componentTypes;
 
-	unsigned int ComponentBase::nextID()
+	unsigned int ComponentBase::registerComponentType(ComponentCreateFunction createfn, ComponentFreeFunction freefn, unsigned int size)
 	{
-		return componentID++;
+		unsigned int componentID = componentTypes.size();
+		componentTypes.push_back(std::tuple<ComponentCreateFunction, ComponentFreeFunction, unsigned int>(
+			createfn, freefn, size));
+		return componentID;
 	}
 }

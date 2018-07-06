@@ -1,5 +1,7 @@
 #pragma once
+
 #include <vector>
+#include <tuple>
 
 namespace ecs
 {
@@ -11,8 +13,26 @@ namespace ecs
 
 	struct ComponentBase
 	{
+	public:
 		EntityHandle entity = NULL_ENTITY_HANDLE;
-		static unsigned int nextID();
+		static unsigned int registerComponentType(ComponentCreateFunction createfn, ComponentFreeFunction freefn, unsigned int size);
+
+		inline static ComponentCreateFunction getTypeCreateFunction(unsigned int id)
+		{
+			return std::get<0>(componentTypes[id]);
+		}
+
+		inline static ComponentFreeFunction getTypeFreeFunction(unsigned int id)
+		{
+			return std::get<1>(componentTypes[id]);
+		}
+
+		inline static unsigned int getTypeSize(unsigned int id)
+		{
+			return std::get<2>(componentTypes[id]);
+		}
+	private:
+		static std::vector<std::tuple<ComponentCreateFunction, ComponentFreeFunction, unsigned int>> componentTypes;
 	};
 
 	template<typename T>
@@ -42,7 +62,7 @@ namespace ecs
 	}
 
 	template<typename T>
-	const unsigned int ComponentBase<T>::ID(ComponentBase::nextID());
+	const unsigned int ComponentBase<T>::ID(ComponentBase::registerComponentType(ECSComponentCreate<T>, ECSComponentFree<T>, sizeof(T)));
 
 	template<typename T>
 	const unsigned int ComponentBase<T>::SIZE(sizeof(T));
