@@ -290,6 +290,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Ecs\Component.cpp" />
+    <ClCompile Include="Engine\Ecs\ECSManager.cpp" />
     <ClCompile Include="Engine\Physics\PhysicsManager.cpp" />
     <ClCompile Include="Engine\Core.cpp" />
     <ClCompile Include="Engine\Audio\Music.cpp" />
@@ -332,6 +333,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Ecs\Component.hpp" />
+    <ClInclude Include="Engine\Ecs\ECSManager.hpp" />
+    <ClInclude Include="Engine\Ecs\System.hpp" />
     <ClInclude Include="Engine\Physics\PhysicsManager.h" />
     <ClInclude Include="Engine\Ecs\Component.h" />
     <ClInclude Include="Engine\Core.h" />
