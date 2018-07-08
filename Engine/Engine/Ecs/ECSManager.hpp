@@ -16,20 +16,29 @@ namespace ecs
 		void removeEntity(EntityHandle handle);
 
 		template<class Component>
-		void addComponent(EntityHandle entity, Component* component);
+		inline void addComponent(EntityHandle entity, Component* component)
+		{
+			addComponentInternal(entity, handleToEntity(entity), Component::ID, component);
+		}
 
 		template<class Component>
-		void removeComponent(EntityHandle entity);
+		inline bool removeComponent(EntityHandle entity)
+		{
+			return removeComponentInternal(entity, Component::ID);
+		}
 
 		template<class Component>
-		void getComponent(EntityHandle entity);
+		inlineComponent* getComponent(EntityHandle entity)
+		{
+			getComponentInternal(handleToEntity(entity), components[Component::ID], Component::ID);
+		}
 
 		inline void addSystem(SystemBase& system)
 		{
 			systems.push_back(&system);
 		}
 		void updateSystems(float delta);
-		void removeSystem(SystemBase& system);
+		bool removeSystem(SystemBase& system);
 
 	private:
 		std::vector<SystemBase*> systems;
@@ -38,7 +47,7 @@ namespace ecs
 
 		inline std::pair<unsigned int, std::vector<std::pair<unsigned int, unsigned int>>>* handleToRawType(EntityHandle handle)
 		{
-			(std::pair<unsigned int, std::vector<std::pair<unsigned int, unsigned int>>>*)handle;
+			return (std::pair<unsigned int, std::vector<std::pair<unsigned int, unsigned int>>>*)handle;
 		}
 
 		inline unsigned int handleToEntityIndex(EntityHandle handle)
@@ -50,5 +59,17 @@ namespace ecs
 		{
 			return handleToRawType(handle)->second;
 		}
+
+		void deleteComponent(unsigned int componentID, unsigned int index);
+		bool removeComponentInternal(EntityHandle handle, unsigned int componentID);
+		void addComponentInternal(EntityHandle handle, std::vector<std::pair<unsigned int, unsigned int> >& entity, unsigned int componentID, ComponentBase* component);
+		ComponentBase* getComponentInternal(std::vector<std::pair<unsigned int, unsigned int> >& entityComponents, unsigned int componentID);
+
+		ComponentBase* getComponentInternal(std::vector<std::pair<unsigned int, unsigned int> >& entityComponents, std::vector<char>& array, unsigned int componentID);
+		
+		void updateSystemWithMultipleComponents(unsigned int index, float delta, const std::vector<unsigned int>& componentTypes, 
+			std::vector<ComponentBase*>& componentParam, std::vector<std::vector<char>*>& componentArrays);
+		
+		unsigned int findLeastCommonComponent(const std::vector<unsigned int>& componentTypes);
 	};
 }
