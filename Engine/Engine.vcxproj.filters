@@ -144,6 +144,9 @@
     <ClCompile Include="Engine\Ecs\ECSManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Ecs\System.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\IO\Keyboard.h">

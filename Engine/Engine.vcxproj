@@ -291,6 +291,7 @@
   <ItemGroup>
     <ClCompile Include="Engine\Ecs\Component.cpp" />
     <ClCompile Include="Engine\Ecs\ECSManager.cpp" />
+    <ClCompile Include="Engine\Ecs\System.cpp" />
     <ClCompile Include="Engine\Physics\PhysicsManager.cpp" />
     <ClCompile Include="Engine\Core.cpp" />
     <ClCompile Include="Engine\Audio\Music.cpp" />
