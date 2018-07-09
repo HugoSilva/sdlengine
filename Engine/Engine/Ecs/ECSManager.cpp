@@ -18,8 +18,7 @@ namespace ecs
 			delete entities[i];
 		}
 	}
-
-	EntityHandle ECSManager::makeEntity(ComponentBase* entityComponents, const unsigned int* componentIDs, size_t numComponents)
+	EntityHandle ECSManager::makeEntity(ComponentBase** entityComponents, const unsigned int* componentIDs, size_t numComponents)
 	{
 		std::pair<unsigned int, std::vector<std::pair<unsigned int, unsigned int> > >* newEntity = new std::pair<unsigned int, std::vector<std::pair<unsigned int, unsigned int> > >();
 		EntityHandle handle = (EntityHandle)newEntity;
@@ -29,7 +28,7 @@ namespace ecs
 				return NULL_ENTITY_HANDLE;
 			}
 
-			addComponentInternal(handle, newEntity->second, componentIDs[i], &entityComponents[i]);
+			addComponentInternal(handle, newEntity->second, componentIDs[i], entityComponents[i]);
 		}
 
 		newEntity->first = entities.size();
@@ -105,7 +104,7 @@ namespace ecs
 		return false;
 	}
 
-	ComponentBase* ECSManager::getComponentInternal(std::vector<std::pair<unsigned int, unsigned int> >& entityComponents, unsigned int componentID)
+	ComponentBase* ECSManager::getComponentInternal(std::vector<std::pair<unsigned int, unsigned int>>& entityComponents, std::vector<char>& array, unsigned int componentID);
 	{
 		for (unsigned int i = 0; i < entityComponents.size(); i++) {
 			if (componentID == entityComponents[i].first) {
@@ -115,18 +114,7 @@ namespace ecs
 		return nullptr;
 	}
 
-	bool ECSManager::removeSystem(SystemBase& system)
-	{
-		for (unsigned int i = 0; i < systems.size(); i++) {
-			if (&system == systems[i]) {
-				systems.erase(systems.begin() + i);
-				return true;
-			}
-		}
-		return false;
-	}
-
-	void ECSManager::updateSystems(float delta)
+	void ECSManager::updateSystems(SystemList& systems, float delta)
 	{
 		std::vector<ComponentBase*> componentParam;
 		std::vector<std::vector<char>*> componentArrays;
@@ -141,12 +129,12 @@ namespace ecs
 				}
 			}
 			else {
-				updateSystemWithMultipleComponents(i, delta, componentTypes, componentParam, componentArrays);
+				updateSystemWithMultipleComponents(i, systems, delta, componentTypes, componentParam, componentArrays);
 			}
 		}
 	}
 
-	unsigned int ECSManager::findLeastCommonComponent(const std::vector<unsigned int>& componentTypes)
+	unsigned int ECSManager::findLeastCommonComponent(const std::vector<unsigned int>& componentTypes, const std::vector<unsigned int>& componentFlags)
 	{
 		unsigned int minSize = components[componentTypes[0]].size()
 			/ ComponentBase::getTypeSize(componentTypes[0]);
@@ -163,39 +151,45 @@ namespace ecs
 		return minIndex;
 	}
 
-	void ECSManager::updateSystemWithMultipleComponents(unsigned int index, float delta,
+	void ECSManager::updateSystemWithMultipleComponents(unsigned int index, SystemList& systems, float delta,
 		const std::vector<unsigned int>& componentTypes, std::vector<ComponentBase*>& componentParam,
 		std::vector<std::vector<char>*>& componentArrays)
 	{
+		const std::vector<unsigned int>& componentFlags = systems[index]->getComponentFlags();
+
 		componentParam.resize(std::max(componentParam.size(), componentTypes.size()));
 		componentArrays.resize(std::max(componentArrays.size(), componentTypes.size()));
-		for (unsigned int i = 0; i < componentTypes.size(); i++) {
+		for (unsigned int i = 0; i < componentTypes.size(); i++)
+		{
 			componentArrays[i] = &components[componentTypes[i]];
 		}
-		unsigned int minSizeIndex = findLeastCommonComponent(componentTypes);
+		unsigned int minSizeIndex = findLeastCommonComponent(componentTypes, componentFlags);
 
 		size_t typeSize = ComponentBase::getTypeSize(componentTypes[minSizeIndex]);
 		std::vector<char>& array = *componentArrays[minSizeIndex];
-		for (unsigned int i = 0; i < array.size(); i += typeSize) {
+		for (unsigned int i = 0; i < array.size(); i += typeSize)
+		{
 			componentParam[minSizeIndex] = (ComponentBase*)&array[i];
-			std::vector<std::pair<unsigned int, unsigned int> >& entityComponents =
-				handleToEntity(componentParam[minSizeIndex]->entity);
+			std::vector<std::pair<unsigned int, unsigned int> >& entityComponents = handleToEntity(componentParam[minSizeIndex]->entity);
 
 			bool isValid = true;
-			for (unsigned int j = 0; j < componentTypes.size(); j++) {
-				if (j == minSizeIndex) {
+			for (unsigned int j = 0; j < componentTypes.size(); j++)
+			{
+				if (j == minSizeIndex)
+				{
 					continue;
 				}
 
-				componentParam[j] = getComponentInternal(entityComponents,
-					*componentArrays[j], componentTypes[j]);
-				if (componentParam[j] == nullptr) {
+				componentParam[j] = getComponentInternal(entityComponents, *componentArrays[j], componentTypes[j]);
+				if (componentParam[j] == nullptr && (componentFlags[j] & SystemBase::FLAG_OPTIONAL) == 0)
+				{
 					isValid = false;
 					break;
 				}
 			}
 
-			if (isValid) {
+			if (isValid)
+			{
 				systems[index]->updateComponents(delta, &componentParam[0]);
 			}
 		}

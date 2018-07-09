@@ -7,13 +7,58 @@ namespace ecs
 	class SystemBase
 	{
 	public:
-		SystemBase(const std::vector<unsigned int>& componentTypesIn) : componentTypes(componentTypesIn) {}
+		enum
+		{
+			FLAG_OPTIONAL = 1,
+		};
+		
+		SystemBase() {}
+
 		virtual void updateComponents(float delta, ComponentBase** components) {}
+
 		const std::vector<unsigned int>& getComponentTypes()
 		{
 			return componentTypes;
 		}
+		
+		const std::vector<unsigned int>& getComponentFlags()
+		{
+			return componentFlags;
+		}
+		
+		bool isValid();
+
 	private:
 		std::vector<unsigned int> componentTypes;
+		std::vector<unsigned int> componentFlags;
+	};
+
+	class SystemList
+	{
+	public:
+		inline bool addSystem(SystemBase& system)
+		{
+			if (!system.isValid())
+			{
+				return false;
+			}
+			systems.push_back(&system);
+			return true;
+		}
+
+		inline size_t size()
+		{
+			return systems.size();
+		}
+		
+		inline SystemBase* operator[](unsigned int index)
+		{
+			return systems[index];
+		}
+		
+		bool removeSystem(SystemBase& system);
+
+	private:
+		std::vector<SystemBase*> systems;
 	};
 }

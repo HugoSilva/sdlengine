@@ -19,25 +19,25 @@ namespace ecs
 
 		inline static ComponentCreateFunction getTypeCreateFunction(unsigned int id)
 		{
-			return std::get<0>(componentTypes[id]);
+			return std::get<0>((*componentTypes)[id]);
 		}
 
 		inline static ComponentFreeFunction getTypeFreeFunction(unsigned int id)
 		{
-			return std::get<1>(componentTypes[id]);
+			return std::get<1>((*componentTypes)[id]);
 		}
 
 		inline static unsigned int getTypeSize(unsigned int id)
 		{
-			return std::get<2>(componentTypes[id]);
+			return std::get<2>((*componentTypes)[id]);
 		}
 
 		inline static bool isTypeValid(unsigned int id)
 		{
-			return id < componentTypes.size();
+			return id < componentTypes->size();
 		}
 	private:
-		static std::vector<std::tuple<ComponentCreateFunction, ComponentFreeFunction, unsigned int>> componentTypes;
+		static std::vector<std::tuple<ComponentCreateFunction, ComponentFreeFunction, size_t>>* componentTypes;
 	};
 
 	template<typename T>
