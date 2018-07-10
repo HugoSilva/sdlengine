@@ -104,7 +104,7 @@ namespace ecs
 		return false;
 	}
 
-	ComponentBase* ECSManager::getComponentInternal(std::vector<std::pair<unsigned int, unsigned int>>& entityComponents, std::vector<char>& array, unsigned int componentID);
+	ComponentBase* ECSManager::getComponentInternal(std::vector<std::pair<unsigned int, unsigned int>>& entityComponents, std::vector<char>& array, unsigned int componentID)
 	{
 		for (unsigned int i = 0; i < entityComponents.size(); i++) {
 			if (componentID == entityComponents[i].first) {

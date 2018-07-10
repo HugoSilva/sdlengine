@@ -28,6 +28,13 @@ namespace ecs
 		
 		bool isValid();
 
+	protected:
+		void addComponentType(unsigned int componentType, unsigned int componentFlag = 0)
+		{
+			componentTypes.push_back(componentType);
+			componentFlags.push_back(componentFlag);
+		}
+
 	private:
 		std::vector<unsigned int> componentTypes;
 		std::vector<unsigned int> componentFlags;

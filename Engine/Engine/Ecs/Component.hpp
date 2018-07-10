@@ -67,16 +67,16 @@ namespace ecs
 	}
 
 	template<typename T>
-	const unsigned int ComponentBase<T>::ID(ComponentBase::registerComponentType(ECSComponentCreate<T>, ECSComponentFree<T>, sizeof(T)));
+	const unsigned int Component<T>::ID(ComponentBase::registerComponentType(ECSComponentCreate<T>, ECSComponentFree<T>, sizeof(T)));
 
 	template<typename T>
-	const unsigned int ComponentBase<T>::SIZE(sizeof(T));
+	const unsigned int Component<T>::SIZE(sizeof(T));
 
 	template<typename T>
-	const ComponentCreateFunction ECSComponent<T>::CREATE_FUNCTION(ECSComponentCreate<T>);
+	const ComponentCreateFunction Component<T>::CREATE_FUNCTION(ECSComponentCreate<T>);
 
 	template<typename T>
-	const ComponentFreeFunction ECSComponent<T>::FREE_FUNCTION(ECSComponentFree<T>);
+	const ComponentFreeFunction Component<T>::FREE_FUNCTION(ECSComponentFree<T>);
 
 	struct PositionComponent : public Component<PositionComponent>
 	{
