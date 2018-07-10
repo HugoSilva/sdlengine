@@ -14,7 +14,15 @@ namespace ecs
 
 		EntityHandle makeEntity(ComponentBase** components, const unsigned int* componentIDs, size_t numComponents);
 		void removeEntity(EntityHandle handle);
-		
+
+		template<class... TArgs>
+		EntityHandle makeEntity(TArgs&... arguments)
+		{
+			ComponentBase* components[] = { &arguments };
+			unsigned int componentIDs[] = { TArgs::ID };
+			return makeEntity(components, componentIDs, sizeof...(TArgs));
+		}
+
 		template<class A>
 		EntityHandle makeEntity(A& c1)
 		{

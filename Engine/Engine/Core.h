@@ -16,6 +16,11 @@
 #include "Components\Label.h"
 #include "Components\Sprite.h"
 #include "Components\TextureManager.h"
+#include "Core\EventManager.h"
+#include "Core\Scene.h"
+#include "Core\SceneManager.h"
+#include "Core\ThreadManager.h"
+#include "Ecs\ECSManager.hpp"
 #include "Graphics\Renderer2D.h"
 #include "Graphics\OpenGLRenderer.h"
 #include "Graphics\Window.h"
@@ -28,10 +33,6 @@
 #include "Physics\Rigidbody.h"
 #include "Utils\File.h"
 #include "Camera.h"
-#include "Core\EventManager.h"
-#include "Core\Scene.h"
-#include "Core\SceneManager.h"
-#include "Core\ThreadManager.h"
 
 class Core
 {

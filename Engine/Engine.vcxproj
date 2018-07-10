@@ -321,7 +321,6 @@
     <ClCompile Include="Engine\Components\Label.cpp" />
     <ClCompile Include="Engine\Graphics\Layer.cpp" />
     <ClCompile Include="Engine\Components\TextureManager.cpp" />
-    <ClCompile Include="Engine\Ecs\Entity.cpp" />
     <ClCompile Include="Engine\Core\ThreadManager.cpp" />
     <ClCompile Include="Engine\Core\SceneManager.cpp" />
     <ClCompile Include="Engine\Core\Event.h" />
@@ -337,7 +336,6 @@
     <ClInclude Include="Engine\Ecs\ECSManager.hpp" />
     <ClInclude Include="Engine\Ecs\System.hpp" />
     <ClInclude Include="Engine\Physics\PhysicsManager.h" />
-    <ClInclude Include="Engine\Ecs\Component.h" />
     <ClInclude Include="Engine\Core.h" />
     <ClInclude Include="Engine\Audio\Music.h" />
     <ClInclude Include="Engine\Audio\Sound.h" />
@@ -371,7 +369,6 @@
     <ClInclude Include="Engine\Components\Label.h" />
     <ClInclude Include="Engine\Graphics\Layer.h" />
     <ClInclude Include="Engine\Components\TextureManager.h" />
-    <ClInclude Include="Engine\Ecs\Entity.h" />
     <ClInclude Include="Engine\Core\ThreadManager.h" />
     <ClInclude Include="Engine\Core\SceneManager.h" />
     <ClInclude Include="Engine\Core\EventManager.h" />

@@ -63,6 +63,12 @@ void Core::run()
 
 	IO::InputManager::Update();
 
+	//TODO need to review the static functions for the manager
+	//ecs::ECSManager ecs;
+	//ecs::SystemList mainSystems;
+	//mainSystems.addSystem(newSystem);
+	//ecs::ECSManager::updateSystems(mainSystems, deltaTime);
+
 	SceneManager::update(deltaTime);
 	SceneManager::render();
 
