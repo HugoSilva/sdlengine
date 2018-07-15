@@ -2,7 +2,7 @@
 
 namespace ecs
 {
-	bool SystemBase::isValid()
+	bool SystemBase::isValid() const
 	{
 		for (unsigned int i = 0; i < componentFlags.size(); i++)
 		{

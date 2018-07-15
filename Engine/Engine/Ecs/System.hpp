@@ -16,17 +16,17 @@ namespace ecs
 
 		virtual void updateComponents(float delta, ComponentBase** components) {}
 
-		const std::vector<unsigned int>& getComponentTypes()
+		const std::vector<unsigned int>& getComponentTypes() const
 		{
 			return componentTypes;
 		}
 		
-		const std::vector<unsigned int>& getComponentFlags()
+		const std::vector<unsigned int>& getComponentFlags() const
 		{
 			return componentFlags;
 		}
 		
-		bool isValid();
+		bool isValid() const;
 
 	protected:
 		void addComponentType(unsigned int componentType, unsigned int componentFlag = 0)
@@ -53,7 +53,7 @@ namespace ecs
 			return true;
 		}
 
-		inline size_t size()
+		inline size_t size() const
 		{
 			return systems.size();
 		}
