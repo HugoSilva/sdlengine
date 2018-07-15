@@ -7,6 +7,7 @@
 #include "../Graphics/FontManager.h"
 #include "../Components/TextureManager.h"
 #include "../Physics/PhysicsManager.h"
+#include "../Ecs/ECSManager.hpp"
 
 #ifdef EMSCRIPTEN
 	#include <SDL_opengles2.h>
@@ -26,10 +27,12 @@ namespace graphics
 
 	Window::~Window()
 	{
+		//TODO move manager clean logic to the core
 		audio::SoundManager::clean();
 		graphics::FontManager::clean();
 		TextureManager::clean();
 		PhysicsManager::Clean();
+		ecs::ECSManager::clean();
 
 		ImGui_ImplSdlGL_Shutdown();
 
