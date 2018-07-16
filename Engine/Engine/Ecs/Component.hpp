@@ -7,9 +7,9 @@ namespace ecs
 {
 	struct ComponentBase;
 	typedef void* EntityHandle;
-	typedef unsigned int (*ComponentCreateFunction)(std::vector<char>& memory, EntityHandle entity, ComponentBase* comp);
-	typedef void (*ComponentFreeFunction)(ComponentBase* comp);
-	#define NULL_ENTITY_HANDLE nullptr
+	typedef unsigned int(*ComponentCreateFunction)(std::vector<char>& memory, EntityHandle entity, ComponentBase* comp);
+	typedef void(*ComponentFreeFunction)(ComponentBase* comp);
+#define NULL_ENTITY_HANDLE nullptr
 
 	struct ComponentBase
 	{
@@ -77,11 +77,4 @@ namespace ecs
 
 	template<typename T>
 	const ComponentFreeFunction Component<T>::FREE_FUNCTION(ECSComponentFree<T>);
-
-	struct PositionComponent : public Component<PositionComponent>
-	{
-		float x;
-		float y;
-		float z;
-	};
 }

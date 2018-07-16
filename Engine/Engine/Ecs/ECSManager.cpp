@@ -2,6 +2,7 @@
 
 namespace ecs
 {
+	std::vector<SystemList*> ECSManager::m_SystemLists;
 	ECS ECSManager::m_ecs;
 
 	void ECSManager::init()

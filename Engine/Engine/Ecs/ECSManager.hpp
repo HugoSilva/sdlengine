@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ECS.hpp"
+#include "System.hpp"
+#include <vector>
 
 namespace ecs
 {
@@ -8,7 +10,6 @@ namespace ecs
 	{
 	public:
 		ECSManager() { }
-		~ECSManager();
 
 		static void init();
 		static void addSystemList();
