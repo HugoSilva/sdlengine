@@ -12,7 +12,12 @@ namespace ecs
 		ECSManager() { }
 
 		static void init();
-		static void addSystemList();
+
+		template<class... TArgs>
+		static void addEntity(TArgs&&... arguments);
+
+		static void addSystem(SystemBase& system);
+
 		static void update(float delta);
 		static void clean();
 

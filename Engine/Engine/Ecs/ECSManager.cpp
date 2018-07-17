@@ -1,4 +1,5 @@
 #include "ECSManager.hpp"
+#include "ComponentDefinitions.hpp"
 
 namespace ecs
 {
@@ -7,14 +8,23 @@ namespace ecs
 
 	void ECSManager::init()
 	{
-		//TODO need to review the static functions for the manager
-		//ecs::ECSManager ecs;
-		//ecs::SystemList mainSystems;
-		//mainSystems.addSystem(newSystem);
+		//TODO Search if there is a better place to create the default SystemList or lists
+		ecs::SystemList* mainSystems;
+		m_SystemLists.push_back(mainSystems);
+
+		SpriteRenderSystem spriteSystem;
+		addSystem(spriteSystem);
 	}
 
-	void ECSManager::addSystemList()
+	template<class... TArgs>
+	void ECSManager::addEntity(TArgs&&... arguments)
 	{
+		m_ecs.makeEntity((&arguments)...);
+	}
+
+	void ECSManager::addSystem(SystemBase& system)
+	{
+		m_SystemLists[0]->addSystem(system);
 	}
 
 	void ECSManager::update(float delta)

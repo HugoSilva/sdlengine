@@ -147,7 +147,7 @@
     <ClCompile Include="Engine\Ecs\ECSManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Ecs\ComponentDefinitions.cpp">
+    <ClCompile Include="Engine\Ecs\ComponentDefinitions.hpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,4 +1,7 @@
+#pragma once
+
 #include "Component.hpp"
+#include "System.hpp"
 #include "../Components/Texture.h"
 #include "../Audio/Sound.h"
 
@@ -32,5 +35,23 @@ namespace ecs
 	{
 		glm::vec3 Center;
 		glm::vec3 Size;
+	};
+
+	class SpriteRenderSystem : public SystemBase
+	{
+	public:
+		SpriteRenderSystem() : SystemBase()
+		{
+			addComponentType(PositionComponent::ID);
+			addComponentType(SpriteComponent::ID);
+		}
+
+		virtual void updateComponents(float delta, ComponentBase** components)
+		{
+			PositionComponent * transform = (PositionComponent*)components[0];
+			SpriteComponent * mesh = (SpriteComponent*)components[1];
+
+			//TODO Render logic needs to be held where instead of the layer class
+		}
 	};
 }

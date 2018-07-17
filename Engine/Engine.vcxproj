@@ -290,7 +290,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Ecs\Component.cpp" />
-    <ClCompile Include="Engine\Ecs\ComponentDefinitions.cpp" />
+    <ClCompile Include="Engine\Ecs\ComponentDefinitions.hpp" />
     <ClCompile Include="Engine\Ecs\ECS.cpp" />
     <ClCompile Include="Engine\Ecs\System.cpp" />
     <ClCompile Include="Engine\Physics\PhysicsManager.cpp" />

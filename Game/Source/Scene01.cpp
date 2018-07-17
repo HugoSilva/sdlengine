@@ -18,7 +18,7 @@ SpriteTest::SpriteTest(SDL_Window* win)
 	m_Layer = new Layer(new OpenGLRenderer(win), m_Shader);
 
 	TextureManager::add(new Texture("test00", "Resources/tex3.png"));
-
+/*
 	m_GroundSprite = new Sprite(glm::vec3(40, 40, 0), glm::vec2(40, 40), TextureManager::get("test00"));
 	m_PlayerSprite = new Sprite(glm::vec3(40, 40, 0), glm::vec2(40, 40), 0xaa0011ff);
 
@@ -37,6 +37,28 @@ SpriteTest::SpriteTest(SDL_Window* win)
 
 	PhysicsManager::add(new Rigidbody(m_GroundSprite, glm::vec2(0.0f, 0.0f), glm::vec2(20.0f, 20.0f)));
 	PhysicsManager::add(new Rigidbody(m_PlayerSprite, glm::vec2(0.0f, 400.0f), glm::vec2(20.0f, 20.0f), true, true));
+*/
+
+	//New Entities code
+	ecs::PositionComponent position;
+	position.x = 40.f;
+	position.y = 40.f;
+	position.z = 0.f;
+
+	ecs::SpriteComponent sprite;
+	sprite.Sprite = TextureManager::get("test00");
+
+	ecs::ECSManager::addEntity(position, sprite);
+
+	ecs::PositionComponent position1;
+	position1.x = 40.f;
+	position1.y = 40.f;
+	position1.z = 0.f;
+
+	ecs::SpriteComponent sprite1;
+	sprite.Color = 0xaa0011ff;
+
+	ecs::ECSManager::addEntity(position1, sprite1);
 }
 
 SpriteTest::~SpriteTest()
