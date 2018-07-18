@@ -64,4 +64,5 @@ private:
 	int frames = 0;
 	unsigned int m_FramesPerSecond;
 	static bool m_Running;
+	graphics::Renderer2D* m_Renderer;
 };

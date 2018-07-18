@@ -1,5 +1,6 @@
 #include "ECSManager.hpp"
 #include "ComponentDefinitions.hpp"
+#include "../Graphics/OpenGLRenderer.h"
 
 namespace ecs
 {
@@ -11,8 +12,8 @@ namespace ecs
 		//TODO Search if there is a better place to create the default SystemList or lists
 		ecs::SystemList* mainSystems;
 		m_SystemLists.push_back(mainSystems);
-
-		SpriteRenderSystem spriteSystem;
+		//TODO create static method to fetch the window
+		SpriteRenderSystem spriteSystem{ graphics::OpenGLRenderer(m_Window->GetWindow()) };
 		addSystem(spriteSystem);
 	}
 

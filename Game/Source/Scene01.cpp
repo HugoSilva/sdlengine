@@ -83,6 +83,8 @@ void SpriteTest::Update(float deltaTime)
 
 void SpriteTest::Render()
 {
-	m_Camera->Render(m_Shader);
-	m_Layer->render();
+	//TODO needs to be removed only has shader code for now
+	m_Shader->Enable();
+	//m_Camera->Render(m_Shader);
+	//m_Layer->render();
 }

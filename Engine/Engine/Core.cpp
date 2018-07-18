@@ -62,10 +62,18 @@ void Core::run()
 	last = now;
 
 	IO::InputManager::Update();
+
+
+	//TODO shader needs to be moved to the renderable, objects may have different shaders
+	SceneManager::render(); // Only for shader
+	m_Renderer->begin();
+	//TODO need to split this up for normal systems and render systems
 	ecs::ECSManager::update(deltaTime);
+	m_Renderer->end();
+	m_Renderer->flush();
+
 	//TODO review scene manager logic now that we are using ECS
 	SceneManager::update(deltaTime);
-	SceneManager::render();
 
 	deltaAccumulator += deltaTime;
 	frames++;
