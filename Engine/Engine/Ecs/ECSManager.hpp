@@ -2,6 +2,7 @@
 
 #include "ECS.hpp"
 #include "System.hpp"
+#include "ComponentDefinitions.hpp"
 #include <vector>
 
 namespace ecs
@@ -13,8 +14,7 @@ namespace ecs
 
 		static void init();
 
-		template<class... TArgs>
-		static void addEntity(TArgs&&... arguments);
+		static void addEntity(PositionComponent a, SpriteComponent b);
 
 		static void addSystem(SystemBase& system);
 

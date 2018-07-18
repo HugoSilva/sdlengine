@@ -39,6 +39,8 @@ SpriteTest::SpriteTest(SDL_Window* win)
 	PhysicsManager::add(new Rigidbody(m_PlayerSprite, glm::vec2(0.0f, 400.0f), glm::vec2(20.0f, 20.0f), true, true));
 */
 
+	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
+
 	//New Entities code
 	ecs::PositionComponent position;
 	position.x = 40.f;

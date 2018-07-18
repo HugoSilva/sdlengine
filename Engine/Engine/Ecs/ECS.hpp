@@ -23,14 +23,6 @@ namespace ecs
 			return makeEntity(components, componentIDs, sizeof...(TArgs));
 		}
 
-		template<class A>
-		EntityHandle makeEntity(A& c1)
-		{
-			ComponentBase* components[] = { &c1 };
-			unsigned int componentIDs[] = { A::ID };
-			return makeEntity(components, componentIDs, 1);
-		}
-
 		template<class Component>
 		inline void addComponent(EntityHandle entity, Component* component)
 		{

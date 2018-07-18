@@ -40,6 +40,8 @@ class Core
 public:
 	void start();
 	static bool getRunning() { return m_Running; }
+	static graphics::Renderer2D* getRenderer() { return m_Renderer; }
+	static graphics::Window* getWindow() { return m_Window1; }
 
 protected:
 	Core();
@@ -64,5 +66,6 @@ private:
 	int frames = 0;
 	unsigned int m_FramesPerSecond;
 	static bool m_Running;
-	graphics::Renderer2D* m_Renderer;
+	static graphics::Renderer2D* m_Renderer;
+	static graphics::Window* m_Window1;
 };

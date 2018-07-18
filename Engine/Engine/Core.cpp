@@ -10,10 +10,17 @@ static void DispatchLoop(void* fp)
 #endif
 
 bool Core::m_Running = true;
+graphics::Renderer2D* Core::m_Renderer;
+graphics::Window* Core::m_Window1;
 
 Core::Core() : m_FramesPerSecond(0)
 {
+	m_Window1 = new graphics::Window("RockSlide Engine", 1280, 720);
+	m_Window1->Init();
 
+	m_Renderer = new graphics::OpenGLRenderer(m_Window1->GetWindow());
+
+	ecs::ECSManager::init();
 }
 
 Core::~Core()

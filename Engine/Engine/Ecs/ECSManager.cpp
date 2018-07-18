@@ -1,6 +1,7 @@
 #include "ECSManager.hpp"
 #include "ComponentDefinitions.hpp"
 #include "../Graphics/OpenGLRenderer.h"
+#include "../Core.h"
 
 namespace ecs
 {
@@ -10,17 +11,17 @@ namespace ecs
 	void ECSManager::init()
 	{
 		//TODO Search if there is a better place to create the default SystemList or lists
-		ecs::SystemList* mainSystems;
+		ecs::SystemList* mainSystems = new ecs::SystemList();
 		m_SystemLists.push_back(mainSystems);
 		//TODO create static method to fetch the window
-		SpriteRenderSystem spriteSystem{ graphics::OpenGLRenderer(m_Window->GetWindow()) };
-		addSystem(spriteSystem);
+		SpriteRenderSystem* spriteSystem = new SpriteRenderSystem(*Core::getRenderer());
+		addSystem(*spriteSystem);
 	}
 
-	template<class... TArgs>
-	void ECSManager::addEntity(TArgs&&... arguments)
+	//TODO Fix static type casting to variadic template
+	void ECSManager::addEntity(PositionComponent a, SpriteComponent b)
 	{
-		m_ecs.makeEntity((&arguments)...);
+		m_ecs.makeEntity(a, b);
 	}
 
 	void ECSManager::addSystem(SystemBase& system)
