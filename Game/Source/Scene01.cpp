@@ -53,12 +53,12 @@ SpriteTest::SpriteTest(SDL_Window* win)
 	ecs::ECSManager::addEntity(position, sprite);
 
 	ecs::PositionComponent position1;
-	position1.x = 40.f;
+	position1.x = 80.f;
 	position1.y = 40.f;
 	position1.z = 0.f;
 
 	ecs::SpriteComponent sprite1;
-	sprite.Color = 0xaa0011ff;
+	sprite1.Color = 0xaa0011ff;
 
 	ecs::ECSManager::addEntity(position1, sprite1);
 }
@@ -87,6 +87,7 @@ void SpriteTest::Render()
 {
 	//TODO needs to be removed only has shader code for now
 	m_Shader->Enable();
-	//m_Camera->Render(m_Shader);
+	//TODO create a camera system to replace old camera
+	m_Camera->Render(m_Shader);
 	//m_Layer->render();
 }

@@ -18,8 +18,8 @@ namespace ecs
 
 	struct SpriteComponent : public Component<SpriteComponent>
 	{
-		Texture* Sprite;
-		unsigned int Color;
+		Texture* Sprite{ nullptr };
+		unsigned int Color{ 0x00 };
 	};
 
 	struct AudioComponent : public Component<AudioComponent>

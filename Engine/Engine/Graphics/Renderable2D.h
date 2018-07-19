@@ -56,8 +56,8 @@ namespace graphics
 
 		glm::vec3 m_Position;
 		glm::vec2 m_Size;
-		unsigned int m_Color;
+		unsigned int m_Color{ 0x00 };
 		std::vector<glm::vec2> m_UV;
-		Texture* m_Texture;
+		Texture* m_Texture{ nullptr };
 	};
 }

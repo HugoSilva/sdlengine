@@ -59,7 +59,7 @@ protected:
 private:
 	void run();
 
-	graphics::Window* m_Window;
+	//graphics::Window* m_Window;
 	long now, last = 0;
 	float deltaTime = 0.0;
 	float deltaAccumulator = 0.0f;
