@@ -30,8 +30,8 @@ void SelectProjectView::Update(float deltaTime)
 
 void SelectProjectView::Render()
 {
-	m_Camera->Render(*m_Shader);
-	m_Layer->render();
+	m_Camera->Render(m_Shader);
+	//m_Layer->render();
 }
 
 void SelectProjectView::NewProject()

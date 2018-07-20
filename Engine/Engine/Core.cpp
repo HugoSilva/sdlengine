@@ -1,5 +1,6 @@
 #include "Core.h"
 #include <functional>
+#include <imgui.h>
 
 #ifdef EMSCRIPTEN
 static void DispatchLoop(void* fp)
@@ -92,4 +93,6 @@ void Core::run()
 		deltaAccumulator = 0.f;
 		tick();
 	}
+
+	std::cout << ImGui::GetIO().Framerate << " FPS" << std::endl;
 }

@@ -41,26 +41,28 @@ SpriteTest::SpriteTest(SDL_Window* win)
 
 	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
 
+	//TODO track down the memory leak with the new ECS 
+
 	//New Entities code
-	ecs::PositionComponent position;
-	position.x = 40.f;
-	position.y = 40.f;
-	position.z = 0.f;
+	for (int i = 0; i < 3000; i++)
+	{
+		ecs::PositionComponent position;
+		position.x = rand() % (1200 - 40 + 1) + 10;
+		position.y = rand() % (720 - 40 + 1) + 10;
+		position.z = 0.f;
 
-	ecs::SpriteComponent sprite;
-	sprite.Sprite = TextureManager::get("test00");
+		ecs::SpriteComponent sprite;
 
-	ecs::ECSManager::addEntity(position, sprite);
+		sprite.Sprite = TextureManager::get("test00");
 
-	ecs::PositionComponent position1;
-	position1.x = 80.f;
-	position1.y = 40.f;
-	position1.z = 0.f;
+// 		int r = rand() % 256;
+// 		int g = rand() % 256;
+// 		int b = rand() % 256;
+// 
+// 		sprite.Color = 0xff << 24 | b << 16 | g << 8 | r;
 
-	ecs::SpriteComponent sprite1;
-	sprite1.Color = 0xaa0011ff;
-
-	ecs::ECSManager::addEntity(position1, sprite1);
+		ecs::ECSManager::addEntity(position, sprite);
+	}
 }
 
 SpriteTest::~SpriteTest()

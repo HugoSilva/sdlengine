@@ -29,9 +29,9 @@ public:
 	{
 		m_Window = createWindow("RockSlide Engine", 1280, 720);
 
-		SceneManager::add(new SetupView("Setup", m_Window->GetWindow()));
-		SceneManager::add(new SelectProjectView("SelectProject", m_Window->GetWindow()));
-		SceneManager::add(new WorkSpaceView("WorkSpace", m_Window->GetWindow()));
+		SceneManager::add(new SetupView("Setup", Core::getWindow()->GetWindow()));
+		SceneManager::add(new SelectProjectView("SelectProject", Core::getWindow()->GetWindow()));
+		SceneManager::add(new WorkSpaceView("WorkSpace", Core::getWindow()->GetWindow()));
 
 		#ifdef EMSCRIPTEN
 		#else

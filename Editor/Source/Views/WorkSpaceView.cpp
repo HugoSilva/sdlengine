@@ -23,6 +23,6 @@ void WorkSpaceView::Update(float deltaTime)
 
 void WorkSpaceView::Render()
 {
-	m_Camera->Render(*m_Shader);
-	m_Layer->render();
+	m_Camera->Render(m_Shader);
+	//m_Layer->render();
 }

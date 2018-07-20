@@ -1,7 +1,7 @@
 #include "ImguiDialog.h"
 
 #include <imgui.h>
-#include <EventManager.h>
+#include <Core.h>
 
 ImguiDialog::ImguiDialog() : Renderable2D(glm::vec3(0), glm::vec2(0), 0)
 {

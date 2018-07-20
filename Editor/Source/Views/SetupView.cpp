@@ -29,6 +29,6 @@ void SetupView::Update(float deltaTime)
 
 void SetupView::Render()
 {
-	m_Camera->Render(*m_Shader);
-	m_Layer->render();
+	m_Camera->Render(m_Shader);
+	//m_Layer->render();
 }
