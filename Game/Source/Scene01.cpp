@@ -1,6 +1,5 @@
 #include "Scene01.h"
 
-
 SpriteTest::SpriteTest(SDL_Window* win)
 {
 	using namespace graphics;

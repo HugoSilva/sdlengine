@@ -2,7 +2,10 @@
 
 #include "Component.hpp"
 #include "System.hpp"
+
 #include <map>
+#include <cereal\types\map.hpp>
+#include <cereal\types\vector.hpp>
 
 namespace ecs
 {
@@ -46,13 +49,15 @@ namespace ecs
 		template <class Archive>
 		void save(Archive & ar) const
 		{
-			ar(components);
+			float x = 3;
+			ar(cereal::make_nvp("component", components));
 		}
 
 		template <class Archive>
 		void load(Archive & ar)
 		{
-			ar(components);
+			float x;
+			ar(x);
 		}
 
 	private:

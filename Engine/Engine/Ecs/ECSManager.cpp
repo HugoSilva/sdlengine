@@ -2,7 +2,7 @@
 #include "ComponentDefinitions.hpp"
 #include "../Graphics/OpenGLRenderer.h"
 #include "../Core.h"
-#include <cereal/archives/binary.hpp>
+#include <cereal/archives/xml.hpp>
 #include <fstream>
 
 namespace ecs
@@ -39,10 +39,13 @@ namespace ecs
 
 	bool ECSManager::save()
 	{
-		std::ofstream os("project.p4k", std::ios::binary);
-		cereal::BinaryOutputArchive archive(os);
+		std::ofstream os("project.xml");
+		cereal::XMLOutputArchive archive(os);
+
+		//std::ofstream os("project.rse", std::ios::binary);
+		//cereal::BinaryOutputArchive archive(os);
 		
-		archive(m_ecs);
+		archive(cereal::make_nvp("scene", m_ecs));
 
 		return true;
 	}
