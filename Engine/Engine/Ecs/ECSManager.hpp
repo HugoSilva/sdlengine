@@ -14,12 +14,18 @@ namespace ecs
 
 		static void init();
 
-		static void addEntity(PositionComponent a, SpriteComponent b);
+		template<class... TArgs>
+		static void addEntity(TArgs... arguments)
+		{
+			m_ecs.makeEntity((arguments)...);
+		}
 
 		static void addSystem(SystemBase& system);
 
 		static void update(float delta);
 		static void clean();
+
+		static bool save();
 
 	private:
 		static std::vector<SystemList*> m_SystemLists;

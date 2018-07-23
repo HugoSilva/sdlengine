@@ -44,7 +44,7 @@ SpriteTest::SpriteTest(SDL_Window* win)
 	//TODO track down the memory leak with the new ECS 
 
 	//New Entities code
-	for (int i = 0; i < 3000; i++)
+	for (int i = 0; i < 10000; i++)
 	{
 		ecs::PositionComponent position;
 		position.x = rand() % (1200 - 40 + 1) + 10;
@@ -53,7 +53,7 @@ SpriteTest::SpriteTest(SDL_Window* win)
 
 		ecs::SpriteComponent sprite;
 
-		sprite.Sprite = TextureManager::get("test00");
+		sprite.Sprite = new Sprite(glm::vec3(position.x, position.y, position.z), glm::vec2(40, 40), TextureManager::get("test00"));
 
 // 		int r = rand() % 256;
 // 		int g = rand() % 256;
@@ -82,6 +82,8 @@ void SpriteTest::Update(float deltaTime)
 		m_PlayerSprite->position.x -= speed;
 	else if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_RIGHT))
 		m_PlayerSprite->position.x += speed;
+	else if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_F1))
+		ecs::ECSManager::save();
 
 }
 

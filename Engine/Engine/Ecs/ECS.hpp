@@ -43,6 +43,18 @@ namespace ecs
 
 		void updateSystems(SystemList& systems, float delta);
 
+		template <class Archive>
+		void save(Archive & ar) const
+		{
+			ar(components);
+		}
+
+		template <class Archive>
+		void load(Archive & ar)
+		{
+			ar(components);
+		}
+
 	private:
 		std::map<unsigned int, std::vector<char>> components;
 		std::vector<std::pair<unsigned int, std::vector<std::pair<unsigned int, unsigned int>>>* > entities;

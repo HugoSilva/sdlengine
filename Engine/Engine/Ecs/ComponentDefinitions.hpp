@@ -2,7 +2,6 @@
 
 #include "Component.hpp"
 #include "System.hpp"
-#include "../Components/Texture.h"
 #include "../Audio/Sound.h"
 #include "../Graphics/Renderer2D.h"
 #include "../Components/Sprite.h"
@@ -14,12 +13,17 @@ namespace ecs
 		float x;
 		float y;
 		float z;
+		
+		template <class Archive>
+		void serialize(Archive& ar)
+		{
+			ar(x, y, z);
+		}
 	};
 
 	struct SpriteComponent : public Component<SpriteComponent>
 	{
-		Texture* Sprite{ nullptr };
-		unsigned int Color{ 0x00 };
+		Sprite* Sprite{ nullptr };
 	};
 
 	struct AudioComponent : public Component<AudioComponent>
@@ -54,14 +58,7 @@ namespace ecs
 			SpriteComponent* sprite = (SpriteComponent*)components[1];
 
 			//TODO Render logic needs to be held where instead of the layer class
-			if (sprite->Sprite != nullptr)
-			{
-				m_renderer.submit(new Sprite(glm::vec3(transform->x, transform->y, transform->z), glm::vec2(40, 40), sprite->Sprite));
-			}
-			else
-			{
-				m_renderer.submit(new Sprite(glm::vec3(transform->x, transform->y, transform->z), glm::vec2(40, 40), sprite->Color));
-			}
+			m_renderer.submit(sprite->Sprite);
 		}
 	private:
 		graphics::Renderer2D& m_renderer;

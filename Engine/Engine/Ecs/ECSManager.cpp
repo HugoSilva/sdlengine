@@ -2,6 +2,8 @@
 #include "ComponentDefinitions.hpp"
 #include "../Graphics/OpenGLRenderer.h"
 #include "../Core.h"
+#include <cereal/archives/binary.hpp>
+#include <fstream>
 
 namespace ecs
 {
@@ -16,12 +18,6 @@ namespace ecs
 		//TODO create static method to fetch the window
 		SpriteRenderSystem* spriteSystem = new SpriteRenderSystem(*Core::getRenderer());
 		addSystem(*spriteSystem);
-	}
-
-	//TODO Fix static type casting to variadic template
-	void ECSManager::addEntity(PositionComponent a, SpriteComponent b)
-	{
-		m_ecs.makeEntity(a, b);
 	}
 
 	void ECSManager::addSystem(SystemBase& system)
@@ -39,5 +35,15 @@ namespace ecs
 	{
 		for (unsigned int i = 0; i < m_SystemLists.size(); i++)
 			delete m_SystemLists[i];
+	}
+
+	bool ECSManager::save()
+	{
+		std::ofstream os("project.p4k", std::ios::binary);
+		cereal::BinaryOutputArchive archive(os);
+		
+		archive(m_ecs);
+
+		return true;
 	}
 }

@@ -107,6 +107,18 @@ namespace ecs
 
 	ComponentBase* ECS::getComponentInternal(std::vector<std::pair<unsigned int, unsigned int>>& entityComponents, std::vector<char>& array, unsigned int componentID)
 	{
+		/*
+		std::vector<std::pair<unsigned int, unsigned int>>::iterator it = std::find_if(entityComponents.begin(), entityComponents.end(), [componentID](const std::pair<unsigned int, unsigned int>& iter)
+		{
+			return iter.first == componentID;
+		});
+
+		if (it != entityComponents.end())
+		{
+			return (ComponentBase*)&components[componentID][it->second];
+		}
+		*/
+
 		for (unsigned int i = 0; i < entityComponents.size(); i++) {
 			if (componentID == entityComponents[i].first) {
 				return (ComponentBase*)&components[componentID][entityComponents[i].second];
