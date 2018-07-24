@@ -49,8 +49,16 @@ namespace ecs
 		template <class Archive>
 		void save(Archive & ar) const
 		{
-			float x = 3;
-			ar(cereal::make_nvp("component", components));
+			for (unsigned int i = 0; i < entities.size(); i++)
+			{
+				ar(cereal::make_nvp("entity", entities[i]->first));
+
+				for (unsigned int j = 0; j < entities[i]->second.size(); j++)
+				{
+					ar(cereal::make_nvp("component", entities[i]->second[j].second));
+				}
+			}
+			//ar(cereal::make_nvp("component", components));
 		}
 
 		template <class Archive>
