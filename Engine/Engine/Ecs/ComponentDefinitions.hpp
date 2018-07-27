@@ -43,6 +43,29 @@ namespace ecs
 		glm::vec3 Size;
 	};
 
+	struct DebugComponent : public Component<DebugComponent>
+	{
+	};
+
+	class DebugRenderSystem : public SystemBase
+	{
+	public:
+		DebugRenderSystem(graphics::Renderer2D& renderer) : SystemBase(), m_renderer(renderer)
+		{
+			addComponentType(DebugComponent::ID);
+		}
+
+		virtual void updateComponents(float delta, ComponentBase** components)
+		{
+			DebugComponent* debug = (DebugComponent*)components[0];
+
+			//TODO Render logic needs to be held where instead of the layer class
+			m_renderer.submit(debug);
+		}
+	private:
+		graphics::Renderer2D& m_renderer;
+	};
+
 	class SpriteRenderSystem : public SystemBase
 	{
 	public:
