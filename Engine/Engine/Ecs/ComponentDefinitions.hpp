@@ -60,7 +60,6 @@ namespace ecs
 		{
 			DebugComponent* debug = (DebugComponent*)components[0];
 
-			//TODO Render logic needs to be held where instead of the layer class
 			m_renderer.submit(debug->element);
 		}
 	private:
@@ -81,7 +80,6 @@ namespace ecs
 			PositionComponent* transform = (PositionComponent*)components[0];
 			SpriteComponent* sprite = (SpriteComponent*)components[1];
 
-			//TODO Render logic needs to be held where instead of the layer class
 			m_renderer.submit(sprite->Sprite);
 		}
 	private:

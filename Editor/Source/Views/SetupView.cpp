@@ -18,11 +18,11 @@ SetupView::SetupView(std::string name, SDL_Window* win)
 	m_Shader = new Shader("Resources/Default.vert", "Resources/Default.frag");
 	m_Layer = new Layer(new OpenGLRenderer(win), m_Shader);
 
-	ImguiMenuBar* menubar = new ImguiMenuBar();
-	m_Layer->add(menubar);
+	//ImguiMenuBar* menubar = new ImguiMenuBar();
+	//m_Layer->add(menubar);
 
 	ecs::DebugComponent mainbar;
-	mainbar.element = menubar;
+	mainbar.element = new ImguiMenuBar();
 	ecs::ECSManager::addEntity(mainbar);
 
 	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -32,7 +32,6 @@ SetupView::SetupView(std::string name, SDL_Window* win)
 void SetupView::Update(float deltaTime)
 {
 	m_Camera->Update(deltaTime);
-
 	//SceneManager::change("SelectProject");
 }
 

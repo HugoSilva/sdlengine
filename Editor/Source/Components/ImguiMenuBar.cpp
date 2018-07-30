@@ -1,6 +1,7 @@
 #include "ImguiMenuBar.h"
 
 #include <imgui.h>
+#include <imgui_internal.h>
 
 ImguiMenuBar::ImguiMenuBar()
 	: Renderable2D(glm::vec3(0), glm::vec2(0), 0)
@@ -39,5 +40,20 @@ void ImguiMenuBar::submit(graphics::Renderer2D* renderer) const
 		ImGui::Text("%.2f FPS (%.2f ms)", ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
 
 		ImGui::EndMainMenuBar();
+	}
+
+	if (ImGui::GetIO().MouseClicked[1] || opened)
+	{
+		//TODO change the const to open menus update func maybe?
+		//opened = opened ? false : true;
+
+		if(opened)
+			ImGui::OpenPopup("FilePopup");
+
+		if (ImGui::BeginPopup("FilePopup"))
+		{
+			ImGui::Button("Test");
+			ImGui::EndPopup();
+		}
 	}
 }
