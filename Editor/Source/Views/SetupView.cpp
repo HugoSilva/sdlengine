@@ -21,6 +21,10 @@ SetupView::SetupView(std::string name, SDL_Window* win)
 	ImguiMenuBar* menubar = new ImguiMenuBar();
 	m_Layer->add(menubar);
 
+	ecs::DebugComponent mainbar;
+	mainbar.element = menubar;
+	ecs::ECSManager::addEntity(mainbar);
+
 	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
 	m_Name = name;
 }
@@ -36,5 +40,5 @@ void SetupView::Render()
 {
 	m_Shader->Enable();
 	m_Camera->Render(m_Shader);
-	m_Layer->render();
+	//m_Layer->render();
 }

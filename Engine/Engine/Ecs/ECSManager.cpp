@@ -18,6 +18,8 @@ namespace ecs
 		//TODO create static method to fetch the window
 		SpriteRenderSystem* spriteSystem = new SpriteRenderSystem(*Core::getRenderer());
 		addSystem(*spriteSystem);
+		DebugRenderSystem* debugSystem = new DebugRenderSystem(*Core::getRenderer());
+		addSystem(*debugSystem);
 	}
 
 	void ECSManager::addSystem(SystemBase& system)

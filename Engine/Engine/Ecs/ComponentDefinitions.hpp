@@ -45,6 +45,7 @@ namespace ecs
 
 	struct DebugComponent : public Component<DebugComponent>
 	{
+		graphics::Renderable2D* element;
 	};
 
 	class DebugRenderSystem : public SystemBase
@@ -60,7 +61,7 @@ namespace ecs
 			DebugComponent* debug = (DebugComponent*)components[0];
 
 			//TODO Render logic needs to be held where instead of the layer class
-			m_renderer.submit(debug);
+			m_renderer.submit(debug->element);
 		}
 	private:
 		graphics::Renderer2D& m_renderer;
