@@ -1,6 +1,7 @@
 #include "SetupView.h"
 
 #include "../Components/ImguiMenuBar.h"
+#include "../Components/ImguiDialog.h"
 
 SetupView::SetupView(std::string name, SDL_Window* win)
 {
@@ -24,6 +25,10 @@ SetupView::SetupView(std::string name, SDL_Window* win)
 	ecs::DebugComponent mainbar;
 	mainbar.element = new ImguiMenuBar();
 	ecs::ECSManager::addEntity(mainbar);
+
+	ecs::DebugComponent viewbar;
+	viewbar.element = new ImguiDialog();
+	ecs::ECSManager::addEntity(viewbar);
 
 	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
 	m_Name = name;
