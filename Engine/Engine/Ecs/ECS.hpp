@@ -4,6 +4,7 @@
 #include "System.hpp"
 
 #include <map>
+#include <vector>
 #include <cereal\types\map.hpp>
 #include <cereal\types\vector.hpp>
 
@@ -45,6 +46,16 @@ namespace ecs
 		}
 
 		void updateSystems(SystemList& systems, float delta);
+
+		std::vector<int> getEntites() const
+		{
+			std::vector<int> entityList;
+			for (unsigned int i = 0; i < entities.size(); i++)
+			{
+				entityList.push_back(entities[i]->first);
+			}
+			return entityList;
+		}
 
 		template <class Archive>
 		void save(Archive & ar) const

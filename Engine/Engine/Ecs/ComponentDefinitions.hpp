@@ -59,8 +59,8 @@ namespace ecs
 		virtual void updateComponents(float delta, ComponentBase** components)
 		{
 			DebugComponent* debug = (DebugComponent*)components[0];
-
-			m_renderer.submit(debug->element);
+			debug->element->submit(&m_renderer);
+			//m_renderer.submit(debug->element);
 		}
 	private:
 		graphics::Renderer2D& m_renderer;

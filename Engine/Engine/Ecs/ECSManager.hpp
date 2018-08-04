@@ -27,6 +27,8 @@ namespace ecs
 
 		static bool save();
 
+		static std::vector<int> getCurrentEntities();
+
 	private:
 		static std::vector<SystemList*> m_SystemLists;
 		static ECS m_ecs;
