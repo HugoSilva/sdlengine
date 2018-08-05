@@ -45,6 +45,10 @@ void ImguiDialog::submit(graphics::Renderer2D* renderer) const
 		}
 		ImGui::PopStyleVar();
 
+		if (ImGui::Button("Create"))
+		{
+		}
+
 		ImGui::End();
 	}
 }

@@ -36,6 +36,15 @@ void ImguiMenuBar::submit(graphics::Renderer2D* renderer) const
 			ImGui::EndMenu();
 		}
 
+		if (ImGui::BeginMenu("Debug"))
+		{
+			//TODO read values from the editor main file
+			static bool read_only = false;
+			ImGui::Checkbox("Scene Viewer", &read_only);
+			ImGui::Checkbox("Entity Components", &read_only);
+			ImGui::EndMenu();
+		}
+
 		ImGui::SameLine(ImGui::GetWindowWidth() - 160);
 		ImGui::Text("%.2f FPS (%.2f ms)", ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
 
