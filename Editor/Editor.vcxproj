@@ -176,6 +176,7 @@ copy "$(SolutionDir)Thirdparty\SDL2_ttf\bin\$(Platform)\*.dll"  "$(TargetDir)"</
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="EditorManager.cpp" />
     <ClCompile Include="Source\Components\ImguiMenuBar.cpp" />
     <ClCompile Include="Source\Views\SelectProjectView.cpp" />
     <ClCompile Include="Source\Components\ImguiCreate.cpp" />
@@ -185,6 +186,7 @@ copy "$(SolutionDir)Thirdparty\SDL2_ttf\bin\$(Platform)\*.dll"  "$(TargetDir)"</
     <ClCompile Include="Source\Views\WorkSpaceView.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="EditorManager.h" />
     <ClInclude Include="Source\Components\ImguiMenuBar.h" />
     <ClInclude Include="Source\Views\SelectProjectView.h" />
     <ClInclude Include="Source\Components\ImguiCreate.h" />

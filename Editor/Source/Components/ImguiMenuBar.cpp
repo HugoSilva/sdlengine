@@ -3,6 +3,8 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
+#include "../../EditorManager.h"
+
 ImguiMenuBar::ImguiMenuBar()
 	: Renderable2D(glm::vec3(0), glm::vec2(0), 0)
 {
@@ -39,9 +41,10 @@ void ImguiMenuBar::submit(graphics::Renderer2D* renderer) const
 		if (ImGui::BeginMenu("Debug"))
 		{
 			//TODO read values from the editor main file
-			static bool read_only = false;
-			ImGui::Checkbox("Scene Viewer", &read_only);
-			ImGui::Checkbox("Entity Components", &read_only);
+			bool* bSceneValue = EditorManager::getShowSceneWidget();
+			bool* bEntityValue = EditorManager::getShowComponentWidget();
+			ImGui::Checkbox("Scene Viewer", bSceneValue);
+			ImGui::Checkbox("Entity Components", bEntityValue);
 			ImGui::EndMenu();
 		}
 
