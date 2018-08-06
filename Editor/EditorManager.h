@@ -8,10 +8,13 @@ public:
 	EditorManager() {}
 	~EditorManager() {}
 
+	static void init();
 	static bool* getShowSceneWidget();
 	static bool* getShowComponentWidget();
 
 private:
+	void createNewEntity();
+
 	static bool m_ShowSceneWidget;
 	static bool m_ShowComponentWidget;
 	static ecs::EntityHandle m_SelectedEntity;

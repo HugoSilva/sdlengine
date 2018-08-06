@@ -15,9 +15,9 @@ namespace ecs
 		static void init();
 
 		template<class... TArgs>
-		static void addEntity(TArgs... arguments)
+		static EntityHandle addEntity(TArgs... arguments)
 		{
-			m_ecs.makeEntity((arguments)...);
+			return m_ecs.makeEntity((arguments)...);
 		}
 
 		static void addSystem(SystemBase& system);

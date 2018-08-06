@@ -3,19 +3,26 @@
 #include <imgui.h>
 #include <Core.h>
 
+#include "../../EditorManager.h"
+
 ImguiDialog::ImguiDialog() : Renderable2D(glm::vec3(0), glm::vec2(0), 0)
 {
 }
 
 void ImguiDialog::submit(graphics::Renderer2D* renderer) const
 {
+	bool* bOpen = EditorManager::getShowSceneWidget();
+	if (!*bOpen)
+	{
+		return;
+	}
 	ImGuiWindowFlags window_flags = 0;
 	//window_flags |= ImGuiWindowFlags_NoMove;
 	window_flags |= ImGuiWindowFlags_NoResize;
 	window_flags |= ImGuiWindowFlags_NoCollapse;
 
 	ImGui::SetNextWindowSize(ImVec2(250, 500), ImGuiCond_FirstUseEver);
-	if (ImGui::Begin("Scene Entities", NULL, window_flags))
+	if (ImGui::Begin("Scene Entities", bOpen, window_flags))
 	{
 		std::vector<int> entities = ecs::ECSManager::getCurrentEntities();
 
@@ -32,7 +39,6 @@ void ImguiDialog::submit(graphics::Renderer2D* renderer) const
 			if (ImGui::IsItemClicked())
 			{
 				node_clicked = i;
-				EventManager::Dispatch("CreateProject");
 			}
 		}
 		if (node_clicked != -1)
@@ -47,6 +53,7 @@ void ImguiDialog::submit(graphics::Renderer2D* renderer) const
 
 		if (ImGui::Button("Create"))
 		{
+			EventManager::Dispatch("CreateEntity");
 		}
 
 		ImGui::End();

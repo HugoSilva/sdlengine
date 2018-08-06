@@ -3,19 +3,26 @@
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "../../EditorManager.h"
+
 ImguiCreate::ImguiCreate() : Renderable2D(glm::vec3(0), glm::vec2(0), 0)
 {
 }
 
 void ImguiCreate::submit(graphics::Renderer2D* renderer) const
 {
+	bool* bOpen = EditorManager::getShowComponentWidget();
+	if (!*bOpen)
+	{
+		return;
+	}
 	ImGuiWindowFlags window_flags = 0;
 	//window_flags |= ImGuiWindowFlags_NoMove;
 	window_flags |= ImGuiWindowFlags_NoResize;
 	window_flags |= ImGuiWindowFlags_NoCollapse;
 
 	ImGui::SetNextWindowSize(ImVec2(300, 500), ImGuiCond_FirstUseEver);
-	if (ImGui::Begin("Entity Components", NULL, window_flags))
+	if (ImGui::Begin("Entity Components", bOpen, window_flags))
 	{
 		if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
 		{
