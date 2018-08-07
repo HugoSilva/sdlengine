@@ -8,6 +8,9 @@ void EditorManager::init()
 {
 	EventManager::Register("CreateEntity");
 	EventManager::AddListener("CreateEntity", &EditorManager::EditorManager(), &EditorManager::createNewEntity);
+
+	EventManager::Register("SelectEntity");
+	EventManager::AddListener("SelectEntity", &EditorManager::EditorManager(), &EditorManager::selectEntity);
 }
 
 bool* EditorManager::getShowSceneWidget()
@@ -21,6 +24,12 @@ bool* EditorManager::getShowComponentWidget()
 }
 
 void EditorManager::createNewEntity()
+{
+	ecs::PositionComponent pos;
+	m_SelectedEntity = ecs::ECSManager::addEntity(pos);
+}
+
+void EditorManager::selectEntity(int EntityId)
 {
 	ecs::PositionComponent pos;
 	m_SelectedEntity = ecs::ECSManager::addEntity(pos);

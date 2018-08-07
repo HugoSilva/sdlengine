@@ -14,6 +14,7 @@ public:
 
 private:
 	void createNewEntity();
+	void selectEntity(int EntityId);
 
 	static bool m_ShowSceneWidget;
 	static bool m_ShowComponentWidget;

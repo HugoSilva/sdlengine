@@ -20,7 +20,8 @@ public:
 		function = func;
 	}
 
-	void execute() {
-		(object->*function)();
+	template<class... TArgs>
+	void execute(TArgs... args) {
+		(object->*function)(args...);
 	}
 };

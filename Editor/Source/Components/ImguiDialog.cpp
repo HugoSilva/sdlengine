@@ -39,6 +39,7 @@ void ImguiDialog::submit(graphics::Renderer2D* renderer) const
 			if (ImGui::IsItemClicked())
 			{
 				node_clicked = i;
+				EventManager::Dispatch("SelectEntity", entities.at(i));
 			}
 		}
 		if (node_clicked != -1)

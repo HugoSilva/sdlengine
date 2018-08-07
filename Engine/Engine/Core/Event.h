@@ -17,9 +17,10 @@ public:
 		count++;
 	}
 
-	void execute() {
+	template<class... TArgs>
+	void execute(TArgs... args) {
 		for (EventHandlerMap::iterator it = handlers.begin(); it != handlers.end(); ++it) {
-			it->second->execute();
+			it->second->execute(args...);
 		}
 	}
 
