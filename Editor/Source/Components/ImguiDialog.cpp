@@ -54,7 +54,8 @@ void ImguiDialog::submit(graphics::Renderer2D* renderer) const
 
 		if (ImGui::Button("Create"))
 		{
-			EventManager::Dispatch("CreateEntity");
+            EventManager::Dispatch("CreateEntity");
+            EditorManager::getEventDispatcher()->trigger<EditorManager::CreateEntity>();
 		}
 
 		ImGui::End();
