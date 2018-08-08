@@ -19,8 +19,8 @@ SelectProjectView::SelectProjectView(std::string name, SDL_Window* win)
 	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
 	m_Name = name;
 
-	EventManager::Register("CreateProject");
-	EventManager::AddListener("CreateProject", this, &SelectProjectView::NewProject);
+	//EventManager::Register("CreateProject");
+	//EventManager::AddListener("CreateProject", this, &SelectProjectView::NewProject);
 }
 
 void SelectProjectView::Update(float deltaTime)

@@ -39,7 +39,7 @@ void ImguiDialog::submit(graphics::Renderer2D* renderer) const
 			if (ImGui::IsItemClicked())
 			{
 				node_clicked = i;
-				EventManager::Dispatch("SelectEntity", entities.at(i));
+				//EventManager::Dispatch("SelectEntity", entities.at(i));
 			}
 		}
 		if (node_clicked != -1)
@@ -54,7 +54,7 @@ void ImguiDialog::submit(graphics::Renderer2D* renderer) const
 
 		if (ImGui::Button("Create"))
 		{
-            EventManager::Dispatch("CreateEntity");
+            //EventManager::Dispatch("CreateEntity");
             EditorManager::getEventDispatcher()->trigger<EditorManager::CreateEntity>();
 		}
 
