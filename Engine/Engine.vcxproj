@@ -324,8 +324,6 @@
     <ClCompile Include="Engine\Components\TextureManager.cpp" />
     <ClCompile Include="Engine\Core\ThreadManager.cpp" />
     <ClCompile Include="Engine\Core\SceneManager.cpp" />
-    <ClCompile Include="Engine\Core\Event.h" />
-    <ClCompile Include="Engine\Core\EventHandler.h" />
     <ClCompile Include="Engine\Core\EventManager.cpp" />
     <ClCompile Include="Engine\Core\Resource.cpp" />
     <ClCompile Include="Engine\Core\ResourceManager.cpp" />

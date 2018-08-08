@@ -3,22 +3,11 @@
 bool EditorManager::m_ShowSceneWidget{ true };
 bool EditorManager::m_ShowComponentWidget{ true };
 ecs::EntityHandle EditorManager::m_SelectedEntity{ nullptr };
-entt::Dispatcher EditorManager::eventDispatcher;
-
-void EditorManager::OnInit()
-{
-}
 
 void EditorManager::init()
 {
-	//EventManager::Register("CreateEntity");
-	//EventManager::AddListener("CreateEntity", &EditorManager::EditorManager(), &EditorManager::createNewEntity);
-
-	//EventManager::Register("SelectEntity");
-	//EventManager::AddListener("SelectEntity", &EditorManager::EditorManager(), &EditorManager::selectEntity);
-
-	eventDispatcher.sink<CreateEntity>().connect(&EditorManager::EditorManager());
-	eventDispatcher.sink<SelectEntity>().connect(&EditorManager::EditorManager());
+	EventManager::getEventDispatcher()->sink<CreateEntity>().connect(&EditorManager::EditorManager());
+	EventManager::getEventDispatcher()->sink<SelectEntity>().connect(&EditorManager::EditorManager());
 }
 
 bool* EditorManager::getShowSceneWidget()
@@ -39,6 +28,5 @@ void EditorManager::receive(const CreateEntity &event)
 
 void EditorManager::receive(const SelectEntity &event)
 {
-	ecs::PositionComponent pos;
-	m_SelectedEntity = ecs::ECSManager::addEntity(pos);
+	event.value;
 }

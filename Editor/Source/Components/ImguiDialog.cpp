@@ -3,7 +3,7 @@
 #include <imgui.h>
 #include <Core.h>
 
-#include "../../EditorManager.h"
+#include "../../EditorManager.h" // for events
 
 ImguiDialog::ImguiDialog() : Renderable2D(glm::vec3(0), glm::vec2(0), 0)
 {
@@ -39,7 +39,7 @@ void ImguiDialog::submit(graphics::Renderer2D* renderer) const
 			if (ImGui::IsItemClicked())
 			{
 				node_clicked = i;
-				//EventManager::Dispatch("SelectEntity", entities.at(i));
+				EventManager::getEventDispatcher()->trigger<EditorManager::SelectEntity>(entities.at(i));
 			}
 		}
 		if (node_clicked != -1)
@@ -54,8 +54,7 @@ void ImguiDialog::submit(graphics::Renderer2D* renderer) const
 
 		if (ImGui::Button("Create"))
 		{
-            //EventManager::Dispatch("CreateEntity");
-            EditorManager::getEventDispatcher()->trigger<EditorManager::CreateEntity>();
+			EventManager::getEventDispatcher()->trigger<EditorManager::CreateEntity>();
 		}
 
 		ImGui::End();
