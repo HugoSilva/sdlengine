@@ -26,7 +26,7 @@
 #include "Core\SceneManager.h"
 #include "Core\ThreadManager.h"
 #include "Ecs\ECSManager.hpp"
-#include "Ecs\ComponentDefinitions.hpp"
+#include "Ecs\Components\IncludeList.hpp"
 #include "Graphics\Renderer2D.h"
 #include "Graphics\OpenGLRenderer.h"
 #include "Graphics\Window.h"
