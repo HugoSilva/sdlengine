@@ -9,6 +9,7 @@ namespace ecs
 {
 	std::vector<SystemList*> ECSManager::m_SystemLists;
 	ECS ECSManager::m_ecs;
+	entt::DefaultRegistry registry;
 
 	void ECSManager::init()
 	{

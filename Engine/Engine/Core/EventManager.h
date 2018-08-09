@@ -1,5 +1,6 @@
 #pragma once
 
+#include <entt.hpp>
 #include <signal/dispatcher.hpp>
 
 class EventManager

@@ -25,14 +25,26 @@ namespace ecs
 			registry.destroy(entity);
 		}
 
-		uint32_t createEntity()
+		static uint32_t createEntity()
 		{
 			return registry.create();
 		}
 
-		void destroyEntity(uint32_t entity)
+		static void destroyEntity(uint32_t entity)
 		{
 			registry.destroy(entity);
+		}
+
+		template<typename Component>
+		static void addComponent(uint32_t entity)
+		{
+			registry.assign<Component>(entity);
+		}
+
+		template<typename Component>
+		static void removeComponent(uint32_t entity)
+		{
+			registry.remove<Component>(entity);
 		}
 
 		static void addSystem(SystemBase& system);
@@ -48,6 +60,6 @@ namespace ecs
 		static std::vector<SystemList*> m_SystemLists;
 		static ECS m_ecs;
 		
-		entt::DefaultRegistry registry;
+		static entt::DefaultRegistry registry;
 	};
 }

@@ -1,5 +1,10 @@
 #pragma once
 
+//Needed for the entt lib
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
 #ifdef EMSCRIPTEN
 	#include <emscripten/emscripten.h>
 #endif

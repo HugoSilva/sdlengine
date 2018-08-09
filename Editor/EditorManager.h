@@ -28,6 +28,6 @@ private:
 
 	static bool m_ShowSceneWidget;
 	static bool m_ShowComponentWidget;
-    static ecs::EntityHandle m_SelectedEntity;
+    static uint32_t m_SelectedEntity;
 };
 

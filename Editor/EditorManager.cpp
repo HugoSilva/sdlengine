@@ -1,8 +1,10 @@
 #include "EditorManager.h"
 
+#include <glm\glm.hpp>
+
 bool EditorManager::m_ShowSceneWidget{ true };
 bool EditorManager::m_ShowComponentWidget{ true };
-ecs::EntityHandle EditorManager::m_SelectedEntity{ nullptr };
+uint32_t EditorManager::m_SelectedEntity;
 
 void EditorManager::init()
 {
@@ -22,8 +24,26 @@ bool* EditorManager::getShowComponentWidget()
 
 void EditorManager::receive(const CreateEntity &event)
 {
-	ecs::PositionComponent pos;
-	m_SelectedEntity = ecs::ECSManager::addEntity(pos);
+
+	struct Position
+	{
+		Position()
+		{
+		};
+
+		Position(const glm::vec2& position, const glm::vec2& direction)
+			: position(position), direction(direction)
+		{
+		};
+
+		glm::vec2 position, direction;
+	};
+
+	//ecs::PositionComponent pos;
+	//m_SelectedEntity = ecs::ECSManager::addEntity(pos);
+
+	m_SelectedEntity = ecs::ECSManager::createEntity();
+	ecs::ECSManager::addComponent<Position>(m_SelectedEntity);
 }
 
 void EditorManager::receive(const SelectEntity &event)
