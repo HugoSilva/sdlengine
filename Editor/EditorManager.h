@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core.h"
-#define INVALID_ENTITY_ID -1
+#define INVALID_ENTITY_ID 0
 
 class EditorManager
 {
@@ -29,6 +29,7 @@ public:
         {
             return ecs::ECSManager::hasComponent<Component>(m_SelectedEntity);
         }
+		return false;
     }
 
 	void receive(const CreateEntity &event);

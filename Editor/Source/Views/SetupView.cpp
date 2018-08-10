@@ -24,6 +24,10 @@ SetupView::SetupView(std::string name, SDL_Window* win)
 	//ImguiMenuBar* menubar = new ImguiMenuBar();
 	//m_Layer->add(menubar);
 
+	uint32_t entity = ecs::ECSManager::createEntity();
+	ecs::ECSManager::addComponent<MenuBarComponent>(entity);
+
+
 	ecs::DebugComponent mainbar;
 	mainbar.element = new ImguiMenuBar();
 	ecs::ECSManager::addEntity(mainbar);
