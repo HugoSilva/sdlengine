@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core.h"
+#define INVALID_ENTITY_ID -1
 
 class EditorManager
 {
@@ -20,6 +21,15 @@ public:
 	static void init();
 	static bool* getShowSceneWidget();
     static bool* getShowComponentWidget();
+
+    template<typename Component>
+    static bool showComponentWidget()
+    {
+        if (m_SelectedEntity > INVALID_ENTITY_ID)
+        {
+            return ecs::ECSManager::hasComponent<Component>(m_SelectedEntity);
+        }
+    }
 
 	void receive(const CreateEntity &event);
 	void receive(const SelectEntity &event);

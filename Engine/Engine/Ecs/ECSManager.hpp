@@ -47,6 +47,12 @@ namespace ecs
 			registry.remove<Component>(entity);
 		}
 
+        template<typename Component>
+        static bool hasComponent(uint32_t entity)
+        {
+            return registry.has<Component>(entity);
+        }
+
 		static void addSystem(SystemBase& system);
 
 		static void update(float delta);
