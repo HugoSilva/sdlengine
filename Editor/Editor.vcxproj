@@ -188,6 +188,7 @@ copy "$(SolutionDir)Thirdparty\SDL2_ttf\bin\$(Platform)\*.dll"  "$(TargetDir)"</
   <ItemGroup>
     <ClInclude Include="EditorManager.h" />
     <ClInclude Include="Source\Components\ImguiMenuBar.h" />
+    <ClInclude Include="Source\Components\MenuBarComponent.hpp" />
     <ClInclude Include="Source\Views\SelectProjectView.h" />
     <ClInclude Include="Source\Components\ImguiCreate.h" />
     <ClInclude Include="Source\Components\ImguiDialog.h" />
