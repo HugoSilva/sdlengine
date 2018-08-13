@@ -35,22 +35,28 @@ namespace ecs
 			registry.destroy(entity);
 		}
 
-		template<typename Component>
+		template<typename... Components>
 		static void addComponent(uint32_t entity)
 		{
-			registry.assign<Component>(entity);
+			registry.assign<Components...>(entity);
 		}
 
 		template<typename Component>
 		static void removeComponent(uint32_t entity)
-		{
-			registry.remove<Component>(entity);
+        {
+            registry.remove<Component>(entity);
 		}
 
-        template<typename Component>
+        template<typename... Components>
         static bool hasComponent(uint32_t entity)
         {
-            return registry.has<Component>(entity);
+            return registry.has<Components...>(entity);
+        }
+
+        template<typename... Components>
+        static entt::View<uint32_t, Components...> getView()
+        {
+            return registry.view<Components...>();
         }
 
 		static void addSystem(SystemBase& system);

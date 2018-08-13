@@ -1,6 +1,5 @@
 #include "EditorManager.h"
 
-
 bool EditorManager::m_ShowSceneWidget{ true };
 bool EditorManager::m_ShowComponentWidget{ true };
 uint32_t EditorManager::m_SelectedEntity{ INVALID_ENTITY_ID };

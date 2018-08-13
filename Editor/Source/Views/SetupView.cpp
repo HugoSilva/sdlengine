@@ -3,6 +3,7 @@
 #include "../Components/ImguiMenuBar.h"
 #include "../Components/ImguiDialog.h"
 #include "../Components/ImguiCreate.h"
+#include "../Components/MenuBarComponent.hpp"
 #include "../../EditorManager.h"
 
 SetupView::SetupView(std::string name, SDL_Window* win)
