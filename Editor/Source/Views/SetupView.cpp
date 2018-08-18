@@ -1,7 +1,6 @@
 #include "SetupView.h"
 
-#include "../Components/ImguiMenuBar.h"
-#include "../Components/ImguiDialog.h"
+#include "../Components/EntityViewerComponent.hpp"
 #include "../Components/ImguiCreate.h"
 #include "../Components/MenuBarComponent.hpp"
 #include "../../EditorManager.h"
@@ -24,18 +23,14 @@ SetupView::SetupView(std::string name, SDL_Window* win)
 
 	//ImguiMenuBar* menubar = new ImguiMenuBar();
 	//m_Layer->add(menubar);
+	m_render = new RenderSystem(Core::getRenderer());
+	ecs::ECSManager::addSystem(m_render);
 
 	uint32_t entity = ecs::ECSManager::createEntity();
 	ecs::ECSManager::addComponent<MenuBarComponent>(entity);
 
-
-	ecs::DebugComponent mainbar;
-	mainbar.element = new ImguiMenuBar();
-	ecs::ECSManager::addEntity(mainbar);
-
-	ecs::DebugComponent viewbar;
-	viewbar.element = new ImguiDialog();
-	ecs::ECSManager::addEntity(viewbar);
+	uint32_t entity1 = ecs::ECSManager::createEntity();
+	ecs::ECSManager::addComponent<EntityViewerComponent>(entity1);
 
 	ecs::DebugComponent componentbar;
 	componentbar.element = new ImguiCreate();

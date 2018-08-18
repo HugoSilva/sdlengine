@@ -10,6 +10,7 @@ namespace ecs
 	std::vector<SystemList*> ECSManager::m_SystemLists;
 	ECS ECSManager::m_ecs;
 	entt::DefaultRegistry ECSManager::registry;
+	std::vector<BaseSystem*> ECSManager::m_newSystemLists;
 
 	void ECSManager::init()
 	{
@@ -23,6 +24,11 @@ namespace ecs
 		addSystem(*debugSystem);
 	}
 
+	void ECSManager::addSystem(BaseSystem* system)
+	{
+		m_newSystemLists.push_back(system);
+	}
+
 	void ECSManager::addSystem(SystemBase& system)
 	{
 		m_SystemLists[0]->addSystem(system);
@@ -32,6 +38,9 @@ namespace ecs
 	{
 		for (unsigned int i = 0; i < m_SystemLists.size(); i++)
 			m_ecs.updateSystems(*m_SystemLists[i], delta);
+
+		for (unsigned int i = 0; i < m_newSystemLists.size(); i++)
+			m_newSystemLists[i]->update(delta);
 	}
 
 	void ECSManager::clean()

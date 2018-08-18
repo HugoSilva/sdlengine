@@ -1,6 +1,5 @@
 #include "SelectProjectView.h"
 
-#include "../Components/ImguiDialog.h"
 #include "../Components/ImguiCreate.h"
 
 SelectProjectView::SelectProjectView(std::string name, SDL_Window* win)
@@ -10,8 +9,8 @@ SelectProjectView::SelectProjectView(std::string name, SDL_Window* win)
 	m_Shader = new Shader("Resources/Default.vert", "Resources/Default.frag");
 	m_Layer = new Layer(new OpenGLRenderer(win), m_Shader);
 
-	ImguiDialog* dialog = new ImguiDialog();
-	m_Layer->add(dialog);
+	//ImguiDialog* dialog = new ImguiDialog();
+	//m_Layer->add(dialog);
 
 	ImguiCreate* create = new ImguiCreate();
 	m_Layer->add(create);

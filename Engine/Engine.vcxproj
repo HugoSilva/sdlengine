@@ -337,7 +337,7 @@
     <ClInclude Include="Engine\Ecs\Components\Transform.hpp" />
     <ClInclude Include="Engine\Ecs\ECS.hpp" />
     <ClInclude Include="Engine\Ecs\System.hpp" />
-    <ClInclude Include="Engine\Ecs\Systems\RenderSystem.hpp" />
+    <ClInclude Include="Engine\Ecs\Systems\BaseSystem.hpp" />
     <ClInclude Include="Engine\Physics\PhysicsManager.h" />
     <ClInclude Include="Engine\Core.h" />
     <ClInclude Include="Engine\Audio\Music.h" />

@@ -177,21 +177,19 @@ copy "$(SolutionDir)Thirdparty\SDL2_ttf\bin\$(Platform)\*.dll"  "$(TargetDir)"</
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="EditorManager.cpp" />
-    <ClCompile Include="Source\Components\ImguiMenuBar.cpp" />
     <ClCompile Include="Source\Views\SelectProjectView.cpp" />
     <ClCompile Include="Source\Components\ImguiCreate.cpp" />
-    <ClCompile Include="Source\Components\ImguiDialog.cpp" />
+    <ClCompile Include="Source\Components\EntityViewerComponent.hpp" />
     <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\Views\SetupView.cpp" />
     <ClCompile Include="Source\Views\WorkSpaceView.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EditorManager.h" />
-    <ClInclude Include="Source\Components\ImguiMenuBar.h" />
     <ClInclude Include="Source\Components\MenuBarComponent.hpp" />
+    <ClInclude Include="Source\Systems\RenderSystem.hpp" />
     <ClInclude Include="Source\Views\SelectProjectView.h" />
     <ClInclude Include="Source\Components\ImguiCreate.h" />
-    <ClInclude Include="Source\Components\ImguiDialog.h" />
     <ClInclude Include="Source\Views\SetupView.h" />
     <ClInclude Include="Source\Views\WorkSpaceView.h" />
   </ItemGroup>

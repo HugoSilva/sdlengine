@@ -4,22 +4,12 @@
 #include <imgui_internal.h>
 
 #include "../../EditorManager.h"
-#include "../Components/ImguiMenuBar.h"
 
-class BaseComponent
-{
-protected:
-    graphics::Renderable2D* element;
-};
-
-class MenuBarComponent : public BaseComponent
+class MenuBarComponent
 {
 public:
 
-	MenuBarComponent()
-    {
-        element = new ImguiMenuBar();
-	}
+	MenuBarComponent() { }
 
 	void submit(graphics::Renderer2D* renderer) const
 	{

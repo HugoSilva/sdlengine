@@ -6,6 +6,9 @@
 #include <vector>
 
 #include <entity/registry.hpp>
+#include "./Systems/BaseSystem.hpp"
+
+#include "./Components/IncludeList.hpp"
 
 namespace ecs
 {
@@ -60,6 +63,7 @@ namespace ecs
         }
 
 		static void addSystem(SystemBase& system);
+		static void addSystem(BaseSystem* system);
 
 		static void update(float delta);
 		static void clean();
@@ -73,5 +77,6 @@ namespace ecs
 		static ECS m_ecs;
 		
 		static entt::DefaultRegistry registry;
+		static std::vector<BaseSystem*> m_newSystemLists;
 	};
 }
