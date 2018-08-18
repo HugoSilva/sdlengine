@@ -1,7 +1,7 @@
 #include "SetupView.h"
 
 #include "../Components/EntityViewerComponent.hpp"
-#include "../Components/ImguiCreate.h"
+#include "../Components/PropertyComponent.hpp"
 #include "../Components/MenuBarComponent.hpp"
 #include "../../EditorManager.h"
 
@@ -27,14 +27,13 @@ SetupView::SetupView(std::string name, SDL_Window* win)
 	ecs::ECSManager::addSystem(m_render);
 
 	uint32_t entity = ecs::ECSManager::createEntity();
-	ecs::ECSManager::addComponent<MenuBarComponent>(entity);
+	ecs::ECSManager::addComponent<DebugComponent>(entity, new MenuBarComponent());
 
 	uint32_t entity1 = ecs::ECSManager::createEntity();
-	ecs::ECSManager::addComponent<EntityViewerComponent>(entity1);
+	ecs::ECSManager::addComponent<DebugComponent>(entity1, new EntityViewerComponent());
 
-	ecs::DebugComponent componentbar;
-	componentbar.element = new ImguiCreate();
-	ecs::ECSManager::addEntity(componentbar);
+	uint32_t entity2 = ecs::ECSManager::createEntity();
+	ecs::ECSManager::addComponent<DebugComponent>(entity2, new PropertyComponent());
 
 	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
 	m_Name = name;

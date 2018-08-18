@@ -5,13 +5,32 @@
 
 #include "../../EditorManager.h"
 
-class MenuBarComponent
+class DebugElement
+{
+public:
+	DebugElement() { }
+	virtual void render() const = 0;
+};
+
+class DebugComponent
+{
+public:
+	DebugComponent(DebugElement* debugElement) : m_renderElement (debugElement) { }
+	void render()
+	{
+		m_renderElement->render();
+	}
+private:
+	DebugElement* m_renderElement;
+};
+
+class MenuBarComponent : public DebugElement
 {
 public:
 
 	MenuBarComponent() { }
 
-	void submit(graphics::Renderer2D* renderer) const
+	void render() const
 	{
 		if (ImGui::BeginMainMenuBar())
 		{

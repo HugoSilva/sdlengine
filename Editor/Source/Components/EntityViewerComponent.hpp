@@ -5,12 +5,14 @@
 
 #include "../../EditorManager.h" // for events
 
-class EntityViewerComponent
+#include "MenuBarComponent.hpp"
+
+class EntityViewerComponent : public DebugElement
 {
 public:
 	EntityViewerComponent() { }
 
-	void submit(graphics::Renderer2D* renderer) const
+	void render() const
 	{
 		bool* bOpen = EditorManager::getShowSceneWidget();
 		if (!*bOpen)

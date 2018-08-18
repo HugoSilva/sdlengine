@@ -38,10 +38,10 @@ namespace ecs
 			registry.destroy(entity);
 		}
 
-		template<typename... Components>
-		static void addComponent(uint32_t entity)
+		template<typename... Components, typename... TArgs>
+		static void addComponent(uint32_t entity, TArgs... arguments)
 		{
-			registry.assign<Components...>(entity);
+			registry.assign<Components...>(entity, arguments...);
 		}
 
 		template<typename Component>

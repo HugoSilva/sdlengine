@@ -11,13 +11,9 @@ public:
 
     void update(const float alpha)
     {
-		ecs::ECSManager::getView<MenuBarComponent>().each([&](auto entity, MenuBarComponent &renderable)
+		ecs::ECSManager::getView<DebugComponent>().each([&](auto entity, DebugComponent &renderable)
         {
-			renderable.submit(m_renderer);
+			renderable.render();
         });
-		ecs::ECSManager::getView<EntityViewerComponent>().each([&](auto entity, EntityViewerComponent &viewer)
-		{
-			viewer.submit(m_renderer);
-		});
     }
 };

@@ -1,6 +1,6 @@
 #include "SelectProjectView.h"
 
-#include "../Components/ImguiCreate.h"
+//#include "../Components/ImguiCreate.h"
 
 SelectProjectView::SelectProjectView(std::string name, SDL_Window* win)
 {
@@ -12,8 +12,8 @@ SelectProjectView::SelectProjectView(std::string name, SDL_Window* win)
 	//ImguiDialog* dialog = new ImguiDialog();
 	//m_Layer->add(dialog);
 
-	ImguiCreate* create = new ImguiCreate();
-	m_Layer->add(create);
+	//ImguiCreate* create = new ImguiCreate();
+	//m_Layer->add(create);
 
 	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
 	m_Name = name;
