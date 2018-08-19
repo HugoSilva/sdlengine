@@ -21,6 +21,8 @@ SetupView::SetupView(std::string name, SDL_Window* win)
 	m_Shader = new Shader("Resources/Default.vert", "Resources/Default.frag");
 	m_Layer = new Layer(new OpenGLRenderer(win), m_Shader);
 
+	TextureManager::add(new Texture("test00", "Resources/tex3.png"));
+
 	//ImguiMenuBar* menubar = new ImguiMenuBar();
 	//m_Layer->add(menubar);
 	m_render = new RenderSystem(Core::getRenderer());
@@ -34,6 +36,22 @@ SetupView::SetupView(std::string name, SDL_Window* win)
 
 	uint32_t entity2 = ecs::ECSManager::createEntity();
 	ecs::ECSManager::addComponent<DebugComponent>(entity2, new PropertyComponent());
+
+	//New Entities code
+	for (int i = 0; i < 5000; i++)
+	{
+		ecs::PositionComponent position;
+		position.x = rand() % (1200 - 40 + 1) + 10;
+		position.y = rand() % (720 - 40 + 1) + 10;
+		position.z = 0.f;
+
+		ecs::SpriteComponent sprite;
+		//sprite.Sprite = new );
+
+		uint32_t entity3 = ecs::ECSManager::createEntity();
+		ecs::ECSManager::addComponent<TransformComponent>(entity3, glm::vec3(position.x, position.y, position.z), glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.f, 1.f, 1.f));
+		ecs::ECSManager::addComponent<SpriteComponent>(entity3, new Sprite(glm::vec3(position.x, position.y, position.z), glm::vec2(40, 40), TextureManager::get("test00")));
+	}
 
 	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
 	m_Name = name;
