@@ -289,10 +289,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Engine\Ecs\Component.cpp" />
-    <ClCompile Include="Engine\Ecs\ComponentDefinitions.hpp" />
-    <ClCompile Include="Engine\Ecs\ECS.cpp" />
-    <ClCompile Include="Engine\Ecs\System.cpp" />
     <ClCompile Include="Engine\Physics\PhysicsManager.cpp" />
     <ClCompile Include="Engine\Core.cpp" />
     <ClCompile Include="Engine\Audio\Music.cpp" />
@@ -333,13 +329,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Ecs\Components\Basic.hpp" />
-    <ClInclude Include="Engine\Ecs\Component.hpp" />
     <ClInclude Include="Engine\Ecs\Components\IncludeList.hpp" />
     <ClInclude Include="Engine\Ecs\Components\Sprite.hpp" />
     <ClInclude Include="Engine\Ecs\Components\Transform.hpp" />
-    <ClInclude Include="Engine\Ecs\ECS.hpp" />
-    <ClInclude Include="Engine\Ecs\System.hpp" />
     <ClInclude Include="Engine\Ecs\Systems\BaseSystem.hpp" />
+    <ClInclude Include="Engine\Ecs\Systems\SpriteRenderSystem.hpp" />
     <ClInclude Include="Engine\Physics\PhysicsManager.h" />
     <ClInclude Include="Engine\Core.h" />
     <ClInclude Include="Engine\Audio\Music.h" />

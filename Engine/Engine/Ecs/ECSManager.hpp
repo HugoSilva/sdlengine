@@ -1,13 +1,9 @@
 #pragma once
 
-#include "ECS.hpp"
-#include "System.hpp"
-#include "ComponentDefinitions.hpp"
 #include <vector>
 
 #include <entity/registry.hpp>
 #include "./Systems/BaseSystem.hpp"
-
 #include "./Components/IncludeList.hpp"
 
 namespace ecs
@@ -18,15 +14,6 @@ namespace ecs
 		ECSManager() { }
 
 		static void init();
-
-		template<class... TArgs>
-		static EntityHandle addEntity(TArgs... arguments)
-		{
-			return m_ecs.makeEntity((arguments)...);
-
-			auto entity = registry.create();
-			registry.destroy(entity);
-		}
 
 		static uint32_t createEntity()
 		{
@@ -69,7 +56,6 @@ namespace ecs
             return registry.view<Components...>();
         }
 
-		static void addSystem(SystemBase& system);
 		static void addSystem(BaseSystem* system);
 
 		static void update(float delta);
@@ -77,11 +63,8 @@ namespace ecs
 
 		static bool save();
 
-	private:
-		static std::vector<SystemList*> m_SystemLists;
-		static ECS m_ecs;
-		
+	private:		
 		static entt::DefaultRegistry registry;
-		static std::vector<BaseSystem*> m_newSystemLists;
+		static std::vector<BaseSystem*> m_systemsList;
 	};
 }

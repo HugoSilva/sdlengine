@@ -15,10 +15,5 @@ public:
         {
 			renderable.render();
         });
-
-		ecs::ECSManager::getView<SpriteComponent>().each([&](auto entity, SpriteComponent &renderable)
-		{
-			m_renderer->submit(renderable.m_Sprite);
-		});
     }
 };
