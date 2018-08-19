@@ -56,6 +56,13 @@ namespace ecs
             return registry.has<Components...>(entity);
         }
 
+		template<typename Component>
+		static Component getComponent(uint32_t entity)
+		{
+			return registry.get<Component>(entity);
+		}
+
+
         template<typename... Components>
         static entt::View<uint32_t, Components...> getView()
         {
@@ -69,8 +76,6 @@ namespace ecs
 		static void clean();
 
 		static bool save();
-
-		static std::vector<int> getCurrentEntities();
 
 	private:
 		static std::vector<SystemList*> m_SystemLists;

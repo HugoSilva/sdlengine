@@ -296,6 +296,9 @@
     <ClInclude Include="Engine\Ecs\Components\Sprite.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Ecs\Components\Basic.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\Default.frag">

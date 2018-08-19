@@ -27,18 +27,35 @@ public:
 		ImGui::SetNextWindowSize(ImVec2(300, 500), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("Entity Components", bOpen, window_flags))
 		{
+			if (EditorManager::showComponentWidget<BasicComponent>())
+			{
+				if (ImGui::CollapsingHeader("Basic", ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					BasicComponent basicData = EditorManager::getComponent<BasicComponent>();
+
+					char str0[128] = "";
+					
+					strcpy_s(str0, basicData.m_Name);
+
+					ImGui::InputText("", str0, IM_ARRAYSIZE(str0));
+					ImGui::SameLine();
+
+					bool* bSceneValue = &basicData.m_IsStatic;
+
+					ImGui::Checkbox("Static", bSceneValue);
+				}
+			}
 			if (EditorManager::showComponentWidget<TransformComponent>())
 			{
 				if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
 				{
-					static glm::vec3 pos{ 0.f, 0.f, 0.f };
-					ImGui::InputFloat3("Position", glm::value_ptr(pos), 2);
+					TransformComponent transform = EditorManager::getComponent<TransformComponent>();
 
-					static glm::vec3 rot{ 0.f, 0.f, 0.f };
-					ImGui::InputFloat3("Rotation", glm::value_ptr(rot), 2);
+					ImGui::InputFloat3("Position", glm::value_ptr(transform.position), 2);
 
-					static glm::vec3 sca{ 1.f, 1.f, 1.f };
-					ImGui::InputFloat3("Scale", glm::value_ptr(sca), 2);
+					ImGui::InputFloat3("Rotation", glm::value_ptr(transform.rotation), 2);
+
+					ImGui::InputFloat3("Scale", glm::value_ptr(transform.scale), 2);
 				}
 			}
 

@@ -23,6 +23,7 @@ bool* EditorManager::getShowComponentWidget()
 void EditorManager::receive(const CreateEntity &event)
 {
 	m_SelectedEntity = ecs::ECSManager::createEntity();
+	ecs::ECSManager::addComponent<BasicComponent>(m_SelectedEntity);
 	ecs::ECSManager::addComponent<TransformComponent>(m_SelectedEntity);
 }
 

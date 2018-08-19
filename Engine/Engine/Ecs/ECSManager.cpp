@@ -61,9 +61,4 @@ namespace ecs
 
 		return true;
 	}
-
-	std::vector<int> ECSManager::getCurrentEntities()
-	{
-		return m_ecs.getEntites();
-	}
 }

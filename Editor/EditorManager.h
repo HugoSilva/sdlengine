@@ -13,7 +13,7 @@ public:
 		{
 		}
 	};
-    struct SelectEntity { int value; };
+    struct SelectEntity { uint32_t value; };
 
 	EditorManager() {}
 	~EditorManager() {}
@@ -31,6 +31,12 @@ public:
         }
 		return false;
     }
+
+	template<typename Component>
+	static Component getComponent()
+	{
+		return ecs::ECSManager::getComponent<Component>(m_SelectedEntity);
+	}
 
 	void receive(const CreateEntity &event);
 	void receive(const SelectEntity &event);
