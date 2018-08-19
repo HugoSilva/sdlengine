@@ -57,7 +57,7 @@ namespace ecs
         }
 
 		template<typename Component>
-		static Component getComponent(uint32_t entity)
+		static Component& getComponent(uint32_t entity)
 		{
 			return registry.get<Component>(entity);
 		}

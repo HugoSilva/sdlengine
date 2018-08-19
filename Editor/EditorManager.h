@@ -33,7 +33,7 @@ public:
     }
 
 	template<typename Component>
-	static Component getComponent()
+	static Component& getComponent()
 	{
 		return ecs::ECSManager::getComponent<Component>(m_SelectedEntity);
 	}

@@ -31,7 +31,7 @@ public:
 			{
 				if (ImGui::CollapsingHeader("Basic", ImGuiTreeNodeFlags_DefaultOpen))
 				{
-					BasicComponent basicData = EditorManager::getComponent<BasicComponent>();
+					BasicComponent& basicData = EditorManager::getComponent<BasicComponent>();
 
 					char str0[128] = "";
 					
@@ -39,17 +39,14 @@ public:
 
 					ImGui::InputText("", str0, IM_ARRAYSIZE(str0));
 					ImGui::SameLine();
-
-					bool* bSceneValue = &basicData.m_IsStatic;
-
-					ImGui::Checkbox("Static", bSceneValue);
+					ImGui::Checkbox("Static", &basicData.m_IsStatic);
 				}
 			}
 			if (EditorManager::showComponentWidget<TransformComponent>())
 			{
 				if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
 				{
-					TransformComponent transform = EditorManager::getComponent<TransformComponent>();
+					TransformComponent& transform = EditorManager::getComponent<TransformComponent>();
 
 					ImGui::InputFloat3("Position", glm::value_ptr(transform.position), 2);
 
