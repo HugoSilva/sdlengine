@@ -2,7 +2,6 @@
 #include <glm\glm.hpp>
 #include "./Views/SetupView.h"
 #include "./Views/SelectProjectView.h"
-#include "./Views/WorkSpaceView.h"
 
 #if _WIN32
 extern "C"
@@ -31,7 +30,6 @@ public:
 
 		SceneManager::add(new SetupView("Setup", Core::getWindow()->GetWindow()));
 		SceneManager::add(new SelectProjectView("SelectProject", Core::getWindow()->GetWindow()));
-		SceneManager::add(new WorkSpaceView("WorkSpace", Core::getWindow()->GetWindow()));
 
 		#ifdef EMSCRIPTEN
 		#else

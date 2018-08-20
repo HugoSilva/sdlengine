@@ -1,42 +1,36 @@
 #include "ECSManager.hpp"
-#include "ComponentDefinitions.hpp"
 #include "../Graphics/OpenGLRenderer.h"
 #include "../Core.h"
+#include "./Systems/SpriteRenderSystem.hpp"
 #include <cereal/archives/xml.hpp>
 #include <fstream>
 
 namespace ecs
 {
-	std::vector<SystemList*> ECSManager::m_SystemLists;
-	ECS ECSManager::m_ecs;
+	entt::DefaultRegistry ECSManager::registry;
+	std::vector<BaseSystem*> ECSManager::m_systemsList;
 
 	void ECSManager::init()
 	{
-		//TODO Search if there is a better place to create the default SystemList or lists
-		ecs::SystemList* mainSystems = new ecs::SystemList();
-		m_SystemLists.push_back(mainSystems);
-		//TODO create static method to fetch the window
-		SpriteRenderSystem* spriteSystem = new SpriteRenderSystem(*Core::getRenderer());
-		addSystem(*spriteSystem);
-		DebugRenderSystem* debugSystem = new DebugRenderSystem(*Core::getRenderer());
-		addSystem(*debugSystem);
+		SpriteRenderSystem* spriteSystem = new SpriteRenderSystem(Core::getRenderer());
+		addSystem(spriteSystem);
 	}
 
-	void ECSManager::addSystem(SystemBase& system)
+	void ECSManager::addSystem(BaseSystem* system)
 	{
-		m_SystemLists[0]->addSystem(system);
+		m_systemsList.push_back(system);
 	}
 
 	void ECSManager::update(float delta)
 	{
-		for (unsigned int i = 0; i < m_SystemLists.size(); i++)
-			m_ecs.updateSystems(*m_SystemLists[i], delta);
+		for (unsigned int i = 0; i < m_systemsList.size(); i++)
+			m_systemsList[i]->update(delta);
 	}
 
 	void ECSManager::clean()
 	{
-		for (unsigned int i = 0; i < m_SystemLists.size(); i++)
-			delete m_SystemLists[i];
+		for (unsigned int i = 0; i < m_systemsList.size(); i++)
+			delete m_systemsList[i];
 	}
 
 	bool ECSManager::save()
@@ -47,13 +41,8 @@ namespace ecs
 		//std::ofstream os("project.rse", std::ios::binary);
 		//cereal::BinaryOutputArchive archive(os);
 		
-		archive(cereal::make_nvp("scene", m_ecs));
+		//archive(cereal::make_nvp("scene", m_ecs));
 
 		return true;
-	}
-
-	std::vector<int> ECSManager::getCurrentEntities()
-	{
-		return m_ecs.getEntites();
 	}
 }

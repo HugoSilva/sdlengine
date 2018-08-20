@@ -93,6 +93,6 @@ void Core::run()
 		deltaAccumulator = 0.f;
 		tick();
 	}
-
+	
 	std::cout << ImGui::GetIO().Framerate << " FPS" << std::endl;
 }

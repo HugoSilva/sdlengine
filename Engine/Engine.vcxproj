@@ -101,7 +101,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(SolutionDir)Thirdparty\Box2D\include;$(SolutionDir)Thirdparty\cereal;$(SolutionDir)Thirdparty\rapidxml;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(SolutionDir)Thirdparty\Box2D\include;$(SolutionDir)Thirdparty\cereal;$(SolutionDir)Thirdparty\rapidxml;$(SolutionDir)Thirdparty\entt;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)inter\$(ProjectName)\$(Configuration)\$(Platform)\</IntDir>
     <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(SolutionDir)Thirdparty\Box2D\lib\$(Platform)\;$(LibraryPath)</LibraryPath>
@@ -111,18 +111,18 @@
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)inter\$(ProjectName)\$(Configuration)\$(Platform)\</IntDir>
     <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(SolutionDir)Thirdparty\Box2D\lib\$(Platform)\;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(SolutionDir)Thirdparty\Box2D\include;$(SolutionDir)Thirdparty\cereal;$(SolutionDir)Thirdparty\rapidxml;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(SolutionDir)Thirdparty\Box2D\include;$(SolutionDir)Thirdparty\cereal;$(SolutionDir)Thirdparty\rapidxml;$(SolutionDir)Thirdparty\entt;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(SolutionDir)Thirdparty\Box2D\include;$(SolutionDir)Thirdparty\cereal;$(SolutionDir)Thirdparty\rapidxml;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(SolutionDir)Thirdparty\Box2D\include;$(SolutionDir)Thirdparty\cereal;$(SolutionDir)Thirdparty\rapidxml;$(SolutionDir)Thirdparty\entt;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)inter\$(ProjectName)\$(Configuration)\$(Platform)\</IntDir>
     <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(SolutionDir)Thirdparty\Box2D\lib\$(Platform)\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Emscripten|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(SolutionDir)Thirdparty\Box2D\include;$(SolutionDir)Thirdparty\cereal;$(SolutionDir)Thirdparty\rapidxml;$(SolutionDir)..\emsdk\emscripten\1.37.40\system\include</IncludePath>
+    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(SolutionDir)Thirdparty\Box2D\include;$(SolutionDir)Thirdparty\cereal;$(SolutionDir)Thirdparty\rapidxml;$(SolutionDir)Thirdparty\entt;$(SolutionDir)..\emsdk\emscripten\1.37.40\system\include</IncludePath>
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)inter\$(ProjectName)\$(Configuration)\$(Platform)\</IntDir>
     <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(SolutionDir)Thirdparty\Box2D\lib\$(Platform)\;$(LibraryPath)</LibraryPath>
@@ -132,14 +132,14 @@
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)inter\$(ProjectName)\$(Configuration)\$(Platform)\</IntDir>
     <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(SolutionDir)Thirdparty\Box2D\lib\$(Platform)\;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(SolutionDir)Thirdparty\Box2D\include;$(SolutionDir)Thirdparty\cereal;$(SolutionDir)Thirdparty\rapidxml;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(SolutionDir)Thirdparty\Box2D\include;$(SolutionDir)Thirdparty\cereal;$(SolutionDir)Thirdparty\rapidxml;$(SolutionDir)Thirdparty\entt;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Emscripten|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)inter\$(ProjectName)\$(Configuration)\$(Platform)\</IntDir>
     <LibraryPath>$(SolutionDir)Thirdparty\Glew\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_image\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_mixer\lib\$(Platform)\;$(SolutionDir)Thirdparty\SDL2_ttf\lib\$(Platform)\;$(SolutionDir)Thirdparty\Box2D\lib\$(Platform)\;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(SolutionDir)Thirdparty\Box2D\include;$(SolutionDir)Thirdparty\cereal;$(SolutionDir)Thirdparty\rapidxml;$(SolutionDir)..\emsdk\emscripten\1.37.40\system\include</IncludePath>
+    <IncludePath>$(SolutionDir)Thirdparty\Glew\include;$(SolutionDir)Thirdparty\SDL2\include;$(SolutionDir)Thirdparty\SDL2_image\include;$(SolutionDir)Thirdparty\SDL2_mixer\include;$(SolutionDir)Thirdparty\SDL2_ttf\include;$(SolutionDir)Thirdparty\glm\include;$(SolutionDir)Thirdparty\imgui\include;$(SolutionDir)Thirdparty\Box2D\include;$(SolutionDir)Thirdparty\cereal;$(SolutionDir)Thirdparty\rapidxml;$(SolutionDir)Thirdparty\entt;$(SolutionDir)..\emsdk\emscripten\1.37.40\system\include</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -289,10 +289,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Engine\Ecs\Component.cpp" />
-    <ClCompile Include="Engine\Ecs\ComponentDefinitions.hpp" />
-    <ClCompile Include="Engine\Ecs\ECS.cpp" />
-    <ClCompile Include="Engine\Ecs\System.cpp" />
     <ClCompile Include="Engine\Physics\PhysicsManager.cpp" />
     <ClCompile Include="Engine\Core.cpp" />
     <ClCompile Include="Engine\Audio\Music.cpp" />
@@ -324,8 +320,6 @@
     <ClCompile Include="Engine\Components\TextureManager.cpp" />
     <ClCompile Include="Engine\Core\ThreadManager.cpp" />
     <ClCompile Include="Engine\Core\SceneManager.cpp" />
-    <ClCompile Include="Engine\Core\Event.h" />
-    <ClCompile Include="Engine\Core\EventHandler.h" />
     <ClCompile Include="Engine\Core\EventManager.cpp" />
     <ClCompile Include="Engine\Core\Resource.cpp" />
     <ClCompile Include="Engine\Core\ResourceManager.cpp" />
@@ -334,9 +328,12 @@
     <ClCompile Include="Tests\TestClearColor.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Engine\Ecs\Component.hpp" />
-    <ClInclude Include="Engine\Ecs\ECS.hpp" />
-    <ClInclude Include="Engine\Ecs\System.hpp" />
+    <ClInclude Include="Engine\Ecs\Components\Basic.hpp" />
+    <ClInclude Include="Engine\Ecs\Components\IncludeList.hpp" />
+    <ClInclude Include="Engine\Ecs\Components\Sprite.hpp" />
+    <ClInclude Include="Engine\Ecs\Components\Transform.hpp" />
+    <ClInclude Include="Engine\Ecs\Systems\BaseSystem.hpp" />
+    <ClInclude Include="Engine\Ecs\Systems\SpriteRenderSystem.hpp" />
     <ClInclude Include="Engine\Physics\PhysicsManager.h" />
     <ClInclude Include="Engine\Core.h" />
     <ClInclude Include="Engine\Audio\Music.h" />

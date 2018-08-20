@@ -2,15 +2,12 @@
 
 bool EditorManager::m_ShowSceneWidget{ true };
 bool EditorManager::m_ShowComponentWidget{ true };
-ecs::EntityHandle EditorManager::m_SelectedEntity{ nullptr };
+uint32_t EditorManager::m_SelectedEntity{ INVALID_ENTITY_ID };
 
 void EditorManager::init()
 {
-	EventManager::Register("CreateEntity");
-	EventManager::AddListener("CreateEntity", &EditorManager::EditorManager(), &EditorManager::createNewEntity);
-
-	EventManager::Register("SelectEntity");
-	EventManager::AddListener("SelectEntity", &EditorManager::EditorManager(), &EditorManager::selectEntity);
+	EventManager::getEventDispatcher()->sink<CreateEntity>().connect(&EditorManager::EditorManager());
+	EventManager::getEventDispatcher()->sink<SelectEntity>().connect(&EditorManager::EditorManager());
 }
 
 bool* EditorManager::getShowSceneWidget()
@@ -23,14 +20,14 @@ bool* EditorManager::getShowComponentWidget()
 	return &m_ShowComponentWidget;
 }
 
-void EditorManager::createNewEntity()
+void EditorManager::receive(const CreateEntity &event)
 {
-	ecs::PositionComponent pos;
-	m_SelectedEntity = ecs::ECSManager::addEntity(pos);
+	m_SelectedEntity = ecs::ECSManager::createEntity();
+	ecs::ECSManager::addComponent<BasicComponent>(m_SelectedEntity);
+	ecs::ECSManager::addComponent<TransformComponent>(m_SelectedEntity);
 }
 
-void EditorManager::selectEntity(int EntityId)
+void EditorManager::receive(const SelectEntity &event)
 {
-	ecs::PositionComponent pos;
-	m_SelectedEntity = ecs::ECSManager::addEntity(pos);
+	m_SelectedEntity = event.value;
 }

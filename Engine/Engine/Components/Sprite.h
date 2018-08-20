@@ -7,6 +7,7 @@
 class Sprite : public graphics::Renderable2D
 {
 public:
+	Sprite();
 	Sprite(glm::vec3 position, glm::vec2 size, unsigned int color);
 	Sprite(glm::vec3 position, glm::vec2 size, Texture* texture);
 	
