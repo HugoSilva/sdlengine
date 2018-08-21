@@ -1,7 +1,6 @@
 #include <Core.h>
 #include <glm\glm.hpp>
 #include "./Views/SetupView.h"
-#include "./Views/SelectProjectView.h"
 
 #if _WIN32
 extern "C"
@@ -29,7 +28,6 @@ public:
 		m_Window = createWindow("RockSlide Engine", 1280, 720);
 
 		SceneManager::add(new SetupView("Setup", Core::getWindow()->GetWindow()));
-		SceneManager::add(new SelectProjectView("SelectProject", Core::getWindow()->GetWindow()));
 
 		#ifdef EMSCRIPTEN
 		#else

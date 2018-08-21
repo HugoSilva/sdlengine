@@ -36,13 +36,28 @@ namespace ecs
 	bool ECSManager::save()
 	{
 		std::ofstream os("project.xml");
-		cereal::XMLOutputArchive archive(os);
+		//cereal::XMLOutputArchive archive(os);
 
 		//std::ofstream os("project.rse", std::ios::binary);
 		//cereal::BinaryOutputArchive archive(os);
 		
 		//archive(cereal::make_nvp("scene", m_ecs));
 
+        cereal::XMLOutputArchive output(os);
+
+        registry.snapshot()
+            .entities(output)
+            .destroyed(output)
+            .component<BasicComponent, TransformComponent>(output);
+
 		return true;
+
+        //InputArchive input;
+
+        //registry.restore()
+        //    .entities(input)
+        //    .destroyed(input)
+        //    .component<BasicComponent, TransformComponent>(input)
+        //    .orphans();
 	}
 }

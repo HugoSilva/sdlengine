@@ -25,6 +25,7 @@ void EditorManager::receive(const CreateEntity &event)
 	m_SelectedEntity = ecs::ECSManager::createEntity();
 	ecs::ECSManager::addComponent<BasicComponent>(m_SelectedEntity);
 	ecs::ECSManager::addComponent<TransformComponent>(m_SelectedEntity);
+    ecs::ECSManager::addComponent<SpriteComponent>(m_SelectedEntity, new Sprite(glm::vec3(0, 0, 0), glm::vec2(40, 40), TextureManager::get("test00")));
 }
 
 void EditorManager::receive(const SelectEntity &event)
