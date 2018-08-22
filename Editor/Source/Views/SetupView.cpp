@@ -62,7 +62,10 @@ SetupView::SetupView(std::string name, SDL_Window* win)
 void SetupView::Update(float deltaTime)
 {
 	m_Camera->Update(deltaTime);
-	//SceneManager::change("SelectProject");
+    //SceneManager::change("SelectProject");
+    
+    if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_F1))
+        ecs::ECSManager::save();
 }
 
 void SetupView::Render()

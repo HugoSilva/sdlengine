@@ -9,7 +9,7 @@ struct BasicComponent
 	{
 	};
 
-	const char* m_Name{ "New Entity" };
+    const char* m_Name{ "New Entity" };
 	bool m_IsStatic{ false };
 	int m_Tag{ 0 };
 	int m_Layer{ 0 };
@@ -17,5 +17,7 @@ struct BasicComponent
 
 template<typename Archive>
 void serialize(Archive &archive, BasicComponent &basic) {
-    archive(basic.m_Name, basic.m_IsStatic, basic.m_Tag, basic.m_Layer);
+    archive(basic.m_IsStatic, basic.m_Tag, basic.m_Layer);
 }
+//std::unique_ptr
+//#include <memory>

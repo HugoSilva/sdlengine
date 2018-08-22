@@ -179,7 +179,6 @@ copy "$(SolutionDir)Thirdparty\SDL2_ttf\bin\$(Platform)\*.dll"  "$(TargetDir)"</
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="EditorManager.cpp" />
-    <ClCompile Include="Source\Views\SelectProjectView.cpp" />
     <ClCompile Include="Source\Components\PropertyComponent.hpp" />
     <ClCompile Include="Source\Components\EntityViewerComponent.hpp" />
     <ClCompile Include="Source\main.cpp" />
@@ -189,7 +188,6 @@ copy "$(SolutionDir)Thirdparty\SDL2_ttf\bin\$(Platform)\*.dll"  "$(TargetDir)"</
     <ClInclude Include="EditorManager.h" />
     <ClInclude Include="Source\Components\MenuBarComponent.hpp" />
     <ClInclude Include="Source\Systems\RenderSystem.hpp" />
-    <ClInclude Include="Source\Views\SelectProjectView.h" />
     <ClInclude Include="Source\Views\SetupView.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
