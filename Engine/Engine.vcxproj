@@ -329,6 +329,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Ecs\Components\Basic.hpp" />
+    <ClInclude Include="Engine\Ecs\Components\Editor.hpp" />
     <ClInclude Include="Engine\Ecs\Components\IncludeList.hpp" />
     <ClInclude Include="Engine\Ecs\Components\Sprite.hpp" />
     <ClInclude Include="Engine\Ecs\Components\Transform.hpp" />

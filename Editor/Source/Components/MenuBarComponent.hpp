@@ -5,26 +5,7 @@
 
 #include "../../EditorManager.h"
 
-class DebugElement
-{
-public:
-	DebugElement() { }
-	virtual void render() const = 0;
-};
-
-class DebugComponent
-{
-public:
-	DebugComponent(DebugElement* debugElement) : m_renderElement (debugElement) { }
-	void render()
-	{
-		m_renderElement->render();
-	}
-private:
-	DebugElement* m_renderElement;
-};
-
-class MenuBarComponent : public DebugElement
+class MenuBarComponent : public EditorElement
 {
 public:
 

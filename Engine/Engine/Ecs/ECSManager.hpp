@@ -62,6 +62,7 @@ namespace ecs
 		static void clean();
 
 		static bool save();
+		static bool load();
 
 	private:		
 		static entt::DefaultRegistry registry;

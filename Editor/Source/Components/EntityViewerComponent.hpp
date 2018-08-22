@@ -5,9 +5,7 @@
 
 #include "../../EditorManager.h" // for events
 
-#include "MenuBarComponent.hpp"
-
-class EntityViewerComponent : public DebugElement
+class EntityViewerComponent : public EditorElement
 {
 public:
 	EntityViewerComponent() { }

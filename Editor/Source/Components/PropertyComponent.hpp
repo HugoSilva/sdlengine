@@ -5,9 +5,8 @@
 
 #include "../../EditorManager.h"
 #include "Core.h"
-#include "MenuBarComponent.hpp"
 
-class PropertyComponent : public DebugElement
+class PropertyComponent : public EditorElement
 {
 public:
 	PropertyComponent() { }

@@ -66,6 +66,8 @@ void SetupView::Update(float deltaTime)
     
     if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_F1))
         ecs::ECSManager::save();
+	if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_F2))
+		ecs::ECSManager::load();
 }
 
 void SetupView::Render()
