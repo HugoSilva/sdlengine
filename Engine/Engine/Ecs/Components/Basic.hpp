@@ -17,7 +17,6 @@ struct BasicComponent
 
 template<typename Archive>
 void serialize(Archive &archive, BasicComponent &basic) {
-    archive(basic.m_IsStatic, basic.m_Tag, basic.m_Layer);
+    archive(cereal::make_nvp("Name", std::string(basic.m_Name)), cereal::make_nvp("Static", basic.m_IsStatic), 
+        cereal::make_nvp("Tag", basic.m_Tag), cereal::make_nvp("Layer", basic.m_Layer));
 }
-//std::unique_ptr
-//#include <memory>
