@@ -8,6 +8,7 @@
 namespace ecs
 {
 	entt::DefaultRegistry ECSManager::registry;
+	entt::DefaultRegistry ECSManager::editorRegistry;
 	std::vector<BaseSystem*> ECSManager::m_systemsList;
 
 	void ECSManager::init()
@@ -43,7 +44,7 @@ namespace ecs
 
         registry.snapshot()
             .entities(output)
-            .component<BasicComponent, TransformComponent, EditorComponent>(output);
+            .component<BasicComponent, TransformComponent>(output);
 
 		return true;
 	}
@@ -55,7 +56,7 @@ namespace ecs
 
 		registry.restore()
 			.entities(input)
-			.component<BasicComponent, TransformComponent, EditorComponent>(input);
+			.component<BasicComponent, TransformComponent>(input);
 
 		return true;
 	}

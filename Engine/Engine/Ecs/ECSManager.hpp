@@ -20,6 +20,11 @@ namespace ecs
 			return registry.create();
 		}
 
+		static uint32_t createEditorEntity()
+		{
+			return editorRegistry.create();
+		}
+
 		static void destroyEntity(uint32_t entity)
 		{
 			registry.destroy(entity);
@@ -29,6 +34,12 @@ namespace ecs
 		static void addComponent(uint32_t entity, TArgs... arguments)
 		{
 			registry.assign<Components...>(entity, arguments...);
+		}
+
+		template<typename... Components, typename... TArgs>
+		static void addEditorComponent(uint32_t entity, TArgs... arguments)
+		{
+			editorRegistry.assign<Components...>(entity, arguments...);
 		}
 
 		template<typename Component>
@@ -48,13 +59,18 @@ namespace ecs
 		{
 			return registry.get<Component>(entity);
 		}
-
-
-        template<typename... Components>
+		
+		template<typename... Components>
         static entt::View<uint32_t, Components...> getView()
         {
             return registry.view<Components...>();
         }
+
+		template<typename... Components>
+		static entt::View<uint32_t, Components...> getEditorView()
+		{
+			return editorRegistry.view<Components...>();
+		}
 
 		static void addSystem(BaseSystem* system);
 
@@ -64,8 +80,9 @@ namespace ecs
 		static bool save();
 		static bool load();
 
-	private:		
+	private:
 		static entt::DefaultRegistry registry;
+		static entt::DefaultRegistry editorRegistry;
 		static std::vector<BaseSystem*> m_systemsList;
 	};
 }

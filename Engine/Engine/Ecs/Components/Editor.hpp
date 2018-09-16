@@ -19,8 +19,3 @@ public:
 private:
 	EditorElement* m_renderElement{ nullptr };
 };
-
-template<typename Archive>
-void serialize(Archive &archive, EditorComponent &editor) {
-	//archive(editor.m_renderElement);
-}

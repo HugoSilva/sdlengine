@@ -28,14 +28,14 @@ SetupView::SetupView(std::string name, SDL_Window* win)
 	m_render = new RenderSystem(Core::getRenderer());
 	ecs::ECSManager::addSystem(m_render);
 
-	uint32_t entity = ecs::ECSManager::createEntity();
-	ecs::ECSManager::addComponent<DebugComponent>(entity, new MenuBarComponent());
+	uint32_t entity = ecs::ECSManager::createEditorEntity();
+	ecs::ECSManager::addEditorComponent<EditorComponent>(entity, new MenuBarComponent());
 
-	uint32_t entity1 = ecs::ECSManager::createEntity();
-	ecs::ECSManager::addComponent<DebugComponent>(entity1, new EntityViewerComponent());
+	uint32_t entity1 = ecs::ECSManager::createEditorEntity();
+	ecs::ECSManager::addEditorComponent<EditorComponent>(entity1, new EntityViewerComponent());
 
-	uint32_t entity2 = ecs::ECSManager::createEntity();
-	ecs::ECSManager::addComponent<DebugComponent>(entity2, new PropertyComponent());
+	uint32_t entity2 = ecs::ECSManager::createEditorEntity();
+	ecs::ECSManager::addEditorComponent<EditorComponent>(entity2, new PropertyComponent());
 
 	//New Entities code
 	//for (int i = 0; i < 5000; i++)
