@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core.h"
-#define INVALID_ENTITY_ID 0
+#define INVALID_ENTITY_ID entt::null
 
 class EditorManager
 {
@@ -25,7 +25,7 @@ public:
     template<typename Component>
     static bool showComponentWidget()
     {
-        if (m_SelectedEntity > INVALID_ENTITY_ID)
+        if (m_SelectedEntity != INVALID_ENTITY_ID)
         {
             return ecs::ECSManager::hasComponent<Component>(m_SelectedEntity);
         }
