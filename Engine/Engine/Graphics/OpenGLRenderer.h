@@ -47,7 +47,7 @@ namespace graphics
 		~OpenGLRenderer();
 
 		void begin();
-		void submit(const Renderable2D* renderable);
+		void submit(TransformComponent& position, const Renderable2D* renderable);
 		void end();
 		void flush();
 

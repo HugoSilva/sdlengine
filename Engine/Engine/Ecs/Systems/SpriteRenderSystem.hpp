@@ -11,9 +11,10 @@ public:
 
     void update(const float alpha)
     {
-		ecs::ECSManager::getView<SpriteComponent>().each([&, this](auto entity, SpriteComponent &renderable)
+		ecs::ECSManager::getView<TransformComponent, SpriteComponent>().each([&, this](auto entity, 
+			TransformComponent &transform, SpriteComponent &sprite)
 		{
-			m_renderer->submit(renderable.m_Sprite);
+			m_renderer->submit(transform, sprite.m_Sprite);
 		});
     }
 };

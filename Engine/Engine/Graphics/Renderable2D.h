@@ -29,7 +29,7 @@ namespace graphics
 
 		virtual void submit(Renderer2D* renderer) const
 		{
-			renderer->submit(this);
+			//renderer->submit(this);
 		}
 
 		virtual void Render(SDL_Renderer* renderer) {};
