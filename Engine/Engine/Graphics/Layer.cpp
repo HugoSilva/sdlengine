@@ -44,6 +44,17 @@ namespace graphics
 		m_Renderables.push_back(renderable);
 	}
 
+	void Layer::remove(Renderable2D* renderable)
+	{
+		for (std::vector<Renderable2D*>::iterator it = m_Renderables.begin(); it != m_Renderables.end(); ++it)
+		{
+			if (*it == renderable)
+			{
+				m_Renderables.erase(it);
+			}
+		}
+	}
+
 	void Layer::render()
 	{
 		m_Shader->Enable();

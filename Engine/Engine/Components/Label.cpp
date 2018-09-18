@@ -9,5 +9,6 @@ Label::Label(std::string text, glm::vec3 position, graphics::Font* font, unsigne
 
 void Label::submit(graphics::Renderer2D* renderer) const
 {
-	renderer->submit(this);
+	//TODO Fix label support
+	//renderer->submit(static_cast<glm::vec3>(this->getPosition()), this);
 }

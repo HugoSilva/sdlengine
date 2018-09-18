@@ -1,6 +1,14 @@
 #include "Window.h"
 
 #include <imgui.h>
+
+#include "../IO/InputManager.h"
+#include "../Audio/SoundManager.h"
+#include "../Graphics/FontManager.h"
+#include "../Components/TextureManager.h"
+#include "../Physics/PhysicsManager.h"
+#include "../Ecs/ECSManager.hpp"
+
 #ifdef EMSCRIPTEN
 	#include <SDL_opengles2.h>
 	#include "../Utils/imgui_impl_sdl_gles2.h"
@@ -19,10 +27,12 @@ namespace graphics
 
 	Window::~Window()
 	{
+		//TODO move manager clean logic to the core
 		audio::SoundManager::clean();
 		graphics::FontManager::clean();
 		TextureManager::clean();
 		PhysicsManager::Clean();
+		ecs::ECSManager::clean();
 
 		ImGui_ImplSdlGL_Shutdown();
 

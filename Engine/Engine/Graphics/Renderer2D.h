@@ -2,6 +2,7 @@
 
 #include <glm\glm.hpp>
 #include "Font.h"
+#include "../Ecs/Components/Transform.hpp"
 
 namespace graphics
 {
@@ -17,7 +18,7 @@ namespace graphics
 
 		virtual void begin() {}
 
-		virtual void submit(const Renderable2D* renderable) = 0;
+		virtual void submit(TransformComponent& position, const Renderable2D* renderable) = 0;
 
 		virtual void end() {}
 

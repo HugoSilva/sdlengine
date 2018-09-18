@@ -1,5 +1,6 @@
 #include "Core.h"
 #include <functional>
+#include <imgui.h>
 
 #ifdef EMSCRIPTEN
 static void DispatchLoop(void* fp)
@@ -10,22 +11,30 @@ static void DispatchLoop(void* fp)
 #endif
 
 bool Core::m_Running = true;
+graphics::Renderer2D* Core::m_Renderer;
+graphics::Window* Core::m_Window1;
 
 Core::Core() : m_FramesPerSecond(0)
 {
+	m_Window1 = new graphics::Window("RockSlide Engine", 1280, 720);
+	m_Window1->Init();
 
+	m_Renderer = new graphics::OpenGLRenderer(m_Window1->GetWindow());
+
+	ecs::ECSManager::init();
 }
 
 Core::~Core()
 {
-	delete m_Window;
+	//delete m_Window;
 }
 
 graphics::Window* Core::createWindow(const char *name, int width, int height)
 {
-	m_Window = new graphics::Window(name, width, height);
-	m_Window->Init();
-	return m_Window;
+	//m_Window = new graphics::Window(name, width, height);
+	//m_Window->Init();
+	//return m_Window;
+	return nullptr;
 }
 
 void Core::start()
@@ -36,7 +45,7 @@ void Core::start()
 #ifdef EMSCRIPTEN
 		std::function<void()> fGameLoop = [&]() {
 #else
-		while (m_Window->GetRunning())
+		while (m_Window1->GetRunning())
 		{
 #endif
 			run();
@@ -63,9 +72,16 @@ void Core::run()
 
 	IO::InputManager::Update();
 
-	m_Scenes.at(m_ActiveScene)->Update(deltaTime);
+	//TODO review scene manager logic now that we are using ECS
+	SceneManager::update(deltaTime);
 
-	m_Scenes.at(m_ActiveScene)->Render();
+	//TODO shader needs to be moved to the renderable, objects may have different shaders
+	SceneManager::render(); // Only for shader
+	m_Renderer->begin();
+	//TODO need to split this up for normal systems and render systems
+	ecs::ECSManager::update(deltaTime);
+	m_Renderer->end();
+	m_Renderer->flush();
 
 	deltaAccumulator += deltaTime;
 	frames++;
@@ -77,28 +93,6 @@ void Core::run()
 		deltaAccumulator = 0.f;
 		tick();
 	}
-}
-
-bool Core::AddScene(Scene* scene)
-{
-	if (true)
-	{
-		m_Scenes.push_back(scene);
-		m_ActiveScene = m_Scenes.size()-1;
-		return true;
-	}
-	return false;
-}
-
-bool Core::ChangeScene(Scene* newScene)
-{
-	for (unsigned int i = 0; i < m_Scenes.size(); i++)
-	{
-		if (m_Scenes.at(i) == newScene)
-		{
-			m_ActiveScene = i;
-			return true;
-		}
-	}
-	return false;
+	
+	std::cout << ImGui::GetIO().Framerate << " FPS" << std::endl;
 }

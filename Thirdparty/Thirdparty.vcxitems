@@ -1,0 +1,226 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{f9753ad2-82d4-467f-8bbe-bc898bb6d218}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\access.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\archives\adapters.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\archives\binary.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\archives\json.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\archives\portable_binary.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\archives\xml.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\details\helpers.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\details\polymorphic_impl.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\details\polymorphic_impl_fwd.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\details\static_object.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\details\traits.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\details\util.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\base64.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\allocators.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\document.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\encodedstream.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\encodings.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\error\en.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\error\error.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\filereadstream.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\filewritestream.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\fwd.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\internal\biginteger.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\internal\diyfp.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\internal\dtoa.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\internal\ieee754.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\internal\itoa.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\internal\meta.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\internal\pow10.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\internal\regex.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\internal\stack.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\internal\strfunc.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\internal\strtod.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\internal\swap.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\istreamwrapper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\memorybuffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\memorystream.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\msinttypes\inttypes.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\msinttypes\stdint.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\ostreamwrapper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\pointer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\prettywriter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\rapidjson.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\reader.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\schema.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\stream.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\stringbuffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidjson\writer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidxml\rapidxml.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidxml\rapidxml_iterators.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidxml\rapidxml_print.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidxml\rapidxml_utils.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\macros.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\array.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\base_class.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\bitset.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\boost_variant.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\chrono.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\common.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\complex.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\concepts\pair_associative_container.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\deque.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\forward_list.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\functional.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\list.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\map.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\memory.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\polymorphic.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\queue.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\set.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\stack.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\string.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\tuple.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\unordered_map.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\unordered_set.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\utility.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\valarray.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\types\vector.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\common.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\exponential.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\ext.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\fwd.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\geometric.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\glm.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\integer.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\mat2x2.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\mat2x3.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\mat2x4.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\mat3x2.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\mat3x3.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\mat3x4.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\mat4x2.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\mat4x3.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\mat4x4.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\matrix.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\packing.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\trigonometric.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\vec2.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\vec3.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\vec4.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)glm\include\glm\vector_relational.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui\include\imconfig.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui\include\imgui.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui\include\imgui_internal.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui\include\stb_rect_pack.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui\include\stb_textedit.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui\include\stb_truetype.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)rapidxml\rapidxml.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)rapidxml\rapidxml_iterators.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)rapidxml\rapidxml_print.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)rapidxml\rapidxml_utils.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\begin_code.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\close_code.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_assert.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_atomic.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_audio.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_bits.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_blendmode.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_clipboard.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config_android.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config_iphoneos.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config_macosx.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config_minimal.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config_pandora.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config_psp.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config_windows.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config_winrt.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config_wiz.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_copying.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_cpuinfo.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_egl.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_endian.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_error.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_events.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_filesystem.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_gamecontroller.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_gesture.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_haptic.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_hints.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_joystick.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_keyboard.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_keycode.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_loadso.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_log.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_main.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_messagebox.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_mouse.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_mutex.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_name.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_opengl.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_opengles.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_opengles2.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_opengles2_gl2.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_opengles2_gl2ext.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_opengles2_gl2platform.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_opengles2_khrplatform.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_opengl_glext.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_pixels.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_platform.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_power.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_quit.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_rect.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_render.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_revision.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_rwops.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_scancode.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_shape.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_stdinc.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_surface.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_system.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_syswm.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_assert.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_common.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_compare.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_crc32.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_font.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_fuzzer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_harness.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_images.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_log.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_md5.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_memory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_test_random.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_thread.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_timer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_touch.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_types.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_version.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_video.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_vulkan.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)imgui\include\imgui.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)imgui\include\imgui_demo.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)imgui\include\imgui_draw.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)cereal\include\external\rapidxml\manual.html" />
+    <None Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config.h.cmake" />
+    <None Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config.h.in" />
+    <None Include="$(MSBuildThisFileDirectory)SDL2\include\SDL_config_macosx.h.orig" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="$(MSBuildThisFileDirectory)glm\include\glm\CMakeLists.txt" />
+  </ItemGroup>
+</Project>

@@ -78,9 +78,9 @@ namespace graphics
 		clearColor->OnImguiRender();
 	}
 
-	void OpenGLRenderer::submit(const Renderable2D* renderable)
+	void OpenGLRenderer::submit(TransformComponent& transform, const Renderable2D* renderable)
 	{
-		const glm::vec3& position = renderable->getPosition();
+		//const glm::vec3& position = renderable->getPosition();
 		const glm::vec2& size = renderable->getSize();
 		const unsigned int& color = renderable->getColor();
 		const std::vector<glm::vec2>& uv = renderable->getUV();
@@ -113,25 +113,35 @@ namespace graphics
 			}
 		}
 
-		m_Buffer->vertex = position;
+		glm::vec3 centerPoint = transform.position;
+
+		glm::vec3 upRight = centerPoint + glm::vec3((size.x / 2 * transform.scale.x), (size.y / 2 * transform.scale.y), transform.position.z);
+		glm::vec3 upLeft = centerPoint + glm::vec3(-(size.x / 2 * transform.scale.x), (size.y / 2 * transform.scale.y), transform.position.z);
+		glm::vec3 downRight = centerPoint + glm::vec3((size.x / 2 * transform.scale.x), -(size.y / 2 * transform.scale.y), transform.position.z);
+		glm::vec3 downLeft = centerPoint + glm::vec3(-(size.x / 2 * transform.scale.x), -(size.y / 2 * transform.scale.y), transform.position.z);
+		
+		//TODO Implement rotation support
+		//TODO Move the vertex calcution outside of the renderer for better performance
+
+		m_Buffer->vertex = downLeft;
 		m_Buffer->uv = uv[0];
 		m_Buffer->tid = ts;
 		m_Buffer->color = color;
 		m_Buffer++;
 
-		m_Buffer->vertex = glm::vec3(position.x, position.y + size.y, position.z);
+		m_Buffer->vertex = upLeft;
 		m_Buffer->uv = uv[1];
 		m_Buffer->tid = ts;
 		m_Buffer->color = color;
 		m_Buffer++;
 
-		m_Buffer->vertex = glm::vec3(position.x + size.x, position.y + size.y, position.z);
+		m_Buffer->vertex = upRight;
 		m_Buffer->uv = uv[2];
 		m_Buffer->tid = ts;
 		m_Buffer->color = color;
 		m_Buffer++;
 
-		m_Buffer->vertex = glm::vec3(position.x + size.x, position.y, position.z);
+		m_Buffer->vertex = downRight;
 		m_Buffer->uv = uv[3];
 		m_Buffer->tid = ts;
 		m_Buffer->color = color;

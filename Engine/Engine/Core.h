@@ -1,5 +1,10 @@
 #pragma once
 
+//Needed for the entt lib
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
 #ifdef EMSCRIPTEN
 	#include <emscripten/emscripten.h>
 #endif
@@ -13,10 +18,16 @@
 #include "Audio\Music.h"
 #include "Audio\Sound.h"
 #include "Audio\SoundManager.h"
-#include "Components\ImguiMenuBar.h"
 #include "Components\Label.h"
 #include "Components\Sprite.h"
 #include "Components\TextureManager.h"
+#include "Core\EventManager.h"
+#include "Core\Scene.h"
+#include "Core\SceneManager.h"
+#include "Core\ThreadManager.h"
+#include "Ecs\ECSManager.hpp"
+#include "Ecs\Components\IncludeList.hpp"
+#include "Ecs\Systems\BaseSystem.hpp"
 #include "Graphics\Renderer2D.h"
 #include "Graphics\OpenGLRenderer.h"
 #include "Graphics\Window.h"
@@ -27,14 +38,16 @@
 #include "Physics\PhysicsManager.h"
 #include "Physics\Collider.h"
 #include "Physics\Rigidbody.h"
-#include "Scene.h"
-#include "ThreadManager.h"
+#include "Utils\File.h"
+#include "Camera.h"
 
 class Core
 {
 public:
 	void start();
 	static bool getRunning() { return m_Running; }
+	static graphics::Renderer2D* getRenderer() { return m_Renderer; }
+	static graphics::Window* getWindow() { return m_Window1; }
 
 protected:
 	Core();
@@ -49,20 +62,16 @@ protected:
 
 	const unsigned int getFPS() const { return m_FramesPerSecond; }
 
-	bool AddScene(Scene* scene);
-	bool ChangeScene(Scene* newScene);
-
 private:
 	void run();
 
-	graphics::Window* m_Window;
+	//graphics::Window* m_Window;
 	long now, last = 0;
 	float deltaTime = 0.0;
 	float deltaAccumulator = 0.0f;
 	int frames = 0;
 	unsigned int m_FramesPerSecond;
-	
-	std::vector<Scene*> m_Scenes;
-	unsigned int m_ActiveScene;
 	static bool m_Running;
+	static graphics::Renderer2D* m_Renderer;
+	static graphics::Window* m_Window1;
 };
