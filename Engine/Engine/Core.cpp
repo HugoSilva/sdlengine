@@ -19,7 +19,8 @@ Core::Core() : m_FramesPerSecond(0)
 	m_Window1 = new graphics::Window("RockSlide Engine", 1280, 720);
 	m_Window1->Init();
 
-	m_Renderer = new graphics::OpenGLRenderer(m_Window1->GetWindow());
+	Shader* defaultShader = new Shader("Resources/Default.vert", "Resources/Default.frag");
+	m_Renderer = new graphics::OpenGLRenderer(m_Window1->GetWindow(), defaultShader);
 
 	ecs::ECSManager::init();
 }

@@ -24,6 +24,7 @@
 #include "Renderer2D.h"
 #include "IndexBuffer.h"
 #include "../../Tests/TestClearColor.h"
+#include "../Components/Shader.h"
 
 namespace graphics
 {
@@ -43,7 +44,7 @@ namespace graphics
 	class OpenGLRenderer : public Renderer2D
 	{
 	public:
-		OpenGLRenderer(SDL_Window* win);
+		OpenGLRenderer(SDL_Window* win, Shader* shader);
 		~OpenGLRenderer();
 
 		void begin();
@@ -59,6 +60,7 @@ namespace graphics
 		SDL_Window* m_Window;
 		std::vector<unsigned int> m_TextureSlots;
 		Test::TestClearColor* clearColor;
+		Shader* m_Shader;
 #ifdef EMSCRIPTEN
 		VertexData* m_BufferBase;
 #endif // EMSCRIPTEN

@@ -1,7 +1,8 @@
 #include "OpenGLRenderer.h"
 #include <imgui.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <glm/mat4x4.hpp> // glm::mat4
+#include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
+#include <glm/gtc/type_ptr.hpp> // glm::value_ptr
 #ifdef EMSCRIPTEN
 	#include "../Utils/imgui_impl_sdl_gles2.h"
 #else
@@ -10,8 +11,8 @@
 
 namespace graphics
 {
-	OpenGLRenderer::OpenGLRenderer(SDL_Window* win)
-		: m_Window(win)
+	OpenGLRenderer::OpenGLRenderer(SDL_Window* win, Shader* shader)
+		: m_Window(win), m_Shader(shader)
 	{
 		glGenVertexArrays(1, &m_VAO);
 		glGenBuffers(1, &m_VBO);
@@ -122,6 +123,9 @@ namespace graphics
 		View = glm::rotate(View, transform.rotation.y, glm::vec3(-1.0f, 0.0f, 0.0f));
 		View = glm::rotate(View, transform.rotation.x, glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 Model = glm::scale(glm::mat4(1.0f), transform.scale);
+
+		m_Shader->setUniformMat4("model", glm::value_ptr(Model));
+		m_Shader->setUniformMat4("view", glm::value_ptr(View));
 
 		m_Buffer->vertex = transform.position;
 		//m_Buffer->vertex = downLeft;
