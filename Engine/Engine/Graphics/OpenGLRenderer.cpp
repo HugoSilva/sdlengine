@@ -1,5 +1,7 @@
 #include "OpenGLRenderer.h"
 #include <imgui.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #ifdef EMSCRIPTEN
 	#include "../Utils/imgui_impl_sdl_gles2.h"
 #else
@@ -112,36 +114,38 @@ namespace graphics
 				ts = (float)(m_TextureSlots.size());
 			}
 		}
-
-		glm::vec3 centerPoint = transform.position;
-
-		glm::vec3 upRight = centerPoint + glm::vec3((size.x / 2 * transform.scale.x), (size.y / 2 * transform.scale.y), transform.position.z);
-		glm::vec3 upLeft = centerPoint + glm::vec3(-(size.x / 2 * transform.scale.x), (size.y / 2 * transform.scale.y), transform.position.z);
-		glm::vec3 downRight = centerPoint + glm::vec3((size.x / 2 * transform.scale.x), -(size.y / 2 * transform.scale.y), transform.position.z);
-		glm::vec3 downLeft = centerPoint + glm::vec3(-(size.x / 2 * transform.scale.x), -(size.y / 2 * transform.scale.y), transform.position.z);
 		
 		//TODO Implement rotation support
 		//TODO Move the vertex calcution outside of the renderer for better performance
 
-		m_Buffer->vertex = downLeft;
+		glm::mat4 View = glm::translate(glm::mat4(1.0f), transform.position);
+		View = glm::rotate(View, transform.rotation.y, glm::vec3(-1.0f, 0.0f, 0.0f));
+		View = glm::rotate(View, transform.rotation.x, glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 Model = glm::scale(glm::mat4(1.0f), transform.scale);
+
+		m_Buffer->vertex = transform.position;
+		//m_Buffer->vertex = downLeft;
 		m_Buffer->uv = uv[0];
 		m_Buffer->tid = ts;
 		m_Buffer->color = color;
 		m_Buffer++;
 
-		m_Buffer->vertex = upLeft;
+		m_Buffer->vertex = glm::vec3(transform.position.x, transform.position.y + size.y, transform.position.z);
+		//m_Buffer->vertex = upLeft;
 		m_Buffer->uv = uv[1];
 		m_Buffer->tid = ts;
 		m_Buffer->color = color;
 		m_Buffer++;
 
-		m_Buffer->vertex = upRight;
+		m_Buffer->vertex = glm::vec3(transform.position.x + size.x, transform.position.y + size.y, transform.position.z);
+		//m_Buffer->vertex = upRight;
 		m_Buffer->uv = uv[2];
 		m_Buffer->tid = ts;
 		m_Buffer->color = color;
 		m_Buffer++;
 
-		m_Buffer->vertex = downRight;
+		m_Buffer->vertex = glm::vec3(transform.position.x + size.x, transform.position.y, transform.position.z);
+		//m_Buffer->vertex = downRight;
 		m_Buffer->uv = uv[3];
 		m_Buffer->tid = ts;
 		m_Buffer->color = color;
