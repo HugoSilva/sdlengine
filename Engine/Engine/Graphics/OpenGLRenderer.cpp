@@ -119,13 +119,12 @@ namespace graphics
 		//TODO Implement rotation support
 		//TODO Move the vertex calcution outside of the renderer for better performance
 
-		glm::mat4 View = glm::translate(glm::mat4(1.0f), transform.position);
-		View = glm::rotate(View, transform.rotation.y, glm::vec3(-1.0f, 0.0f, 0.0f));
-		View = glm::rotate(View, transform.rotation.x, glm::vec3(0.0f, 1.0f, 0.0f));
-		glm::mat4 Model = glm::scale(glm::mat4(1.0f), transform.scale);
+		glm::mat4 Model = glm::translate(glm::mat4(1.0f), transform.position);
+		//Model = glm::rotate(Model, transform.rotation.y, glm::vec3(-1.0f, 0.0f, 0.0f));
+		//Model = glm::rotate(Model, transform.rotation.x, glm::vec3(0.0f, 1.0f, 0.0f));
+		//Model = glm::scale(Model, transform.scale);
 
-		m_Shader->setUniformMat4("model", glm::value_ptr(Model));
-		m_Shader->setUniformMat4("view", glm::value_ptr(View));
+		//m_Shader->setUniformMat4("model", glm::value_ptr(Model));
 
 		m_Buffer->vertex = transform.position;
 		//m_Buffer->vertex = downLeft;

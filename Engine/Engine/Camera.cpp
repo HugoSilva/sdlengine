@@ -7,7 +7,9 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch) : front
 	this->yaw = yaw;
 	this->pitch = pitch;
 	this->updateCameraVectors();
-	
+
+	//TODO Implement perspective support
+	//TODO Add support for multiple resolutions
 	//projection = glm::perspective(GetZoom(), 1280.0f / 720.0f, 0.1f, 100.0f);
 	projection = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f, -1.0f, 1.0f);
 }
@@ -19,7 +21,9 @@ Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float u
 	this->yaw = yaw;
 	this->pitch = pitch;
 	this->updateCameraVectors();
-	
+
+	//TODO Implement perspective support
+	//TODO Add support for multiple resolutions
 	//projection = glm::perspective(GetZoom(), 1280.0f / 720.0f, 0.1f, 100.0f);
 	projection = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f, -1.0f, 1.0f);
 }
@@ -70,8 +74,8 @@ void Camera::Update(float deltaTime)
 void Camera::Render(Shader* shader)
 {
 	glm::mat4 view = GetViewMatrix();
+	shader->setUniformMat4("view", glm::value_ptr(view));
 	shader->setUniformMat4("projection", glm::value_ptr(projection));
-	//glUniformMatrix4fv(glGetUniformLocation(shader.GetShaderID(), "view"), 1, GL_FALSE, glm::value_ptr(view));
 }
 
 glm::mat4 Camera::GetViewMatrix()
