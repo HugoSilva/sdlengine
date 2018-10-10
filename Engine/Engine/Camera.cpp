@@ -6,7 +6,12 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch) : front
 	this->worldUp = up;
 	this->yaw = yaw;
 	this->pitch = pitch;
-	this->updateCameraVectors();
+
+	//TODO Need to fix the hard coded values for the camera
+	this->front = glm::normalize(front);
+	this->right = glm::normalize(glm::cross(this->front, this->worldUp));  
+	this->up = glm::normalize(glm::cross(this->right, this->front));
+	//this->updateCameraVectors();
 
 	//TODO Implement perspective support
 	//TODO Add support for multiple resolutions
@@ -20,7 +25,12 @@ Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float u
 	this->worldUp = glm::vec3(upX, upY, upZ);
 	this->yaw = yaw;
 	this->pitch = pitch;
-	this->updateCameraVectors();
+
+	//TODO Need to fix the hard coded values for the camera
+	this->front = glm::normalize(front);
+	this->right = glm::normalize(glm::cross(this->front, this->worldUp));
+	this->up = glm::normalize(glm::cross(this->right, this->front));
+	//this->updateCameraVectors();
 
 	//TODO Implement perspective support
 	//TODO Add support for multiple resolutions
@@ -129,7 +139,7 @@ void Camera::ProcessMouseMovement(float xOffset, float yOffset, bool constrainPi
 		}
 	}
 
-	this->updateCameraVectors();
+	//this->updateCameraVectors();
 }
 
 void Camera::ProcessMouseScroll(float yOffset)

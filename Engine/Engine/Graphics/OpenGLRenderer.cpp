@@ -124,7 +124,7 @@ namespace graphics
 		//Model = glm::rotate(Model, transform.rotation.x, glm::vec3(0.0f, 1.0f, 0.0f));
 		//Model = glm::scale(Model, transform.scale);
 
-		//m_Shader->setUniformMat4("model", glm::value_ptr(Model));
+		m_Shader->setUniformMat4("model", glm::value_ptr(Model));
 
 		m_Buffer->vertex = transform.position;
 		//m_Buffer->vertex = downLeft;
