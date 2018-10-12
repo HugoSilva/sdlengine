@@ -12,22 +12,34 @@ static void DispatchLoop(void* fp)
 
 bool Core::m_Running = true;
 graphics::Renderer2D* Core::m_Renderer;
-graphics::Window* Core::m_Window1;
+graphics::Window* Core::m_Window;
 
 Core::Core() : m_FramesPerSecond(0)
 {
-	m_Window1 = new graphics::Window("RockSlide Engine", 1280, 720);
-	m_Window1->Init();
+	m_Window = new graphics::Window("RockSlide Engine", 1280, 720);
+	m_Window->Init();
+	
+	audio::SoundManager::init();
+	graphics::FontManager::init();
+	TextureManager::init();
+	IO::InputManager::Init();
+	PhysicsManager::init();
 
 	Shader* defaultShader = new Shader("Resources/Default.vert", "Resources/Default.frag");
-	m_Renderer = new graphics::OpenGLRenderer(m_Window1->GetWindow(), defaultShader);
+	m_Renderer = new graphics::OpenGLRenderer(m_Window->GetWindow(), defaultShader);
 
 	ecs::ECSManager::init();
 }
 
 Core::~Core()
 {
-	//delete m_Window;
+	audio::SoundManager::clean();
+	graphics::FontManager::clean();
+	TextureManager::clean();
+	PhysicsManager::Clean();
+	ecs::ECSManager::clean();
+
+	delete m_Window;
 }
 
 graphics::Window* Core::createWindow(const char *name, int width, int height)
@@ -46,7 +58,7 @@ void Core::start()
 #ifdef EMSCRIPTEN
 		std::function<void()> fGameLoop = [&]() {
 #else
-		while (m_Window1->GetRunning())
+		while (m_Window->GetRunning())
 		{
 #endif
 			run();

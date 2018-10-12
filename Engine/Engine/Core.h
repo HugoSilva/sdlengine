@@ -47,7 +47,7 @@ public:
 	void start();
 	static bool getRunning() { return m_Running; }
 	static graphics::Renderer2D* getRenderer() { return m_Renderer; }
-	static graphics::Window* getWindow() { return m_Window1; }
+	static graphics::Window* getWindow() { return m_Window; }
 
 protected:
 	Core();
@@ -65,7 +65,6 @@ protected:
 private:
 	void run();
 
-	//graphics::Window* m_Window;
 	long now, last = 0;
 	float deltaTime = 0.0;
 	float deltaAccumulator = 0.0f;
@@ -73,5 +72,5 @@ private:
 	unsigned int m_FramesPerSecond;
 	static bool m_Running;
 	static graphics::Renderer2D* m_Renderer;
-	static graphics::Window* m_Window1;
+	static graphics::Window* m_Window;
 };

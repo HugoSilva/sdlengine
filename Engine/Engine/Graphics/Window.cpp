@@ -3,11 +3,6 @@
 #include <imgui.h>
 
 #include "../IO/InputManager.h"
-#include "../Audio/SoundManager.h"
-#include "../Graphics/FontManager.h"
-#include "../Components/TextureManager.h"
-#include "../Physics/PhysicsManager.h"
-#include "../Ecs/ECSManager.hpp"
 
 #ifdef EMSCRIPTEN
 	#include <SDL_opengles2.h>
@@ -27,13 +22,7 @@ namespace graphics
 
 	Window::~Window()
 	{
-		//TODO move manager clean logic to the core
-		audio::SoundManager::clean();
-		graphics::FontManager::clean();
-		TextureManager::clean();
-		PhysicsManager::Clean();
-		ecs::ECSManager::clean();
-
+		//TODO Isolate the Imgui implementation
 		ImGui_ImplSdlGL_Shutdown();
 
 		SDL_DestroyWindow(window);
@@ -72,12 +61,6 @@ namespace graphics
 			}
 		#endif
 
-		audio::SoundManager::init();
-		graphics::FontManager::init();
-		TextureManager::init();
-		IO::InputManager::Init();
-		PhysicsManager::init();
-
 		//TODO show cursor and window focus 
 		//SDL_ShowCursor(SDL_DISABLE);
 		//SDL_SetWindowGrab(window, SDL_TRUE);
@@ -93,6 +76,7 @@ namespace graphics
 
 		std::cout << "OpenGL " << glGetString(GL_VERSION) << std::endl;
 
+		//TODO Isolate the Imgui implementation
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		ImGui_ImplSdlGL_Init(window);
@@ -103,6 +87,7 @@ namespace graphics
 
 	bool Window::GetRunning()
 	{
+		//TODO I need to rethink the quit logic for the window
 		return !IO::InputManager::IsQuitRequested();
 	}
 }
