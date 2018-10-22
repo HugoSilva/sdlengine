@@ -19,7 +19,7 @@ out DATA
 
 void main()
 {
-	gl_Position = projection * view * model * position;
+	gl_Position = projection * view * position;
 	vs_out.position = model * position;
 	vs_out.uv = uv;
 	vs_out.tid = tid;

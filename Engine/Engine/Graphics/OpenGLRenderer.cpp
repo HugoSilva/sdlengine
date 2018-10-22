@@ -129,27 +129,25 @@ namespace graphics
 		Model = glm::rotate(Model, glm::radians(transform.rotation.z), glm::vec3(0.f, 0.f, 1.f));
 		Model = glm::scale(Model, transform.scale);
 
-		m_Shader->setUniformMat4("model", glm::value_ptr(Model));
-
-		m_Buffer->vertex = downLeft;
+		m_Buffer->vertex = Model * glm::vec4(downLeft, 1.f);
 		m_Buffer->uv = uv[0];
 		m_Buffer->tid = ts;
 		m_Buffer->color = color;
 		m_Buffer++;
 
-		m_Buffer->vertex = upLeft;
+		m_Buffer->vertex = Model * glm::vec4(upLeft, 1.f);
 		m_Buffer->uv = uv[1];
 		m_Buffer->tid = ts;
 		m_Buffer->color = color;
 		m_Buffer++;
 
-		m_Buffer->vertex = upRight;
+		m_Buffer->vertex = Model * glm::vec4(upRight, 1.f);
 		m_Buffer->uv = uv[2];
 		m_Buffer->tid = ts;
 		m_Buffer->color = color;
 		m_Buffer++;
 
-		m_Buffer->vertex = downRight;
+		m_Buffer->vertex = Model * glm::vec4(downRight, 1.f);
 		m_Buffer->uv = uv[3];
 		m_Buffer->tid = ts;
 		m_Buffer->color = color;
