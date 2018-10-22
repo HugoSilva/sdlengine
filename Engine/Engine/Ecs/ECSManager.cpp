@@ -41,10 +41,10 @@ namespace ecs
 
 		//std::ofstream os("project.rse", std::ios::binary);
 		//cereal::BinaryOutputArchive archive(os);
-
-        registry.snapshot()
-            .entities(output)
-            .component<BasicComponent, TransformComponent>(output);
+		
+		registry.snapshot()
+			.entities(output)
+			.component<BasicComponent, TransformComponent>(output);
 
 		return true;
 	}
