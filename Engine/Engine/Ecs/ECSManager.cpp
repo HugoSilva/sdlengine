@@ -44,7 +44,7 @@ namespace ecs
 		
 		registry.snapshot()
 			.entities(output)
-			.component<BasicComponent, TransformComponent>(output);
+			.component<BasicComponent, TransformComponent, SpriteComponent>(output);
 
 		return true;
 	}
@@ -56,7 +56,7 @@ namespace ecs
 
 		registry.restore()
 			.entities(input)
-			.component<BasicComponent, TransformComponent>(input);
+			.component<BasicComponent, TransformComponent, SpriteComponent>(input);
 
 		return true;
 	}

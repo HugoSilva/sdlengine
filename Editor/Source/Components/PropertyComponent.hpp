@@ -62,10 +62,11 @@ public:
 
 					const unsigned int& color = sprite.m_Sprite->getColor();
 					
+					SDL_Color sdlColor = { static_cast<unsigned char>(color), static_cast<unsigned char>(color >> 8), static_cast<unsigned char>(color >> 16), static_cast<unsigned char>(color >> 24) };
 
-					static ImVec4 clear_color = ImVec4(color, color >> 8, color >> 16, color >> 24);
+					ImVec4 vec4Color = ImVec4(sdlColor.r / 255, sdlColor.g / 255, sdlColor.b / 255, sdlColor.a / 255);
 
-					ImGui::ColorEdit3("Color", (float *)&clear_color);
+					ImGui::ColorEdit4("Color", (float *)&vec4Color);
 					
 					char str0[128] = "";
 

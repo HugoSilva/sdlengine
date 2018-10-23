@@ -14,7 +14,7 @@ public:
 		ecs::ECSManager::getView<TransformComponent, SpriteComponent>().each([&, this](auto entity, 
 			TransformComponent &transform, SpriteComponent &sprite)
 		{
-			m_renderer->submit(transform, sprite.m_Sprite);
+			m_renderer->submit(transform, sprite.m_Sprite.get());
 		});
     }
 };
