@@ -4,6 +4,9 @@
 #include "../Graphics/Renderable2D.h"
 #include "../Graphics/Renderer2D.h"
 
+#include <cereal/types/polymorphic.hpp>
+
+
 class Sprite : public graphics::Renderable2D
 {
 public:
@@ -14,3 +17,13 @@ public:
 	void submit(graphics::Renderer2D* renderer) {};
 	glm::vec3& position;
 };
+
+template<typename Archive>
+void serialize(Archive &archive, Sprite &sprite)
+{
+	archive(cereal::make_nvp("Position", sprite.position));
+}
+
+CEREAL_REGISTER_TYPE(Sprite);
+
+CEREAL_REGISTER_POLYMORPHIC_RELATION(graphics::Renderable2D, Sprite)
