@@ -16,13 +16,14 @@ public:
 	
 	void submit(graphics::Renderer2D* renderer) {};
 	glm::vec3& position;
+
+	template<typename Archive>
+	void serialize(Archive &archive)
+	{
+		archive(cereal::base_class<graphics::Renderable2D>(this), cereal::make_nvp("Position", position));
+	}
 };
 
-template<typename Archive>
-void serialize(Archive &archive, Sprite &sprite)
-{
-	archive(cereal::make_nvp("Position", sprite.position));
-}
 
 CEREAL_REGISTER_TYPE(Sprite);
 

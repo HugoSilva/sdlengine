@@ -3,6 +3,7 @@
 #include <vector>
 #include <SDL.h>
 #include <glm\glm.hpp>
+#include <memory>
 #include "../Components/Texture.h"
 #include "Renderer2D.h"
 
@@ -19,6 +20,8 @@ namespace graphics
 	class Renderable2D
 	{
 	public:
+		Renderable2D() { setUVDefaults(); };
+
 		Renderable2D(glm::vec3 position, glm::vec2 size, unsigned int color)
 			: m_Position(position), m_Size(size), m_Color(color)
 		{
@@ -38,8 +41,8 @@ namespace graphics
 		inline const glm::vec2& getSize() const { return m_Size; }
 		inline const unsigned int& getColor() const { return m_Color; }
 		inline const std::vector<glm::vec2>& getUV() const { return m_UV; }
-		inline const unsigned int getTId() const { return m_Texture == nullptr ? 0 : m_Texture->getID(); }
-		inline const std::string getTextureName() const { return m_Texture == nullptr ? "" : m_Texture->getName(); }
+		inline const unsigned int getTId() const { return m_Texture.get() == nullptr ? 0 : m_Texture.get()->getID(); }
+		inline const std::string getTextureName() const { return m_Texture.get() == nullptr ? "" : m_Texture.get()->getName(); }
 
 		SDL_Rect texr;
 
@@ -53,12 +56,18 @@ namespace graphics
 		}
 
 	protected:
-		Renderable2D() { setUVDefaults(); }
 
 		glm::vec3 m_Position;
 		glm::vec2 m_Size;
 		unsigned int m_Color{ 0x00 };
 		std::vector<glm::vec2> m_UV;
-		Texture* m_Texture{ nullptr };
+		std::shared_ptr<Texture> m_Texture{ nullptr };
+
+		template<typename Archive>
+		void serialize(Archive &archive)
+		{
+			//TODO need to fix the issue Error C2338	cereal could not find any input serialization functions for the provided type and archive combination.
+			//archive(cereal::make_nvp("Texture", m_Texture));
+		}
 	};
 }

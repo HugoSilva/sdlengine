@@ -12,6 +12,7 @@
 class Texture
 {
 public:
+	Texture() {};
 	Texture(const std::string& name, const std::string& filename);
 	Texture(const std::string& name, graphics::Font* font, const std::string text, unsigned int color);
 	~Texture();
@@ -29,4 +30,11 @@ private:
 	std::string m_Name;
 	std::string m_Filename;
 	int m_Width, m_Height;
+
+	template<typename Archive>
+	void serialize(Archive &archive)
+	{
+		archive(cereal::make_nvp("Id", m_Id), cereal::make_nvp("Name", m_Name), cereal::make_nvp("Filename", m_Filename),
+			cereal::make_nvp("Width", m_Width), cereal::make_nvp("Height", m_Height));
+	}
 };
