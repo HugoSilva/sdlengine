@@ -7,7 +7,7 @@
 class RenderSystem : public BaseSystem
 {
 public:
-    RenderSystem(graphics::Renderer2D* renderer) : BaseSystem(renderer) {}
+    RenderSystem() : BaseSystem() {}
 
     void update(const float alpha)
     {

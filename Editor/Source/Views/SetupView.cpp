@@ -25,7 +25,7 @@ SetupView::SetupView(std::string name, SDL_Window* win)
 
 	//ImguiMenuBar* menubar = new ImguiMenuBar();
 	//m_Layer->add(menubar);
-	m_render = new RenderSystem(Core::getRenderer());
+	m_render = new RenderSystem();
 	ecs::ECSManager::addSystem(m_render);
 
 	uint32_t entity = ecs::ECSManager::createEditorEntity();

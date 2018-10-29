@@ -7,7 +7,7 @@
 class SpriteRenderSystem : public BaseSystem
 {
 public:
-	SpriteRenderSystem(graphics::Renderer2D* renderer) : BaseSystem(renderer) {}
+	SpriteRenderSystem(graphics::Renderer2D* renderer) : BaseSystem(), m_renderer(renderer) {}
 
     void update(const float alpha)
     {
@@ -17,4 +17,6 @@ public:
 			m_renderer->submit(transform, sprite.m_Sprite.get());
 		});
     }
+
+	graphics::Renderer2D* m_renderer;
 };

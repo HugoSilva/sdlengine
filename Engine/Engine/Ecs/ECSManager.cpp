@@ -1,6 +1,8 @@
 #include "ECSManager.hpp"
 #include "../Graphics/OpenGLRenderer.h"
 #include "../Core.h"
+#include "./Systems/AudioSystem.hpp"
+#include "./Systems/PhysicsSystem.hpp"
 #include "./Systems/SpriteRenderSystem.hpp"
 #include <cereal/archives/xml.hpp>
 #include <fstream>
@@ -13,6 +15,10 @@ namespace ecs
 
 	void ECSManager::init()
 	{
+		AudioSystem* audioSystem = new AudioSystem();
+		addSystem(audioSystem);
+		PhysicsSystem* physicsSystem = new PhysicsSystem();
+		addSystem(physicsSystem);
 		SpriteRenderSystem* spriteSystem = new SpriteRenderSystem(Core::getRenderer());
 		addSystem(spriteSystem);
 	}
