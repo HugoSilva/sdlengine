@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <cereal/access.hpp>
 #ifdef EMSCRIPTEN
 	#include <SDL_opengles2.h>
 #else
@@ -12,7 +13,6 @@
 class Texture
 {
 public:
-	Texture() {};
 	Texture(const std::string& name, const std::string& filename);
 	Texture(const std::string& name, graphics::Font* font, const std::string text, unsigned int color);
 	~Texture();
@@ -28,9 +28,21 @@ public:
 	template<typename Archive>
 	void serialize(Archive &archive)
 	{
-		archive(cereal::make_nvp("Id", m_Id), cereal::make_nvp("Name", m_Name), cereal::make_nvp("Filename", m_Filename),
+		archive(cereal::make_nvp("Id", m_Id), cereal::make_nvp("Name", m_Name), cereal::make_nvp("Filename", m_Filename), 
 			cereal::make_nvp("Width", m_Width), cereal::make_nvp("Height", m_Height));
-	}
+	};
+
+	template<typename Archive>
+	static void load_and_construct(Archive &archive, cereal::construct<Texture> &construct)
+	{
+		unsigned int id;
+		std::string name;
+		std::string filename;
+		int width, height;
+
+		archive(id, name, filename, width, height);
+		construct(name, filename);
+	};
 
 private:
 	unsigned int m_Id;

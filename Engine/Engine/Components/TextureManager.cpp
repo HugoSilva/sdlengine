@@ -12,9 +12,9 @@ void TextureManager::init()
 	}
 }
 
-void TextureManager::add(Texture* sound)
+void TextureManager::add(Texture* texture)
 {
-	m_Textures.push_back(sound);
+	m_Textures.push_back(texture);
 }
 
 Texture* TextureManager::get(const std::string& name)

@@ -60,7 +60,7 @@ public:
 				{
 					SpriteComponent& sprite = EditorManager::getComponent<SpriteComponent>();
 
-					const unsigned int& color = sprite.m_Sprite.get()->getColor();
+					const unsigned int& color = sprite.m_Sprite->getColor();
 					
 					SDL_Color sdlColor = { static_cast<unsigned char>(color), static_cast<unsigned char>(color >> 8), static_cast<unsigned char>(color >> 16), static_cast<unsigned char>(color >> 24) };
 
@@ -70,7 +70,7 @@ public:
 					
 					char str0[128] = "";
 
-					strcpy_s(str0, sprite.m_Sprite.get()->getTextureName().c_str());
+					strcpy_s(str0, sprite.m_Sprite->getTextureName().c_str());
 
 					ImGui::InputText("Texture", str0, IM_ARRAYSIZE(str0));
 				}

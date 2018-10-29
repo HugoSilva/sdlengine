@@ -24,7 +24,6 @@ public:
 	}
 };
 
-
 CEREAL_REGISTER_TYPE(Sprite);
 
 CEREAL_REGISTER_POLYMORPHIC_RELATION(graphics::Renderable2D, Sprite)
