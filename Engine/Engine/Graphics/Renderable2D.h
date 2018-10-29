@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 #include <SDL.h>
 #include <glm\glm.hpp>
 #include "../Components/Texture.h"
@@ -36,11 +37,19 @@ namespace graphics
 
 		inline const glm::vec3& getPosition() const { return m_Position; }
 		inline const glm::vec2& getSize() const { return m_Size; }
+		inline void setColor(unsigned int color) { m_Color = color; }
 		inline const unsigned int& getColor() const { return m_Color; }
 		inline const std::vector<glm::vec2>& getUV() const { return m_UV; }
-		inline const unsigned int getTId() const { return m_Texture == nullptr ? 0 : m_Texture->getID(); }
+		inline const unsigned int getTId() const { return m_Texture.get() == nullptr ? 0 : m_Texture.get()->getID(); }
+		inline const std::string getTextureName() const { return m_Texture.get() == nullptr ? "" : m_Texture.get()->getName(); }
 
 		SDL_Rect texr;
+
+		template<typename Archive>
+		void serialize(Archive &archive)
+		{
+			archive(cereal::make_nvp("Size", m_Size), cereal::make_nvp("Color", m_Color), cereal::make_nvp("Texture", m_Texture));
+		}
 
 	private:
 		void setUVDefaults()
@@ -58,6 +67,6 @@ namespace graphics
 		glm::vec2 m_Size;
 		unsigned int m_Color{ 0x00 };
 		std::vector<glm::vec2> m_UV;
-		Texture* m_Texture{ nullptr };
+		std::shared_ptr<Texture> m_Texture{ nullptr };
 	};
 }

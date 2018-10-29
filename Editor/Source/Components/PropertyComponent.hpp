@@ -54,6 +54,27 @@ public:
 					ImGui::InputFloat3("Scale", glm::value_ptr(transform.scale), 2);
 				}
 			}
+			if (EditorManager::showComponentWidget<SpriteComponent>())
+			{
+				if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					SpriteComponent& sprite = EditorManager::getComponent<SpriteComponent>();
+
+					const unsigned int& color = sprite.m_Sprite->getColor();
+					
+					SDL_Color sdlColor = { static_cast<unsigned char>(color), static_cast<unsigned char>(color >> 8), static_cast<unsigned char>(color >> 16), static_cast<unsigned char>(color >> 24) };
+
+					ImVec4 vec4Color = ImVec4(sdlColor.r / 255.f, sdlColor.g / 255.f, sdlColor.b / 255.f, sdlColor.a / 255.f);
+
+					ImGui::ColorEdit4("Color", (float *)&vec4Color);
+					
+					char str0[128] = "";
+
+					strcpy_s(str0, sprite.m_Sprite->getTextureName().c_str());
+
+					ImGui::InputText("Texture", str0, IM_ARRAYSIZE(str0));
+				}
+			}
 
 			ImGui::End();
 		}

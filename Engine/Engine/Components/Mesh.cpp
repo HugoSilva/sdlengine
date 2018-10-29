@@ -41,7 +41,7 @@ void Mesh::Draw(Shader shader)
 	glUniform1f(glGetUniformLocation(shader.GetShaderID(), "material.shininess"), 16.0f);
 
 	glBindVertexArray(this->VAO);
-	glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, (int) this->indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 
 	for (GLuint i = 0; i < this->textures.size(); i++)

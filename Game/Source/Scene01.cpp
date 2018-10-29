@@ -14,7 +14,7 @@ SpriteTest::SpriteTest(SDL_Window* win)
 #endif // EMSCRIPTEN
 
 	//m_Layer = new Layer(new SDLRenderer(win), m_Shader);
-	m_Layer = new Layer(new OpenGLRenderer(win), m_Shader);
+	m_Layer = new Layer(new OpenGLRenderer(win, m_Shader), m_Shader);
 
 	TextureManager::add(new Texture("test00", "Resources/tex3.png"));
 /*
@@ -45,22 +45,18 @@ SpriteTest::SpriteTest(SDL_Window* win)
 	//New Entities code
 	for (int i = 0; i < 10000; i++)
 	{
-		ecs::PositionComponent position;
-		position.x = rand() % (1200 - 40 + 1) + 10;
-		position.y = rand() % (720 - 40 + 1) + 10;
-		position.z = 0.f;
+		glm::vec3 position{ (rand() % (1200 - 40 + 1) + 10), (rand() % (720 - 40 + 1) + 10), 0.f };
 
-		ecs::SpriteComponent sprite;
+		Sprite* testSprite = new Sprite(glm::vec3(position.x, position.y, position.z), glm::vec2(40, 40), TextureManager::get("test00"));
+		int r = rand() % 256;
+		int g = rand() % 256;
+		int b = rand() % 256;
+		testSprite->setColor(0xff << 24 | b << 16 | g << 8 | r);
 
-		sprite.Sprite = new Sprite(glm::vec3(position.x, position.y, position.z), glm::vec2(40, 40), TextureManager::get("test00"));
-
-// 		int r = rand() % 256;
-// 		int g = rand() % 256;
-// 		int b = rand() % 256;
-// 
-// 		sprite.Color = 0xff << 24 | b << 16 | g << 8 | r;
-
-		ecs::ECSManager::addEntity(position, sprite);
+		uint32_t m_SelectedEntity = ecs::ECSManager::createEntity();
+		ecs::ECSManager::addComponent<BasicComponent>(m_SelectedEntity, ("entity_"+i), true, 0, 0);
+		ecs::ECSManager::addComponent<TransformComponent>(m_SelectedEntity, position, glm::vec3(0.f), glm::vec3(1.f));
+		ecs::ECSManager::addComponent<SpriteComponent>(m_SelectedEntity, testSprite);
 	}
 }
 

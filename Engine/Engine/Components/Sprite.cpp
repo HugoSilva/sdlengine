@@ -16,5 +16,5 @@ Sprite::Sprite(glm::vec3 position, glm::vec2 size, unsigned int color)
 Sprite::Sprite(glm::vec3 position, glm::vec2 size, Texture* texture)
 	: Renderable2D(position, size, 0xffffffff), position(m_Position)
 {
-	m_Texture = texture;
+	m_Texture.reset(texture);
 }

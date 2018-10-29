@@ -1,6 +1,8 @@
 #include "ECSManager.hpp"
 #include "../Graphics/OpenGLRenderer.h"
 #include "../Core.h"
+#include "./Systems/AudioSystem.hpp"
+#include "./Systems/PhysicsSystem.hpp"
 #include "./Systems/SpriteRenderSystem.hpp"
 #include <cereal/archives/xml.hpp>
 #include <fstream>
@@ -13,6 +15,10 @@ namespace ecs
 
 	void ECSManager::init()
 	{
+		AudioSystem* audioSystem = new AudioSystem();
+		addSystem(audioSystem);
+		PhysicsSystem* physicsSystem = new PhysicsSystem();
+		addSystem(physicsSystem);
 		SpriteRenderSystem* spriteSystem = new SpriteRenderSystem(Core::getRenderer());
 		addSystem(spriteSystem);
 	}
@@ -41,10 +47,10 @@ namespace ecs
 
 		//std::ofstream os("project.rse", std::ios::binary);
 		//cereal::BinaryOutputArchive archive(os);
-
-        registry.snapshot()
-            .entities(output)
-            .component<BasicComponent, TransformComponent>(output);
+		
+		registry.snapshot()
+			.entities(output)
+			.component<BasicComponent, TransformComponent, SpriteComponent>(output);
 
 		return true;
 	}
@@ -56,7 +62,7 @@ namespace ecs
 
 		registry.restore()
 			.entities(input)
-			.component<BasicComponent, TransformComponent>(input);
+			.component<BasicComponent, TransformComponent, SpriteComponent>(input);
 
 		return true;
 	}
