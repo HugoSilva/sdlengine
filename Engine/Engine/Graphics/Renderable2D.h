@@ -46,6 +46,13 @@ namespace graphics
 
 		SDL_Rect texr;
 
+		template<typename Archive>
+		void serialize(Archive &archive)
+		{
+			//TODO need to fix the issue Error C2338	cereal could not find any input serialization functions for the provided type and archive combination.
+			archive(cereal::make_nvp("Texture", m_Texture));
+		}
+
 	private:
 		void setUVDefaults()
 		{
@@ -63,11 +70,5 @@ namespace graphics
 		std::vector<glm::vec2> m_UV;
 		std::shared_ptr<Texture> m_Texture{ nullptr };
 
-		template<typename Archive>
-		void serialize(Archive &archive)
-		{
-			//TODO need to fix the issue Error C2338	cereal could not find any input serialization functions for the provided type and archive combination.
-			//archive(cereal::make_nvp("Texture", m_Texture));
-		}
 	};
 }

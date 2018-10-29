@@ -25,16 +25,16 @@ public:
 	inline const unsigned int getWidth() const { return m_Width; }
 	inline const unsigned int getHeight() const { return m_Height; }
 
-private:
-	unsigned int m_Id;
-	std::string m_Name;
-	std::string m_Filename;
-	int m_Width, m_Height;
-
 	template<typename Archive>
 	void serialize(Archive &archive)
 	{
 		archive(cereal::make_nvp("Id", m_Id), cereal::make_nvp("Name", m_Name), cereal::make_nvp("Filename", m_Filename),
 			cereal::make_nvp("Width", m_Width), cereal::make_nvp("Height", m_Height));
 	}
+
+private:
+	unsigned int m_Id;
+	std::string m_Name;
+	std::string m_Filename;
+	int m_Width, m_Height;
 };

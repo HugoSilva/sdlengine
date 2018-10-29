@@ -60,17 +60,17 @@ public:
 				{
 					SpriteComponent& sprite = EditorManager::getComponent<SpriteComponent>();
 
-					const unsigned int& color = sprite.m_Sprite->getColor();
+					const unsigned int& color = sprite.m_Sprite.get()->getColor();
 					
 					SDL_Color sdlColor = { static_cast<unsigned char>(color), static_cast<unsigned char>(color >> 8), static_cast<unsigned char>(color >> 16), static_cast<unsigned char>(color >> 24) };
 
-					ImVec4 vec4Color = ImVec4(sdlColor.r / 255, sdlColor.g / 255, sdlColor.b / 255, sdlColor.a / 255);
+					ImVec4 vec4Color = ImVec4(sdlColor.r / 255.f, sdlColor.g / 255.f, sdlColor.b / 255.f, sdlColor.a / 255.f);
 
 					ImGui::ColorEdit4("Color", (float *)&vec4Color);
 					
 					char str0[128] = "";
 
-					strcpy_s(str0, sprite.m_Sprite->getTextureName().c_str());
+					strcpy_s(str0, sprite.m_Sprite.get()->getTextureName().c_str());
 
 					ImGui::InputText("Texture", str0, IM_ARRAYSIZE(str0));
 				}

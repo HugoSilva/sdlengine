@@ -52,7 +52,7 @@ SpriteTest::SpriteTest(SDL_Window* win)
 
 		ecs::SpriteComponent sprite;
 
-		sprite.Sprite = new Sprite(glm::vec3(position.x, position.y, position.z), glm::vec2(40, 40), TextureManager::get("test00"));
+		sprite.m_Sprite = std::make_shared<Sprite>(glm::vec3(position.x, position.y, position.z), glm::vec2(40, 40), TextureManager::get("test00"));
 
 // 		int r = rand() % 256;
 // 		int g = rand() % 256;
