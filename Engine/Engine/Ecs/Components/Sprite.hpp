@@ -12,10 +12,10 @@ struct SpriteComponent
 	};
 
 	std::shared_ptr<Sprite> m_Sprite;
-};
 
-template<typename Archive>
-void serialize(Archive &archive, SpriteComponent &sprite)
-{
-	archive(cereal::make_nvp("Sprite", sprite.m_Sprite));
-}
+	template<typename Archive>
+	void serialize(Archive &archive)
+	{
+		archive(cereal::make_nvp("Sprite", m_Sprite));
+	}
+};
