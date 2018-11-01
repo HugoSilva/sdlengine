@@ -15,9 +15,9 @@
 #include <Windows.h>
 #endif
 
-#include "Audio\Music.h"
-#include "Audio\Sound.h"
-#include "Audio\SoundManager.h"
+#include "Audio\Music.hpp"
+#include "Audio\Sound.hpp"
+#include "Audio\SoundManager.hpp"
 #include "Components\Label.h"
 #include "Components\Sprite.h"
 #include "Components\TextureManager.h"

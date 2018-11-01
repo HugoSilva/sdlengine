@@ -341,9 +341,9 @@
     <ClInclude Include="Engine\Ecs\Systems\SpriteRenderSystem.hpp" />
     <ClInclude Include="Engine\Physics\PhysicsManager.h" />
     <ClInclude Include="Engine\Core.h" />
-    <ClInclude Include="Engine\Audio\Music.h" />
-    <ClInclude Include="Engine\Audio\Sound.h" />
-    <ClInclude Include="Engine\Audio\SoundManager.h" />
+    <ClInclude Include="Engine\Audio\Music.hpp" />
+    <ClInclude Include="Engine\Audio\Sound.hpp" />
+    <ClInclude Include="Engine\Audio\SoundManager.hpp" />
     <ClInclude Include="Engine\Camera.h" />
     <ClInclude Include="Engine\Components\Mesh.h" />
     <ClInclude Include="Engine\Components\Model.h" />

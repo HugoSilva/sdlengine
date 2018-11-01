@@ -1,14 +1,12 @@
 #pragma once
 
 #include <vector>
-#include <SDL_mixer.h>
-
-#include "Sound.h"
-#include "Music.h"
-#include "../Utils/Logger.h"
 
 namespace audio
 {
+	class Sound; //forward declaration for audio::Sound
+	class Music; //forward declaration for audio::Music
+
 	class SoundManager
 	{
 	public:
@@ -21,7 +19,7 @@ namespace audio
 
 	private:
 		SoundManager() { }
-		static std::vector<Sound*> m_Sounds;
-		static std::vector<Music*> m_Music;
+		static std::vector<Sound*> s_Sounds;
+		static std::vector<Music*> s_Music;
 	};
 }

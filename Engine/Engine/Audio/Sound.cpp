@@ -1,4 +1,6 @@
-#include "Sound.h"
+#include "Sound.hpp"
+
+#include "../Utils/Logger.h"
 
 namespace audio
 {
