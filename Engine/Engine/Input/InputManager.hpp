@@ -10,13 +10,13 @@ namespace Input
 		static void Init();
 		static void Update();
 
-		static bool IsKeyDown(int key);
-		static bool IsKeyUp(int key);
-		static bool IsKeyPressed(SDL_Scancode key);
-		static void Lock();
-		static void Unlock();
+		static const bool IsKeyDown(int key);
+		static const bool IsKeyUp(int key);
+		static const bool IsKeyPressed(SDL_Scancode key);
+		inline static const void Lock() { s_Locked = true; }
+		inline static const void Unlock() { s_Locked = false; }
 
-		static inline const bool IsQuitRequested() { return m_QuitRequested; }
+		inline static const bool IsQuitRequested() { return s_QuitRequested; }
 
 	private:
 		InputManager() { }
@@ -27,10 +27,10 @@ namespace Input
 		static void HandleControllerButton(SDL_ControllerButtonEvent event);
 		static void HandleControllerAxis(SDL_ControllerAxisEvent event);
 
-		static bool m_AvailableKeyboard;
-		static bool m_AvailableMouse;
-		static bool m_AvailableController;
-		static bool m_Locked;
-		static bool m_QuitRequested;
+		static bool s_AvailableKeyboard;
+		static bool s_AvailableMouse;
+		static bool s_AvailableController;
+		static bool s_Locked;
+		static bool s_QuitRequested;
 	};
 }

@@ -27,7 +27,7 @@ namespace Input
 		s_keys[key] = event.state != SDL_RELEASED;
 	}
 
-	bool Keyboard::IsKeyDown(int key)
+	const bool Keyboard::IsKeyDown(int key)
 	{
 		if (key < 0 || key >= SDL_NUM_SCANCODES)
 		{
@@ -36,7 +36,7 @@ namespace Input
 		return s_keysDown[key];
 	}
 
-	bool Keyboard::IsKeyUp(int key)
+	const bool Keyboard::IsKeyUp(int key)
 	{
 		if (key < 0 || key >= SDL_NUM_SCANCODES)
 		{
@@ -45,7 +45,7 @@ namespace Input
 		return s_keysUp[key];
 	}
 
-	bool Keyboard::IsKeyPressed(int key)
+	const bool Keyboard::IsKeyPressed(int key)
 	{
 		if (key < 0 || key >= SDL_NUM_SCANCODES)
 		{

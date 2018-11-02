@@ -56,17 +56,7 @@ namespace Input
 		s_buttons[button] = event.state != SDL_RELEASED;
 	}
 
-	double Mouse::GetMouseX()
-	{
-		return s_xOffset;
-	}
-
-	double Mouse::GetMouseY()
-	{
-		return s_yOffset;
-	}
-
-	bool Mouse::IsButtonDown(int button)
+	const bool Mouse::IsButtonDown(int button)
 	{
 		if (button < 0 || button >= MAX_BUTTON_SIZE)
 		{
@@ -75,7 +65,7 @@ namespace Input
 		return s_buttonsDown[button];
 	}
 
-	bool Mouse::IsButtonUp(int button)
+	const bool Mouse::IsButtonUp(int button)
 	{
 		if (button < 0 || button >= MAX_BUTTON_SIZE)
 		{
@@ -84,7 +74,7 @@ namespace Input
 		return s_buttonsUp[button];
 	}
 
-	bool Mouse::IsButtonPressed(int button)
+	const bool Mouse::IsButtonPressed(int button)
 	{
 		if (button < 0 || button >= MAX_BUTTON_SIZE)
 		{

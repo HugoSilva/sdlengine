@@ -12,11 +12,11 @@ namespace Input
 		static void MousePosCallback(SDL_MouseMotionEvent event);
 		static void MouseButtonCallback(SDL_MouseButtonEvent event);
 
-		static double GetMouseX();
-		static double GetMouseY();
-		static bool IsButtonDown(int button);
-		static bool IsButtonUp(int button);
-		static bool IsButtonPressed(int button);
+		inline static const double GetMouseX() { return s_xOffset; }
+		inline static const double GetMouseY() { return s_yOffset; }
+		static const bool IsButtonDown(int button);
+		static const bool IsButtonUp(int button);
+		static const bool IsButtonPressed(int button);
 
 	private:
 		static double s_x;

@@ -14,21 +14,21 @@
 
 namespace Input
 {
-	bool InputManager::m_AvailableKeyboard;
-	bool InputManager::m_AvailableMouse;
-	bool InputManager::m_AvailableController;
-	bool InputManager::m_Locked;
-	bool InputManager::m_QuitRequested;
+	bool InputManager::s_AvailableKeyboard;
+	bool InputManager::s_AvailableMouse;
+	bool InputManager::s_AvailableController;
+	bool InputManager::s_Locked;
+	bool InputManager::s_QuitRequested;
 
 	void InputManager::Init()
 	{
 		// TODO: check available input devices
-		m_AvailableKeyboard = true;
-		m_AvailableMouse = true;
-		m_AvailableController = false;
+		s_AvailableKeyboard = true;
+		s_AvailableMouse = true;
+		s_AvailableController = false;
 		
-		m_Locked = false;
-		m_QuitRequested = false;
+		s_Locked = false;
+		s_QuitRequested = false;
 	}
 
 	void InputManager::Update()
@@ -56,7 +56,7 @@ namespace Input
 				HandleControllerAxis(event.caxis);
 				break;
 			case SDL_QUIT:
-				m_QuitRequested = true;
+				s_QuitRequested = true;
 				break;
 			case SDL_MOUSEWHEEL:
 				// event.x; // Ammount scrolled horizontally
@@ -74,36 +74,38 @@ namespace Input
 
 	void InputManager::HandleKeyboard(SDL_KeyboardEvent keyEvent)
 	{
-		if (m_AvailableKeyboard) {
+		if (s_AvailableKeyboard) {
 			Keyboard::KeyCallback(keyEvent);
 		}
 	}
 
 	void InputManager::HandleMouseButton(SDL_MouseButtonEvent mouseEvent)
 	{
-		if (m_AvailableMouse) {
+		if (s_AvailableMouse) {
 			Mouse::MouseButtonCallback(mouseEvent);
 		}
 	}
 
 	void InputManager::HandleMouseMotion(SDL_MouseMotionEvent mouseEvent)
 	{
-		if (m_AvailableMouse) {
+		if (s_AvailableMouse) {
 			Mouse::MousePosCallback(mouseEvent);
 		}
 	}
 
 	void InputManager::HandleControllerButton(SDL_ControllerButtonEvent event)
 	{
+		//TODO Add controller support
 	}
 
 	void InputManager::HandleControllerAxis(SDL_ControllerAxisEvent event)
 	{
+		//TODO Add controller support
 	}
 
-	bool InputManager::IsKeyDown(int key)
+	const bool InputManager::IsKeyDown(int key)
 	{
-		if (m_Locked)
+		if (s_Locked)
 		{
 			return false;
 		}
@@ -111,9 +113,9 @@ namespace Input
 		return Keyboard::IsKeyDown(key);
 	}
 
-	bool InputManager::IsKeyUp(int key)
+	const bool InputManager::IsKeyUp(int key)
 	{
-		if (m_Locked)
+		if (s_Locked)
 		{
 			return false;
 		}
@@ -121,23 +123,13 @@ namespace Input
 		return Keyboard::IsKeyUp(key);
 	}
 
-	bool InputManager::IsKeyPressed(SDL_Scancode key)
+	const bool InputManager::IsKeyPressed(SDL_Scancode key)
 	{
-		if (m_Locked)
+		if (s_Locked)
 		{
 			return false;
 		}
 		
 		return Keyboard::IsKeyPressed(key);
-	}
-
-	void InputManager::Lock()
-	{
-		m_Locked = true;
-	}
-
-	void InputManager::Unlock()
-	{
-		m_Locked = false;
 	}
 }
