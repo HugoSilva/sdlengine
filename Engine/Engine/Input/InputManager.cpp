@@ -1,6 +1,9 @@
-#include "InputManager.h"
+#include "InputManager.hpp"
 
 #include <imgui.h>
+#include "Mouse.hpp"
+#include "Keyboard.hpp"
+
 #ifdef EMSCRIPTEN
 #include <SDL_opengles2.h>
 #include "../Utils/imgui_impl_sdl_gles2.h"
@@ -9,7 +12,7 @@
 #include "../Utils/imgui_impl_sdl_gl3.h"
 #endif // EMSCRIPTEN
 
-namespace IO
+namespace Input
 {
 	bool InputManager::m_AvailableKeyboard;
 	bool InputManager::m_AvailableMouse;

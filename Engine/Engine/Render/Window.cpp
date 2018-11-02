@@ -2,7 +2,7 @@
 
 #include <imgui.h>
 
-#include "../IO/InputManager.h"
+#include "../Input/InputManager.hpp"
 
 #ifdef EMSCRIPTEN
 	#include <SDL_opengles2.h>
@@ -88,6 +88,6 @@ namespace graphics
 	bool Window::GetRunning()
 	{
 		//TODO I need to rethink the quit logic for the window
-		return !IO::InputManager::IsQuitRequested();
+		return !Input::InputManager::IsQuitRequested();
 	}
 }

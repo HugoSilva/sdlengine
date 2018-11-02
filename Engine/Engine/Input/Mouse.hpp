@@ -2,7 +2,7 @@
 
 #include <SDL.h>
 
-namespace IO
+namespace Input
 {
 	#define MAX_BUTTON_SIZE 32
 
@@ -19,11 +19,15 @@ namespace IO
 		static bool IsButtonPressed(int button);
 
 	private:
-		static double x;
-		static double y;
+		static double s_x;
+		static double s_y;
 
-		static bool buttons[];
-		static bool buttonsDown[];
-		static bool buttonsUp[];
+		static bool s_buttons[];
+		static bool s_buttonsDown[];
+		static bool s_buttonsUp[];
+
+		static double s_lastX, s_lastY;
+		static double s_xOffset, s_yOffset;
+		static bool s_firstMouse;
 	};
 }

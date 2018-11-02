@@ -2,7 +2,7 @@
 
 #include "BaseSystem.hpp"
 #include "../ECSManager.hpp"
-#include "../../Graphics/Renderer2D.h"
+#include "../../Render/Renderer2D.h"
 
 class SpriteRenderSystem : public BaseSystem
 {

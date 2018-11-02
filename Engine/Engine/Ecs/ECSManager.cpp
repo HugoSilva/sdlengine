@@ -1,5 +1,5 @@
 #include "ECSManager.hpp"
-#include "../Graphics/OpenGLRenderer.h"
+#include "../Render/OpenGLRenderer.h"
 #include "../Core.h"
 #include "./Systems/AudioSystem.hpp"
 #include "./Systems/PhysicsSystem.hpp"

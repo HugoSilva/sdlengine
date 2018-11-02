@@ -2,7 +2,7 @@
 
 #include <SDL.h>
 
-namespace IO
+namespace Input
 {
 	class Keyboard
 	{
@@ -13,8 +13,8 @@ namespace IO
 		static bool IsKeyPressed(int key);
 
 	private:
-		static bool keys[];
-		static bool keysDown[];
-		static bool keysUp[];
+		static bool s_keys[];
+		static bool s_keysDown[];
+		static bool s_keysUp[];
 	};
 }

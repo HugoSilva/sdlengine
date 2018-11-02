@@ -1,8 +1,8 @@
 #pragma once
 
 #include <glm\glm.hpp>
-#include "../Graphics/Renderable2D.h"
-#include "../Graphics/FontManager.h"
+#include "../Render/Renderable2D.h"
+#include "../Render/FontManager.h"
 
 class Label : public graphics::Renderable2D
 {

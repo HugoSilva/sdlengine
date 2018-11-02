@@ -6,8 +6,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Components\Shader.h"
-#include "IO/Keyboard.h"
-#include "IO/Mouse.h"
+#include "Input/Keyboard.hpp"
+#include "Input/Mouse.hpp"
 
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
 enum Camera_Movement

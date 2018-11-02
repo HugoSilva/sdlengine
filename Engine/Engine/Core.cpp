@@ -22,7 +22,7 @@ Core::Core() : m_FramesPerSecond(0)
 	audio::SoundManager::init();
 	graphics::FontManager::init();
 	TextureManager::init();
-	IO::InputManager::Init();
+	Input::InputManager::Init();
 	PhysicsManager::init();
 
 	Shader* defaultShader = new Shader("Resources/Default.vert", "Resources/Default.frag");
@@ -83,7 +83,7 @@ void Core::run()
 	deltaTime = (now - last) / 1000.0f;
 	last = now;
 
-	IO::InputManager::Update();
+	Input::InputManager::Update();
 
 	//TODO review scene manager logic now that we are using ECS
 	SceneManager::update(deltaTime);

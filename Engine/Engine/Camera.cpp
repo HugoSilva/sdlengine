@@ -40,7 +40,7 @@ Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float u
 
 void Camera::Update(float deltaTime)
 {
-	using namespace IO;
+	using namespace Input;
 
 	if (Keyboard::IsKeyPressed(SDL_SCANCODE_UP))
 	{

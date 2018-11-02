@@ -7,7 +7,7 @@
 #else
 	#include <GL/glew.h>
 #endif // EMSCRIPTEN
-#include "../Graphics/Font.h"
+#include "../Render/Font.h"
 #include "../Utils/Image.h"
 
 class Texture

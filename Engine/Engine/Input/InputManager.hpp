@@ -1,10 +1,8 @@
 #pragma once
 
 #include <SDL.h>
-#include "Mouse.h"
-#include "Keyboard.h"
 
-namespace IO
+namespace Input
 {
 	class InputManager
 	{

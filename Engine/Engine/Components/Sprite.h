@@ -1,8 +1,8 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include "../Graphics/Renderable2D.h"
-#include "../Graphics/Renderer2D.h"
+#include "../Render/Renderable2D.h"
+#include "../Render/Renderer2D.h"
 
 #include <cereal/types/polymorphic.hpp>
 
