@@ -3,8 +3,8 @@
 #include <vector>
 
 #include <entity/registry.hpp>
-#include "./Systems/BaseSystem.hpp"
-#include "./Components/IncludeList.hpp"
+
+class BaseSystem; //forward declaration for BaseSystem
 
 namespace ecs
 {

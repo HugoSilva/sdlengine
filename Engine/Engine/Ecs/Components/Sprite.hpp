@@ -1,7 +1,7 @@
 #pragma once
 
 #include <glm\glm.hpp>
-#include "../../Components/Sprite.h"
+#include "../../Components/Sprite.hpp"
 
 struct SpriteComponent
 {

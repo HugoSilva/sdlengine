@@ -1,11 +1,15 @@
 #include "ECSManager.hpp"
-#include "../Render/OpenGLRenderer.h"
-#include "../Core.h"
-#include "./Systems/AudioSystem.hpp"
-#include "./Systems/PhysicsSystem.hpp"
-#include "./Systems/SpriteRenderSystem.hpp"
+
 #include <cereal/archives/xml.hpp>
 #include <fstream>
+
+#include "../Core.h"
+#include "../Render/OpenGLRenderer.h"
+#include "./Components/IncludeList.hpp"
+#include "./Systems/AudioSystem.hpp"
+#include "./Systems/BaseSystem.hpp"
+#include "./Systems/PhysicsSystem.hpp"
+#include "./Systems/SpriteRenderSystem.hpp"
 
 namespace ecs
 {

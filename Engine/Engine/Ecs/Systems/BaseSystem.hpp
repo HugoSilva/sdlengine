@@ -1,7 +1,5 @@
 #pragma once
 
-#include "../../Render/Renderer2D.h"
-
 class BaseSystem
 {
 public:
