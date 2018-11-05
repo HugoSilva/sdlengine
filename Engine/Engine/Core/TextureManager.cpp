@@ -1,5 +1,7 @@
 #include "TextureManager.h"
 
+#include "../Components/Texture.hpp"
+
 std::vector<Texture*> TextureManager::m_Textures;
 
 void TextureManager::init()

@@ -1,5 +1,9 @@
 #include "Camera.h"
 
+#include "../Components/Shader.hpp"
+#include "../Input/Keyboard.hpp"
+#include "../Input/Mouse.hpp"
+
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch) : front(glm::vec3(0.0f, 0.0f, -1.0f)), movementSpeed(SPEED), mouseSensitivity(SENSITIVTY), zoom(ZOOM)
 {
 	this->position = position;

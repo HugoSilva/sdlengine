@@ -1,24 +1,8 @@
-Editor Work::
-----------------------------
-- Work flow
--- Select which project to work
--- Load Workspace
--- Load last scene
+:: Code Review Lost Options ::
+------------------------------
+- Restore Components
+-- Label
+-- Mesh
+-- Model
 
-----------------------------
-- File for config
--- Create if not existing
--- Window size
--- Editor overrides ?
-
-- File for Internal data (binary)
--- Create if not existing
--- Recent projects open
--- Workspace configuration
-
-- File for Default data (binary)
--- Should always exist
--- Default workspace configuration
-
--Concept of scene determine the structure
--Concept for Saving/Loading scenes (xml for easy diffs?)
+------------------------------

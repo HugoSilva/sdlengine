@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "Texture.h"
+class Texture; //forward declaration for Texture
 
 class TextureManager
 {
