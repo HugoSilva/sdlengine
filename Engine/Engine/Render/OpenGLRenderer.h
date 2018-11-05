@@ -24,7 +24,7 @@
 #include "Renderer2D.h"
 #include "IndexBuffer.h"
 #include "../../Tests/TestClearColor.h"
-#include "../Components/Shader.h"
+#include "../Components/Shader.hpp"
 
 namespace graphics
 {

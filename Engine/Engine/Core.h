@@ -10,36 +10,36 @@
 #endif
 
 #include <vector>
-#include <glm\glm.hpp>
+#include <glm/glm.hpp>
 #if _WIN32
 #include <Windows.h>
 #endif
 
-#include "Audio\Music.hpp"
-#include "Audio\Sound.hpp"
-#include "Audio\SoundManager.hpp"
-#include "Components\Label.h"
-#include "Components\Sprite.h"
-#include "Components\TextureManager.h"
-#include "Core\EventManager.h"
-#include "Core\Scene.h"
-#include "Core\SceneManager.h"
-#include "Core\ThreadManager.h"
-#include "Ecs\ECSManager.hpp"
-#include "Ecs\Components\IncludeList.hpp"
-#include "Ecs\Systems\BaseSystem.hpp"
+#include "Audio/Music.hpp"
+#include "Audio/Sound.hpp"
+#include "Audio/SoundManager.hpp"
+#include "Components/Sprite.hpp"
+#include "Core/EventManager.h"
+#include "Core/Scene.h"
+#include "Core/SceneManager.h"
+#include "Core/TextureManager.h"
+#include "Core/ThreadManager.h"
+#include "Ecs/ECSManager.hpp"
+#include "Ecs/Components/IncludeList.hpp"
+#include "Ecs/Systems/BaseSystem.hpp"
+#include "Render/Camera.h"
+#include "Render/Font.h"
+#include "Render/FontManager.h"
 #include "Render/Renderable2D.h"
+#include "Render/Renderer2D.h"
 #include "Render/OpenGLRenderer.h"
 #include "Render/Window.h"
 #include "Render/Layer.h"
-#include "Render/Font.h"
-#include "Render/FontManager.h"
 #include "Input/InputManager.hpp"
-#include "Physics\PhysicsManager.h"
-#include "Physics\Collider.h"
-#include "Physics\Rigidbody.h"
-#include "Utils\File.h"
-#include "Camera.h"
+#include "Physics/PhysicsManager.h"
+#include "Physics/Collider.h"
+#include "Physics/Rigidbody.h"
+#include "Utils/File.h"
 
 class Core
 {

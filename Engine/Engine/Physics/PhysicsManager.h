@@ -2,7 +2,7 @@
 
 #include <Box2D.h>
 #include "Updatable.h"
-#include "..\Components\Sprite.h"
+#include "../Components/Sprite.hpp"
 #include "Rigidbody.h"
 
 class PhysicsManager : public physics::Updatable

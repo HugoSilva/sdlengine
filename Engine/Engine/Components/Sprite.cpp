@@ -1,4 +1,4 @@
-#include "Sprite.h"
+#include "Sprite.hpp"
 
 Sprite::Sprite() : Renderable2D(glm::vec3(0.0f), glm::vec2(1.0f), 0), position(m_Position)
 {

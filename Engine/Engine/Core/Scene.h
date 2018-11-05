@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Components/Shader.h"
+#include "../Components/Shader.hpp"
 
 #include "rapidxml.hpp"
 

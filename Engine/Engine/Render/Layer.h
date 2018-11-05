@@ -2,7 +2,7 @@
 
 #include "Renderer2D.h"
 #include "Renderable2D.h"
-#include "../Components/Shader.h"
+#include "../Components/Shader.hpp"
 
 namespace graphics
 {

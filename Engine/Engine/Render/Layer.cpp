@@ -5,7 +5,7 @@ namespace graphics
 	Layer::Layer(Renderer2D* renderer, Shader* shader)
 		: m_Renderer(renderer), m_Shader(shader)
 	{
-		m_Shader->Enable();
+		m_Shader->enable();
 
 #ifdef EMSCRIPTEN
 		m_Shader->setUniform1i("texture_0", 0);
@@ -27,7 +27,7 @@ namespace graphics
 
 		m_Shader->setUniform1iv("textures", texIDs, 32);
 #endif
-		m_Shader->Disable();
+		m_Shader->disable();
 	}
 
 	Layer::~Layer()
@@ -57,7 +57,7 @@ namespace graphics
 
 	void Layer::render()
 	{
-		m_Shader->Enable();
+		m_Shader->enable();
 		m_Renderer->begin();
 
 		for (const Renderable2D* renderable : m_Renderables)

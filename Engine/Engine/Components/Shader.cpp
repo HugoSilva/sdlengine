@@ -1,4 +1,4 @@
-#include "Shader.h"
+#include "Shader.hpp"
 
 #include <string>
 #ifdef EMSCRIPTEN
@@ -15,13 +15,13 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
 	std::string vertString = File::read(m_VertPath);
 	std::string fragString = File::read(m_FragPath);
 
-	m_ShaderID = Load(vertString.c_str(), fragString.c_str());
+	m_ShaderID = load(vertString.c_str(), fragString.c_str());
 }
 
 Shader::Shader(const char* name, const char* vertexSource, const char* fragmentSource)
 	: m_Name(name), m_VertSource(vertexSource), m_FragSource(fragmentSource)
 {
-	m_ShaderID = Load(m_VertSource, m_FragSource);
+	m_ShaderID = load(m_VertSource, m_FragSource);
 }
 
 Shader::~Shader()
@@ -29,12 +29,12 @@ Shader::~Shader()
 	glDeleteProgram(m_ShaderID);
 }
 
-void Shader::Enable() const
+void Shader::enable() const
 {
 	glUseProgram(m_ShaderID);
 }
 
-void Shader::Disable() const
+void Shader::disable() const
 {
 	glUseProgram(0);
 }
@@ -64,22 +64,22 @@ void Shader::setUniformMat4(const char* name, const float* matrix)
 	glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, matrix);
 }
 
-Shader* Shader::FromFile(const char* vertexPath, const char* fragmentPath)
+Shader* Shader::fromFile(const char* vertexPath, const char* fragmentPath)
 {
 	return new Shader(vertexPath, fragmentPath);
 }
 
-Shader* Shader::FromSource(const char* vertexSource, const char* fragmentSource)
+Shader* Shader::fromSource(const char* vertexSource, const char* fragmentSource)
 {
 	return new Shader(vertexSource, fragmentSource);
 }
 
-Shader* Shader::FromSource(const char* name, const char* vertexSource, const char* fragmentSource)
+Shader* Shader::fromSource(const char* name, const char* vertexSource, const char* fragmentSource)
 {
 	return new Shader(name, vertexSource, fragmentSource);
 }
 
-unsigned int Shader::Load(const char* vertexSource, const char* fragmentSource)
+unsigned int Shader::load(const char* vertexSource, const char* fragmentSource)
 {
 	unsigned int program = glCreateProgram();
 	unsigned int vertex = glCreateShader(GL_VERTEX_SHADER);

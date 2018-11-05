@@ -1,4 +1,4 @@
-#include "Texture.h"
+#include "Texture.hpp"
 
 Texture::Texture(const std::string& name, const std::string& filename)
 	: m_Name(name), m_Filename(filename)

@@ -1,4 +1,4 @@
-#include "ShaderFactory.h"
+#include "ShaderFactory.hpp"
 
 namespace ShaderFactory {
 #ifdef EMSCRIPTEN
@@ -74,11 +74,11 @@ namespace ShaderFactory {
 
 	Shader* DefaultShader()
 	{
-		return Shader::FromSource("Default Shader", default_shader_vert, default_shader_frag);
+		return Shader::fromSource("Default Shader", default_shader_vert, default_shader_frag);
 	}
 
 	Shader* BasicLightShader()
 	{
-		return Shader::FromSource("Basic Light Shader", basic_light_shader_vert, basic_light_shader_frag);
+		return Shader::fromSource("Basic Light Shader", basic_light_shader_vert, basic_light_shader_frag);
 	}
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "..\Components\Sprite.h"
+#include "../Components/Sprite.hpp"
 
 namespace physics 
 {
