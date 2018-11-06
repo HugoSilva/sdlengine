@@ -2,13 +2,11 @@
 
 #include <string>
 #include <cereal/access.hpp>
-#ifdef EMSCRIPTEN
-	#include <SDL_opengles2.h>
-#else
-	#include <GL/glew.h>
-#endif // EMSCRIPTEN
-#include "../Render/Font.h"
-#include "../Utils/Image.h"
+
+namespace graphics
+{
+	class Font; //forward declaration for graphics::Font
+}
 
 class Texture
 {

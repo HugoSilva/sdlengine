@@ -14,6 +14,6 @@ public:
 
 private:
 	TextureManager();
-	static std::vector<Texture*> m_Textures;
+	static std::vector<Texture*> s_Textures;
 };
 

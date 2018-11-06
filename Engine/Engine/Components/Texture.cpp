@@ -1,5 +1,14 @@
 #include "Texture.hpp"
 
+#ifdef EMSCRIPTEN
+#include <SDL_opengles2.h>
+#else
+#include <GL/glew.h>
+#endif // EMSCRIPTEN
+
+#include "../Render/Font.h"
+#include "../Utils/Image.h"
+
 Texture::Texture(const std::string& name, const std::string& filename)
 	: m_Name(name), m_Filename(filename)
 {

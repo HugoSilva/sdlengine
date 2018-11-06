@@ -1,4 +1,6 @@
-#include "SceneManager.h"
+#include "SceneManager.hpp"
+
+#include "Scene.hpp"
 
 std::vector<Scene*> SceneManager::m_Scenes;
 unsigned int SceneManager::m_ActiveScene{ 0 };

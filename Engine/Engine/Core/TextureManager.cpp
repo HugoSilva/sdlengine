@@ -1,8 +1,11 @@
-#include "TextureManager.h"
+#include "TextureManager.hpp"
+
+#include <SDL_image.h>
 
 #include "../Components/Texture.hpp"
+#include "../Utils/Logger.h"
 
-std::vector<Texture*> TextureManager::m_Textures;
+std::vector<Texture*> TextureManager::s_Textures;
 
 void TextureManager::init()
 {
@@ -16,12 +19,12 @@ void TextureManager::init()
 
 void TextureManager::add(Texture* texture)
 {
-	m_Textures.push_back(texture);
+	s_Textures.push_back(texture);
 }
 
 Texture* TextureManager::get(const std::string& name)
 {
-	for (Texture* texture : m_Textures)
+	for (Texture* texture : s_Textures)
 	{
 		if (texture->getName() == name)
 			return texture;
@@ -31,8 +34,8 @@ Texture* TextureManager::get(const std::string& name)
 
 void TextureManager::clean()
 {
-	for (unsigned int i = 0; i < m_Textures.size(); i++)
-		delete m_Textures[i];
+	for (unsigned int i = 0; i < s_Textures.size(); i++)
+		delete s_Textures[i];
 
 	IMG_Quit();
 }

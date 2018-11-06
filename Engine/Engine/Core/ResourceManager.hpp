@@ -2,8 +2,7 @@
 
 #include <vector>
 
-#include "Resource.h"
-#include "../Utils/Logger.h"
+class Resource; //forward declaration for Resource
 
 class ResourceManager
 {
@@ -15,5 +14,5 @@ public:
 
 private:
 	ResourceManager() { }
-	static std::vector<Resource*> m_Resources;
+	static std::vector<Resource*> s_Resources;
 };

@@ -2,8 +2,7 @@
 
 #include <vector>
 
-#include "Scene.h"
-#include "../Utils/Logger.h"
+class Scene; //forward declaration for Scene
 
 class SceneManager
 {

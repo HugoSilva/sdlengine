@@ -2,8 +2,6 @@
 
 #include <string>
 
-#include "../Utils/Logger.h"
-
 class Resource
 {
 public:

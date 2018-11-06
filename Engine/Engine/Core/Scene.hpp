@@ -2,8 +2,6 @@
 
 #include "../Components/Shader.hpp"
 
-#include "rapidxml.hpp"
-
 class Scene
 {
 public:
@@ -14,14 +12,6 @@ public:
 	virtual void Render() = 0;
 
 	inline const std::string& getName() const { return m_Name; }
-
-	void writeXML(rapidxml::xml_document<>* doc, rapidxml::xml_node<>* parentNode)
-	{
-	}
-
-	void readXML(rapidxml::xml_document<>* doc, rapidxml::xml_node<>* node)
-	{
-	}
 
 protected:
 	std::string m_Name;

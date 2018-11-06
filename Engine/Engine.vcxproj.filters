@@ -161,24 +161,6 @@
     <ClInclude Include="Engine\Utils\imgui_impl_sdl_gles2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Core\EventManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Core\Resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Core\ResourceManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Core\Scene.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Core\SceneManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Core\ThreadManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Ecs\ECSManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -260,9 +242,6 @@
     <ClInclude Include="Engine\Input\InputManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Core\TextureManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Render\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -276,6 +255,27 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Components\Shader.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Core\EventManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Core\Resource.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Core\ResourceManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Core\SceneManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Core\TextureManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Core\ThreadManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Core\Scene.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

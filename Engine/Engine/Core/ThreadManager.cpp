@@ -1,31 +1,32 @@
-#include "ThreadManager.h"
+#include "ThreadManager.hpp"
+
 #include "../Input/InputManager.hpp"
 #include "../Physics/PhysicsManager.h"
 
-unsigned int ThreadManager::m_AvailableThreads;
-std::vector<std::thread*> ThreadManager::m_Threads;
-std::vector<std::mutex*> ThreadManager::m_Mutexes;
+unsigned int ThreadManager::s_AvailableThreads;
+std::vector<std::thread*> ThreadManager::s_Threads;
+std::vector<std::mutex*> ThreadManager::s_Mutexes;
 
-void ThreadManager::Init()
+void ThreadManager::init()
 {
-	m_AvailableThreads = std::thread::hardware_concurrency();
+	s_AvailableThreads = std::thread::hardware_concurrency();
 }
 
-void ThreadManager::Start()
+void ThreadManager::start()
 {
-	m_Threads.push_back(new std::thread(PhysicsManager::UpdateObjects));
+	s_Threads.push_back(new std::thread(PhysicsManager::UpdateObjects));
 
-	for (unsigned int num = 0; num < m_AvailableThreads; num++)
+	for (unsigned int num = 0; num < s_AvailableThreads; num++)
 	{
-		//m_Threads.push_back(&threadIO);
+		//s_Threads.push_back(&threadIO);
 	}
 }
 
-void ThreadManager::Clean()
+void ThreadManager::clean()
 {
-	for (unsigned int i = 0; i < m_AvailableThreads; i++)
+	for (unsigned int i = 0; i < s_AvailableThreads; i++)
 	{
-		m_Threads[i]->join();
-		//delete m_Threads[i];
+		s_Threads[i]->join();
+		//delete s_Threads[i];
 	}
 }
