@@ -31,8 +31,8 @@ public:
 
 		#ifdef EMSCRIPTEN
 		#else
-			ThreadManager::Init();
-			ThreadManager::Start();
+			ThreadManager::init();
+			ThreadManager::start();
 		#endif
 	}
 

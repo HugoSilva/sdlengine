@@ -63,16 +63,16 @@ void SetupView::Update(float deltaTime)
 {
 	m_Camera->Update(deltaTime);
     //SceneManager::change("SelectProject");
-    
-    if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_F1))
+	
+	if (Input::InputManager::IsKeyPressed(SDL_SCANCODE_F1))
         ecs::ECSManager::save();
-	if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_F2))
+	if (Input::InputManager::IsKeyPressed(SDL_SCANCODE_F2))
 		ecs::ECSManager::load();
 }
 
 void SetupView::Render()
 {
-	m_Shader->Enable();
+	m_Shader->enable();
 	m_Camera->Render(m_Shader);
 	//m_Layer->render();
 }
