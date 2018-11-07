@@ -25,11 +25,11 @@ namespace graphics
 		//TODO Isolate the Imgui implementation
 		ImGui_ImplSdlGL_Shutdown();
 
-		SDL_DestroyWindow(window);
+		SDL_DestroyWindow(m_Window);
 		SDL_Quit();
 	}
 
-	bool Window::Init()
+	bool Window::init()
 	{
 		SDL_Init(SDL_INIT_EVERYTHING);
 
@@ -44,13 +44,13 @@ namespace graphics
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-		window = SDL_CreateWindow(m_Title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_Width, m_Height, SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
-		if (window == nullptr) {
+		m_Window = SDL_CreateWindow(m_Title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_Width, m_Height, SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+		if (m_Window == nullptr) {
 			std::cout << "Failed to create SDL Window: " << SDL_GetError() << std::endl;
 			SDL_Quit();
 		}
 
-		context = SDL_GL_CreateContext(window);
+		m_Context = SDL_GL_CreateContext(m_Window);
 
 		#ifndef EMSCRIPTEN
 			glewExperimental = GL_TRUE;
@@ -79,13 +79,13 @@ namespace graphics
 		//TODO Isolate the Imgui implementation
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		ImGui_ImplSdlGL_Init(window);
+		ImGui_ImplSdlGL_Init(m_Window);
 		ImGui::StyleColorsDark();
 
 		return true;
 	}
 
-	bool Window::GetRunning()
+	bool Window::getRunning()
 	{
 		//TODO I need to rethink the quit logic for the window
 		return !Input::InputManager::IsQuitRequested();

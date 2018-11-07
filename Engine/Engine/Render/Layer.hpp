@@ -1,11 +1,14 @@
 #pragma once
 
-#include "Renderer2D.hpp"
-#include "Renderable2D.hpp"
-#include "../Components/Shader.hpp"
+#include <vector>
+
+class Shader; //forward declaration for Shader
 
 namespace graphics
 {
+	class Renderable2D; //forward declaration for graphics::Renderable2D
+	class Renderer2D; //forward declaration for graphics::Renderer2D
+
 	class Layer
 	{
 	public:

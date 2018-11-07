@@ -27,7 +27,7 @@ public:
 	{
 		m_Window = createWindow("RockSlide Engine", 1280, 720);
 
-		SceneManager::add(new SetupView("Setup", Core::getWindow()->GetWindow()));
+		SceneManager::add(new SetupView("Setup", Core::getWindow()->getWindow()));
 
 		#ifdef EMSCRIPTEN
 		#else

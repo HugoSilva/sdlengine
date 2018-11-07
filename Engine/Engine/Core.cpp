@@ -17,7 +17,7 @@ graphics::Window* Core::m_Window;
 Core::Core() : m_FramesPerSecond(0)
 {
 	m_Window = new graphics::Window("RockSlide Engine", 1280, 720);
-	m_Window->Init();
+	m_Window->init();
 	
 	audio::SoundManager::init();
 	graphics::FontManager::init();
@@ -26,7 +26,7 @@ Core::Core() : m_FramesPerSecond(0)
 	PhysicsManager::init();
 
 	Shader* defaultShader = new Shader("Resources/Default.vert", "Resources/Default.frag");
-	m_Renderer = new graphics::OpenGLRenderer(m_Window->GetWindow(), defaultShader);
+	m_Renderer = new graphics::OpenGLRenderer(m_Window->getWindow(), defaultShader);
 
 	ecs::ECSManager::init();
 }
@@ -58,7 +58,7 @@ void Core::start()
 #ifdef EMSCRIPTEN
 		std::function<void()> fGameLoop = [&]() {
 #else
-		while (m_Window->GetRunning())
+		while (m_Window->getRunning())
 		{
 #endif
 			run();

@@ -11,14 +11,14 @@ namespace graphics
 		Window(const char *title, int width, int height);
 		~Window();
 
-		bool Init();
-		bool GetRunning();
-		SDL_Window* GetWindow() { return window; };
+		bool init();
+		bool getRunning();
+		SDL_Window* getWindow() { return m_Window; };
 
 	private:
-		SDL_Event windowEvent;
-		SDL_Window* window;
-		SDL_GLContext context;
+		SDL_Event m_WindowEvent;
+		SDL_Window* m_Window;
+		SDL_GLContext m_Context;
 
 		const char* m_Title;
 		int m_Width, m_Height;

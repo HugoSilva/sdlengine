@@ -1,5 +1,9 @@
 #include "Layer.hpp"
 
+#include "Renderer2D.hpp"
+#include "Renderable2D.hpp"
+#include "../Components/Shader.hpp"
+
 namespace graphics
 {
 	Layer::Layer(Renderer2D* renderer, Shader* shader)

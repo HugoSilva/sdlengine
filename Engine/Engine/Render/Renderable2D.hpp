@@ -33,7 +33,7 @@ namespace graphics
 			//renderer->submit(this);
 		}
 
-		virtual void Render(SDL_Renderer* renderer) {};
+		virtual void render(SDL_Renderer* renderer) {};
 
 		inline const glm::vec3& getPosition() const { return m_Position; }
 		inline const glm::vec2& getSize() const { return m_Size; }
