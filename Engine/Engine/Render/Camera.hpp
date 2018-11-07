@@ -1,5 +1,4 @@
-#ifndef CAMERA
-#define CAMERA
+#pragma once
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -16,48 +15,36 @@ enum Camera_Movement
 	RIGHT
 };
 
-// Default camera values
-const float YAW = -90.0f;
-const float PITCH = 0.0f;
-const float SPEED = 10.0f;
-const float SENSITIVTY = 0.25f;
-const float ZOOM = 45.0f;
-
 // An abstract camera class that processes input and calculates the corresponding Eular Angles, Vectors and Matrices for use in OpenGL
 class Camera
 {
 public:
 
-	Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH);
+	Camera(glm::vec3 position);
+	Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch);
 	Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch);
 
+	void setup();
 	void Update(float deltaTime);
 	void Render(Shader* shader);
 	glm::mat4 GetViewMatrix();
 	void ProcessKeyboard(Camera_Movement direction, float deltaTime);
 	void ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch = true);
 	void ProcessMouseScroll(float yOffset);
-	float GetZoom();
-	glm::vec3 GetPosition();
-	glm::vec3 GetFront();
+
+	inline const float getZoom() const { return m_Zoom; }
+	inline const glm::vec3 getPosition() const { return m_Position; }
+	inline const glm::vec3 getFront() const { return m_Front; }
 
 private:
-	glm::vec3 position;
-	glm::vec3 front;
-	glm::vec3 up;
-	glm::vec3 right;
-	glm::vec3 worldUp;
-
-	glm::mat4 projection;
-
-	float yaw;
-	float pitch;
-
-	float movementSpeed;
-	float mouseSensitivity;
-	float zoom;
-
 	void updateCameraVectors();
-};
 
-#endif
+	glm::vec3 m_Position{ glm::vec3(0.0f, 0.0f, 0.0f) };
+	glm::vec3 m_WorldUp{ glm::vec3(0.0f, 1.0f, 0.0f) };
+	glm::vec3 m_Front{ glm::vec3(0.0f, 0.0f, -1.0f) };
+	glm::vec3 m_Up;
+	glm::vec3 m_Right;
+	glm::mat4 m_Projection;
+	float m_Yaw{ -90.f }, m_Pitch{ 0.f };
+	float m_MovementSpeed{ 10.f }, m_MouseSensitivity{ 0.25f }, m_Zoom{ 45.f };
+};
