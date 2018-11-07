@@ -4,7 +4,7 @@
 
 #include "Sound.hpp"
 #include "Music.hpp"
-#include "../Utils/Logger.h"
+#include "../Utils/Logger.hpp"
 
 namespace audio
 {

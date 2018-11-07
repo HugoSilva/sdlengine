@@ -3,7 +3,7 @@
 #include <SDL_image.h>
 
 #include "../Components/Texture.hpp"
-#include "../Utils/Logger.h"
+#include "../Utils/Logger.hpp"
 
 std::vector<Texture*> TextureManager::s_Textures;
 

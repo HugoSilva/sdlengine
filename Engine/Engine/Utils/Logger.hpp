@@ -12,6 +12,6 @@ public:
 	static void error(std::string msg);
 
 private:
-	static std::string errorPrefix;
-	static std::string warningPrefix;
+	static std::string s_ErrorPrefix;
+	static std::string s_WarningPrefix;
 };

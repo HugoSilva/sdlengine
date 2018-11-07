@@ -1,11 +1,11 @@
 #pragma once
 
 #include <vector>
-#include "Font.h"
-#include "../Utils/Logger.h"
 
 namespace graphics
 {
+	class Font; //forward declaration for graphics::Font
+
 	class FontManager
 	{
 	public:

@@ -7,7 +7,7 @@
 	#include <GL/glew.h>
 #endif // EMSCRIPTEN
 
-#include "../Utils/File.h"
+#include "../Utils/File.hpp"
 
 Shader::Shader(const char* vertexPath, const char* fragmentPath)
 	:m_VertPath(vertexPath), m_FragPath(fragmentPath)

@@ -1,5 +1,8 @@
 #include "FontManager.h"
 
+#include "Font.h"
+#include "../Utils/Logger.hpp"
+
 namespace graphics
 {
 	std::vector<Font*> FontManager::m_Fonts;

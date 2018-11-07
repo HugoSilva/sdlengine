@@ -1,9 +1,9 @@
-#include "Logger.h"
+#include "Logger.hpp"
 
 #include <sstream>
 
-std::string Logger::warningPrefix{ "Warning: " };
-std::string Logger::errorPrefix{ "Error:   " };
+std::string Logger::s_WarningPrefix{ "Warning: " };
+std::string Logger::s_ErrorPrefix{ "Error:   " };
 
 void Logger::log(std::string msg)
 {
@@ -12,10 +12,10 @@ void Logger::log(std::string msg)
 
 void Logger::warning(std::string msg)
 {
-	std::cerr << warningPrefix << msg << std::endl;
+	std::cerr << s_WarningPrefix << msg << std::endl;
 }
 
 void Logger::error(std::string msg)
 {
-	std::cerr << errorPrefix << msg << std::endl;
+	std::cerr << s_ErrorPrefix << msg << std::endl;
 }

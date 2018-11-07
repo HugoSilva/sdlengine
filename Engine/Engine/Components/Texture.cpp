@@ -7,13 +7,13 @@
 #endif // EMSCRIPTEN
 
 #include "../Render/Font.h"
-#include "../Utils/Image.h"
+#include "../Utils/Image.hpp"
 
 Texture::Texture(const std::string& name, const std::string& filename)
 	: m_Name(name), m_Filename(filename)
 {
 	int Mode = GL_RGB;
-	void* pixels = Image::LoadImage(m_Filename.c_str(), &m_Width, &m_Height, &Mode);
+	void* pixels = Image::loadImage(m_Filename.c_str(), &m_Width, &m_Height, &Mode);
 
 	unsigned int result;
 	glGenTextures(1, &result);
@@ -34,7 +34,7 @@ Texture::Texture(const std::string& name, graphics::Font* font, const std::strin
 {
 	SDL_Color textColor = { static_cast<unsigned char>(color), static_cast<unsigned char>(color>>8), static_cast<unsigned char>(color>>16), static_cast<unsigned char>(color>>24) };
 	int Mode = GL_RGB;
-	void* pixels = Image::LoadFont(font->getFTFont(), text.c_str(), textColor, &m_Width, &m_Height, &Mode);
+	void* pixels = Image::loadFont(font->getFTFont(), text.c_str(), textColor, &m_Width, &m_Height, &Mode);
 
 	unsigned int result;
 	glGenTextures(1, &result);
