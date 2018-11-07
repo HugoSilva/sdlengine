@@ -3,8 +3,8 @@
 #include <glm/glm.hpp>
 #include <cereal/types/polymorphic.hpp>
 
-#include "../Render/Renderable2D.h"
-#include "../Render/Renderer2D.h"
+#include "../Render/Renderable2D.hpp"
+#include "../Render/Renderer2D.hpp"
 
 class Sprite : public graphics::Renderable2D
 {

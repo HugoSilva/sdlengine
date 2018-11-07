@@ -1,7 +1,7 @@
 #pragma once
 
 #include <glm\glm.hpp>
-#include "Font.h"
+#include "Font.hpp"
 #include "../Ecs/Components/Transform.hpp"
 
 namespace graphics

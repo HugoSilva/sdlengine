@@ -20,9 +20,9 @@
 
 #include <glm\glm.hpp>
 #include <vector>
-#include "Renderable2D.h"
-#include "Renderer2D.h"
-#include "IndexBuffer.h"
+#include "Renderable2D.hpp"
+#include "Renderer2D.hpp"
+#include "IndexBuffer.hpp"
 #include "../../Tests/TestClearColor.h"
 #include "../Components/Shader.hpp"
 

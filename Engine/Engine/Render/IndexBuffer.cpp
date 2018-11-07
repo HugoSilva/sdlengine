@@ -1,4 +1,4 @@
-#include "IndexBuffer.h"
+#include "IndexBuffer.hpp"
 
 #ifdef EMSCRIPTEN
 #include <SDL_opengles2.h>

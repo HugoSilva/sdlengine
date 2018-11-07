@@ -1,4 +1,4 @@
-#include "SDLRenderer.h"
+#include "SDLRenderer.hpp"
 
 namespace graphics
 {

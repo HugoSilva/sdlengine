@@ -5,7 +5,7 @@
 #include <SDL.h>
 #include <glm\glm.hpp>
 #include "../Components/Texture.hpp"
-#include "Renderer2D.h"
+#include "Renderer2D.hpp"
 
 namespace graphics 
 {

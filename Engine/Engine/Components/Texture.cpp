@@ -6,7 +6,7 @@
 #include <GL/glew.h>
 #endif // EMSCRIPTEN
 
-#include "../Render/Font.h"
+#include "../Render/Font.hpp"
 #include "../Utils/Image.hpp"
 
 Texture::Texture(const std::string& name, const std::string& filename)

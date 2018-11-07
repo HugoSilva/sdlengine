@@ -2,8 +2,8 @@
 
 #include <SDL.h>
 #include <vector>
-#include "Renderable2d.h"
-#include "Renderer2D.h"
+#include "Renderable2d.hpp"
+#include "Renderer2D.hpp"
 
 namespace graphics
 {

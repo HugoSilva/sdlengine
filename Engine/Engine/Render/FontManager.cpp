@@ -1,6 +1,6 @@
-#include "FontManager.h"
+#include "FontManager.hpp"
 
-#include "Font.h"
+#include "Font.hpp"
 #include "../Utils/Logger.hpp"
 
 namespace graphics

@@ -4,7 +4,7 @@
 #include <fstream>
 
 #include "../Core.h"
-#include "../Render/OpenGLRenderer.h"
+#include "../Render/OpenGLRenderer.hpp"
 #include "./Components/IncludeList.hpp"
 #include "./Systems/AudioSystem.hpp"
 #include "./Systems/BaseSystem.hpp"
