@@ -2,12 +2,11 @@
 
 #include <vector>
 
-class Shader; //forward declaration for Shader
-
-namespace graphics
+namespace rse
 {
-	class Renderable2D; //forward declaration for graphics::Renderable2D
-	class Renderer2D; //forward declaration for graphics::Renderer2D
+	class Shader; //forward declaration for Shader
+	class Renderable2D; //forward declaration for Renderable2D
+	class Renderer2D; //forward declaration for Renderer2D
 
 	class Layer
 	{

@@ -2,10 +2,10 @@
 
 #include <vector>
 
-namespace audio
+namespace rse
 {
-	class Sound; //forward declaration for audio::Sound
-	class Music; //forward declaration for audio::Music
+	class Sound; //forward declaration for Sound
+	class Music; //forward declaration for Music
 
 	class SoundManager
 	{

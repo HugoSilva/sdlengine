@@ -1,6 +1,6 @@
 #pragma once
 
-namespace graphics
+namespace rse
 {
 	class IndexBuffer
 	{

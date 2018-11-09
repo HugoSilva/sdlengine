@@ -26,7 +26,7 @@
 #include "../../Tests/TestClearColor.h"
 #include "../Components/Shader.hpp"
 
-namespace graphics
+namespace rse
 {
 	#define RENDERER_MAX_SPRITES	60000
 	#define RENDERER_VERTEX_SIZE	sizeof(VertexData)

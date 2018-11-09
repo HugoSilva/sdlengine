@@ -10,7 +10,7 @@ public:
 
 	void update(const float alpha)
 	{
-		ecs::ECSManager::getView<TransformComponent, RigidBodyComponent>().each([&, this](auto entity,
+		rse::ECSManager::getView<TransformComponent, RigidBodyComponent>().each([&, this](auto entity,
 			TransformComponent &transform, RigidBodyComponent &rigid)
 		{
 			//TODO Should the old physics manager be replaced ?

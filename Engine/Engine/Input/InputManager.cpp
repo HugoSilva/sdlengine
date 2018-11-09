@@ -12,7 +12,7 @@
 #include "../Utils/imgui_impl_sdl_gl3.h"
 #endif // EMSCRIPTEN
 
-namespace Input
+namespace rse
 {
 	bool InputManager::s_AvailableKeyboard;
 	bool InputManager::s_AvailableMouse;

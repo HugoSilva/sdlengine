@@ -6,7 +6,7 @@
 #include <GL/glew.h>
 #endif // EMSCRIPTEN
 
-namespace graphics
+namespace rse
 {
 	IndexBuffer::IndexBuffer(unsigned short* data, int count)
 		: m_Count(count)

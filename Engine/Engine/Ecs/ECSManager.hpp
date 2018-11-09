@@ -6,7 +6,7 @@
 
 class BaseSystem; //forward declaration for BaseSystem
 
-namespace ecs
+namespace rse
 {
 	class ECSManager
 	{

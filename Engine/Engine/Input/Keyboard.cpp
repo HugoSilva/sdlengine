@@ -1,6 +1,6 @@
 #include "Keyboard.hpp"
 
-namespace Input
+namespace rse
 {
 	bool Keyboard::s_keys[SDL_NUM_SCANCODES] = { 0 };
 	bool Keyboard::s_keysDown[SDL_NUM_SCANCODES] = { 0 };

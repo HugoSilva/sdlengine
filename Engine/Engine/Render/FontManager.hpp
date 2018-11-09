@@ -2,9 +2,9 @@
 
 #include <vector>
 
-namespace graphics
+namespace rse
 {
-	class Font; //forward declaration for graphics::Font
+	class Font; //forward declaration for Font
 
 	class FontManager
 	{

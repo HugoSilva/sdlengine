@@ -15,5 +15,5 @@ public:
 
 protected:
 	std::string m_Name;
-	Shader* m_Shader;
+	rse::Shader* m_Shader;
 };

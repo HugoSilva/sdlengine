@@ -3,7 +3,7 @@
 #include "Font.hpp"
 #include "../Utils/Logger.hpp"
 
-namespace graphics
+namespace rse
 {
 	std::vector<Font*> FontManager::m_Fonts;
 	

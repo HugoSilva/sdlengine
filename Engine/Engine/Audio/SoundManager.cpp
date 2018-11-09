@@ -6,7 +6,7 @@
 #include "Music.hpp"
 #include "../Utils/Logger.hpp"
 
-namespace audio
+namespace rse
 {
 	std::vector<Sound*> SoundManager::s_Sounds;
 	std::vector<Music*> SoundManager::s_Music;

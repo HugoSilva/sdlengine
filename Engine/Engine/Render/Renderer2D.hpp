@@ -4,7 +4,7 @@
 #include "Font.hpp"
 #include "../Ecs/Components/Transform.hpp"
 
-namespace graphics
+namespace rse
 {
 	class Renderable2D;
 

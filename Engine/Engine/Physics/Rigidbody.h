@@ -7,12 +7,12 @@
 class Rigidbody : public physics::Updatable
 {
 public:
-	Rigidbody(Sprite* sprite, glm::vec2 position, glm::vec2 size, bool useType = false, bool useFixture = false);
+	Rigidbody(rse::Sprite* sprite, glm::vec2 position, glm::vec2 size, bool useType = false, bool useFixture = false);
 	void Update() override;
 
 private:
 	b2Body* m_body;
 	float m_density = 1.0f;
 	float m_friction = 0.3f;
-	Sprite* m_Sprite;
+	rse::Sprite* m_Sprite;
 };

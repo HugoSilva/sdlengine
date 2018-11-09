@@ -1,6 +1,6 @@
 #include "SDLRenderer.hpp"
 
-namespace graphics
+namespace rse
 {
 	SDLRenderer::SDLRenderer(SDL_Window* win)
 	{

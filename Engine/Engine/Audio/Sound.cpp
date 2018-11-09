@@ -2,7 +2,7 @@
 
 #include "../Utils/Logger.hpp"
 
-namespace audio
+namespace rse
 {
 	Sound::Sound(const std::string& name, const std::string& filename)
 		: m_Name(name), m_Filename(filename)

@@ -4,6 +4,6 @@
 
 namespace ShaderFactory
 {
-	Shader* DefaultShader();
-	Shader* BasicLightShader();
+	rse::Shader* DefaultShader();
+	rse::Shader* BasicLightShader();
 };

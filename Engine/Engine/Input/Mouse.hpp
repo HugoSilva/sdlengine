@@ -2,7 +2,7 @@
 
 #include <SDL.h>
 
-namespace Input
+namespace rse
 {
 	#define MAX_BUTTON_SIZE 32
 

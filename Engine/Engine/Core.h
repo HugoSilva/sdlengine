@@ -46,14 +46,14 @@ class Core
 public:
 	void start();
 	static bool getRunning() { return m_Running; }
-	static graphics::Renderer2D* getRenderer() { return m_Renderer; }
-	static graphics::Window* getWindow() { return m_Window; }
+	static rse::Renderer2D* getRenderer() { return m_Renderer; }
+	static rse::Window* getWindow() { return m_Window; }
 
 protected:
 	Core();
 	virtual ~Core();
 
-	graphics::Window* createWindow(const char *name, int width, int height);
+	rse::Window* createWindow(const char *name, int width, int height);
 
 	virtual void init() = 0;
 	virtual void tick() { }
@@ -71,6 +71,6 @@ private:
 	int frames = 0;
 	unsigned int m_FramesPerSecond;
 	static bool m_Running;
-	static graphics::Renderer2D* m_Renderer;
-	static graphics::Window* m_Window;
+	static rse::Renderer2D* m_Renderer;
+	static rse::Window* m_Window;
 };

@@ -2,18 +2,20 @@
 
 #include <vector>
 
-class Texture; //forward declaration for Texture
-
-class TextureManager
+namespace rse
 {
-public:
-	static void init();
-	static void add(Texture* texture);
-	static Texture* get(const std::string& name);
-	static void clean();
+	class Texture; //forward declaration for Texture
 
-private:
-	TextureManager();
-	static std::vector<Texture*> s_Textures;
-};
+	class TextureManager
+	{
+	public:
+		static void init();
+		static void add(Texture* texture);
+		static Texture* get(const std::string& name);
+		static void clean();
 
+	private:
+		TextureManager();
+		static std::vector<Texture*> s_Textures;
+	};
+}

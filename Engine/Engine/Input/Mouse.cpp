@@ -1,6 +1,6 @@
 #include "Mouse.hpp"
 
-namespace Input
+namespace rse
 {
 	double Mouse::s_x = 0;
 	double Mouse::s_y = 0;

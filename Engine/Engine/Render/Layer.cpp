@@ -4,7 +4,7 @@
 #include "Renderable2D.hpp"
 #include "../Components/Shader.hpp"
 
-namespace graphics
+namespace rse
 {
 	Layer::Layer(Renderer2D* renderer, Shader* shader)
 		: m_Renderer(renderer), m_Shader(shader)

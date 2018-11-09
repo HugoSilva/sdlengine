@@ -1,7 +1,7 @@
 #include "Rigidbody.h"
 #include "PhysicsManager.h"
 
-Rigidbody::Rigidbody(Sprite* sprite, glm::vec2 position, glm::vec2 size, bool useType, bool useFixture)
+Rigidbody::Rigidbody(rse::Sprite* sprite, glm::vec2 position, glm::vec2 size, bool useType, bool useFixture)
 	: m_Sprite(sprite)
 {
 	b2BodyDef bodyDefinition;

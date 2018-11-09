@@ -5,7 +5,7 @@
 #include "Renderable2d.hpp"
 #include "Renderer2D.hpp"
 
-namespace graphics
+namespace rse
 {
 	class SDLRenderer : public Renderer2D
 	{

@@ -2,7 +2,7 @@
 
 #include <SDL.h>
 
-namespace Input
+namespace rse
 {
 	class InputManager
 	{

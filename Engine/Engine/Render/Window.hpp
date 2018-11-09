@@ -3,7 +3,7 @@
 #include <iostream>
 #include <SDL.h>
 
-namespace graphics
+namespace rse
 {
 	class Window
 	{

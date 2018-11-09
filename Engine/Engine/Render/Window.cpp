@@ -12,7 +12,7 @@
 	#include "../Utils/imgui_impl_sdl_gl3.h"
 #endif // EMSCRIPTEN
 
-namespace graphics
+namespace rse
 {
 	Window::Window(const char *title, int width, int height)
 		: m_Title(title), m_Width(width), m_Height(height)
@@ -88,6 +88,6 @@ namespace graphics
 	bool Window::getRunning()
 	{
 		//TODO I need to rethink the quit logic for the window
-		return !Input::InputManager::IsQuitRequested();
+		return !InputManager::IsQuitRequested();
 	}
 }

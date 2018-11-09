@@ -11,7 +11,7 @@
 #include "./Systems/PhysicsSystem.hpp"
 #include "./Systems/SpriteRenderSystem.hpp"
 
-namespace ecs
+namespace rse
 {
 	entt::DefaultRegistry ECSManager::registry;
 	entt::DefaultRegistry ECSManager::editorRegistry;

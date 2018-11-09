@@ -10,7 +10,7 @@
 	#include "../Utils/imgui_impl_sdl_gl3.h"
 #endif // EMSCRIPTEN
 
-namespace graphics
+namespace rse
 {
 	OpenGLRenderer::OpenGLRenderer(SDL_Window* win, Shader* shader)
 		: m_Window(win), m_Shader(shader)

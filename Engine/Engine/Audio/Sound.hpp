@@ -3,7 +3,7 @@
 #include <string>
 #include <SDL_mixer.h>
 
-namespace audio
+namespace rse
 {
 	class Sound
 	{

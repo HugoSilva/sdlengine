@@ -7,7 +7,7 @@
 #include "../Components/Texture.hpp"
 #include "Renderer2D.hpp"
 
-namespace graphics 
+namespace rse 
 {
 	struct VertexData
 	{
