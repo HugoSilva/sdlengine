@@ -16,7 +16,7 @@ SetupView::SetupView(std::string name, SDL_Window* win)
 		File::write("default.cfg", "definitions should be passed here");
 	}
 
-	using namespace graphics;
+	using namespace rse;
 
 	m_Shader = new Shader("Resources/Default.vert", "Resources/Default.frag");
 	m_Layer = new Layer(new OpenGLRenderer(win, m_Shader), m_Shader);
@@ -26,31 +26,31 @@ SetupView::SetupView(std::string name, SDL_Window* win)
 	//ImguiMenuBar* menubar = new ImguiMenuBar();
 	//m_Layer->add(menubar);
 	m_render = new RenderSystem();
-	ecs::ECSManager::addSystem(m_render);
+	rse::ECSManager::addSystem(m_render);
 
-	uint32_t entity = ecs::ECSManager::createEditorEntity();
-	ecs::ECSManager::addEditorComponent<EditorComponent>(entity, new MenuBarComponent());
+	uint32_t entity = rse::ECSManager::createEditorEntity();
+	rse::ECSManager::addEditorComponent<EditorComponent>(entity, new MenuBarComponent());
 
-	uint32_t entity1 = ecs::ECSManager::createEditorEntity();
-	ecs::ECSManager::addEditorComponent<EditorComponent>(entity1, new EntityViewerComponent());
+	uint32_t entity1 = rse::ECSManager::createEditorEntity();
+	rse::ECSManager::addEditorComponent<EditorComponent>(entity1, new EntityViewerComponent());
 
-	uint32_t entity2 = ecs::ECSManager::createEditorEntity();
-	ecs::ECSManager::addEditorComponent<EditorComponent>(entity2, new PropertyComponent());
+	uint32_t entity2 = rse::ECSManager::createEditorEntity();
+	rse::ECSManager::addEditorComponent<EditorComponent>(entity2, new PropertyComponent());
 
 	//New Entities code
 	//for (int i = 0; i < 5000; i++)
 	//{
-	//	ecs::PositionComponent position;
+	//	rse::PositionComponent position;
 	//	position.x = rand() % (1200 - 40 + 1) + 10;
 	//	position.y = rand() % (720 - 40 + 1) + 10;
 	//	position.z = 0.f;
 
-	//	ecs::SpriteComponent sprite;
+	//	rse::SpriteComponent sprite;
 	//	//sprite.Sprite = new );
 
-	//	uint32_t entity3 = ecs::ECSManager::createEntity();
-	//	ecs::ECSManager::addComponent<TransformComponent>(entity3, glm::vec3(position.x, position.y, position.z), glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.f, 1.f, 1.f));
-	//	ecs::ECSManager::addComponent<SpriteComponent>(entity3, new Sprite(glm::vec3(position.x, position.y, position.z), glm::vec2(40, 40), TextureManager::get("test00")));
+	//	uint32_t entity3 = rse::ECSManager::createEntity();
+	//	rse::ECSManager::addComponent<TransformComponent>(entity3, glm::vec3(position.x, position.y, position.z), glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.f, 1.f, 1.f));
+	//	rse::ECSManager::addComponent<SpriteComponent>(entity3, new Sprite(glm::vec3(position.x, position.y, position.z), glm::vec2(40, 40), TextureManager::get("test00")));
 	//}
 
 	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -64,10 +64,10 @@ void SetupView::Update(float deltaTime)
 	m_Camera->Update(deltaTime);
     //SceneManager::change("SelectProject");
 	
-	if (Input::InputManager::IsKeyPressed(SDL_SCANCODE_F1))
-        ecs::ECSManager::save();
-	if (Input::InputManager::IsKeyPressed(SDL_SCANCODE_F2))
-		ecs::ECSManager::load();
+	if (rse::InputManager::IsKeyPressed(SDL_SCANCODE_F1))
+		rse::ECSManager::save();
+	if (rse::InputManager::IsKeyPressed(SDL_SCANCODE_F2))
+		rse::ECSManager::load();
 }
 
 void SetupView::Render()

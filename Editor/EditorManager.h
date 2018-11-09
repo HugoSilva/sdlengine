@@ -27,7 +27,7 @@ public:
     {
         if (m_SelectedEntity != INVALID_ENTITY_ID)
         {
-            return ecs::ECSManager::hasComponent<Component>(m_SelectedEntity);
+            return rse::ECSManager::hasComponent<Component>(m_SelectedEntity);
         }
 		return false;
     }
@@ -35,7 +35,7 @@ public:
 	template<typename Component>
 	static Component& getComponent()
 	{
-		return ecs::ECSManager::getComponent<Component>(m_SelectedEntity);
+		return rse::ECSManager::getComponent<Component>(m_SelectedEntity);
 	}
 
 	void receive(const CreateEntity &event);

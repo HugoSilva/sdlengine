@@ -29,7 +29,7 @@ public:
 			int node_clicked = -1;                // Temporary storage of what node we have clicked to process selection at the end of the loop. May be a pointer to your own node type, etc.
 			ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, ImGui::GetFontSize() * 3); // Increase spacing to differentiate leaves from expanded contents.
 
-			ecs::ECSManager::getView<BasicComponent>().each([&](auto entity, BasicComponent& basic)
+			rse::ECSManager::getView<BasicComponent>().each([&](auto entity, BasicComponent& basic)
 			{
 				// Disable the default open on single-click behavior and pass in Selected flag according to our selection state.
 				ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ((selection_mask & (1 << entity)) ? ImGuiTreeNodeFlags_Selected : 0);

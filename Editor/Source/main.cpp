@@ -42,7 +42,7 @@ public:
 	}
 
 private:
-	graphics::Window * m_Window;
+	rse::Window * m_Window;
 };
 
 int main(int argc, char **argv)

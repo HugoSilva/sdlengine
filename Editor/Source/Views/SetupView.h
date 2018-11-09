@@ -14,7 +14,7 @@ public:
 	void Render();
 
 private:
-	graphics::Layer* m_Layer;
-	Camera* m_Camera;
+	rse::Layer* m_Layer;
+	rse::Camera* m_Camera;
 	RenderSystem* m_render;
 };

@@ -22,10 +22,10 @@ bool* EditorManager::getShowComponentWidget()
 
 void EditorManager::receive(const CreateEntity &event)
 {
-	m_SelectedEntity = ecs::ECSManager::createEntity();
-	ecs::ECSManager::addComponent<BasicComponent>(m_SelectedEntity);
-	ecs::ECSManager::addComponent<TransformComponent>(m_SelectedEntity);
-	ecs::ECSManager::addComponent<SpriteComponent>(m_SelectedEntity, new Sprite(glm::vec3(0, 0, 0), glm::vec2(40, 40), TextureManager::get("test00")));
+	m_SelectedEntity = rse::ECSManager::createEntity();
+	rse::ECSManager::addComponent<BasicComponent>(m_SelectedEntity);
+	rse::ECSManager::addComponent<TransformComponent>(m_SelectedEntity);
+	rse::ECSManager::addComponent<SpriteComponent>(m_SelectedEntity, new rse::Sprite(glm::vec3(0, 0, 0), glm::vec2(40, 40), rse::TextureManager::get("test00")));
 }
 
 void EditorManager::receive(const SelectEntity &event)
