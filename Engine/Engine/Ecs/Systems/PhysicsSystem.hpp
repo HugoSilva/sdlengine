@@ -10,12 +10,18 @@ public:
 
 	void update(const float alpha)
 	{
+		m_world->Step(timeStep, velocityIterations, positionIterations);
+
 		rse::ECSManager::getView<TransformComponent, RigidBodyComponent>().each([&, this](auto entity,
 			TransformComponent &transform, RigidBodyComponent &rigid)
 		{
-			//TODO Should the old physics manager be replaced ?
-			//TODO Remove the logic from the old Rigidbody update function and do it here
-			//transform, rigid
+			rigid.m_Rigidbody->Update();
 		});
 	}
+
+private:
+	b2World* m_world;
+	float32 timeStep = 1.0f / 6000.0f;
+	int32 velocityIterations = 6;
+	int32 positionIterations = 2;
 };
