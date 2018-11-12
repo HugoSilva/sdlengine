@@ -1,13 +1,17 @@
 #include "ECSManager.hpp"
-#include "../Graphics/OpenGLRenderer.h"
-#include "../Core.h"
-#include "./Systems/AudioSystem.hpp"
-#include "./Systems/PhysicsSystem.hpp"
-#include "./Systems/SpriteRenderSystem.hpp"
+
 #include <cereal/archives/xml.hpp>
 #include <fstream>
 
-namespace ecs
+#include "../Core.h"
+#include "../Render/OpenGLRenderer.hpp"
+#include "./Components/IncludeList.hpp"
+#include "./Systems/AudioSystem.hpp"
+#include "./Systems/BaseSystem.hpp"
+#include "./Systems/PhysicsSystem.hpp"
+#include "./Systems/SpriteRenderSystem.hpp"
+
+namespace rse
 {
 	entt::DefaultRegistry ECSManager::registry;
 	entt::DefaultRegistry ECSManager::editorRegistry;

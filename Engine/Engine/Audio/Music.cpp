@@ -1,6 +1,8 @@
-#include "Music.h"
+#include "Music.hpp"
 
-namespace audio
+#include "../Utils/Logger.hpp"
+
+namespace rse
 {
 	Music::Music(const std::string& name, const std::string& filename)
 		: m_Name(name), m_Filename(filename)

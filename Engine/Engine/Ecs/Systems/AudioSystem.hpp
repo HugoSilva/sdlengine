@@ -10,7 +10,7 @@ public:
 
 	void update(const float alpha)
 	{
-		ecs::ECSManager::getView<TransformComponent, AudioComponent>().each([&, this](auto entity,
+		rse::ECSManager::getView<TransformComponent, AudioComponent>().each([&, this](auto entity,
 			TransformComponent &transform, AudioComponent &audio)
 		{
 			//TODO Remove the logic from the old Audio object and do it here

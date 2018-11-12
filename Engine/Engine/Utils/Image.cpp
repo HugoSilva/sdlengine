@@ -1,6 +1,14 @@
-#include "Image.h"
+#include "Image.hpp"
 
-void Image::CheckImageMode(int* mode, SDL_Surface* surface)
+#ifdef EMSCRIPTEN
+#include <SDL_opengles2.h>
+#else
+#include <GL/glew.h>
+#endif // EMSCRIPTEN
+
+#include "Logger.hpp"
+
+void Image::checkImageMode(int* mode, SDL_Surface* surface)
 {
 	unsigned int bpp = surface->format->BytesPerPixel;
 
@@ -35,7 +43,7 @@ void Image::CheckImageMode(int* mode, SDL_Surface* surface)
 	}
 }
 
-void* Image::LoadFont(TTF_Font* font, const char* text, SDL_Color textColor, int* width, int* height, int* mode)
+void* Image::loadFont(TTF_Font* font, const char* text, SDL_Color textColor, int* width, int* height, int* mode)
 {
 	SDL_Surface* surface = TTF_RenderText_Blended(font, text, textColor);
 
@@ -45,7 +53,7 @@ void* Image::LoadFont(TTF_Font* font, const char* text, SDL_Color textColor, int
 		return nullptr;
 	}
 
-	CheckImageMode(mode, surface);
+	checkImageMode(mode, surface);
 
 	*width = surface->w;
 	*height = surface->h;
@@ -55,7 +63,7 @@ void* Image::LoadFont(TTF_Font* font, const char* text, SDL_Color textColor, int
 	return surface->pixels;
 }
 
-void* Image::LoadImage(const char* filename, int* width, int* height, int* mode)
+void* Image::loadImage(const char* filename, int* width, int* height, int* mode)
 {
 	SDL_Surface* surface = IMG_Load(filename);
 
@@ -65,7 +73,7 @@ void* Image::LoadImage(const char* filename, int* width, int* height, int* mode)
 		return nullptr;
 	}
 
-	CheckImageMode(mode, surface);
+	checkImageMode(mode, surface);
 
 	*width = surface->w;
 	*height = surface->h;

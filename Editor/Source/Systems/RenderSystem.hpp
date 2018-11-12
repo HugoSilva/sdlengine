@@ -11,7 +11,7 @@ public:
 
     void update(const float alpha)
     {
-		ecs::ECSManager::getEditorView<EditorComponent>().each([&](auto entity, EditorComponent &renderable)
+		rse::ECSManager::getEditorView<EditorComponent>().each([&](auto entity, EditorComponent &renderable)
         {
 			renderable.render();
         });

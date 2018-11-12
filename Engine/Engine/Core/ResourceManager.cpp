@@ -1,6 +1,8 @@
-#include "ResourceManager.h"
+#include "ResourceManager.hpp"
 
-std::vector<Resource*> ResourceManager::m_Resources;
+#include "Resource.hpp"
+
+std::vector<Resource*> ResourceManager::s_Resources;
 
 void ResourceManager::init()
 {
@@ -8,19 +10,19 @@ void ResourceManager::init()
 
 void ResourceManager::add(Resource* resource)
 {
-	for (std::vector<Resource*>::iterator it = m_Resources.begin(); it != m_Resources.end(); ++it)
+	for (std::vector<Resource*>::iterator it = s_Resources.begin(); it != s_Resources.end(); ++it)
 	{
 		Resource* res = *it;
 		if (res->getFileName().compare(resource->getFileName()) == 0)
 			return;
 	}
 
-	m_Resources.push_back(resource);
+	s_Resources.push_back(resource);
 }
 
 Resource* ResourceManager::get(const std::string& name)
 {
-	for (std::vector<Resource*>::iterator it = m_Resources.begin(); it != m_Resources.end(); ++it)
+	for (std::vector<Resource*>::iterator it = s_Resources.begin(); it != s_Resources.end(); ++it)
 	{
 		Resource* res = *it;
 		if (res->getFileName().compare(name) == 0)
@@ -31,5 +33,5 @@ Resource* ResourceManager::get(const std::string& name)
 
 void ResourceManager::clean()
 {
-	m_Resources.clear();
+	s_Resources.clear();
 }

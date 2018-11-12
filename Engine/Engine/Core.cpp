@@ -11,38 +11,38 @@ static void DispatchLoop(void* fp)
 #endif
 
 bool Core::m_Running = true;
-graphics::Renderer2D* Core::m_Renderer;
-graphics::Window* Core::m_Window;
+rse::Renderer2D* Core::m_Renderer;
+rse::Window* Core::m_Window;
 
 Core::Core() : m_FramesPerSecond(0)
 {
-	m_Window = new graphics::Window("RockSlide Engine", 1280, 720);
-	m_Window->Init();
+	m_Window = new rse::Window("RockSlide Engine", 1280, 720);
+	m_Window->init();
 	
-	audio::SoundManager::init();
-	graphics::FontManager::init();
-	TextureManager::init();
-	IO::InputManager::Init();
+	rse::SoundManager::init();
+	rse::FontManager::init();
+	rse::TextureManager::init();
+	rse::InputManager::Init();
 	PhysicsManager::init();
 
-	Shader* defaultShader = new Shader("Resources/Default.vert", "Resources/Default.frag");
-	m_Renderer = new graphics::OpenGLRenderer(m_Window->GetWindow(), defaultShader);
+	rse::Shader* defaultShader = new rse::Shader("Resources/Default.vert", "Resources/Default.frag");
+	m_Renderer = new rse::OpenGLRenderer(m_Window->getWindow(), defaultShader);
 
-	ecs::ECSManager::init();
+	rse::ECSManager::init();
 }
 
 Core::~Core()
 {
-	audio::SoundManager::clean();
-	graphics::FontManager::clean();
-	TextureManager::clean();
+	rse::SoundManager::clean();
+	rse::FontManager::clean();
+	rse::TextureManager::clean();
 	PhysicsManager::Clean();
-	ecs::ECSManager::clean();
+	rse::ECSManager::clean();
 
 	delete m_Window;
 }
 
-graphics::Window* Core::createWindow(const char *name, int width, int height)
+rse::Window* Core::createWindow(const char *name, int width, int height)
 {
 	//m_Window = new graphics::Window(name, width, height);
 	//m_Window->Init();
@@ -58,7 +58,7 @@ void Core::start()
 #ifdef EMSCRIPTEN
 		std::function<void()> fGameLoop = [&]() {
 #else
-		while (m_Window->GetRunning())
+		while (m_Window->getRunning())
 		{
 #endif
 			run();
@@ -83,7 +83,7 @@ void Core::run()
 	deltaTime = (now - last) / 1000.0f;
 	last = now;
 
-	IO::InputManager::Update();
+	rse::InputManager::Update();
 
 	//TODO review scene manager logic now that we are using ECS
 	SceneManager::update(deltaTime);
@@ -92,7 +92,7 @@ void Core::run()
 	SceneManager::render(); // Only for shader
 	m_Renderer->begin();
 	//TODO need to split this up for normal systems and render systems
-	ecs::ECSManager::update(deltaTime);
+	rse::ECSManager::update(deltaTime);
 	m_Renderer->end();
 	m_Renderer->flush();
 
