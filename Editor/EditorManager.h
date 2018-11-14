@@ -3,17 +3,15 @@
 #include "Core.h"
 #define INVALID_ENTITY_ID entt::null
 
+enum class eComponents { Audio, Rigidbody, Sprite };
+
 class EditorManager
 {
 public:
 
-	struct CreateEntity 
-	{ 
-		CreateEntity() 
-		{
-		}
-	};
+	struct CreateEntity { };
     struct SelectEntity { uint32_t value; };
+	struct AddComponent { eComponents component; };
 
 	EditorManager() {}
 	~EditorManager() {}
@@ -40,6 +38,7 @@ public:
 
 	void receive(const CreateEntity &event);
 	void receive(const SelectEntity &event);
+	void receive(const AddComponent &event);
 
 private:
 

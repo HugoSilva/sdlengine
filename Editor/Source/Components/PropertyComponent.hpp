@@ -75,6 +75,40 @@ public:
 					ImGui::InputText("Texture", str0, IM_ARRAYSIZE(str0));
 				}
 			}
+			if (EditorManager::showComponentWidget<AudioComponent>())
+			{
+				ImGui::Separator();
+				ImGui::Button("Audio");
+			}
+			if (EditorManager::showComponentWidget<RigidBodyComponent>())
+			{
+				ImGui::Separator();
+				ImGui::Button("Rigid");
+			}
+
+			if (EditorManager::showComponentWidget<BasicComponent>())
+			{
+				ImGui::Separator();
+
+				if (ImGui::Button("Add Component"))
+					ImGui::OpenPopup("toggle");
+				if (ImGui::BeginPopup("toggle"))
+				{
+					if (ImGui::MenuItem("Audio"))
+					{
+						EventManager::getEventDispatcher()->trigger<EditorManager::AddComponent>(eComponents::Audio);
+					}
+					if (ImGui::MenuItem("Ridigbody"))
+					{
+						EventManager::getEventDispatcher()->trigger<EditorManager::AddComponent>(eComponents::Rigidbody);
+					}
+					if (ImGui::MenuItem("Sprite"))
+					{
+						EventManager::getEventDispatcher()->trigger<EditorManager::AddComponent>(eComponents::Sprite);
+					}
+					ImGui::EndPopup();
+				}
+			}
 
 			ImGui::End();
 		}
