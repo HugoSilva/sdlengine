@@ -12,6 +12,9 @@ public:
 	//TODO lazy public variable need to fix this in the future
 	bool m_init{ false };
 
+	inline float* getDensity() { return &m_density; }
+	inline float* getFriction() { return &m_friction; }
+
 private:
 	b2Body* m_body;
 	float m_density = 1.0f;

@@ -30,5 +30,8 @@ namespace rse
 		Mix_Chunk* m_Sound;
 		int m_Volume;
 		int m_Channel;
+		bool m_Mute{ false };
+		bool m_PlayTrigger{ true };
+		bool m_Loop{ false };
 	};
 }

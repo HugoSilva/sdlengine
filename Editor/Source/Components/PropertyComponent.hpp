@@ -82,8 +82,13 @@ public:
 			}
 			if (EditorManager::showComponentWidget<RigidBodyComponent>())
 			{
-				ImGui::Separator();
-				ImGui::Button("Rigid");
+				if (ImGui::CollapsingHeader("Rigidbody", ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					RigidBodyComponent& rigidBody = EditorManager::getComponent<RigidBodyComponent>();
+
+					ImGui::InputFloat("Density", rigidBody.m_Rigidbody->getDensity());
+					ImGui::InputFloat("Friction", rigidBody.m_Rigidbody->getFriction());
+				}
 			}
 
 			if (EditorManager::showComponentWidget<BasicComponent>())
