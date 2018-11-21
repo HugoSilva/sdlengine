@@ -77,8 +77,20 @@ public:
 			}
 			if (EditorManager::showComponentWidget<AudioComponent>())
 			{
-				ImGui::Separator();
-				ImGui::Button("Audio");
+				if (ImGui::CollapsingHeader("Audio", ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					AudioComponent& audio = EditorManager::getComponent<AudioComponent>();
+
+					char str0[128] = "";
+
+					strcpy_s(str0, audio.m_Sound->getFileName().c_str());
+
+					ImGui::InputText("Sound", str0, IM_ARRAYSIZE(str0));
+
+					ImGui::Checkbox("Mute", audio.m_Sound->getMute());
+					ImGui::Checkbox("Play on play", audio.m_Sound->getPlayTrigger());
+					ImGui::Checkbox("Loop", audio.m_Sound->getLoop());
+				}
 			}
 			if (EditorManager::showComponentWidget<RigidBodyComponent>())
 			{

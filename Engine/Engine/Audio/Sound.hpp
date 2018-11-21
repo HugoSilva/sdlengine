@@ -24,6 +24,10 @@ namespace rse
 		inline const std::string& getName() const { return m_Name; }
 		inline const std::string& getFileName() const { return m_Filename; }
 
+		inline bool* getMute() { return &m_Mute; }
+		inline bool* getPlayTrigger() { return &m_PlayTrigger; }
+		inline bool* getLoop() { return &m_Loop; }
+
 	private:
 		std::string m_Name;
 		std::string m_Filename;

@@ -39,23 +39,44 @@ void EditorManager::receive(const AddComponent &event)
 	switch (event.component)
 	{
 		case eComponents::Audio:
-			rse::ECSManager::addComponent<AudioComponent>(m_SelectedEntity);
+			if (rse::ECSManager::hasComponent<AudioComponent>(m_SelectedEntity))
+			{
+				Logger::error("Already existing audio component");
+			}
+			else
+			{
+				rse::ECSManager::addComponent<AudioComponent>(m_SelectedEntity, rse::SoundManager::getSound("eff"));
+			}
 			break;
 		case eComponents::Rigidbody:
-			glm::vec2 position{ 0.f, 0.f };
-			glm::vec2 size{ 0.f, 0.f };
-			if (rse::ECSManager::hasComponent<TransformComponent>(m_SelectedEntity))
+			if (rse::ECSManager::hasComponent<RigidBodyComponent>(m_SelectedEntity))
 			{
-				position = rse::ECSManager::getComponent<TransformComponent>(m_SelectedEntity).position;
+				Logger::error("Already existing rigidbody component");
 			}
-			if (rse::ECSManager::hasComponent<SpriteComponent>(m_SelectedEntity))
+			else
 			{
-				size = rse::ECSManager::getComponent<SpriteComponent>(m_SelectedEntity).m_Sprite->getSize();
+				glm::vec2 position{ 0.f, 0.f };
+				glm::vec2 size{ 0.f, 0.f };
+				if (rse::ECSManager::hasComponent<TransformComponent>(m_SelectedEntity))
+				{
+					position = rse::ECSManager::getComponent<TransformComponent>(m_SelectedEntity).position;
+				}
+				if (rse::ECSManager::hasComponent<SpriteComponent>(m_SelectedEntity))
+				{
+					size = rse::ECSManager::getComponent<SpriteComponent>(m_SelectedEntity).m_Sprite->getSize();
+				}
+				rse::ECSManager::addComponent<RigidBodyComponent>(m_SelectedEntity, new Rigidbody(position, size));
 			}
-			rse::ECSManager::addComponent<RigidBodyComponent>(m_SelectedEntity, new Rigidbody(position, size));
 			break;
 		case eComponents::Sprite:
-			rse::ECSManager::addComponent<SpriteComponent>(m_SelectedEntity);
+			if (rse::ECSManager::hasComponent<SpriteComponent>(m_SelectedEntity))
+			{
+				Logger::error("Already existing sprite component");
+			}
+			else
+			{
+				rse::ECSManager::addComponent<SpriteComponent>(m_SelectedEntity);
+			}
 			break;
 		default:
 			break;
