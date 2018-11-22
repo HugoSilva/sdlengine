@@ -100,6 +100,10 @@ public:
 
 					ImGui::InputFloat("Density", rigidBody.m_Rigidbody->getDensity());
 					ImGui::InputFloat("Friction", rigidBody.m_Rigidbody->getFriction());
+
+					const char* items[] = { "b2_staticBody", "b2_kinematicBody", "b2_dynamicBody" };
+					int* type = (int*)rigidBody.m_Rigidbody->getBodyType();
+					ImGui::Combo("Body Type", type, items, IM_ARRAYSIZE(items));
 				}
 			}
 
