@@ -21,7 +21,9 @@ SetupView::SetupView(std::string name, SDL_Window* win)
 	m_Shader = new Shader("Resources/Default.vert", "Resources/Default.frag");
 	m_Layer = new Layer(new OpenGLRenderer(win, m_Shader), m_Shader);
 
+	//TODO I need to add a function to load resources in the project
 	TextureManager::add(new Texture("test00", "Resources/tex3.png"));
+	SoundManager::add(new Sound("eff", "Resources/effect.wav"));
 
 	//ImguiMenuBar* menubar = new ImguiMenuBar();
 	//m_Layer->add(menubar);

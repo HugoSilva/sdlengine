@@ -16,7 +16,8 @@ public:
 		{
 			m_renderer->submit(transform, sprite.m_Sprite.get());
 		});
-    }
+		}
 
+private:
 	rse::Renderer2D* m_renderer;
 };

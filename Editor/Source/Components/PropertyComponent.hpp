@@ -75,6 +75,61 @@ public:
 					ImGui::InputText("Texture", str0, IM_ARRAYSIZE(str0));
 				}
 			}
+			if (EditorManager::showComponentWidget<AudioComponent>())
+			{
+				if (ImGui::CollapsingHeader("Audio", ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					AudioComponent& audio = EditorManager::getComponent<AudioComponent>();
+
+					char str0[128] = "";
+
+					strcpy_s(str0, audio.m_Sound->getFileName().c_str());
+
+					ImGui::InputText("Sound", str0, IM_ARRAYSIZE(str0));
+
+					ImGui::Checkbox("Mute", audio.m_Sound->getMute());
+					ImGui::Checkbox("Play on play", audio.m_Sound->getPlayTrigger());
+					ImGui::Checkbox("Loop", audio.m_Sound->getLoop());
+				}
+			}
+			if (EditorManager::showComponentWidget<RigidBodyComponent>())
+			{
+				if (ImGui::CollapsingHeader("Rigidbody", ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					RigidBodyComponent& rigidBody = EditorManager::getComponent<RigidBodyComponent>();
+
+					ImGui::InputFloat("Density", rigidBody.m_Rigidbody->getDensity());
+					ImGui::InputFloat("Friction", rigidBody.m_Rigidbody->getFriction());
+
+					const char* items[] = { "b2_staticBody", "b2_kinematicBody", "b2_dynamicBody" };
+					int* type = (int*)rigidBody.m_Rigidbody->getBodyType();
+					ImGui::Combo("Body Type", type, items, IM_ARRAYSIZE(items));
+				}
+			}
+
+			if (EditorManager::showComponentWidget<BasicComponent>())
+			{
+				ImGui::Separator();
+
+				if (ImGui::Button("Add Component"))
+					ImGui::OpenPopup("toggle");
+				if (ImGui::BeginPopup("toggle"))
+				{
+					if (ImGui::MenuItem("Audio"))
+					{
+						EventManager::getEventDispatcher()->trigger<EditorManager::AddComponent>(eComponents::Audio);
+					}
+					if (ImGui::MenuItem("Ridigbody"))
+					{
+						EventManager::getEventDispatcher()->trigger<EditorManager::AddComponent>(eComponents::Rigidbody);
+					}
+					if (ImGui::MenuItem("Sprite"))
+					{
+						EventManager::getEventDispatcher()->trigger<EditorManager::AddComponent>(eComponents::Sprite);
+					}
+					ImGui::EndPopup();
+				}
+			}
 
 			ImGui::End();
 		}

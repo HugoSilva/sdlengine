@@ -33,8 +33,8 @@ void PhysicsManager::UpdateObjects()
 	{
 		m_world->Step(timeStep, velocityIterations, positionIterations);
 
-		for (Rigidbody* rb : m_Rigidbodies)
-			rb->Update();
+		//for (Rigidbody* rb : m_Rigidbodies)
+			//rb->Update();
 	}
 }
 
