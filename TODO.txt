@@ -1,8 +1,0 @@
-:: Code Review Lost Options ::
-------------------------------
-- Restore Components
--- Label
--- Mesh
--- Model
-
-------------------------------

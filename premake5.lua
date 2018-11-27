@@ -63,7 +63,7 @@ project "Engine"
 
 	filter "system:windows"
 		cppdialect "C++17"
-		staticruntime "On"
+		staticruntime "off"
 		systemversion "latest"
 
 	filter "configurations:Debug"
@@ -104,28 +104,36 @@ project "Editor"
 		"Thirdparty/Box2D/include",
 		"Thirdparty/cereal",
 		"Thirdparty/rapidxml",
-		"Thirdparty/entt"
+		"Thirdparty/entt",
+		"Engine/Engine"
 	}
 	
 	libdirs
 	{
-		"Thirdparty/Glew/lib/%{cfg.architecture}",
-		"Thirdparty/SDL2/lib/%{cfg.architecture}",
-		"Thirdparty/SDL2_image/lib/%{cfg.architecture}",
-		"Thirdparty/SDL2_mixer/lib/%{cfg.architecture}",
-		"Thirdparty/SDL2_ttf/lib/%{cfg.architecture}",
-		"Thirdparty/Box2D/lib/%{cfg.architecture}",
+		"Thirdparty/Glew/lib/%{cfg.platform}",
+		"Thirdparty/SDL2/lib/%{cfg.platform}",
+		"Thirdparty/SDL2_image/lib/%{cfg.platform}",
+		"Thirdparty/SDL2_mixer/lib/%{cfg.platform}",
+		"Thirdparty/SDL2_ttf/lib/%{cfg.platform}",
+		"Thirdparty/Box2D/lib/%{cfg.platform}",
 		("bin/Engine/" .. outputdir)
 	}
 
 	links
 	{
+		"glew32",
+		"opengl32",
+		"SDL2",
+		"SDL2main",
+		"SDL2_image",
+		"SDL2_mixer",
+		"SDL2_ttf",
 		"Engine"
 	}
 
 	filter "system:windows"
 		cppdialect "C++17"
-		staticruntime "On"
+		staticruntime "off"
 		systemversion "latest"
 
 	postbuildcommands
@@ -139,9 +147,11 @@ project "Editor"
 
 	filter "configurations:Debug"
 		symbols "On"
+		links "Box2D_d"
 
 	filter "configurations:Release"
 		optimize "On"
+		links "Box2D"
 
 	filter "platforms:x86"
 		defines "WIN32"
