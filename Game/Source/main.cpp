@@ -26,11 +26,11 @@ public:
 	void init() override
 	{
 		//m_Window = createWindow("RockSlide Engine", 1280, 720);
-		SceneManager::add(new SpriteTest(Core::getWindow()->GetWindow()));
+		SceneManager::add(new SpriteTest(Core::getWindow()->getWindow()));
 		#ifdef EMSCRIPTEN
 		#else
-			ThreadManager::Init();
-			ThreadManager::Start();
+			ThreadManager::init();
+			ThreadManager::start();
 		#endif
 	}
 
@@ -40,7 +40,7 @@ public:
 	}
 
 private:
-	graphics::Window * m_Window;
+	rse::Window * m_Window;
 };
 
 int main(int argc, char **argv)
