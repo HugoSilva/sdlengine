@@ -36,9 +36,9 @@ public:
 		return rse::ECSManager::getComponent<Component>(m_SelectedEntity);
 	}
 
-	void receive(const CreateEntity &event);
-	void receive(const SelectEntity &event);
-	void receive(const AddComponent &event);
+	static void handleCreateEntityEvent(const CreateEntity& event);
+	static void handleSelectEntityEvent(const SelectEntity& event);
+	static void handleAddComponentEvent(const AddComponent& event);
 
 private:
 
