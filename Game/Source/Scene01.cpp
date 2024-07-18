@@ -2,9 +2,6 @@
 
 SpriteTest::SpriteTest(SDL_Window* win)
 {
-	using namespace graphics;
-	using namespace audio;
-
 	FontManager::add(new Font("Arial", "Resources/arial.ttf", 24));
 
 #ifdef EMSCRIPTEN
@@ -53,10 +50,10 @@ SpriteTest::SpriteTest(SDL_Window* win)
 		int b = rand() % 256;
 		testSprite->setColor(0xff << 24 | b << 16 | g << 8 | r);
 
-		uint32_t m_SelectedEntity = ecs::ECSManager::createEntity();
-		ecs::ECSManager::addComponent<BasicComponent>(m_SelectedEntity, ("entity_"+i), true, 0, 0);
-		ecs::ECSManager::addComponent<TransformComponent>(m_SelectedEntity, position, glm::vec3(0.f), glm::vec3(1.f));
-		ecs::ECSManager::addComponent<SpriteComponent>(m_SelectedEntity, testSprite);
+		uint32_t m_SelectedEntity = rse::ECSManager::createEntity();
+		rse::ECSManager::addComponent<BasicComponent>(m_SelectedEntity, ("entity_"+i), true, 0, 0);
+		rse::ECSManager::addComponent<TransformComponent>(m_SelectedEntity, position, glm::vec3(0.f), glm::vec3(1.f));
+		rse::ECSManager::addComponent<SpriteComponent>(m_SelectedEntity, testSprite);
 	}
 }
 
@@ -69,23 +66,23 @@ void SpriteTest::Update(float deltaTime)
 	m_Camera->Update(deltaTime);
 
 	float speed = 0.1f;
-	if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_UP))
+	if (InputManager::IsKeyPressed(SDL_SCANCODE_UP))
 		m_PlayerSprite->position.y += speed;
-	else if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_DOWN))
+	else if (InputManager::IsKeyPressed(SDL_SCANCODE_DOWN))
 		m_PlayerSprite->position.y -= speed;
-	if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_LEFT))
+	if (InputManager::IsKeyPressed(SDL_SCANCODE_LEFT))
 		m_PlayerSprite->position.x -= speed;
-	else if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_RIGHT))
+	else if (InputManager::IsKeyPressed(SDL_SCANCODE_RIGHT))
 		m_PlayerSprite->position.x += speed;
-	else if (IO::InputManager::IsKeyPressed(SDL_SCANCODE_F1))
-		ecs::ECSManager::save();
+	else if (InputManager::IsKeyPressed(SDL_SCANCODE_F1))
+		rse::ECSManager::save();
 
 }
 
 void SpriteTest::Render()
 {
 	//TODO needs to be removed only has shader code for now
-	m_Shader->Enable();
+	m_Shader->enable();
 	//TODO create a camera system to replace old camera
 	m_Camera->Render(m_Shader);
 	//m_Layer->render();

@@ -3,6 +3,8 @@
 #include <Core.h>
 #include <SDL.h>
 
+using namespace rse;
+
 class SpriteTest : public Scene
 {
 
@@ -14,8 +16,8 @@ public:
 	void Render();
 
 private:
-	graphics::Layer* m_Layer;
-	Label* m_Fps;
+	Layer* m_Layer;
+	//Label* m_Fps;
 	Sprite* m_GroundSprite;
 	Sprite* m_PlayerSprite;
 	Shader* m_Shader;
