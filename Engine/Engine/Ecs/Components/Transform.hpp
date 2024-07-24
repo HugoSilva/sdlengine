@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cereal/cereal.hpp>
 #include <glm\glm.hpp>
 
 struct TransformComponent
