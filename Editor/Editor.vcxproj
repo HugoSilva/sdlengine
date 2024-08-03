@@ -178,15 +178,15 @@ copy "$(SolutionDir)Thirdparty\SDL2_ttf\bin\$(Platform)\*.dll"  "$(TargetDir)"</
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="EditorManager.cpp" />
     <ClCompile Include="Source\Components\PropertyComponent.hpp" />
     <ClCompile Include="Source\Components\EntityViewerComponent.hpp" />
+    <ClCompile Include="Source\EditorManager.cpp" />
     <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\Views\SetupView.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="EditorManager.h" />
     <ClInclude Include="Source\Components\MenuBarComponent.hpp" />
+    <ClInclude Include="Source\EditorManager.h" />
     <ClInclude Include="Source\Systems\RenderSystem.hpp" />
     <ClInclude Include="Source\Views\SetupView.h" />
   </ItemGroup>

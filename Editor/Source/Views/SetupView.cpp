@@ -3,7 +3,7 @@
 #include "../Components/EntityViewerComponent.hpp"
 #include "../Components/PropertyComponent.hpp"
 #include "../Components/MenuBarComponent.hpp"
-#include "../../EditorManager.h"
+#include "../EditorManager.h"
 
 SetupView::SetupView(std::string name, SDL_Window* win)
 {

@@ -3,7 +3,7 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-#include "../../EditorManager.h"
+#include "../EditorManager.h"
 
 class MenuBarComponent : public EditorElement
 {

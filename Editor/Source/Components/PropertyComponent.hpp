@@ -3,7 +3,7 @@
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "../../EditorManager.h"
+#include "../EditorManager.h"
 #include "Core.h"
 
 class PropertyComponent : public EditorElement

@@ -3,7 +3,7 @@
 #include <imgui.h>
 #include <Core.h>
 
-#include "../../EditorManager.h" // for events
+#include "../EditorManager.h" // for events
 
 class EntityViewerComponent : public EditorElement
 {
