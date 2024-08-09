@@ -3,7 +3,9 @@
 
 file(GLOB_RECURSE ENGINE_FILES "Engine/*.cpp" "Engine/*.h" "Engine/*.hpp" "Tests/*.cpp" "Tests/*.h")
 
-if(DEFINED EMSCRIPTEN)
+add_compile_definitions(WINDOWS_IGNORE_PACKING_MISMATCH)
+
+if(DEFINED ${EMSCRIPTEN})
   set(GL3_FILES)
   set(GL3_HEADER_PATH)
   file(REAL_PATH "Engine/Utils/imgui_impl_sdl_gl3.h" GL3_HEADER_PATH)
@@ -42,63 +44,63 @@ target_include_directories(Engine PUBLIC "../Thirdparty/entt")
 
 add_library(Box2D SHARED IMPORTED)
 set_target_properties(Box2D PROPERTIES
-  IMPORTED_IMPLIB "${CMAKE_SOURCE_DIR}/Thirdparty/Box2D/lib/x64/Box2D_d.lib"
+  IMPORTED_IMPLIB "${CMAKE_SOURCE_DIR}/Thirdparty/Box2D/lib/${ARCHITECTURE}/Box2D_d.lib"
 )
 
 add_library(Glew SHARED IMPORTED)
 set_target_properties(Glew PROPERTIES 
-  IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/Thirdparty/Glew/bin/x64/glew32.dll"
-  IMPORTED_IMPLIB "${CMAKE_SOURCE_DIR}/Thirdparty/Glew/lib/x64/glew32.lib"
+  IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/Thirdparty/Glew/bin/${ARCHITECTURE}/glew32.dll"
+  IMPORTED_IMPLIB "${CMAKE_SOURCE_DIR}/Thirdparty/Glew/lib/${ARCHITECTURE}/glew32.lib"
 )
 
 add_library(SDL2 SHARED IMPORTED)
 set_target_properties(SDL2 PROPERTIES 
-  IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2/bin/x64/SDL2.dll"
-  IMPORTED_IMPLIB "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2/lib/x64/SDL2.lib"
+  IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2/bin/${ARCHITECTURE}/SDL2.dll"
+  IMPORTED_IMPLIB "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2/lib/${ARCHITECTURE}/SDL2.lib"
 )
 
 add_library(SDL2MAIN SHARED IMPORTED)
 set_target_properties(SDL2MAIN PROPERTIES
-  IMPORTED_IMPLIB "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2/lib/x64/SDL2main.lib"
+  IMPORTED_IMPLIB "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2/lib/${ARCHITECTURE}/SDL2main.lib"
 )
 
 add_library(SDL2_Image SHARED IMPORTED)
 set(SDL2_Image_LIBS
-  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_image/bin/x64/SDL2_image.dll"
-  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_image/bin/x64/libjpeg-9.dll"
-  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_image/bin/x64/libpng16-16.dll"
-  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_image/bin/x64/libtiff-5.dll"
-  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_image/bin/x64/libwebp-7.dll"
-  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_image/bin/x64/zlib1.dll"
+  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_image/bin/${ARCHITECTURE}/SDL2_image.dll"
+  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_image/bin/${ARCHITECTURE}/libjpeg-9.dll"
+  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_image/bin/${ARCHITECTURE}/libpng16-16.dll"
+  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_image/bin/${ARCHITECTURE}/libtiff-5.dll"
+  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_image/bin/${ARCHITECTURE}/libwebp-7.dll"
+  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_image/bin/${ARCHITECTURE}/zlib1.dll"
 )
 set_target_properties(SDL2_Image PROPERTIES 
   IMPORTED_LOCATION "${SDL2_Image_LIBS}"
-  IMPORTED_IMPLIB "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_image/lib/x64/SDL2_image.lib"
+  IMPORTED_IMPLIB "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_image/lib/${ARCHITECTURE}/SDL2_image.lib"
 )
 
 add_library(SDL2_Mixer SHARED IMPORTED)
 set(SDL2_Mixer_LIBS
-  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_mixer/bin/x64/SDL2_mixer.dll"
-  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_mixer/bin/x64/libFLAC-8.dll"
-  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_mixer/bin/x64/libmodplug-1.dll"
-  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_mixer/bin/x64/libmpg123-0.dll"
-  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_mixer/bin/x64/libogg-0.dll"
-  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_mixer/bin/x64/libvorbis-0.dll"
-  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_mixer/bin/x64/libvorbisfile-3.dll"
+  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_mixer/bin/${ARCHITECTURE}/SDL2_mixer.dll"
+  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_mixer/bin/${ARCHITECTURE}/libFLAC-8.dll"
+  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_mixer/bin/${ARCHITECTURE}/libmodplug-1.dll"
+  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_mixer/bin/${ARCHITECTURE}/libmpg123-0.dll"
+  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_mixer/bin/${ARCHITECTURE}/libogg-0.dll"
+  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_mixer/bin/${ARCHITECTURE}/libvorbis-0.dll"
+  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_mixer/bin/${ARCHITECTURE}/libvorbisfile-3.dll"
 )
 set_target_properties(SDL2_Mixer PROPERTIES 
   IMPORTED_LOCATION "${SDL2_Mixer_LIBS}"
-  IMPORTED_IMPLIB "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_mixer/lib/x64/SDL2_mixer.lib"
+  IMPORTED_IMPLIB "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_mixer/lib/${ARCHITECTURE}/SDL2_mixer.lib"
 )
 
 add_library(SDL2_TTF SHARED IMPORTED)
 set(SDL2_TTF_LIBS
-  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_ttf/bin/x64/SDL2_ttf.dll"
-  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_ttf/bin/x64/libfreetype-6.dll"
+  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_ttf/bin/${ARCHITECTURE}/SDL2_ttf.dll"
+  "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_ttf/bin/${ARCHITECTURE}/libfreetype-6.dll"
 )
 set_target_properties(SDL2_TTF PROPERTIES 
   IMPORTED_LOCATION "${SDL2_TTF_LIBS}"
-  IMPORTED_IMPLIB "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_ttf/lib/x64/SDL2_ttf.lib"
+  IMPORTED_IMPLIB "${CMAKE_SOURCE_DIR}/Thirdparty/SDL2_ttf/lib/${ARCHITECTURE}/SDL2_ttf.lib"
 )
 
 target_link_libraries(Engine PUBLIC Box2D Glew Imgui SDL2 SDL2MAIN SDL2_Image SDL2_Mixer SDL2_TTF)
