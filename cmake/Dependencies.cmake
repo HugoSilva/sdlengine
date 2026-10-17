@@ -59,8 +59,7 @@ target_include_directories(RSE::ThirdParty INTERFACE
   "${RSE_TP}/Box2D/include"
   "${RSE_TP}/cereal"
   "${RSE_TP}/rapidxml"
-  "${RSE_TP}/entt"
-  "${RSE_TP}/googletest/include")
+  "${RSE_TP}/entt")
 
 # ---------------------------------------------------------------------------
 # Shared libraries: import library (.lib) + runtime library (.dll)
@@ -101,21 +100,44 @@ set_target_properties(Box2D::Box2D PROPERTIES
   MAP_IMPORTED_CONFIG_MINSIZEREL     "RELEASE")
 
 # ---------------------------------------------------------------------------
-# GoogleTest -- vendored as prebuilt libs (Debug/Win32 only at time of writing).
-# The UnitTests target is skipped when no build exists for $ARCHITECTURE.
+# GoogleTest
+# ---------------------------------------------------------------------------
+# Built from source so every architecture/configuration works. The old
+# Thirdparty/googletest binaries were Win32/Debug only, which is why UnitTests
+# could not be built for x64.
+#
+# Default: fetch a pinned release with FetchContent.
+# Offline : point RSE_GTEST_SOURCE_DIR at a local GoogleTest checkout, or set
+#           RSE_BUILD_TESTS=OFF to skip tests entirely.
 # ---------------------------------------------------------------------------
 set(RSE_GTEST_AVAILABLE FALSE)
-if(EXISTS "${RSE_TP}/googletest/lib/${ARCHITECTURE}/gtestd.lib")
-  add_library(gtest STATIC IMPORTED GLOBAL)
-  set_target_properties(gtest PROPERTIES
-    IMPORTED_LOCATION_DEBUG   "${RSE_TP}/googletest/lib/${ARCHITECTURE}/gtestd.lib"
-    IMPORTED_LOCATION_RELEASE "${RSE_TP}/googletest/lib/${ARCHITECTURE}/gtestd.lib"
-    MAP_IMPORTED_CONFIG_RELWITHDEBINFO "DEBUG"
-    MAP_IMPORTED_CONFIG_MINSIZEREL     "DEBUG")
-  set(RSE_GTEST_AVAILABLE TRUE)
-  message(STATUS "RSE: googletest found for '${ARCHITECTURE}'")
-else()
-  message(STATUS "RSE: googletest not vendored for '${ARCHITECTURE}' - unit tests will be skipped")
+
+if(RSE_BUILD_TESTS)
+  include(FetchContent)
+  set(RSE_GTEST_SOURCE_DIR "" CACHE PATH "Local GoogleTest source tree (skips the download)")
+  set(RSE_GTEST_TAG "v1.15.2" CACHE STRING "GoogleTest release tag used by FetchContent")
+
+  set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+  set(BUILD_GMOCK    OFF CACHE BOOL "" FORCE)
+
+  if(RSE_GTEST_SOURCE_DIR)
+    message(STATUS "RSE: using local GoogleTest at '${RSE_GTEST_SOURCE_DIR}'")
+    add_subdirectory("${RSE_GTEST_SOURCE_DIR}" "${CMAKE_BINARY_DIR}/_deps/googletest-build")
+  else()
+    message(STATUS "RSE: fetching GoogleTest ${RSE_GTEST_TAG}")
+    FetchContent_Declare(googletest
+      GIT_REPOSITORY https://github.com/google/googletest.git
+      GIT_TAG        ${RSE_GTEST_TAG}
+      GIT_SHALLOW    TRUE)
+    FetchContent_MakeAvailable(googletest)
+  endif()
+
+  if(TARGET GTest::gtest)
+    set(RSE_GTEST_AVAILABLE TRUE)
+    message(STATUS "RSE: GoogleTest available")
+  else()
+    message(WARNING "RSE: GoogleTest target not found - unit tests will be skipped")
+  endif()
 endif()
 
 # ---------------------------------------------------------------------------

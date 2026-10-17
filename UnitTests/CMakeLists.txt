@@ -5,7 +5,7 @@
 # requested architecture (it currently only ships Win32/Debug).
 # ---------------------------------------------------------------------------
 if(NOT RSE_GTEST_AVAILABLE)
-  message(WARNING "RSE: skipping UnitTests target - no googletest build for architecture '${ARCHITECTURE}'")
+  message(WARNING "RSE: skipping UnitTests target - GoogleTest is not available (enable RSE_BUILD_TESTS or set RSE_GTEST_SOURCE_DIR)")
   return()
 endif()
 
@@ -18,8 +18,8 @@ add_executable(UnitTests ${UNITTEST_FILES})
 
 rse_configure_target(UnitTests)
 
-# gtest only (not gtest_main) -- Main.cpp already provides the entry point.
-target_link_libraries(UnitTests PRIVATE Engine gtest)
+# GTest::gtest only (not GTest::gtest_main) -- Main.cpp provides the entry point.
+target_link_libraries(UnitTests PRIVATE Engine GTest::gtest)
 
 rse_deploy(UnitTests)
 

@@ -35,7 +35,7 @@ Other presets: `x64-release`, `x86-debug`, `x86-release`.
 | `Engine`    | static library  | The engine itself.                               |
 | `Editor`    | executable      | ImGui based scene/entity editor.                 |
 | `Game`      | executable      | Sample project.                                  |
-| `UnitTests` | executable      | GoogleTest tests (skipped when gtest is missing).|
+| `UnitTests` | executable      | GoogleTest tests (built from source via FetchContent).|
 
 Each executable gets its runtime DLLs and its `Resources/` folder copied next to it automatically.
 
@@ -47,8 +47,10 @@ Toggle targets off with `-DRSE_BUILD_EDITOR=OFF`, `-DRSE_BUILD_GAME=OFF`, `-DRSE
 ctest --preset x64-debug
 ```
 
-> Note: the vendored GoogleTest is currently prebuilt for **Win32/Debug** only, so `UnitTests`
-> is skipped for other architectures/configurations.
+GoogleTest is built from source (fetched automatically via CMake `FetchContent`, pinned to
+`v1.15.2`), so `UnitTests` works for every architecture and configuration. For offline builds
+point `-DRSE_GTEST_SOURCE_DIR=<path>` at a local GoogleTest checkout, or disable tests with
+`-DRSE_BUILD_TESTS=OFF`.
 
 ## Library dependencies
 
