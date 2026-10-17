@@ -1,7 +1,8 @@
 #pragma once
 
 #include <gtest/gtest.h>
-#include <Components/TextureManager.h>
+#include <Core/TextureManager.hpp>
+#include <Components/Texture.hpp>
 
 /*
 TODO I need to change the default behavior for constructing and calling Texture objects currently
@@ -9,6 +10,8 @@ it never fails but I should but a proper logic that would crash if something is 
 to be done after the new ECS comes into place
 */
 namespace {
+
+	using namespace rse;
 
 	TEST(TextureManager, AddTexture)
 	{

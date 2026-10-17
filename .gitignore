@@ -253,3 +253,7 @@ paket-files/
 
 # RockSlide Engine
 out/
+inter/
+imgui.ini
+# Runtime-generated editor config (see Editor/Source/Views/SetupView.cpp)
+Editor/default.cfg

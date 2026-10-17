@@ -1,7 +1,9 @@
 #pragma once
 
 #include <gtest/gtest.h>
-#include <Audio/SoundManager.h>
+#include <Audio/SoundManager.hpp>
+#include <Audio/Sound.hpp>
+#include <Audio/Music.hpp>
 
 /*
 TODO I need to change the default behavior for constructing and calling Sound/Music objects currently 
@@ -9,7 +11,7 @@ it never fails but I should but a proper logic that would crash if something is 
 to be done after the new ECS comes into place
 */
 namespace {
-	using namespace audio;
+	using namespace rse;
 
 	TEST(SoundManager, AddSound)
 	{
