@@ -1,6 +1,7 @@
 #include "Core.h"
 #include <functional>
 #include <imgui.h>
+#include "Render/ImGuiLayer.hpp"
 
 #ifdef EMSCRIPTEN
 static void DispatchLoop(void* fp)
@@ -28,6 +29,8 @@ Core::Core() : m_FramesPerSecond(0)
 	rse::Shader* defaultShader = new rse::Shader("Resources/Default.vert", "Resources/Default.frag");
 	m_Renderer = new rse::OpenGLRenderer(m_Window->getWindow(), defaultShader);
 
+	rse::ImGuiLayer::init(m_Window->getWindow(), m_Window->getContext());
+
 	rse::ECSManager::init();
 }
 
@@ -38,6 +41,9 @@ Core::~Core()
 	rse::TextureManager::clean();
 	PhysicsManager::Clean();
 	rse::ECSManager::clean();
+
+	// Must happen while the GL context and the SDL window are still alive.
+	rse::ImGuiLayer::shutdown();
 
 	delete m_Window;
 }
@@ -85,6 +91,10 @@ void Core::run()
 
 	rse::InputManager::Update();
 
+	// The ImGui frame has to be open before anything submits widgets, and
+	// closed after the scene has been drawn, so that the UI ends up on top.
+	rse::ImGuiLayer::beginFrame();
+
 	//TODO review scene manager logic now that we are using ECS
 	SceneManager::update(deltaTime);
 
@@ -95,6 +105,8 @@ void Core::run()
 	rse::ECSManager::update(deltaTime);
 	m_Renderer->end();
 	m_Renderer->flush();
+
+	rse::ImGuiLayer::endFrame();
 
 	deltaAccumulator += deltaTime;
 	frames++;

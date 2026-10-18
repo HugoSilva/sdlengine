@@ -1,9 +1,5 @@
 #include "Window.hpp"
 
-#include <imgui.h>
-#include <imgui_impl_sdl3.h>
-#include <imgui_impl_opengl3.h>
-
 #include "../Input/InputManager.hpp"
 
 #ifdef EMSCRIPTEN
@@ -22,11 +18,7 @@ namespace rse
 
 	Window::~Window()
 	{
-		//TODO Isolate the Imgui implementation
-		ImGui_ImplOpenGL3_Shutdown();
-		ImGui_ImplSDL3_Shutdown();
-		ImGui::DestroyContext();
-
+		// ImGui is owned by rse::ImGuiLayer now (see ImGuiLayer::shutdown()).
 		SDL_DestroyWindow(m_Window);
 		SDL_Quit();
 	}
@@ -83,16 +75,8 @@ namespace rse
 
 		std::cout << "OpenGL " << glGetString(GL_VERSION) << std::endl;
 
-		//TODO Isolate the Imgui implementation
-		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO();
-		// The vendored ImGui is the docking branch (v1.93.0-docking), which is
-		// what gives the Editor its DockSpace based layout.
-		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-		ImGui_ImplSDL3_InitForOpenGL(m_Window, m_Context);
-		ImGui_ImplOpenGL3_Init("#version 130");
-		ImGui::StyleColorsDark();
-
+		// ImGui is initialised separately once the window exists -- see
+		// rse::ImGuiLayer::init(), called from Core.
 		return true;
 	}
 

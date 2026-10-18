@@ -1,7 +1,6 @@
 #include "InputManager.hpp"
 
-#include <imgui.h>
-#include <imgui_impl_sdl3.h>
+#include "../Render/ImGuiLayer.hpp"
 #include "Mouse.hpp"
 #include "Keyboard.hpp"
 
@@ -65,7 +64,7 @@ namespace rse
 				// // If positive, scrolled up
 				break;
 			}
-			ImGui_ImplSDL3_ProcessEvent(&event);
+			ImGuiLayer::processEvent(event);
 		}
 	}
 

@@ -1,11 +1,8 @@
 #include "OpenGLRenderer.hpp"
 
-#include <imgui.h>
 #include <glm/mat4x4.hpp> // glm::mat4
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include <glm/gtc/type_ptr.hpp> // glm::value_ptr
-#include <imgui_impl_sdl3.h>
-#include <imgui_impl_opengl3.h>
 
 namespace rse
 {
@@ -66,12 +63,6 @@ namespace rse
 
 	void OpenGLRenderer::begin()
 	{
-		// Official ImGui backends: platform + renderer NewFrame, then the app must
-		// call ImGui::NewFrame() itself (the old custom backend used to do this).
-		ImGui_ImplSDL3_NewFrame();
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui::NewFrame();
-
 		glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 		#ifdef EMSCRIPTEN
 			m_Buffer = m_BufferBase;
@@ -80,6 +71,8 @@ namespace rse
 		#endif // EMSCRIPTEN
 
 		clearColor->OnRender();
+		// OnImguiRender() only submits ImGui widgets, so it may be called at any
+		// point while a frame is open (rse::ImGuiLayer::beginFrame() runs first).
 		clearColor->OnImguiRender();
 	}
 
@@ -189,9 +182,5 @@ namespace rse
 
 		m_IndexCount = 0;
 		m_TextureSlots.clear();
-
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-		SDL_GL_SwapWindow(m_Window);
 	}
 }

@@ -14,6 +14,7 @@ namespace rse
 		bool init();
 		bool getRunning();
 		SDL_Window* getWindow() { return m_Window; };
+		SDL_GLContext getContext() { return m_Context; };
 
 	private:
 		SDL_Event m_WindowEvent;
