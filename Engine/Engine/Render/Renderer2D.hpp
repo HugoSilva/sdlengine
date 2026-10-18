@@ -20,6 +20,12 @@ namespace rse
 
 		virtual void submit(TransformComponent& position, const Renderable2D* renderable) = 0;
 
+		// A flat, untextured quad in world space. Same transform and corner
+		// convention as submit(), but with no texture bound, so the shader falls
+		// through to the vertex colour and `color` is used as-is. The editor's
+		// grid and gizmos are built out of these.
+		virtual void submitQuad(TransformComponent& transform, glm::vec2 halfExtent, unsigned int color) {}
+
 		virtual void end() {}
 
 		virtual void flush() = 0;

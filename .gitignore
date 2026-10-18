@@ -257,6 +257,10 @@ inter/
 imgui.ini
 # Runtime-generated editor config (see Editor/Source/Views/SetupView.cpp)
 Editor/default.cfg
+# The editor's own settings, written wherever the editor was run from -- which
+# is out/<preset>/bin/<config>/ normally, but the repository root if somebody
+# launches the binary from there.
+editor.cfg
 
 # Vendored third-party binaries (DLLs + import libraries) must always be
 # tracked. Without these negations the generic bin/ x64/ x86/ build-output

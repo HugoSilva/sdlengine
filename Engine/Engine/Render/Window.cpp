@@ -72,7 +72,13 @@ namespace rse
 		glDepthFunc(GL_LEQUAL); 
 		
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		// Blending keeps the destination alpha at 1: the colour channels blend
+		// normally, but alpha is written as GL_ONE so partial-alpha geometry (the
+		// editor grid, a translucent sprite) cannot leave a render target with a
+		// see-through alpha. Anything that draws that target a second time --
+		// the editor viewport hands its framebuffer to ImGui -- blends by alpha,
+		// so a leaking target would be darkened by whatever sits behind it.
+		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
 		const GLubyte* version = glGetString(GL_VERSION);
 		Logger::log(std::string("OpenGL ") + (version != nullptr ? reinterpret_cast<const char*>(version) : "unknown"));

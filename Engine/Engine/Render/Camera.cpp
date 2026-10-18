@@ -3,6 +3,14 @@
 #include <algorithm>
 #include <cmath>
 
+#ifdef EMSCRIPTEN
+	#define GL_GLEXT_PROTOTYPES
+	#include <SDL3/SDL_opengles2.h>
+#else
+	#include <GL/glew.h>
+#endif // EMSCRIPTEN
+
+#include "OrthoView.hpp"
 #include "../Components/Shader.hpp"
 #include "../Input/Keyboard.hpp"
 #include "../Input/Mouse.hpp"
@@ -42,25 +50,10 @@ namespace rse
 
 	void Camera::updateOrthoProjection()
 	{
-		const float halfWidth = (m_OrthoSize.x * 0.5f) / m_OrthoZoom;
-		const float halfHeight = (m_OrthoSize.y * 0.5f) / m_OrthoZoom;
-
-		m_Projection = glm::ortho(
-			m_OrthoCenter.x - halfWidth, m_OrthoCenter.x + halfWidth,
-			m_OrthoCenter.y - halfHeight, m_OrthoCenter.y + halfHeight,
-			-1.0f, 1.0f);
-	}
-
-	void Camera::Pan(const glm::vec2& worldDelta)
-	{
-		m_OrthoCenter += worldDelta;
-		updateOrthoProjection();
-	}
-
-	void Camera::AddZoom(float steps)
-	{
-		m_OrthoZoom = glm::clamp(m_OrthoZoom * static_cast<float>(std::pow(1.15f, steps)), 0.05f, 20.0f);
-		updateOrthoProjection();
+		// Centred on the reference rectangle's middle, so the default framing is
+		// exactly what it always was: (0,0)-(1280,720) at zoom 1.
+		const OrthoView view = makeOrthoView(m_ReferenceSize * 0.5f, 1.0f, m_TargetSize, m_ReferenceSize);
+		m_Projection = makeOrthoProjection(view);
 	}
 
 	void Camera::Update(float deltaTime)
@@ -108,6 +101,22 @@ namespace rse
 
 	void Camera::Render(Shader* shader)
 	{
+		// Size the projection to the target that is actually bound. The window is
+		// resizable, and an ortho rectangle of the wrong shape is exactly what
+		// stretches the scene when it is.
+		int viewport[4] = { 0, 0, 0, 0 };
+		glGetIntegerv(GL_VIEWPORT, viewport);
+
+		if (viewport[2] > 0 && viewport[3] > 0)
+		{
+			const glm::vec2 targetSize(static_cast<float>(viewport[2]), static_cast<float>(viewport[3]));
+			if (targetSize != m_TargetSize)
+			{
+				m_TargetSize = targetSize;
+				updateOrthoProjection();
+			}
+		}
+
 		glm::mat4 view = GetViewMatrix();
 		shader->setUniformMat4("view", glm::value_ptr(view));
 		shader->setUniformMat4("projection", glm::value_ptr(m_Projection));

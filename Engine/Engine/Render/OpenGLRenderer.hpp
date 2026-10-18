@@ -49,6 +49,7 @@ namespace rse
 
 		void begin();
 		void submit(TransformComponent& position, const Renderable2D* renderable);
+		void submitQuad(TransformComponent& transform, glm::vec2 halfExtent, unsigned int color) override;
 		void end();
 		void flush();
 

@@ -38,16 +38,6 @@ namespace rse
 		inline const glm::vec3 getPosition() const { return m_Position; }
 		inline const glm::vec3 getFront() const { return m_Front; }
 
-		// --- 2D viewport controls, used by the editor viewport ---------------
-		// The ortho projection keeps the bounds the renderer has always used,
-		// (0,1280)x(0,720), until something moves or zooms it, so gameplay
-		// rendering is unaffected by these.
-		void Pan(const glm::vec2& worldDelta);
-		void AddZoom(float steps);
-
-		float getViewWidth() const { return m_OrthoSize.x / m_OrthoZoom; }
-		float getViewHeight() const { return m_OrthoSize.y / m_OrthoZoom; }
-
 	private:
 		void updateCameraVectors();
 		void updateOrthoProjection();
@@ -61,8 +51,13 @@ namespace rse
 		float m_Yaw{ -90.f }, m_Pitch{ 0.f };
 		float m_MovementSpeed{ 10.f }, m_MouseSensitivity{ 0.25f }, m_Zoom{ 45.f };
 
-		glm::vec2 m_OrthoCenter{ 640.0f, 360.0f };
-		glm::vec2 m_OrthoSize{ 1280.0f, 720.0f };
-		float m_OrthoZoom{ 1.0f };
+		// 2D ortho framing. referenceSize is what a zoom of 1 shows on a 16:9
+		// target and is what the renderer has always framed; targetSize is
+		// whatever is being drawn into this frame, refreshed in Render(). Going
+		// through rse::makeOrthoView is what makes the engine camera and the
+		// editor camera agree on the shape of the view -- and the reason a
+		// resized window now shows more world instead of stretching it.
+		glm::vec2 m_ReferenceSize{ 1280.0f, 720.0f };
+		glm::vec2 m_TargetSize{ 1280.0f, 720.0f };
 	};
 }

@@ -8,6 +8,17 @@ class BaseSystem; //forward declaration for BaseSystem
 
 namespace rse
 {
+	// When a system runs relative to everything else.
+	//
+	// There is no depth to lean on in the 2D scene pass -- every sprite sits at
+	// the same depth -- so anything that has to end up *under* the sprites, the
+	// editor's grid, has to be submitted before the systems that draw them.
+	enum class SystemPhase
+	{
+		PreScene,
+		Scene
+	};
+
 	class ECSManager
 	{
 	public:
@@ -55,7 +66,7 @@ namespace rse
             return registry.view<Components...>();
         }
 
-		static void addSystem(BaseSystem* system);
+		static void addSystem(BaseSystem* system, SystemPhase phase = SystemPhase::Scene);
 
 		static void update(float delta);
 		static void updateUI();
@@ -67,5 +78,6 @@ namespace rse
 	private:
 		static entt::DefaultRegistry registry;
 		static std::vector<BaseSystem*> m_systemsList;
+		static std::vector<BaseSystem*> m_preSceneSystems;
 	};
 }

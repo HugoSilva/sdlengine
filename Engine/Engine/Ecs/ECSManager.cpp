@@ -29,6 +29,7 @@ namespace rse
 {
 	entt::DefaultRegistry ECSManager::registry;
 	std::vector<BaseSystem*> ECSManager::m_systemsList;
+	std::vector<BaseSystem*> ECSManager::m_preSceneSystems;
 
 	void ECSManager::init()
 	{
@@ -40,27 +41,47 @@ namespace rse
 		addSystem(spriteSystem);
 	}
 
-	void ECSManager::addSystem(BaseSystem* system)
+	void ECSManager::addSystem(BaseSystem* system, SystemPhase phase)
 	{
+		if (phase == SystemPhase::PreScene)
+		{
+			m_preSceneSystems.push_back(system);
+			return;
+		}
+
 		m_systemsList.push_back(system);
 	}
 
 	void ECSManager::update(float delta)
 	{
+		for (unsigned int i = 0; i < m_preSceneSystems.size(); i++)
+			m_preSceneSystems[i]->update(delta);
+
 		for (unsigned int i = 0; i < m_systemsList.size(); i++)
 			m_systemsList[i]->update(delta);
 	}
 
 	void ECSManager::updateUI()
 	{
+		// Only the editor's RenderSystem implements renderUI, so the order of the
+		// two phases makes no difference here; walking them the same way as
+		// update() just keeps the two functions from disagreeing.
+		for (unsigned int i = 0; i < m_preSceneSystems.size(); i++)
+			m_preSceneSystems[i]->renderUI();
+
 		for (unsigned int i = 0; i < m_systemsList.size(); i++)
 			m_systemsList[i]->renderUI();
 	}
 
 	void ECSManager::clean()
 	{
+		for (unsigned int i = 0; i < m_preSceneSystems.size(); i++)
+			delete m_preSceneSystems[i];
+		m_preSceneSystems.clear();
+
 		for (unsigned int i = 0; i < m_systemsList.size(); i++)
 			delete m_systemsList[i];
+		m_systemsList.clear();
 	}
 
 	bool ECSManager::save()
