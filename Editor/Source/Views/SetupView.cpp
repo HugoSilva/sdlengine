@@ -28,7 +28,10 @@ SetupView::SetupView(std::string name, SDL_Window* win)
 	TextureManager::add(new Texture("test00", "Resources/tex3.png"));
 	SoundManager::add(new Sound("eff", "Resources/effect.wav"));
 
-	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
+	// The viewport gets the editor's own camera, not the engine's game camera:
+	// the engine camera keeps its WASD/mouse-look path and the editor camera
+	// owns pan/zoom and the projection the viewport draws with.
+	m_Camera = new EditorCamera();
 
 	m_Layout = new EditorLayout();
 	m_Layout->addPanel(std::make_unique<HierarchyPanel>());
@@ -64,9 +67,8 @@ SetupView::SetupView(std::string name, SDL_Window* win)
 
 void SetupView::Update(float deltaTime)
 {
-	m_Camera->Update(deltaTime);
     //SceneManager::change("SelectProject");
-	
+
 	if (rse::InputManager::IsKeyPressed(SDL_SCANCODE_F1))
 		rse::ECSManager::save();
 	if (rse::InputManager::IsKeyPressed(SDL_SCANCODE_F2))
@@ -76,5 +78,5 @@ void SetupView::Update(float deltaTime)
 void SetupView::Render()
 {
 	m_Shader->enable();
-	m_Camera->Render(m_Shader);
+	m_Camera->apply(m_Shader);
 }

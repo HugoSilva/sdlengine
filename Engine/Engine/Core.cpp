@@ -98,9 +98,6 @@ void Core::run()
 	//TODO review scene manager logic now that we are using ECS
 	SceneManager::update(deltaTime);
 
-	//TODO shader needs to be moved to the renderable, objects may have different shaders
-	SceneManager::render(); // Only for shader
-
 	// The UI is built before the scene is drawn: panels may need to know their
 	// own size in order to size a render target (the viewport does this).
 	rse::ECSManager::updateUI();
@@ -116,6 +113,13 @@ void Core::run()
 	{
 		m_Window->bindDefaultFramebuffer();
 	}
+
+	// The scene's shader uniforms are uploaded *after* the target is bound and
+	// after the UI phase. Both halves matter: binding the target is what sets
+	// the viewport the camera sizes its projection to, and the UI is where the
+	// viewport panel pans and zooms. Uploading them any earlier is what made
+	// every pan and zoom lag the scene by exactly one frame.
+	SceneManager::render(); // Only for shader
 
 	m_Renderer->begin();
 	//TODO need to split this up for normal systems and render systems

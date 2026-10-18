@@ -2,6 +2,7 @@
 
 #include <Core.h>
 #include <SDL3/SDL.h>
+#include "../Camera/EditorCamera.hpp"
 #include "../Systems/RenderSystem.hpp"
 
 class SetupView : public Scene
@@ -15,6 +16,6 @@ public:
 
 private:
 	EditorLayout* m_Layout{ nullptr };
-	rse::Camera* m_Camera;
+	EditorCamera* m_Camera{ nullptr };
 	RenderSystem* m_render;
 };
