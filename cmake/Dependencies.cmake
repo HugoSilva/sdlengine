@@ -112,7 +112,7 @@ set(RSE_GTEST_AVAILABLE FALSE)
 if(RSE_BUILD_TESTS)
   include(FetchContent)
   set(RSE_GTEST_SOURCE_DIR "" CACHE PATH "Local GoogleTest source tree (skips the download)")
-  set(RSE_GTEST_TAG "v1.15.2" CACHE STRING "GoogleTest release tag used by FetchContent")
+  set(RSE_GTEST_TAG "v1.18.0" CACHE STRING "GoogleTest release tag used by FetchContent")
 
   set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
   set(BUILD_GMOCK    OFF CACHE BOOL "" FORCE)

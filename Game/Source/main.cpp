@@ -1,5 +1,5 @@
 #include <Core.h>
-#include <glm\glm.hpp>
+#include <glm/glm.hpp>
 #include "Scene01.h"
 
 #if _WIN32

@@ -1,6 +1,6 @@
 # RSE (RockSlide Engine) Alpha 0.13
 
-Is a small C++ game engine that is heavily reliant on SDL2, it is work in progress with not many features available, the main objective is to gain knowledge on what it takes to create a stable 2D game engine following the KISS principle.
+Is a small C++ game engine that is heavily reliant on SDL3, it is work in progress with not many features available, the main objective is to gain knowledge on what it takes to create a stable 2D game engine following the KISS principle.
 
 ## Build target
 
@@ -48,18 +48,21 @@ ctest --preset x64-debug
 ```
 
 GoogleTest is built from source (fetched automatically via CMake `FetchContent`, pinned to
-`v1.15.2`), so `UnitTests` works for every architecture and configuration. For offline builds
+`v1.18.0`), so `UnitTests` works for every architecture and configuration. For offline builds
 point `-DRSE_GTEST_SOURCE_DIR=<path>` at a local GoogleTest checkout, or disable tests with
 `-DRSE_BUILD_TESTS=OFF`.
 
 ## Library dependencies
 
-##### [Glew 2.1.0](http://glew.sourceforge.net/) - OpenGL extensions and methods
-##### [SDL 2.0.7](https://www.libsdl.org/) - Creating the window
-##### [SDL_image 2.0.2](https://www.libsdl.org/projects/SDL_image/) - Reading images
-##### [SDL_mixer 2.0.2](https://www.libsdl.org/projects/SDL_mixer/) - Loading sounds
-##### [SDL_ttf 2.0.14](https://www.libsdl.org/projects/SDL_ttf/) - Rendering fonts
-##### [GLM 0.9.9-a2](https://glm.g-truc.net/) - Math library
-##### [IMGUI 1.60](https://github.com/ocornut/imgui) - GUI framework
-##### [Box2D 2.3.1](http://box2d.org/) - 2D Physics engine
-##### [Assimp 3.3.1](http://assimp.sourceforge.net/) - Loading 3D models
+##### [Glew 2.3.1](http://glew.sourceforge.net/) - OpenGL extensions and methods
+##### [SDL 3.4.18](https://www.libsdl.org/) - Creating the window
+##### [SDL_image 3.4.8](https://github.com/libsdl-org/SDL_image) - Reading images
+##### [SDL_mixer 3.2.4](https://github.com/libsdl-org/SDL_mixer) - Loading sounds
+##### [SDL_ttf 3.2.2](https://github.com/libsdl-org/SDL_ttf) - Rendering fonts
+##### [GLM 1.0.3](https://github.com/g-truc/glm) - Math library
+##### [IMGUI 1.93.0](https://github.com/ocornut/imgui) - GUI framework
+##### [Box2D 2.3.2](https://github.com/erincatto/box2d) - 2D Physics engine
+##### [cereal 1.3.2](https://github.com/USCiLab/cereal) - Serialization
+##### [EnTT 2.x](https://github.com/skypjack/entt) - Entity component system
+##### [rapidxml 1.13](http://rapidxml.sourceforge.net/) - XML parsing
+##### [GoogleTest 1.18.0](https://github.com/google/googletest) - Unit testing (via CMake FetchContent)

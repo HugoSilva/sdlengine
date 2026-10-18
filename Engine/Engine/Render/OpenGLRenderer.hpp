@@ -18,7 +18,7 @@
 #include <GL/glew.h>
 #endif // EMSCRIPTEN
 
-#include <glm\glm.hpp>
+#include <glm/glm.hpp>
 #include <vector>
 #include "Renderable2D.hpp"
 #include "Renderer2D.hpp"
