@@ -37,6 +37,18 @@ public:
 	// and the systems can all reach, which is this one.
 	static EditorSettings& settings() { return m_Settings; }
 
+	// A one-shot request for the viewport to frame what is selected. The
+	// hierarchy's double-click asks for it and the viewport answers it, so it
+	// belongs with the rest of the state the two panels share rather than in
+	// either one of them.
+	static void requestFrameSelection() { m_FrameRequested = true; }
+	static bool consumeFrameRequest()
+	{
+		const bool requested = m_FrameRequested;
+		m_FrameRequested = false;
+		return requested;
+	}
+
     template<typename Component>
     static bool showComponentWidget()
     {
@@ -64,4 +76,5 @@ private:
     static uint32_t m_SelectedEntity;
 	static rse::Framebuffer* m_SceneTarget;
 	static EditorSettings m_Settings;
+	static bool m_FrameRequested;
 };

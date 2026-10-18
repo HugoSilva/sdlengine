@@ -20,5 +20,32 @@ struct EditorSettings
 		float base{ 32.0f };
 	};
 
+	// Which gizmo the viewport draws. The viewport HUD reports it and the
+	// W/E/R keys set it; the gizmos themselves arrive in M6.
+	enum class GizmoMode
+	{
+		Translate,
+		Rotate,
+		Scale
+	};
+
+	struct Gizmo
+	{
+		GizmoMode mode{ GizmoMode::Translate };
+	};
+
 	Grid grid;
+	Gizmo gizmo;
 };
+
+inline const char* gizmoModeName(EditorSettings::GizmoMode mode)
+{
+	switch (mode)
+	{
+		case EditorSettings::GizmoMode::Rotate: return "rotate";
+		case EditorSettings::GizmoMode::Scale: return "scale";
+		case EditorSettings::GizmoMode::Translate: break;
+	}
+
+	return "translate";
+}

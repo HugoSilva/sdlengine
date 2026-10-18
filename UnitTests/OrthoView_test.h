@@ -250,4 +250,40 @@ namespace
 		// And the box's own middle is always inside.
 		EXPECT_TRUE(pointInOrientedBox(center, center, rotation, half));
 	}
+
+	TEST(OrthoView, BoundsOfCornersBoxesARotatedRectangle)
+	{
+		// A 20x10 rectangle (half extents 10 and 5) turned 90 degrees on screen
+		// is 10 wide and 20 tall, so the box around it has to swap too.
+		const Bounds2D bounds = boundsOfCorners(orientedBoxCorners(glm::vec2(0.0f), 90.0f, glm::vec2(10.0f, 5.0f)));
+
+		EXPECT_NEAR(bounds.min.x, -5.0f, 1e-4f);
+		EXPECT_NEAR(bounds.max.x, 5.0f, 1e-4f);
+		EXPECT_NEAR(bounds.min.y, -10.0f, 1e-4f);
+		EXPECT_NEAR(bounds.max.y, 10.0f, 1e-4f);
+	}
+
+	TEST(OrthoView, BoundsOfCornersKeepsTheCentre)
+	{
+		const glm::vec2 center{ 100.0f, -50.0f };
+		const Bounds2D bounds = boundsOfCorners(orientedBoxCorners(center, 0.0f, glm::vec2(3.0f, 7.0f)));
+
+		EXPECT_NEAR(bounds.center().x, center.x, 1e-4f);
+		EXPECT_NEAR(bounds.center().y, center.y, 1e-4f);
+		EXPECT_NEAR(bounds.size().x, 6.0f, 1e-4f);
+		EXPECT_NEAR(bounds.size().y, 14.0f, 1e-4f);
+	}
+
+	TEST(OrthoView, UnionOfContainsBothInputs)
+	{
+		const Bounds2D a{ glm::vec2(-10.0f, -5.0f), glm::vec2(10.0f, 5.0f) };
+		const Bounds2D b{ glm::vec2(2.0f, -20.0f), glm::vec2(30.0f, -1.0f) };
+
+		const Bounds2D both = unionOf(a, b);
+
+		EXPECT_NEAR(both.min.x, -10.0f, 1e-4f);
+		EXPECT_NEAR(both.min.y, -20.0f, 1e-4f);
+		EXPECT_NEAR(both.max.x, 30.0f, 1e-4f);
+		EXPECT_NEAR(both.max.y, 5.0f, 1e-4f);
+	}
 }

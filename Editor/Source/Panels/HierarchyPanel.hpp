@@ -96,6 +96,12 @@ private:
 				clicked = entityId;
 			}
 
+			// Double-click frames it, the same thing F does in the viewport.
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+			{
+				EditorManager::requestFrameSelection();
+			}
+
 			if (ImGui::BeginPopupContextItem("##entity_context"))
 			{
 				if (ImGui::MenuItem("Delete", "Del"))

@@ -202,4 +202,28 @@ namespace rse
 
 		return std::abs(local.x) <= halfExtent.x && std::abs(local.y) <= halfExtent.y;
 	}
+
+	// The axis-aligned box around four corners. A rotated entity draws as a
+	// rotated rectangle, so the box that frames it has to come from its corners
+	// rather than from its half extent -- otherwise rotating something would
+	// make F frame less than the thing it is framing.
+	inline Bounds2D boundsOfCorners(const std::array<glm::vec2, 4>& corners)
+	{
+		Bounds2D bounds{ corners[0], corners[0] };
+
+		for (const glm::vec2& corner : corners)
+		{
+			bounds.min = glm::min(bounds.min, corner);
+			bounds.max = glm::max(bounds.max, corner);
+		}
+
+		return bounds;
+	}
+
+	// The smallest box containing both. Folding a scene (or a selection) into
+	// one rectangle to frame is this, repeated.
+	inline Bounds2D unionOf(const Bounds2D& a, const Bounds2D& b)
+	{
+		return Bounds2D{ glm::min(a.min, b.min), glm::max(a.max, b.max) };
+	}
 }
