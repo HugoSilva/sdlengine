@@ -286,4 +286,38 @@ namespace
 		EXPECT_NEAR(both.max.x, 30.0f, 1e-4f);
 		EXPECT_NEAR(both.max.y, 5.0f, 1e-4f);
 	}
+
+	TEST(OrthoView, PointInBoxIncludesTheEdges)
+	{
+		const glm::vec2 min{ 10.0f, 20.0f };
+		const glm::vec2 max{ 30.0f, 40.0f };
+
+		EXPECT_TRUE(pointInBox(glm::vec2(20.0f, 30.0f), min, max));
+		EXPECT_TRUE(pointInBox(min, min, max));
+		EXPECT_TRUE(pointInBox(max, min, max));
+		EXPECT_FALSE(pointInBox(glm::vec2(9.0f, 30.0f), min, max));
+		EXPECT_FALSE(pointInBox(glm::vec2(20.0f, 41.0f), min, max));
+	}
+
+	TEST(OrthoView, SnapToStepRoundsToTheNearestMultiple)
+	{
+		// A translate: the grid step is both what is drawn and what Shift snaps
+		// to, so a position either lands on a lattice point or barely moves.
+		EXPECT_NEAR(snapToStep(37.0f, 32.0f), 32.0f, 1e-4f);
+		EXPECT_NEAR(snapToStep(49.0f, 32.0f), 64.0f, 1e-4f);
+		EXPECT_NEAR(snapToStep(-20.0f, 32.0f), -32.0f, 1e-4f);
+		EXPECT_NEAR(snapToStep(64.0f, 32.0f), 64.0f, 1e-4f);
+
+		// A rotate: 7 degrees is closer to 0 than to 15, 8 is closer to 15.
+		EXPECT_NEAR(snapToStep(7.0f, 15.0f), 0.0f, 1e-4f);
+		EXPECT_NEAR(snapToStep(8.0f, 15.0f), 15.0f, 1e-4f);
+	}
+
+	TEST(OrthoView, SnapToStepLeavesAValueAloneWithoutAStep)
+	{
+		// A zero (or nonsense) step is how a caller passes "no snapping" down,
+		// so it must not turn a position into a NaN or a zero.
+		EXPECT_FLOAT_EQ(snapToStep(37.0f, 0.0f), 37.0f);
+		EXPECT_FLOAT_EQ(snapToStep(-1.5f, -2.0f), -1.5f);
+	}
 }

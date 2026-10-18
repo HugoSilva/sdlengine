@@ -10,6 +10,7 @@
 #include <Core.h>
 
 #include "../Camera/EditorCamera.hpp"
+#include "../Gizmo/Gizmo.hpp"
 #include "../Layout/EditorPanel.hpp"
 #include "../Scene/EntityBounds.hpp"
 #include "../EditorManager.h"
@@ -73,9 +74,15 @@ public:
 			ImVec2(1.0f, 0.0f));
 
 		handleNavigation(imagePos);
-		handlePicking(imagePos);
+
+		// The gizmo gets the press before the picking does: a click on a handle
+		// is a drag, not a selection.
+		const bool gizmoOwnsMouse = handleGizmo(imagePos);
+
+		handlePicking(imagePos, gizmoOwnsMouse);
 		handleShortcuts();
 		drawSelection(imagePos);
+		drawGizmo(imagePos);
 		drawHud(imagePos);
 
 		// Tells Core::run() where the scene pass should draw this frame.
@@ -135,11 +142,35 @@ private:
 		}
 	}
 
+	// The gizmo's mouse work, and whether it took the press. Guarded here rather
+	// than in the gizmo so that a panel with no camera does not have to know
+	// about one.
+	bool handleGizmo(const ImVec2& imagePos)
+	{
+		if (m_Camera == nullptr)
+		{
+			return false;
+		}
+
+		return m_Gizmo.handleInput(*m_Camera, imagePos, ImGui::IsItemHovered());
+	}
+
+	void drawGizmo(const ImVec2& imagePos)
+	{
+		if (m_Camera == nullptr)
+		{
+			return;
+		}
+
+		m_Gizmo.draw(*m_Camera, imagePos);
+	}
+
 	// A left click that does not turn into a drag selects what is under it;
 	// clicking empty space deselects. Latched on press and judged on release, so
-	// a drag that happens to start in the viewport -- a gizmo drag, later on --
-	// is never mistaken for a click.
-	void handlePicking(const ImVec2& imagePos)
+	// a drag -- a pan, or one of the gizmo's own -- is never mistaken for a
+	// click. `taken` is this frame's answer from the gizmo: pressing a handle
+	// starts a drag, and the same press must not also re-pick.
+	void handlePicking(const ImVec2& imagePos, bool taken)
 	{
 		if (m_Camera == nullptr)
 		{
@@ -148,7 +179,7 @@ private:
 
 		const ImGuiIO& io = ImGui::GetIO();
 
-		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+		if (!taken && ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 		{
 			m_ClickArmed = true;
 			m_ClickPos = io.MousePos;
@@ -339,8 +370,13 @@ private:
 	// gizmo drags, can never be mistaken for one.
 	static constexpr float kClickSlop{ 4.0f };
 
-	// Half the arm of the cross drawn for a selected entity with no sprite.
-	static constexpr float kCrossSize{ 6.0f };
+	// Half the arm of the cross drawn for a selected entity with no sprite. It
+	// is deliberately bigger than the gizmo's centre square, which lands on the
+	// same point -- but the gizmo's arrows run along the cross's +X and +Y arms,
+	// so what actually shows is the marker's other two halves. That is enough
+	// for what it is for: saying that the selected thing is here, and has no
+	// size, when there is no rectangle to outline.
+	static constexpr float kCrossSize{ 12.0f };
 
 	static constexpr ImU32 kActiveOutline{ IM_COL32(255, 176, 0, 255) };
 	static constexpr ImU32 kOutline{ IM_COL32(190, 190, 190, 255) };
@@ -350,6 +386,7 @@ private:
 	static constexpr ImU32 kOutlineHalo{ IM_COL32(0, 0, 0, 200) };
 
 	EditorCamera* m_Camera{ nullptr };
+	Gizmo m_Gizmo;
 	rse::Framebuffer m_Framebuffer;
 
 	// Latched on middle-press and cleared on release, so a pan survives the

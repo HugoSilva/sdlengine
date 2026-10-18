@@ -50,6 +50,10 @@ public:
 	// thick at any zoom.
 	float getWorldPerDevicePixel() const;
 
+	// World units per *ImGui* pixel. That is the unit a mouse delta arrives in,
+	// so it is what turns a gizmo drag of N pixels into a world offset.
+	float getWorldPerPixel() const;
+
 	glm::vec2 screenToWorld(glm::vec2 pixel) const;
 	glm::vec2 worldToScreen(glm::vec2 world) const;
 

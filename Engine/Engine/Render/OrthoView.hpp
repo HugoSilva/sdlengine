@@ -226,4 +226,26 @@ namespace rse
 	{
 		return Bounds2D{ glm::min(a.min, b.min), glm::max(a.max, b.max) };
 	}
+
+	// A box test for the gizmo handles, which are axis-aligned rectangles in
+	// screen space: two comparisons per axis, in either direction.
+	inline bool pointInBox(glm::vec2 point, glm::vec2 min, glm::vec2 max)
+	{
+		return point.x >= min.x && point.x <= max.x
+			&& point.y >= min.y && point.y <= max.y;
+	}
+
+	// Round to the nearest multiple of step, which is what Shift does to a
+	// translate (the grid step), a rotate (15 degrees) and a scale (0.1). A
+	// non-positive step means "do not snap", so a caller can hand a setting
+	// through without testing it first.
+	inline float snapToStep(float value, float step)
+	{
+		if (step <= 0.0f)
+		{
+			return value;
+		}
+
+		return std::round(value / step) * step;
+	}
 }

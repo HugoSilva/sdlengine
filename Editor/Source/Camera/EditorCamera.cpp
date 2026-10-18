@@ -52,6 +52,14 @@ float EditorCamera::getWorldPerDevicePixel() const
 	return m_ViewportSize.y > 0.0f ? m_View.size().y / m_ViewportSize.y : 1.0f;
 }
 
+float EditorCamera::getWorldPerPixel() const
+{
+	// One ImGui pixel is dpiScale device pixels; pan() has always made the same
+	// conversion, and the gizmo has to make it too or a drag would drift by 50%
+	// on a scaled display.
+	return getWorldPerDevicePixel() * m_DpiScale;
+}
+
 glm::vec2 EditorCamera::screenToWorld(glm::vec2 pixel) const
 {
 	return rse::viewportToWorld(m_View, pixel * m_DpiScale, m_ViewportSize);
