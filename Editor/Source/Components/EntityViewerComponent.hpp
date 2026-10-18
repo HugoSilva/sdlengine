@@ -58,8 +58,8 @@ public:
 			{
 				EventManager::getEventDispatcher()->trigger<EditorManager::CreateEntity>();
 			}
-
-			ImGui::End();
 		}
+
+		ImGui::End();
 	}
 };

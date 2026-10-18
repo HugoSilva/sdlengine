@@ -36,7 +36,7 @@ public:
 					
 					strcpy_s(str0, basicData.m_Name);
 
-					ImGui::InputText("", str0, IM_ARRAYSIZE(str0));
+					ImGui::InputText("##name", str0, IM_ARRAYSIZE(str0));
 					ImGui::SameLine();
 					ImGui::Checkbox("Static", &basicData.m_IsStatic);
 				}
@@ -130,8 +130,8 @@ public:
 					ImGui::EndPopup();
 				}
 			}
-
-			ImGui::End();
 		}
+
+		ImGui::End();
 	}
 };
