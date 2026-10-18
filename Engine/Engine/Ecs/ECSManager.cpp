@@ -14,7 +14,6 @@
 namespace rse
 {
 	entt::DefaultRegistry ECSManager::registry;
-	entt::DefaultRegistry ECSManager::editorRegistry;
 	std::vector<BaseSystem*> ECSManager::m_systemsList;
 
 	void ECSManager::init()
@@ -36,6 +35,12 @@ namespace rse
 	{
 		for (unsigned int i = 0; i < m_systemsList.size(); i++)
 			m_systemsList[i]->update(delta);
+	}
+
+	void ECSManager::updateUI()
+	{
+		for (unsigned int i = 0; i < m_systemsList.size(); i++)
+			m_systemsList[i]->renderUI();
 	}
 
 	void ECSManager::clean()

@@ -14,6 +14,9 @@ namespace Test
 		void OnRender() override;
 		void OnImguiRender() override;
 
+		// The renderer clears with this before the scene pass.
+		float* getClearColor() { return m_clearColor; }
+
 	private:
 		float m_clearColor[4];
 	};

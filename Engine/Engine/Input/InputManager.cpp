@@ -1,7 +1,6 @@
 #include "InputManager.hpp"
 
-#include <imgui.h>
-#include <imgui_impl_sdl3.h>
+#include "../Render/ImGuiLayer.hpp"
 #include "Mouse.hpp"
 #include "Keyboard.hpp"
 
@@ -28,7 +27,9 @@ namespace rse
 	{
 		SDL_Event event;
 		//Cannot be called outside of the main thread
-		if (SDL_PollEvent(&event))
+		//Drain the whole queue: polling a single event per frame makes the UI
+		//lose mouse drags during dock resizing and drops fast input.
+		while (SDL_PollEvent(&event))
 		{
 			switch (event.type)
 			{
@@ -63,7 +64,7 @@ namespace rse
 				// // If positive, scrolled up
 				break;
 			}
-			ImGui_ImplSDL3_ProcessEvent(&event);
+			ImGuiLayer::processEvent(event);
 		}
 	}
 

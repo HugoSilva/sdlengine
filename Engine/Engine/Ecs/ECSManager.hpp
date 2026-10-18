@@ -20,11 +20,6 @@ namespace rse
 			return registry.create();
 		}
 
-		static uint32_t createEditorEntity()
-		{
-			return editorRegistry.create();
-		}
-
 		static void destroyEntity(uint32_t entity)
 		{
 			registry.destroy(entity);
@@ -34,12 +29,6 @@ namespace rse
 		static void addComponent(uint32_t entity, TArgs... arguments)
 		{
 			registry.assign<Components...>(entity, arguments...);
-		}
-
-		template<typename... Components, typename... TArgs>
-		static void addEditorComponent(uint32_t entity, TArgs... arguments)
-		{
-			editorRegistry.assign<Components...>(entity, arguments...);
 		}
 
 		template<typename Component>
@@ -66,15 +55,10 @@ namespace rse
             return registry.view<Components...>();
         }
 
-		template<typename... Components>
-		static entt::View<uint32_t, Components...> getEditorView()
-		{
-			return editorRegistry.view<Components...>();
-		}
-
 		static void addSystem(BaseSystem* system);
 
 		static void update(float delta);
+		static void updateUI();
 		static void clean();
 
 		static bool save();
@@ -82,7 +66,6 @@ namespace rse
 
 	private:
 		static entt::DefaultRegistry registry;
-		static entt::DefaultRegistry editorRegistry;
 		static std::vector<BaseSystem*> m_systemsList;
 	};
 }

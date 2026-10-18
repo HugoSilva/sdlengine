@@ -1,6 +1,7 @@
 #include "Core.h"
 #include <functional>
 #include <imgui.h>
+#include "Render/ImGuiLayer.hpp"
 
 #ifdef EMSCRIPTEN
 static void DispatchLoop(void* fp)
@@ -28,6 +29,8 @@ Core::Core() : m_FramesPerSecond(0)
 	rse::Shader* defaultShader = new rse::Shader("Resources/Default.vert", "Resources/Default.frag");
 	m_Renderer = new rse::OpenGLRenderer(m_Window->getWindow(), defaultShader);
 
+	rse::ImGuiLayer::init(m_Window->getWindow(), m_Window->getContext());
+
 	rse::ECSManager::init();
 }
 
@@ -38,6 +41,9 @@ Core::~Core()
 	rse::TextureManager::clean();
 	PhysicsManager::Clean();
 	rse::ECSManager::clean();
+
+	// Must happen while the GL context and the SDL window are still alive.
+	rse::ImGuiLayer::shutdown();
 
 	delete m_Window;
 }
@@ -85,16 +91,44 @@ void Core::run()
 
 	rse::InputManager::Update();
 
+	// The ImGui frame has to be open before anything submits widgets, and
+	// closed after the scene has been drawn, so that the UI ends up on top.
+	rse::ImGuiLayer::beginFrame();
+
 	//TODO review scene manager logic now that we are using ECS
 	SceneManager::update(deltaTime);
 
 	//TODO shader needs to be moved to the renderable, objects may have different shaders
 	SceneManager::render(); // Only for shader
+
+	// The UI is built before the scene is drawn: panels may need to know their
+	// own size in order to size a render target (the viewport does this).
+	rse::ECSManager::updateUI();
+
+	// The editor draws the scene into its viewport panel's framebuffer; a game
+	// returns nullptr here and draws straight to the window.
+	rse::Framebuffer* sceneTarget = getSceneTarget();
+	if (sceneTarget != nullptr)
+	{
+		sceneTarget->bind();
+	}
+	else
+	{
+		m_Window->bindDefaultFramebuffer();
+	}
+
 	m_Renderer->begin();
 	//TODO need to split this up for normal systems and render systems
 	rse::ECSManager::update(deltaTime);
 	m_Renderer->end();
 	m_Renderer->flush();
+
+	if (sceneTarget != nullptr)
+	{
+		rse::Framebuffer::unbind();
+	}
+
+	rse::ImGuiLayer::endFrame();
 
 	deltaAccumulator += deltaTime;
 	frames++;
@@ -106,6 +140,4 @@ void Core::run()
 		deltaAccumulator = 0.f;
 		tick();
 	}
-	
-	std::cout << ImGui::GetIO().Framerate << " FPS" << std::endl;
 }

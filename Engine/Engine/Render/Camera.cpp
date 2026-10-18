@@ -1,5 +1,8 @@
 #include "Camera.hpp"
 
+#include <algorithm>
+#include <cmath>
+
 #include "../Components/Shader.hpp"
 #include "../Input/Keyboard.hpp"
 #include "../Input/Mouse.hpp"
@@ -34,8 +37,30 @@ namespace rse
 
 		//TODO Implement perspective support
 		//TODO Add support for multiple resolutions
-		//projection = glm::perspective(GetZoom(), 1280.0f / 720.0f, 0.1f, 100.0f);
-		m_Projection = glm::ortho(0.0f, 1280.0f, 0.0f, 720.0f, -1.0f, 1.0f);
+		updateOrthoProjection();
+	}
+
+	void Camera::updateOrthoProjection()
+	{
+		const float halfWidth = (m_OrthoSize.x * 0.5f) / m_OrthoZoom;
+		const float halfHeight = (m_OrthoSize.y * 0.5f) / m_OrthoZoom;
+
+		m_Projection = glm::ortho(
+			m_OrthoCenter.x - halfWidth, m_OrthoCenter.x + halfWidth,
+			m_OrthoCenter.y - halfHeight, m_OrthoCenter.y + halfHeight,
+			-1.0f, 1.0f);
+	}
+
+	void Camera::Pan(const glm::vec2& worldDelta)
+	{
+		m_OrthoCenter += worldDelta;
+		updateOrthoProjection();
+	}
+
+	void Camera::AddZoom(float steps)
+	{
+		m_OrthoZoom = glm::clamp(m_OrthoZoom * static_cast<float>(std::pow(1.15f, steps)), 0.05f, 20.0f);
+		updateOrthoProjection();
 	}
 
 	void Camera::Update(float deltaTime)

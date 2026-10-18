@@ -1,8 +1,12 @@
 #include "SetupView.h"
 
-#include "../Components/EntityViewerComponent.hpp"
-#include "../Components/PropertyComponent.hpp"
-#include "../Components/MenuBarComponent.hpp"
+#include "../Layout/EditorLayout.hpp"
+#include "../Panels/ConsolePanel.hpp"
+#include "../Panels/ContentBrowserPanel.hpp"
+#include "../Panels/DebugPanel.hpp"
+#include "../Panels/HierarchyPanel.hpp"
+#include "../Panels/InspectorPanel.hpp"
+#include "../Panels/ViewportPanel.hpp"
 #include "../EditorManager.h"
 
 SetupView::SetupView(std::string name, SDL_Window* win)
@@ -19,25 +23,23 @@ SetupView::SetupView(std::string name, SDL_Window* win)
 	using namespace rse;
 
 	m_Shader = new Shader("Resources/Default.vert", "Resources/Default.frag");
-	m_Layer = new Layer(new OpenGLRenderer(win, m_Shader), m_Shader);
 
 	//TODO I need to add a function to load resources in the project
 	TextureManager::add(new Texture("test00", "Resources/tex3.png"));
 	SoundManager::add(new Sound("eff", "Resources/effect.wav"));
 
-	//ImguiMenuBar* menubar = new ImguiMenuBar();
-	//m_Layer->add(menubar);
-	m_render = new RenderSystem();
+	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
+
+	m_Layout = new EditorLayout();
+	m_Layout->addPanel(std::make_unique<HierarchyPanel>());
+	m_Layout->addPanel(std::make_unique<ContentBrowserPanel>());
+	m_Layout->addPanel(std::make_unique<DebugPanel>());
+	m_Layout->addPanel(std::make_unique<ViewportPanel>(m_Camera));
+	m_Layout->addPanel(std::make_unique<InspectorPanel>());
+	m_Layout->addPanel(std::make_unique<ConsolePanel>());
+
+	m_render = new RenderSystem(m_Layout);
 	rse::ECSManager::addSystem(m_render);
-
-	uint32_t entity = rse::ECSManager::createEditorEntity();
-	rse::ECSManager::addEditorComponent<EditorComponent>(entity, new MenuBarComponent());
-
-	uint32_t entity1 = rse::ECSManager::createEditorEntity();
-	rse::ECSManager::addEditorComponent<EditorComponent>(entity1, new EntityViewerComponent());
-
-	uint32_t entity2 = rse::ECSManager::createEditorEntity();
-	rse::ECSManager::addEditorComponent<EditorComponent>(entity2, new PropertyComponent());
 
 	//New Entities code
 	//for (int i = 0; i < 5000; i++)
@@ -55,7 +57,6 @@ SetupView::SetupView(std::string name, SDL_Window* win)
 	//	rse::ECSManager::addComponent<SpriteComponent>(entity3, new Sprite(glm::vec3(position.x, position.y, position.z), glm::vec2(40, 40), TextureManager::get("test00")));
 	//}
 
-	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
 	m_Name = name;
 
 	EditorManager::init();
@@ -76,5 +77,4 @@ void SetupView::Render()
 {
 	m_Shader->enable();
 	m_Camera->Render(m_Shader);
-	//m_Layer->render();
 }

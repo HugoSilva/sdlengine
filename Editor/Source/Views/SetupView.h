@@ -14,7 +14,7 @@ public:
 	void Render();
 
 private:
-	rse::Layer* m_Layer;
+	EditorLayout* m_Layout{ nullptr };
 	rse::Camera* m_Camera;
 	RenderSystem* m_render;
 };

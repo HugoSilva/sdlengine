@@ -52,6 +52,8 @@ namespace rse
 		void end();
 		void flush();
 
+		float* getClearColor() override;
+
 	private:
 		unsigned int m_VAO, m_VBO;
 		int m_IndexCount;

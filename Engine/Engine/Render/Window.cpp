@@ -1,10 +1,7 @@
 #include "Window.hpp"
 
-#include <imgui.h>
-#include <imgui_impl_sdl3.h>
-#include <imgui_impl_opengl3.h>
-
 #include "../Input/InputManager.hpp"
+#include "../Utils/Logger.hpp"
 
 #ifdef EMSCRIPTEN
 	#include <SDL3/SDL_opengles2.h>
@@ -22,11 +19,7 @@ namespace rse
 
 	Window::~Window()
 	{
-		//TODO Isolate the Imgui implementation
-		ImGui_ImplOpenGL3_Shutdown();
-		ImGui_ImplSDL3_Shutdown();
-		ImGui::DestroyContext();
-
+		// ImGui is owned by rse::ImGuiLayer now (see ImGuiLayer::shutdown()).
 		SDL_DestroyWindow(m_Window);
 		SDL_Quit();
 	}
@@ -37,7 +30,7 @@ namespace rse
 		// VIDEO/AUDIO/GAMEPAD all imply SDL_INIT_EVENTS.
 		if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD))
 		{
-			std::cout << "Failed to initialize SDL: " << SDL_GetError() << std::endl;
+			Logger::error(std::string("Failed to initialize SDL: ") + SDL_GetError());
 			return false;
 		}
 
@@ -53,7 +46,7 @@ namespace rse
 		// SDL now places the window, or you can SDL_SetWindowPosition() later.
 		m_Window = SDL_CreateWindow(m_Title, m_Width, m_Height, SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 		if (m_Window == nullptr) {
-			std::cout << "Failed to create SDL Window: " << SDL_GetError() << std::endl;
+			Logger::error(std::string("Failed to create SDL Window: ") + SDL_GetError());
 			SDL_Quit();
 			return false;
 		}
@@ -65,7 +58,7 @@ namespace rse
 			GLenum result = glewInit();
 			if (result != GLEW_OK)
 			{
-				std::cout << "Failed to initialize GLEW: " << glewGetErrorString(result) << std::endl;
+				Logger::error(std::string("Failed to initialize GLEW: ") + reinterpret_cast<const char*>(glewGetErrorString(result)));
 			}
 		#endif
 
@@ -81,15 +74,11 @@ namespace rse
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		std::cout << "OpenGL " << glGetString(GL_VERSION) << std::endl;
+		const GLubyte* version = glGetString(GL_VERSION);
+		Logger::log(std::string("OpenGL ") + (version != nullptr ? reinterpret_cast<const char*>(version) : "unknown"));
 
-		//TODO Isolate the Imgui implementation
-		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		ImGui_ImplSDL3_InitForOpenGL(m_Window, m_Context);
-		ImGui_ImplOpenGL3_Init("#version 130");
-		ImGui::StyleColorsDark();
-
+		// ImGui is initialised separately once the window exists -- see
+		// rse::ImGuiLayer::init(), called from Core.
 		return true;
 	}
 
@@ -97,5 +86,15 @@ namespace rse
 	{
 		//TODO I need to rethink the quit logic for the window
 		return !InputManager::IsQuitRequested();
+	}
+
+	void Window::bindDefaultFramebuffer()
+	{
+		int width = 0;
+		int height = 0;
+		SDL_GetWindowSizeInPixels(m_Window, &width, &height);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, width, height);
 	}
 }
