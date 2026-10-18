@@ -1,6 +1,7 @@
 #include <iostream>
 #include <gtest/gtest.h>
 
+#include "ECSManagerProjectIo_test.h"
 #include "SoundManager_test.h"
 #include "TextureManager_test.h"
 
