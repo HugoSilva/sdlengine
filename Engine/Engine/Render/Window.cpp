@@ -85,7 +85,10 @@ namespace rse
 
 		//TODO Isolate the Imgui implementation
 		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		ImGuiIO& io = ImGui::GetIO();
+		// The vendored ImGui is the docking branch (v1.93.0-docking), which is
+		// what gives the Editor its DockSpace based layout.
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		ImGui_ImplSDL3_InitForOpenGL(m_Window, m_Context);
 		ImGui_ImplOpenGL3_Init("#version 130");
 		ImGui::StyleColorsDark();

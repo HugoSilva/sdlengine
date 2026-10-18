@@ -1,6 +1,11 @@
 
 # ---------------------------------------------------------------------------
-# ImGui (vendored, 1.93.0) + the official SDL3 / OpenGL3 backends.
+# ImGui (vendored, 1.93.0-docking) + the official SDL3 / OpenGL3 backends.
+#
+# The 'docking' branch is used instead of master: it is the same release
+# (1.93.0), same file layout and same backend APIs, but it additionally
+# provides DockSpace()/ImGuiDockNodeFlags, which the Editor's layout is built
+# on. See the Dependencies section of the README.
 #
 # The engine previously shipped hand-written SDL/GL backends built on the
 # ImGui 1.60 API (io.KeyMap / io.KeysDown), which no longer exists. The
