@@ -16,6 +16,11 @@ namespace rse
 		SDL_Window* getWindow() { return m_Window; };
 		SDL_GLContext getContext() { return m_Context; };
 
+		// Makes the window's back buffer the render target again and resets the
+		// GL viewport to the current pixel size (the window may have been
+		// resized since the last frame).
+		void bindDefaultFramebuffer();
+
 	private:
 		SDL_Event m_WindowEvent;
 		SDL_Window* m_Window;

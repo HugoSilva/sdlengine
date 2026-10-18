@@ -85,4 +85,14 @@ namespace rse
 		//TODO I need to rethink the quit logic for the window
 		return !InputManager::IsQuitRequested();
 	}
+
+	void Window::bindDefaultFramebuffer()
+	{
+		int width = 0;
+		int height = 0;
+		SDL_GetWindowSizeInPixels(m_Window, &width, &height);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, width, height);
+	}
 }

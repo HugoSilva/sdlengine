@@ -3,6 +3,7 @@
 #include "../Layout/EditorLayout.hpp"
 #include "../Panels/HierarchyPanel.hpp"
 #include "../Panels/InspectorPanel.hpp"
+#include "../Panels/ViewportPanel.hpp"
 #include "../EditorManager.h"
 
 SetupView::SetupView(std::string name, SDL_Window* win)
@@ -24,8 +25,11 @@ SetupView::SetupView(std::string name, SDL_Window* win)
 	TextureManager::add(new Texture("test00", "Resources/tex3.png"));
 	SoundManager::add(new Sound("eff", "Resources/effect.wav"));
 
+	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
+
 	m_Layout = new EditorLayout();
 	m_Layout->addPanel(std::make_unique<HierarchyPanel>());
+	m_Layout->addPanel(std::make_unique<ViewportPanel>(m_Camera));
 	m_Layout->addPanel(std::make_unique<InspectorPanel>());
 
 	m_render = new RenderSystem(m_Layout);
@@ -47,7 +51,6 @@ SetupView::SetupView(std::string name, SDL_Window* win)
 	//	rse::ECSManager::addComponent<SpriteComponent>(entity3, new Sprite(glm::vec3(position.x, position.y, position.z), glm::vec2(40, 40), TextureManager::get("test00")));
 	//}
 
-	m_Camera = new Camera(glm::vec3(0.0f, 0.0f, 0.0f));
 	m_Name = name;
 
 	EditorManager::init();

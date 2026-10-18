@@ -5,6 +5,8 @@
 
 #include <Core.h>
 
+#include "../EditorManager.h"
+
 namespace
 {
 	constexpr const char* kDockSpaceId = "RSE_DockSpace";
@@ -21,6 +23,10 @@ void EditorLayout::addPanel(std::unique_ptr<EditorPanel> panel)
 
 void EditorLayout::draw()
 {
+	// Panels that are hidden or collapsed never run, so start from "no scene
+	// target" and let the viewport panel claim it when it draws.
+	EditorManager::setSceneTarget(nullptr);
+
 	// The menu bar has to be submitted first: it is what shrinks the viewport
 	// work area that the dock space then fills.
 	drawMenuBar();

@@ -23,6 +23,12 @@ public:
 	static void setSelectedEntity(uint32_t entity) { m_SelectedEntity = entity; }
 	static uint32_t getSelectedEntity() { return m_SelectedEntity; }
 
+	// The scene is rendered into the viewport panel's framebuffer rather than
+	// the window. The viewport claims this while it draws; Core::run() picks it
+	// up for the scene pass, and nullptr means "draw straight to the window".
+	static void setSceneTarget(rse::Framebuffer* target) { m_SceneTarget = target; }
+	static rse::Framebuffer* getSceneTarget() { return m_SceneTarget; }
+
     template<typename Component>
     static bool showComponentWidget()
     {
@@ -46,4 +52,5 @@ public:
 private:
 
     static uint32_t m_SelectedEntity;
+	static rse::Framebuffer* m_SceneTarget;
 };

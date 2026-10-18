@@ -1,6 +1,7 @@
 #include <Core.h>
 #include <glm/glm.hpp>
 #include "./Views/SetupView.h"
+#include "./EditorManager.h"
 
 #if _WIN32
 extern "C"
@@ -40,6 +41,10 @@ public:
 	{
 		
 	}
+
+	// The editor renders the scene into its viewport panel's framebuffer
+	// instead of straight to the window.
+	rse::Framebuffer* getSceneTarget() override { return EditorManager::getSceneTarget(); }
 
 private:
 	rse::Window * m_Window;

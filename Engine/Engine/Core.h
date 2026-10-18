@@ -29,6 +29,7 @@
 #include "Ecs/Components/IncludeList.hpp"
 #include "Ecs/Systems/BaseSystem.hpp"
 #include "Render/Camera.hpp"
+#include "Render/Framebuffer.hpp"
 #include "Render/Font.hpp"
 #include "Render/FontManager.hpp"
 #include "Render/Renderable2D.hpp"
@@ -49,6 +50,11 @@ public:
 	static bool getRunning() { return m_Running; }
 	static rse::Renderer2D* getRenderer() { return m_Renderer; }
 	static rse::Window* getWindow() { return m_Window; }
+
+	// Render target the scene pass should draw into, or nullptr to draw into the
+	// window's back buffer. The editor overrides this so the scene lands in its
+	// viewport panel instead of the whole window.
+	virtual rse::Framebuffer* getSceneTarget() { return nullptr; }
 
 protected:
 	Core();

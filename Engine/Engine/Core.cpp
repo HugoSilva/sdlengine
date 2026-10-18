@@ -105,11 +105,28 @@ void Core::run()
 	// own size in order to size a render target (the viewport does this).
 	rse::ECSManager::updateUI();
 
+	// The editor draws the scene into its viewport panel's framebuffer; a game
+	// returns nullptr here and draws straight to the window.
+	rse::Framebuffer* sceneTarget = getSceneTarget();
+	if (sceneTarget != nullptr)
+	{
+		sceneTarget->bind();
+	}
+	else
+	{
+		m_Window->bindDefaultFramebuffer();
+	}
+
 	m_Renderer->begin();
 	//TODO need to split this up for normal systems and render systems
 	rse::ECSManager::update(deltaTime);
 	m_Renderer->end();
 	m_Renderer->flush();
+
+	if (sceneTarget != nullptr)
+	{
+		rse::Framebuffer::unbind();
+	}
 
 	rse::ImGuiLayer::endFrame();
 

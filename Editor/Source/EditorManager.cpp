@@ -1,6 +1,7 @@
 #include "EditorManager.h"
 
 uint32_t EditorManager::m_SelectedEntity{ INVALID_ENTITY_ID };
+rse::Framebuffer* EditorManager::m_SceneTarget{ nullptr };
 
 void EditorManager::init()
 {
