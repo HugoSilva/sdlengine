@@ -23,5 +23,9 @@ namespace rse
 		virtual void end() {}
 
 		virtual void flush() = 0;
+
+		// The colour the renderer clears the target with, for debug UIs that want
+		// to expose it. Null when the backend has no such notion.
+		virtual float* getClearColor() { return nullptr; }
 	};
 }

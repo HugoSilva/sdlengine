@@ -71,9 +71,11 @@ namespace rse
 		#endif // EMSCRIPTEN
 
 		clearColor->OnRender();
-		// OnImguiRender() only submits ImGui widgets, so it may be called at any
-		// point while a frame is open (rse::ImGuiLayer::beginFrame() runs first).
-		clearColor->OnImguiRender();
+	}
+
+	float* OpenGLRenderer::getClearColor()
+	{
+		return clearColor->getClearColor();
 	}
 
 	void OpenGLRenderer::submit(TransformComponent& transform, const Renderable2D* renderable)

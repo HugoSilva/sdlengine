@@ -1,6 +1,7 @@
 #include "SetupView.h"
 
 #include "../Layout/EditorLayout.hpp"
+#include "../Panels/DebugPanel.hpp"
 #include "../Panels/HierarchyPanel.hpp"
 #include "../Panels/InspectorPanel.hpp"
 #include "../Panels/ViewportPanel.hpp"
@@ -29,6 +30,7 @@ SetupView::SetupView(std::string name, SDL_Window* win)
 
 	m_Layout = new EditorLayout();
 	m_Layout->addPanel(std::make_unique<HierarchyPanel>());
+	m_Layout->addPanel(std::make_unique<DebugPanel>());
 	m_Layout->addPanel(std::make_unique<ViewportPanel>(m_Camera));
 	m_Layout->addPanel(std::make_unique<InspectorPanel>());
 
