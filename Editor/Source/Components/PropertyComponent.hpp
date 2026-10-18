@@ -33,10 +33,12 @@ public:
 					BasicComponent& basicData = EditorManager::getComponent<BasicComponent>();
 
 					char str0[128] = "";
-					
-					strcpy_s(str0, basicData.m_Name);
+					basicData.m_Name.copy(str0, IM_ARRAYSIZE(str0) - 1);
 
-					ImGui::InputText("##name", str0, IM_ARRAYSIZE(str0));
+					if (ImGui::InputText("##name", str0, IM_ARRAYSIZE(str0)))
+					{
+						basicData.m_Name = str0;
+					}
 					ImGui::SameLine();
 					ImGui::Checkbox("Static", &basicData.m_IsStatic);
 				}

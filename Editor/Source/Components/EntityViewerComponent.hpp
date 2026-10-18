@@ -35,7 +35,7 @@ public:
 				ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ((selection_mask & (1 << entity)) ? ImGuiTreeNodeFlags_Selected : 0);
 
 				node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen; // ImGuiTreeNodeFlags_Bullet
-				ImGui::TreeNodeEx((void*)(intptr_t)entity, node_flags, basic.m_Name);
+				ImGui::TreeNodeEx((void*)(intptr_t)entity, node_flags, basic.m_Name.c_str());
 				if (ImGui::IsItemClicked())
 				{
 					node_clicked = entity;
