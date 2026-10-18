@@ -15,7 +15,7 @@ Files should always be named using Pascal case (SoundManager.xxx) and the header
 
 **Brackets** in the code base should always require a new line, for example `void Sound::resume()
 	{
-		Mix_Resume(m_Channel);
+		MIX_ResumeTrack(m_Track);
 	}`, the only exception to this rule are inline declarations for example `inline const std::string& getName() const { return m_Name; }`
 
 **C++11/14** in the code base should be mandatory when possible, raw pointers should be changed to be smart pointers, templates should be used when necessary, make use of range-based for loops, lambda and so one.
