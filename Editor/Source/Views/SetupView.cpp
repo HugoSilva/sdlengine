@@ -7,6 +7,7 @@
 #include "../Panels/HierarchyPanel.hpp"
 #include "../Panels/InspectorPanel.hpp"
 #include "../Panels/ViewportPanel.hpp"
+#include "../Render/GridRenderSystem.hpp"
 #include "../EditorManager.h"
 
 SetupView::SetupView(std::string name, SDL_Window* win)
@@ -43,6 +44,10 @@ SetupView::SetupView(std::string name, SDL_Window* win)
 
 	m_render = new RenderSystem(m_Layout);
 	rse::ECSManager::addSystem(m_render);
+
+	// The grid is submitted into the scene pass before the sprites are, which is
+	// what puts it underneath them.
+	rse::ECSManager::addSystem(new GridRenderSystem(Core::getRenderer(), m_Camera), rse::SystemPhase::PreScene);
 
 	//New Entities code
 	//for (int i = 0; i < 5000; i++)

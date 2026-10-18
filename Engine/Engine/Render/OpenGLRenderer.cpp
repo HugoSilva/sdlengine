@@ -153,6 +153,50 @@ namespace rse
 		m_IndexCount += 6;
 	}
 
+	void OpenGLRenderer::submitQuad(TransformComponent& transform, glm::vec2 halfExtent, unsigned int color)
+	{
+		// Same transform and corner order as submit(), so the index buffer's
+		// winding applies unchanged; the difference is that tid stays 0, which is
+		// what makes Default.frag fall through to fs_in.color instead of sampling
+		// a texture. That is why a grid line needs no shader change.
+		glm::mat4 Model = glm::translate(glm::mat4(1.f), transform.position);
+		Model = glm::rotate(Model, glm::radians(transform.rotation.x), glm::vec3(1.f, 0.f, 0.f));
+		Model = glm::rotate(Model, glm::radians(transform.rotation.y), glm::vec3(0.f, 1.f, 0.f));
+		Model = glm::rotate(Model, glm::radians(transform.rotation.z), glm::vec3(0.f, 0.f, 1.f));
+		Model = glm::scale(Model, transform.scale);
+
+		const glm::vec3 downLeft = glm::vec3(-1.f * halfExtent.x, -1.f * halfExtent.y, 0.f);
+		const glm::vec3 upLeft = glm::vec3(-1.f * halfExtent.x, 1.f * halfExtent.y, 0.f);
+		const glm::vec3 upRight = glm::vec3(1.f * halfExtent.x, 1.f * halfExtent.y, 0.f);
+		const glm::vec3 downRight = glm::vec3(1.f * halfExtent.x, -1.f * halfExtent.y, 0.f);
+
+		m_Buffer->vertex = Model * glm::vec4(downLeft, 1.f);
+		m_Buffer->uv = glm::vec2(0.f, 1.f);
+		m_Buffer->tid = 0.0f;
+		m_Buffer->color = color;
+		m_Buffer++;
+
+		m_Buffer->vertex = Model * glm::vec4(upLeft, 1.f);
+		m_Buffer->uv = glm::vec2(0.f, 0.f);
+		m_Buffer->tid = 0.0f;
+		m_Buffer->color = color;
+		m_Buffer++;
+
+		m_Buffer->vertex = Model * glm::vec4(upRight, 1.f);
+		m_Buffer->uv = glm::vec2(1.f, 0.f);
+		m_Buffer->tid = 0.0f;
+		m_Buffer->color = color;
+		m_Buffer++;
+
+		m_Buffer->vertex = Model * glm::vec4(downRight, 1.f);
+		m_Buffer->uv = glm::vec2(1.f, 1.f);
+		m_Buffer->tid = 0.0f;
+		m_Buffer->color = color;
+		m_Buffer++;
+
+		m_IndexCount += 6;
+	}
+
 	void OpenGLRenderer::end()
 	{
 		#ifdef EMSCRIPTEN

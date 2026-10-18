@@ -2,6 +2,7 @@
 
 uint32_t EditorManager::m_SelectedEntity{ INVALID_ENTITY_ID };
 rse::Framebuffer* EditorManager::m_SceneTarget{ nullptr };
+EditorSettings EditorManager::m_Settings;
 
 void EditorManager::init()
 {

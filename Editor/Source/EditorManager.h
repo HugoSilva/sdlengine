@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core.h"
+#include "EditorSettings.hpp"
 #define INVALID_ENTITY_ID entt::null
 
 enum class eComponents { Audio, Rigidbody, Sprite };
@@ -31,6 +32,11 @@ public:
 	static void setSceneTarget(rse::Framebuffer* target) { m_SceneTarget = target; }
 	static rse::Framebuffer* getSceneTarget() { return m_SceneTarget; }
 
+	// View settings. The View menu toggles them, the systems that draw with them
+	// read them, and M7 persists them -- so they need a home the menu, the panels
+	// and the systems can all reach, which is this one.
+	static EditorSettings& settings() { return m_Settings; }
+
     template<typename Component>
     static bool showComponentWidget()
     {
@@ -57,4 +63,5 @@ private:
 
     static uint32_t m_SelectedEntity;
 	static rse::Framebuffer* m_SceneTarget;
+	static EditorSettings m_Settings;
 };

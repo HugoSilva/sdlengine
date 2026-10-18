@@ -146,6 +146,28 @@ namespace rse
 		return nice * base;
 	}
 
+	// An upper bound for the doubling loop below: past this the grid is a
+	// meaningless number of world units across, and the loop must not be able to
+	// run away on a degenerate worldPerPixel.
+	inline constexpr float kMaxGridStep = 1.0e7f;
+
+	// The drawn grid step: the smallest power-of-two multiple of base that still
+	// leaves at least minPixels between lines. Doubling rather than jumping to a
+	// nice number keeps every line on a multiple of base -- the lattice snapping
+	// uses. A grid you can see and a grid you snap to have to be the same grid.
+	inline float gridStep(float base, float worldPerPixel, float minPixels)
+	{
+		float step = base > 0.0f ? base : 1.0f;
+		const float minimum = niceStep(worldPerPixel, minPixels);
+
+		while (step < minimum && step < kMaxGridStep)
+		{
+			step *= 2.0f;
+		}
+
+		return step;
+	}
+
 	// The renderer builds every sprite as translate * rotate(x,y,z) * scale
 	// applied to the (+-halfExtent, 0) corners, so a box that matches what is on
 	// screen is a rotated, non-uniformly scaled rectangle -- never an

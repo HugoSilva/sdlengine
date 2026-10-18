@@ -180,6 +180,31 @@ namespace
 		EXPECT_NEAR(niceStep(0.1f, 12.0f), 2.0f, 0.001f);
 	}
 
+	TEST(OrthoView, GridStepStaysOnTheBaseLattice)
+	{
+		const float base = 32.0f;
+
+		for (float worldPerPixel = 0.01f; worldPerPixel < 100.0f; worldPerPixel *= 1.37f)
+		{
+			const float step = gridStep(base, worldPerPixel, 12.0f);
+			const float doublings = std::log2(step / base);
+
+			// Never finer than one grid square, never anything but a whole
+			// number of them, and always coarse enough to leave the requested
+			// spacing between lines.
+			EXPECT_GE(step, base);
+			EXPECT_NEAR(doublings, std::round(doublings), 1e-4f);
+			EXPECT_GE(step / worldPerPixel, 12.0f - 1e-3f);
+		}
+	}
+
+	TEST(OrthoView, GridStepSurvivesANonsenseBase)
+	{
+		EXPECT_GT(gridStep(0.0f, 1.0f, 12.0f), 0.0f);
+		EXPECT_GT(gridStep(-5.0f, 1.0f, 12.0f), 0.0f);
+		EXPECT_GT(gridStep(32.0f, 0.0f, 12.0f), 0.0f);
+	}
+
 	TEST(OrthoView, PointInOrientedBoxIsAxisAlignedAtZeroRotation)
 	{
 		const glm::vec2 half{ 40.0f, 10.0f };

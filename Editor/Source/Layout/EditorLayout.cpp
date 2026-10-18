@@ -5,6 +5,8 @@
 
 #include <Core.h>
 
+#include "../EditorManager.h"
+
 namespace
 {
 	constexpr const char* kDockSpaceId = "RSE_DockSpace";
@@ -81,6 +83,8 @@ void EditorLayout::drawMenuBar()
 		{
 			ImGui::MenuItem(panel->id(), nullptr, &panel->visible);
 		}
+		ImGui::Separator();
+		ImGui::MenuItem("Show Grid", nullptr, &EditorManager::settings().grid.visible);
 		ImGui::Separator();
 		if (ImGui::MenuItem("Reset Layout"))
 		{

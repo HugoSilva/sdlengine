@@ -16,6 +16,15 @@ namespace rse
 		unsigned int color;
 	};
 
+	// Sprites carry their tint as an unsigned int with red in the low byte.
+	// InspectorPanel unpacks it for the colour picker; this is the matching
+	// packer, so the layout is stated once instead of re-derived at every call
+	// site that has an r/g/b/a in hand.
+	inline constexpr unsigned int makeColor(unsigned int r, unsigned int g, unsigned int b, unsigned int a = 255)
+	{
+		return (r & 0xFF) | ((g & 0xFF) << 8) | ((b & 0xFF) << 16) | ((a & 0xFF) << 24);
+	}
+
 	class Renderable2D
 	{
 	public:
