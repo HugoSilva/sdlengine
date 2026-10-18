@@ -1,7 +1,5 @@
 #include "EditorManager.h"
 
-bool EditorManager::m_ShowSceneWidget{ true };
-bool EditorManager::m_ShowComponentWidget{ true };
 uint32_t EditorManager::m_SelectedEntity{ INVALID_ENTITY_ID };
 
 void EditorManager::init()
@@ -9,16 +7,6 @@ void EditorManager::init()
 	EventManager::getEventDispatcher()->sink<CreateEntity>().connect<&EditorManager::handleCreateEntityEvent>();
 	EventManager::getEventDispatcher()->sink<SelectEntity>().connect<&EditorManager::handleSelectEntityEvent>();
 	EventManager::getEventDispatcher()->sink<AddComponent>().connect<&EditorManager::handleAddComponentEvent>();
-}
-
-bool* EditorManager::getShowSceneWidget()
-{
-	return &m_ShowSceneWidget;
-}
-
-bool* EditorManager::getShowComponentWidget()
-{
-	return &m_ShowComponentWidget;
 }
 
 void EditorManager::handleCreateEntityEvent(const CreateEntity& event)

@@ -1,19 +1,21 @@
 #pragma once
 
 #include <Core.h>
-#include "../Components/MenuBarComponent.hpp"
-#include "../Components/EntityViewerComponent.hpp"
 
+#include "../Layout/EditorLayout.hpp"
+
+// Bridges the ECS system list to the editor UI: it is the one system that runs
+// in the UI phase, and all it does is hand control to EditorLayout.
 class RenderSystem : public BaseSystem
 {
 public:
-    RenderSystem() : BaseSystem() {}
+	RenderSystem(EditorLayout* layout) : BaseSystem(), m_Layout(layout) {}
 
-    void update(const float alpha)
-    {
-		rse::ECSManager::getEditorView<EditorComponent>().each([&](auto entity, EditorComponent &renderable)
-        {
-			renderable.render();
-        });
-    }
+	void renderUI() override
+	{
+		m_Layout->draw();
+	}
+
+private:
+	EditorLayout* m_Layout;
 };

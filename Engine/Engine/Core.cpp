@@ -100,6 +100,11 @@ void Core::run()
 
 	//TODO shader needs to be moved to the renderable, objects may have different shaders
 	SceneManager::render(); // Only for shader
+
+	// The UI is built before the scene is drawn: panels may need to know their
+	// own size in order to size a render target (the viewport does this).
+	rse::ECSManager::updateUI();
+
 	m_Renderer->begin();
 	//TODO need to split this up for normal systems and render systems
 	rse::ECSManager::update(deltaTime);

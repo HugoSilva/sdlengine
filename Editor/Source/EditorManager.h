@@ -17,8 +17,11 @@ public:
 	~EditorManager() {}
 
 	static void init();
-	static bool* getShowSceneWidget();
-    static bool* getShowComponentWidget();
+
+	// Selection is shared state: the hierarchy panel drives it, the inspector
+	// panel reads it.
+	static void setSelectedEntity(uint32_t entity) { m_SelectedEntity = entity; }
+	static uint32_t getSelectedEntity() { return m_SelectedEntity; }
 
     template<typename Component>
     static bool showComponentWidget()
@@ -42,8 +45,5 @@ public:
 
 private:
 
-	static bool m_ShowSceneWidget;
-	static bool m_ShowComponentWidget;
     static uint32_t m_SelectedEntity;
 };
-
