@@ -5,7 +5,7 @@ b2Vec2 PhysicsManager::m_gravity{ 0.0f, -10.0f };
 b2World* PhysicsManager::m_world;
 std::vector<Rigidbody*> PhysicsManager::m_Rigidbodies;
 // Needs to be dynamic to reflect the fps count
-float32 PhysicsManager::timeStep = 1.0f / 6000.0f;
+float PhysicsManager::timeStep = 1.0f / 6000.0f;
 int32 PhysicsManager::velocityIterations = 6;
 int32 PhysicsManager::positionIterations = 2;
 

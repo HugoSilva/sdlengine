@@ -61,7 +61,7 @@ point `-DRSE_GTEST_SOURCE_DIR=<path>` at a local GoogleTest checkout, or disable
 ##### [SDL_ttf 3.2.2](https://github.com/libsdl-org/SDL_ttf) - Rendering fonts
 ##### [GLM 1.0.3](https://github.com/g-truc/glm) - Math library
 ##### [IMGUI 1.93.0](https://github.com/ocornut/imgui) - GUI framework
-##### [Box2D 2.3.2](https://github.com/erincatto/box2d) - 2D Physics engine
+##### [Box2D 2.4.1](https://github.com/erincatto/box2d) - 2D Physics engine
 ##### [cereal 1.3.2](https://github.com/USCiLab/cereal) - Serialization
 ##### [EnTT 2.x](https://github.com/skypjack/entt) - Entity component system
 ##### [rapidxml 1.13](http://rapidxml.sourceforge.net/) - XML parsing
