@@ -47,11 +47,11 @@ public:
 				{
 					TransformComponent& transform = EditorManager::getComponent<TransformComponent>();
 
-					ImGui::InputFloat3("Position", glm::value_ptr(transform.position), 2);
+					ImGui::InputFloat3("Position", glm::value_ptr(transform.position), "%.2f");
 
-					ImGui::InputFloat3("Rotation", glm::value_ptr(transform.rotation), 2);
+					ImGui::InputFloat3("Rotation", glm::value_ptr(transform.rotation), "%.2f");
 
-					ImGui::InputFloat3("Scale", glm::value_ptr(transform.scale), 2);
+					ImGui::InputFloat3("Scale", glm::value_ptr(transform.scale), "%.2f");
 				}
 			}
 			if (EditorManager::showComponentWidget<SpriteComponent>())

@@ -4,11 +4,8 @@
 #include <glm/mat4x4.hpp> // glm::mat4
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include <glm/gtc/type_ptr.hpp> // glm::value_ptr
-#ifdef EMSCRIPTEN
-	#include "../Utils/imgui_impl_sdl_gles2.h"
-#else
-	#include "../Utils/imgui_impl_sdl_gl3.h"
-#endif // EMSCRIPTEN
+#include <imgui_impl_sdl3.h>
+#include <imgui_impl_opengl3.h>
 
 namespace rse
 {
@@ -69,7 +66,11 @@ namespace rse
 
 	void OpenGLRenderer::begin()
 	{
-		ImGui_ImplSdlGL_NewFrame(m_Window);
+		// Official ImGui backends: platform + renderer NewFrame, then the app must
+		// call ImGui::NewFrame() itself (the old custom backend used to do this).
+		ImGui_ImplSDL3_NewFrame();
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui::NewFrame();
 
 		glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 		#ifdef EMSCRIPTEN
@@ -190,7 +191,7 @@ namespace rse
 		m_TextureSlots.clear();
 
 		ImGui::Render();
-		ImGui_ImplSdlGL_RenderDrawData(ImGui::GetDrawData());
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		SDL_GL_SwapWindow(m_Window);
 	}
 }

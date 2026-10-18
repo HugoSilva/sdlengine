@@ -2,7 +2,7 @@
 
 #include <string>
 #include <glm/glm.hpp>
-#include <SDL_ttf.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
 namespace rse
 {

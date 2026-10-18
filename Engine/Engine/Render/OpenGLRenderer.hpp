@@ -2,7 +2,7 @@
 
 #ifdef EMSCRIPTEN
 #define GL_GLEXT_PROTOTYPES
-#include <SDL_opengles2.h>
+#include <SDL3/SDL_opengles2.h>
 
 // OES_vertex_array_object
 #define glGenVertexArrays glGenVertexArraysOES

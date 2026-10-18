@@ -4,16 +4,15 @@
 # No other file in the build may reference a Thirdparty/ path directly. To use a
 # dependency, link one of the imported targets defined here.
 #
-#   RSE::ThirdParty   header-only interface (all include directories)
-#   GLEW::GLEW        OpenGL extension loader            (shared)
-#   SDL2::SDL2        windowing / input / platform        (shared)
-#   SDL2::SDL2main    WinMain entry-point shim            (static)
-#   SDL2::Image       image loading                       (shared)
-#   SDL2::Mixer       audio                               (shared)
-#   SDL2::TTF         font rendering                       (shared)
-#   Box2D::Box2D      2D physics                           (static, per-config)
-#   gtest             GoogleTest (only if vendored for $ARCHITECTURE)
-#   OpenGL::GL        system OpenGL
+#   RSE::ThirdParty       header-only interface (all include directories)
+#   GLEW::GLEW            OpenGL extension loader            (shared)
+#   SDL3::SDL3            windowing / input / platform        (shared)
+#   SDL3_image::SDL3_image image loading                      (shared)
+#   SDL3_mixer::SDL3_mixer audio                              (shared)
+#   SDL3_ttf::SDL3_ttf     font rendering                     (shared)
+#   Box2D::Box2D          2D physics                          (static, per-config)
+#   gtest                 GoogleTest (only if vendored for $ARCHITECTURE)
+#   OpenGL::GL            system OpenGL
 #
 # Runtime DLLs of the shared dependencies are collected in RSE_RUNTIME_DLLS and
 # deployed next to each executable through rse_deploy_runtime().
@@ -50,10 +49,10 @@ endfunction()
 add_library(RSE::ThirdParty INTERFACE IMPORTED GLOBAL)
 target_include_directories(RSE::ThirdParty INTERFACE
   "${RSE_TP}/Glew/include"
-  "${RSE_TP}/SDL2/include"
-  "${RSE_TP}/SDL2_image/include"
-  "${RSE_TP}/SDL2_mixer/include"
-  "${RSE_TP}/SDL2_ttf/include"
+  "${RSE_TP}/SDL3/include"
+  "${RSE_TP}/SDL3_image/include"
+  "${RSE_TP}/SDL3_mixer/include"
+  "${RSE_TP}/SDL3_ttf/include"
   "${RSE_TP}/glm/include"
   "${RSE_TP}/imgui/include"
   "${RSE_TP}/Box2D/include"
@@ -68,25 +67,23 @@ rse_import_shared(GLEW::GLEW
   "${RSE_TP}/Glew/lib/${ARCHITECTURE}/glew32.lib"
   "${RSE_TP}/Glew/bin/${ARCHITECTURE}/glew32.dll")
 
-rse_import_shared(SDL2::SDL2
-  "${RSE_TP}/SDL2/lib/${ARCHITECTURE}/SDL2.lib"
-  "${RSE_TP}/SDL2/bin/${ARCHITECTURE}/SDL2.dll")
+# NOTE: SDL3 has no separate SDL3main import library -- the WinMain -> main shim
+# lives inside SDL3 itself (see <SDL3/SDL_main.h>).
+rse_import_shared(SDL3::SDL3
+  "${RSE_TP}/SDL3/lib/${ARCHITECTURE}/SDL3.lib"
+  "${RSE_TP}/SDL3/bin/${ARCHITECTURE}/SDL3.dll")
 
-rse_import_shared(SDL2::Image
-  "${RSE_TP}/SDL2_image/lib/${ARCHITECTURE}/SDL2_image.lib"
-  "${RSE_TP}/SDL2_image/bin/${ARCHITECTURE}/SDL2_image.dll")
+rse_import_shared(SDL3_image::SDL3_image
+  "${RSE_TP}/SDL3_image/lib/${ARCHITECTURE}/SDL3_image.lib"
+  "${RSE_TP}/SDL3_image/bin/${ARCHITECTURE}/SDL3_image.dll")
 
-rse_import_shared(SDL2::Mixer
-  "${RSE_TP}/SDL2_mixer/lib/${ARCHITECTURE}/SDL2_mixer.lib"
-  "${RSE_TP}/SDL2_mixer/bin/${ARCHITECTURE}/SDL2_mixer.dll")
+rse_import_shared(SDL3_mixer::SDL3_mixer
+  "${RSE_TP}/SDL3_mixer/lib/${ARCHITECTURE}/SDL3_mixer.lib"
+  "${RSE_TP}/SDL3_mixer/bin/${ARCHITECTURE}/SDL3_mixer.dll")
 
-rse_import_shared(SDL2::TTF
-  "${RSE_TP}/SDL2_ttf/lib/${ARCHITECTURE}/SDL2_ttf.lib"
-  "${RSE_TP}/SDL2_ttf/bin/${ARCHITECTURE}/SDL2_ttf.dll")
-
-# SDL2main is a static helper that provides the WinMain -> main shim.
-rse_import_static(SDL2::SDL2main
-  "${RSE_TP}/SDL2/lib/${ARCHITECTURE}/SDL2main.lib")
+rse_import_shared(SDL3_ttf::SDL3_ttf
+  "${RSE_TP}/SDL3_ttf/lib/${ARCHITECTURE}/SDL3_ttf.lib"
+  "${RSE_TP}/SDL3_ttf/bin/${ARCHITECTURE}/SDL3_ttf.dll")
 
 # ---------------------------------------------------------------------------
 # Box2D -- static, config-specific (Box2D_d.lib in Debug, Box2D.lib otherwise).
@@ -154,10 +151,10 @@ endif()
 set(RSE_RUNTIME_DLLS "")
 foreach(_rse_dll_dir
     "${RSE_TP}/Glew/bin/${ARCHITECTURE}"
-    "${RSE_TP}/SDL2/bin/${ARCHITECTURE}"
-    "${RSE_TP}/SDL2_image/bin/${ARCHITECTURE}"
-    "${RSE_TP}/SDL2_mixer/bin/${ARCHITECTURE}"
-    "${RSE_TP}/SDL2_ttf/bin/${ARCHITECTURE}")
+    "${RSE_TP}/SDL3/bin/${ARCHITECTURE}"
+    "${RSE_TP}/SDL3_image/bin/${ARCHITECTURE}"
+    "${RSE_TP}/SDL3_mixer/bin/${ARCHITECTURE}"
+    "${RSE_TP}/SDL3_ttf/bin/${ARCHITECTURE}")
   if(EXISTS "${_rse_dll_dir}")
     file(GLOB _rse_dlls "${_rse_dll_dir}/*.dll")
     list(APPEND RSE_RUNTIME_DLLS ${_rse_dlls})

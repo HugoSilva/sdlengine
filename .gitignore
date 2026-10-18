@@ -257,3 +257,15 @@ inter/
 imgui.ini
 # Runtime-generated editor config (see Editor/Source/Views/SetupView.cpp)
 Editor/default.cfg
+
+# Vendored third-party binaries (DLLs + import libraries) must always be
+# tracked. Without these negations the generic bin/ x64/ x86/ build-output
+# rules above would silently drop every file under Thirdparty/<lib>/bin|lib/.
+!Thirdparty/**/bin/
+!Thirdparty/**/bin/**
+!Thirdparty/**/lib/x64/
+!Thirdparty/**/lib/x64/**
+!Thirdparty/**/lib/x86/
+!Thirdparty/**/lib/x86/**
+!Thirdparty/**/lib/Win32/
+!Thirdparty/**/lib/Win32/**

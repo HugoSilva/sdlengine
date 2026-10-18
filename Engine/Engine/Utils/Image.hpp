@@ -1,14 +1,18 @@
 #pragma once
 
-#include <SDL_image.h>
-#include <SDL_ttf.h>
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
 class Image
 {
 public:
+	// Fills `mode` with the matching GL_* upload format for `surface`.
 	static void checkImageMode(int* mode, SDL_Surface* surface);
 
-	static void* loadFont(TTF_Font* font, const char* text, SDL_Color textColor, int* width, int* height, int* mode);
+	// Renders `text` into a new surface. The caller owns it (SDL_DestroySurface).
+	static SDL_Surface* loadFont(TTF_Font* font, const char* text, SDL_Color textColor);
 
-	static void* loadImage(const char* filename, int* width, int* height, int* mode);
+	// Loads an image file into a new surface. The caller owns it (SDL_DestroySurface).
+	static SDL_Surface* loadImage(const char* filename);
 };

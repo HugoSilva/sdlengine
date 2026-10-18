@@ -9,10 +9,10 @@ namespace rse
 	
 	void FontManager::init()
 	{
-		if (TTF_Init() == -1)
+		// SDL3_ttf returns bool now (true == success).
+		if (!TTF_Init())
 		{
-			std::string fontError("error: %s\n", SDL_GetError());
-			Logger::error("SDL_ttf could not initialize, " + fontError);
+			Logger::error("SDL_ttf could not initialize, " + std::string(SDL_GetError()));
 		}
 	}
 

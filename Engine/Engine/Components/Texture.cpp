@@ -1,7 +1,7 @@
 #include "Texture.hpp"
 
 #ifdef EMSCRIPTEN
-#include <SDL_opengles2.h>
+#include <SDL3/SDL_opengles2.h>
 #else
 #include <GL/glew.h>
 #endif // EMSCRIPTEN
@@ -15,7 +15,14 @@ namespace rse
 		: m_Name(name), m_Filename(filename)
 	{
 		int Mode = GL_RGB;
-		void* pixels = Image::loadImage(m_Filename.c_str(), &m_Width, &m_Height, &Mode);
+		// Image::loadImage hands us an owned surface; it must outlive the upload.
+		SDL_Surface* surface = Image::loadImage(m_Filename.c_str());
+		if (surface != nullptr)
+		{
+			Image::checkImageMode(&Mode, surface);
+			m_Width = surface->w;
+			m_Height = surface->h;
+		}
 
 		unsigned int result;
 		glGenTextures(1, &result);
@@ -24,9 +31,13 @@ namespace rse
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, Mode, m_Width, m_Height, 0, Mode, GL_UNSIGNED_BYTE, pixels);
+		glTexImage2D(GL_TEXTURE_2D, 0, Mode, m_Width, m_Height, 0, Mode, GL_UNSIGNED_BYTE,
+			surface != nullptr ? surface->pixels : nullptr);
 
 		glBindTexture(GL_TEXTURE_2D, 0);
+
+		if (surface != nullptr)
+			SDL_DestroySurface(surface);
 
 		m_Id = result;
 	}
@@ -36,7 +47,13 @@ namespace rse
 	{
 		SDL_Color textColor = { static_cast<unsigned char>(color), static_cast<unsigned char>(color >> 8), static_cast<unsigned char>(color >> 16), static_cast<unsigned char>(color >> 24) };
 		int Mode = GL_RGB;
-		void* pixels = Image::loadFont(font->getFTFont(), text.c_str(), textColor, &m_Width, &m_Height, &Mode);
+		SDL_Surface* surface = Image::loadFont(font->getFTFont(), text.c_str(), textColor);
+		if (surface != nullptr)
+		{
+			Image::checkImageMode(&Mode, surface);
+			m_Width = surface->w;
+			m_Height = surface->h;
+		}
 
 		unsigned int result;
 		glGenTextures(1, &result);
@@ -45,9 +62,13 @@ namespace rse
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_Width, m_Height, 0, Mode, GL_UNSIGNED_BYTE, pixels);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_Width, m_Height, 0, Mode, GL_UNSIGNED_BYTE,
+			surface != nullptr ? surface->pixels : nullptr);
 
 		glBindTexture(GL_TEXTURE_2D, 0);
+
+		if (surface != nullptr)
+			SDL_DestroySurface(surface);
 
 		m_Id = result;
 	}

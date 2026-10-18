@@ -1,15 +1,15 @@
 #include "Window.hpp"
 
 #include <imgui.h>
+#include <imgui_impl_sdl3.h>
+#include <imgui_impl_opengl3.h>
 
 #include "../Input/InputManager.hpp"
 
 #ifdef EMSCRIPTEN
-	#include <SDL_opengles2.h>
-	#include "../Utils/imgui_impl_sdl_gles2.h"
+	#include <SDL3/SDL_opengles2.h>
 #else
 	#include <GL/glew.h>
-	#include "../Utils/imgui_impl_sdl_gl3.h"
 #endif // EMSCRIPTEN
 
 namespace rse
@@ -23,7 +23,9 @@ namespace rse
 	Window::~Window()
 	{
 		//TODO Isolate the Imgui implementation
-		ImGui_ImplSdlGL_Shutdown();
+		ImGui_ImplOpenGL3_Shutdown();
+		ImGui_ImplSDL3_Shutdown();
+		ImGui::DestroyContext();
 
 		SDL_DestroyWindow(m_Window);
 		SDL_Quit();
@@ -31,10 +33,13 @@ namespace rse
 
 	bool Window::init()
 	{
-		SDL_Init(SDL_INIT_EVERYTHING);
-
-		SDL_DisplayMode mode;
-		SDL_GetCurrentDisplayMode(0, &mode);
+		// SDL3 removed SDL_INIT_EVERYTHING; ask for exactly what the engine uses.
+		// VIDEO/AUDIO/GAMEPAD all imply SDL_INIT_EVENTS.
+		if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD))
+		{
+			std::cout << "Failed to initialize SDL: " << SDL_GetError() << std::endl;
+			return false;
+		}
 
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
@@ -44,10 +49,13 @@ namespace rse
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-		m_Window = SDL_CreateWindow(m_Title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_Width, m_Height, SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+		// SDL3 dropped the x/y window position arguments (SDL_WINDOWPOS_CENTERED);
+		// SDL now places the window, or you can SDL_SetWindowPosition() later.
+		m_Window = SDL_CreateWindow(m_Title, m_Width, m_Height, SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 		if (m_Window == nullptr) {
 			std::cout << "Failed to create SDL Window: " << SDL_GetError() << std::endl;
 			SDL_Quit();
+			return false;
 		}
 
 		m_Context = SDL_GL_CreateContext(m_Window);
@@ -62,8 +70,7 @@ namespace rse
 		#endif
 
 		//TODO show cursor and window focus 
-		//SDL_ShowCursor(SDL_DISABLE);
-		//SDL_SetWindowGrab(window, SDL_TRUE);
+		//SDL_HideCursor();
 		//TODO Fix this, I had to Disabled VSync to test performance in release mode
 		SDL_GL_SetSwapInterval(0);
 
@@ -79,7 +86,8 @@ namespace rse
 		//TODO Isolate the Imgui implementation
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		ImGui_ImplSdlGL_Init(m_Window);
+		ImGui_ImplSDL3_InitForOpenGL(m_Window, m_Context);
+		ImGui_ImplOpenGL3_Init("#version 130");
 		ImGui::StyleColorsDark();
 
 		return true;

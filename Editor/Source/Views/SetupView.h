@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Core.h>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include "../Systems/RenderSystem.hpp"
 
 class SetupView : public Scene

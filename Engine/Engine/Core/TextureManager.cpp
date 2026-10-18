@@ -1,7 +1,5 @@
 #include "TextureManager.hpp"
 
-#include <SDL_image.h>
-
 #include "../Components/Texture.hpp"
 #include "../Utils/Logger.hpp"
 
@@ -11,12 +9,8 @@ namespace rse
 
 	void TextureManager::init()
 	{
-		int imgFlags = IMG_INIT_PNG;
-		if (!(IMG_Init(imgFlags) & imgFlags))
-		{
-			std::string imageError("error: %s\n", IMG_GetError());
-			Logger::error("SDL_mixer could not initialize, " + imageError);
-		}
+		// SDL3_image no longer needs IMG_Init()/IMG_Quit(); formats boot
+		// themselves on first use, so there is nothing to set up here.
 	}
 
 	void TextureManager::add(Texture* texture)
@@ -38,7 +32,5 @@ namespace rse
 	{
 		for (unsigned int i = 0; i < s_Textures.size(); i++)
 			delete s_Textures[i];
-
-		IMG_Quit();
 	}
 }

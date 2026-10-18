@@ -1,5 +1,6 @@
 #include "Sound.hpp"
 
+#include "SoundManager.hpp"
 #include "../Utils/Logger.hpp"
 
 namespace rse
@@ -7,22 +8,44 @@ namespace rse
 	Sound::Sound(const std::string& name, const std::string& filename)
 		: m_Name(name), m_Filename(filename)
 	{
-		m_Sound = Mix_LoadWAV(filename.c_str());
+		MIX_Mixer* mixer = SoundManager::getMixer();
+		if (mixer == nullptr)
+		{
+			// No mixer yet (e.g. headless unit tests): keep the object valid but silent.
+			return;
+		}
+
+		// predecode = true: sound effects are short and played often.
+		m_Sound = MIX_LoadAudio(mixer, filename.c_str(), true);
 		if (m_Sound == nullptr)
 		{
 			Logger::error("SDL_mixer could not load filename " + m_Filename);
+			return;
+		}
+
+		m_Track = MIX_CreateTrack(mixer);
+		if (m_Track != nullptr)
+		{
+			MIX_SetTrackAudio(m_Track, m_Sound);
+			MIX_SetTrackGain(m_Track, static_cast<float>(m_Volume) / 128.0f);
 		}
 	}
 
 	Sound::~Sound()
 	{
-		Mix_FreeChunk(m_Sound);
+		if (m_Track != nullptr)
+			MIX_DestroyTrack(m_Track);
+		if (m_Sound != nullptr)
+			MIX_DestroyAudio(m_Sound);
 	}
 
 	void Sound::play()
 	{
-		m_Channel = Mix_PlayChannel(-1, m_Sound, 0);
-		if (m_Channel == -1)
+		if (m_Track == nullptr)
+			return;
+
+		MIX_StopTrack(m_Track, 0);
+		if (!MIX_PlayTrack(m_Track, 0))
 		{
 			Logger::error("SDL_mixer could not play filename " + m_Filename);
 		}
@@ -30,31 +53,43 @@ namespace rse
 
 	void Sound::loop()
 	{
-		m_Channel = Mix_PlayChannel(-1, m_Sound, -1);
-		if (m_Channel == -1)
+		if (m_Track == nullptr)
+			return;
+
+		SDL_PropertiesID options = SDL_CreateProperties();
+		SDL_SetNumberProperty(options, MIX_PROP_PLAY_LOOPS_NUMBER, -1);
+
+		MIX_StopTrack(m_Track, 0);
+		if (!MIX_PlayTrack(m_Track, options))
 		{
 			Logger::error("SDL_mixer could not loop filename " + m_Filename);
 		}
+
+		SDL_DestroyProperties(options);
 	}
 
 	void Sound::resume()
 	{
-		Mix_Resume(m_Channel);
+		if (m_Track != nullptr)
+			MIX_ResumeTrack(m_Track);
 	}
 
 	void Sound::pause()
 	{
-		Mix_Pause(m_Channel);
+		if (m_Track != nullptr)
+			MIX_PauseTrack(m_Track);
 	}
 
 	void Sound::stop()
 	{
-		Mix_HaltChannel(m_Channel);
+		if (m_Track != nullptr)
+			MIX_StopTrack(m_Track, 0);
 	}
 
 	void Sound::setVolume(int volume)
 	{
 		m_Volume = volume;
-		Mix_VolumeChunk(m_Sound, m_Volume);
+		if (m_Track != nullptr)
+			MIX_SetTrackGain(m_Track, static_cast<float>(m_Volume) / 128.0f);
 	}
 }

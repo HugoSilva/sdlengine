@@ -1,6 +1,6 @@
 #include "SoundManager.hpp"
 
-#include <SDL_mixer.h>
+#include <SDL3/SDL.h>
 
 #include "Sound.hpp"
 #include "Music.hpp"
@@ -10,13 +10,26 @@ namespace rse
 {
 	std::vector<Sound*> SoundManager::s_Sounds;
 	std::vector<Music*> SoundManager::s_Music;
+	MIX_Mixer* SoundManager::s_Mixer = nullptr;
 
 	void SoundManager::init()
 	{
-		if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096) == -1)
+		// SDL3_mixer: init the library, then create a mixer on the default device.
+		if (!MIX_Init())
 		{
-			std::string mixerError("error: %s\n", Mix_GetError());
-			Logger::error("SDL_mixer could not initialize, " + mixerError);
+			Logger::error("SDL_mixer could not initialize, " + std::string(SDL_GetError()));
+			return;
+		}
+
+		SDL_AudioSpec spec{};
+		spec.format = SDL_AUDIO_F32;
+		spec.channels = 2;
+		spec.freq = 44100;
+
+		s_Mixer = MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec);
+		if (s_Mixer == nullptr)
+		{
+			Logger::error("SDL_mixer could not create a mixer, " + std::string(SDL_GetError()));
 		}
 	}
 
@@ -54,10 +67,14 @@ namespace rse
 	{
 		for (unsigned int i = 0; i < s_Sounds.size(); i++)
 			delete s_Sounds[i];
+		s_Sounds.clear();
 
 		for (unsigned int i = 0; i < s_Music.size(); i++)
 			delete s_Music[i];
+		s_Music.clear();
 
-		Mix_CloseAudio();
+		// MIX_Quit() tears down every mixer and MIX_Audio created by SDL3_mixer.
+		s_Mixer = nullptr;
+		MIX_Quit();
 	}
 }

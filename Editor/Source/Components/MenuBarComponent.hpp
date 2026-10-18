@@ -23,7 +23,7 @@ public:
 				ImGui::Separator();
 				if (ImGui::MenuItem("Quit", "Alt+F4")) {
 					SDL_Event sdlevent;
-					sdlevent.type = SDL_QUIT;
+					sdlevent.type = SDL_EVENT_QUIT;
 					SDL_PushEvent(&sdlevent);
 				}
 				ImGui::EndMenu();
