@@ -1,6 +1,7 @@
 #include "Window.hpp"
 
 #include "../Input/InputManager.hpp"
+#include "../Utils/Logger.hpp"
 
 #ifdef EMSCRIPTEN
 	#include <SDL3/SDL_opengles2.h>
@@ -29,7 +30,7 @@ namespace rse
 		// VIDEO/AUDIO/GAMEPAD all imply SDL_INIT_EVENTS.
 		if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD))
 		{
-			std::cout << "Failed to initialize SDL: " << SDL_GetError() << std::endl;
+			Logger::error(std::string("Failed to initialize SDL: ") + SDL_GetError());
 			return false;
 		}
 
@@ -45,7 +46,7 @@ namespace rse
 		// SDL now places the window, or you can SDL_SetWindowPosition() later.
 		m_Window = SDL_CreateWindow(m_Title, m_Width, m_Height, SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 		if (m_Window == nullptr) {
-			std::cout << "Failed to create SDL Window: " << SDL_GetError() << std::endl;
+			Logger::error(std::string("Failed to create SDL Window: ") + SDL_GetError());
 			SDL_Quit();
 			return false;
 		}
@@ -57,7 +58,7 @@ namespace rse
 			GLenum result = glewInit();
 			if (result != GLEW_OK)
 			{
-				std::cout << "Failed to initialize GLEW: " << glewGetErrorString(result) << std::endl;
+				Logger::error(std::string("Failed to initialize GLEW: ") + reinterpret_cast<const char*>(glewGetErrorString(result)));
 			}
 		#endif
 
@@ -73,7 +74,8 @@ namespace rse
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		std::cout << "OpenGL " << glGetString(GL_VERSION) << std::endl;
+		const GLubyte* version = glGetString(GL_VERSION);
+		Logger::log(std::string("OpenGL ") + (version != nullptr ? reinterpret_cast<const char*>(version) : "unknown"));
 
 		// ImGui is initialised separately once the window exists -- see
 		// rse::ImGuiLayer::init(), called from Core.

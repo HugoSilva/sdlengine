@@ -2,6 +2,9 @@
 
 #include <algorithm>
 #include <iostream>
+#include <sstream>
+
+#include "../Utils/Logger.hpp"
 
 namespace rse
 {
@@ -77,7 +80,9 @@ namespace rse
 		const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		if (status != GL_FRAMEBUFFER_COMPLETE)
 		{
-			std::cout << "Viewport framebuffer incomplete (0x" << std::hex << status << std::dec << ")" << std::endl;
+			std::ostringstream message;
+			message << "Viewport framebuffer incomplete (0x" << std::hex << status << std::dec << ")";
+			Logger::error(message.str());
 		}
 
 		glBindTexture(GL_TEXTURE_2D, 0);

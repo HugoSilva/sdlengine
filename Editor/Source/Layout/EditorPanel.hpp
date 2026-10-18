@@ -14,8 +14,8 @@
 enum class DockSlot
 {
 	Left,
-	LeftBottom,
 	Right,
+	Bottom,
 	Center,
 };
 

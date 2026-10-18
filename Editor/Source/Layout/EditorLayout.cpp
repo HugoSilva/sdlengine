@@ -136,21 +136,21 @@ void EditorLayout::drawDockSpace()
 
 void EditorLayout::buildDefaultLayout(ImGuiID dockspaceId)
 {
-	// Viewport fills the centre; the left column is split with a lower half for
-	// the console; the inspector hugs the right edge. Which panel asks for
-	// which slot is up to the panel (EditorPanel::slot()).
+	// Viewport fills the centre, the console spans the bottom, the hierarchy
+	// column sits on the left and the inspector hugs the right edge. Which panel
+	// asks for which slot is up to the panel (EditorPanel::slot()).
 	bool needsLeft = false;
-	bool needsLeftBottom = false;
 	bool needsRight = false;
+	bool needsBottom = false;
 
 	for (const std::unique_ptr<EditorPanel>& panel : m_Panels)
 	{
 		switch (panel->slot())
 		{
-			case DockSlot::Left:       needsLeft = true; break;
-			case DockSlot::LeftBottom: needsLeft = true; needsLeftBottom = true; break;
-			case DockSlot::Right:      needsRight = true; break;
-			case DockSlot::Center:     break;
+			case DockSlot::Left:   needsLeft = true; break;
+			case DockSlot::Right:  needsRight = true; break;
+			case DockSlot::Bottom: needsBottom = true; break;
+			case DockSlot::Center: break;
 		}
 	}
 
@@ -162,16 +162,18 @@ void EditorLayout::buildDefaultLayout(ImGuiID dockspaceId)
 
 	ImGuiID center = dockspaceId;
 	ImGuiID left = 0;
-	ImGuiID leftBottom = 0;
 	ImGuiID right = 0;
+	ImGuiID bottom = 0;
 
-	if (needsLeft || needsLeftBottom)
+	// The bottom strip is split off first so it spans the full width rather than
+	// being boxed into one of the columns.
+	if (needsBottom)
+	{
+		bottom = ImGui::DockBuilderSplitNode(center, ImGuiDir_Down, 0.25f, nullptr, &center);
+	}
+	if (needsLeft)
 	{
 		left = ImGui::DockBuilderSplitNode(center, ImGuiDir_Left, 0.22f, nullptr, &center);
-	}
-	if (needsLeftBottom)
-	{
-		leftBottom = ImGui::DockBuilderSplitNode(left, ImGuiDir_Down, 0.35f, nullptr, &left);
 	}
 	if (needsRight)
 	{
@@ -184,10 +186,10 @@ void EditorLayout::buildDefaultLayout(ImGuiID dockspaceId)
 
 		switch (panel->slot())
 		{
-			case DockSlot::Left:       target = left;       break;
-			case DockSlot::LeftBottom: target = leftBottom; break;
-			case DockSlot::Right:      target = right;      break;
-			case DockSlot::Center:     target = center;     break;
+			case DockSlot::Left:   target = left;   break;
+			case DockSlot::Right:  target = right;  break;
+			case DockSlot::Bottom: target = bottom; break;
+			case DockSlot::Center: target = center; break;
 		}
 
 		if (target != 0)
