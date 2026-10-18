@@ -9,6 +9,7 @@ void EditorManager::init()
 	EventManager::getEventDispatcher()->sink<SelectEntity>().connect<&EditorManager::handleSelectEntityEvent>();
 	EventManager::getEventDispatcher()->sink<DestroyEntity>().connect<&EditorManager::handleDestroyEntityEvent>();
 	EventManager::getEventDispatcher()->sink<AddComponent>().connect<&EditorManager::handleAddComponentEvent>();
+	EventManager::getEventDispatcher()->sink<RemoveComponent>().connect<&EditorManager::handleRemoveComponentEvent>();
 }
 
 void EditorManager::handleCreateEntityEvent(const CreateEntity& event)
@@ -83,6 +84,48 @@ void EditorManager::handleAddComponentEvent(const AddComponent& event)
 			{
 				rse::ECSManager::addComponent<SpriteComponent>(m_SelectedEntity);
 			}
+			break;
+		default:
+			break;
+	}
+}
+
+void EditorManager::handleRemoveComponentEvent(const RemoveComponent& event)
+{
+	if (m_SelectedEntity == INVALID_ENTITY_ID)
+	{
+		return;
+	}
+
+	// Only the optional components can go: the hierarchy lists entities by their
+	// BasicComponent and the renderer needs a transform, so those two stay.
+	switch (event.component)
+	{
+		case eComponents::Audio:
+			if (!rse::ECSManager::hasComponent<AudioComponent>(m_SelectedEntity))
+			{
+				Logger::error("Missing audio component");
+				break;
+			}
+			// Components hold their payload in a shared_ptr, so removing one
+			// releases it properly.
+			rse::ECSManager::removeComponent<AudioComponent>(m_SelectedEntity);
+			break;
+		case eComponents::Rigidbody:
+			if (!rse::ECSManager::hasComponent<RigidBodyComponent>(m_SelectedEntity))
+			{
+				Logger::error("Missing rigidbody component");
+				break;
+			}
+			rse::ECSManager::removeComponent<RigidBodyComponent>(m_SelectedEntity);
+			break;
+		case eComponents::Sprite:
+			if (!rse::ECSManager::hasComponent<SpriteComponent>(m_SelectedEntity))
+			{
+				Logger::error("Missing sprite component");
+				break;
+			}
+			rse::ECSManager::removeComponent<SpriteComponent>(m_SelectedEntity);
 			break;
 		default:
 			break;

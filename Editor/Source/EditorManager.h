@@ -13,6 +13,7 @@ public:
     struct SelectEntity { uint32_t value; };
 	struct DestroyEntity { uint32_t value; };
 	struct AddComponent { eComponents component; };
+	struct RemoveComponent { eComponents component; };
 
 	EditorManager() {}
 	~EditorManager() {}
@@ -50,6 +51,7 @@ public:
 	static void handleSelectEntityEvent(const SelectEntity& event);
 	static void handleDestroyEntityEvent(const DestroyEntity& event);
 	static void handleAddComponentEvent(const AddComponent& event);
+	static void handleRemoveComponentEvent(const RemoveComponent& event);
 
 private:
 
