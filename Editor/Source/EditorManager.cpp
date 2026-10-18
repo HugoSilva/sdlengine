@@ -7,6 +7,10 @@ bool EditorManager::m_FrameRequested{ false };
 
 void EditorManager::init()
 {
+	// Before anything can read a setting or draw a panel with one. Called from
+	// the setup view's constructor, so it happens once.
+	m_Settings.load();
+
 	EventManager::getEventDispatcher()->sink<CreateEntity>().connect<&EditorManager::handleCreateEntityEvent>();
 	EventManager::getEventDispatcher()->sink<SelectEntity>().connect<&EditorManager::handleSelectEntityEvent>();
 	EventManager::getEventDispatcher()->sink<DestroyEntity>().connect<&EditorManager::handleDestroyEntityEvent>();

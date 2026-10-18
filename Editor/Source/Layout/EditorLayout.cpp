@@ -84,7 +84,15 @@ void EditorLayout::drawMenuBar()
 			ImGui::MenuItem(panel->id(), nullptr, &panel->visible);
 		}
 		ImGui::Separator();
-		ImGui::MenuItem("Show Grid", nullptr, &EditorManager::settings().grid.visible);
+
+		// MenuItem flips the bool itself and reports the click, so by the time
+		// this returns, the setting is already the new value and saving cannot
+		// write the old one.
+		if (ImGui::MenuItem("Show Grid", nullptr, &EditorManager::settings().grid.visible))
+		{
+			EditorManager::settings().save();
+		}
+
 		ImGui::Separator();
 		if (ImGui::MenuItem("Reset Layout"))
 		{

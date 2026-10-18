@@ -308,19 +308,27 @@ private:
 		// frame.
 		if (keys)
 		{
-			EditorSettings::GizmoMode& mode = EditorManager::settings().gizmo.mode;
+			EditorSettings& settings = EditorManager::settings();
+			const EditorSettings::GizmoMode previous = settings.gizmo.mode;
 
 			if (ImGui::IsKeyPressed(ImGuiKey_W))
 			{
-				mode = EditorSettings::GizmoMode::Translate;
+				settings.gizmo.mode = EditorSettings::GizmoMode::Translate;
 			}
 			else if (ImGui::IsKeyPressed(ImGuiKey_E))
 			{
-				mode = EditorSettings::GizmoMode::Rotate;
+				settings.gizmo.mode = EditorSettings::GizmoMode::Rotate;
 			}
 			else if (ImGui::IsKeyPressed(ImGuiKey_R))
 			{
-				mode = EditorSettings::GizmoMode::Scale;
+				settings.gizmo.mode = EditorSettings::GizmoMode::Scale;
+			}
+
+			// Only on a real change: holding a key down would otherwise rewrite
+			// the file once a frame for nothing.
+			if (settings.gizmo.mode != previous)
+			{
+				settings.save();
 			}
 		}
 
