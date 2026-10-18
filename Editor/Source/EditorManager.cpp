@@ -7,6 +7,7 @@ void EditorManager::init()
 {
 	EventManager::getEventDispatcher()->sink<CreateEntity>().connect<&EditorManager::handleCreateEntityEvent>();
 	EventManager::getEventDispatcher()->sink<SelectEntity>().connect<&EditorManager::handleSelectEntityEvent>();
+	EventManager::getEventDispatcher()->sink<DestroyEntity>().connect<&EditorManager::handleDestroyEntityEvent>();
 	EventManager::getEventDispatcher()->sink<AddComponent>().connect<&EditorManager::handleAddComponentEvent>();
 }
 
@@ -21,6 +22,22 @@ void EditorManager::handleCreateEntityEvent(const CreateEntity& event)
 void EditorManager::handleSelectEntityEvent(const SelectEntity& event)
 {
 	m_SelectedEntity = event.value;
+}
+
+void EditorManager::handleDestroyEntityEvent(const DestroyEntity& event)
+{
+	if (event.value == INVALID_ENTITY_ID)
+	{
+		return;
+	}
+
+	// Drop the selection first: the inspector must not keep reading a dead id.
+	if (m_SelectedEntity == event.value)
+	{
+		m_SelectedEntity = INVALID_ENTITY_ID;
+	}
+
+	rse::ECSManager::destroyEntity(event.value);
 }
 
 void EditorManager::handleAddComponentEvent(const AddComponent& event)
