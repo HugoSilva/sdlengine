@@ -2,8 +2,7 @@
 
 #include <vector>
 #include <memory>
-#include <SDL.h>
-#include <glm\glm.hpp>
+#include <glm/glm.hpp>
 #include "../Components/Texture.hpp"
 #include "Renderer2D.hpp"
 
@@ -33,8 +32,6 @@ namespace rse
 			//renderer->submit(this);
 		}
 
-		virtual void render(SDL_Renderer* renderer) {};
-
 		inline const glm::vec3& getPosition() const { return m_Position; }
 		inline const glm::vec2& getSize() const { return m_Size; }
 		inline void setColor(unsigned int color) { m_Color = color; }
@@ -42,8 +39,6 @@ namespace rse
 		inline const std::vector<glm::vec2>& getUV() const { return m_UV; }
 		inline const unsigned int getTId() const { return m_Texture.get() == nullptr ? 0 : m_Texture.get()->getID(); }
 		inline const std::string getTextureName() const { return m_Texture.get() == nullptr ? "" : m_Texture.get()->getName(); }
-
-		SDL_Rect texr;
 
 		template<typename Archive>
 		void serialize(Archive &archive)

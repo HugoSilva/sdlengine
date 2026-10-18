@@ -1,16 +1,9 @@
 #include "InputManager.hpp"
 
 #include <imgui.h>
+#include <imgui_impl_sdl3.h>
 #include "Mouse.hpp"
 #include "Keyboard.hpp"
-
-#ifdef EMSCRIPTEN
-#include <SDL_opengles2.h>
-#include "../Utils/imgui_impl_sdl_gles2.h"
-#else
-#include <GL/glew.h>
-#include "../Utils/imgui_impl_sdl_gl3.h"
-#endif // EMSCRIPTEN
 
 namespace rse
 {
@@ -39,36 +32,38 @@ namespace rse
 		{
 			switch (event.type)
 			{
-			case SDL_KEYDOWN:
-			case SDL_KEYUP:
+			case SDL_EVENT_KEY_DOWN:
+			case SDL_EVENT_KEY_UP:
 				HandleKeyboard(event.key);
 				break;
-			case SDL_MOUSEBUTTONDOWN:
-			case SDL_MOUSEBUTTONUP:
+			case SDL_EVENT_MOUSE_BUTTON_DOWN:
+			case SDL_EVENT_MOUSE_BUTTON_UP:
 				HandleMouseButton(event.button);
-			case SDL_MOUSEMOTION:
+				break;
+			case SDL_EVENT_MOUSE_MOTION:
 				HandleMouseMotion(event.motion);
 				break;
-			case SDL_CONTROLLERBUTTONDOWN:
-			case SDL_CONTROLLERBUTTONUP:
-				HandleControllerButton(event.cbutton);
-			case SDL_CONTROLLERAXISMOTION:
-				HandleControllerAxis(event.caxis);
+			case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+			case SDL_EVENT_GAMEPAD_BUTTON_UP:
+				HandleControllerButton(event.gbutton);
 				break;
-			case SDL_QUIT:
+			case SDL_EVENT_GAMEPAD_AXIS_MOTION:
+				HandleControllerAxis(event.gaxis);
+				break;
+			case SDL_EVENT_QUIT:
 				s_QuitRequested = true;
 				break;
-			case SDL_MOUSEWHEEL:
-				// event.x; // Ammount scrolled horizontally
+			case SDL_EVENT_MOUSE_WHEEL:
+				// event.wheel.x; // Amount scrolled horizontally
 				// // If negative, scrolled to the right
 				// // If positive, scrolled to the left
 
-				// event.y; // Ammount scrolled vertically
+				// event.wheel.y; // Amount scrolled vertically
 				// // If negative, scrolled down
 				// // If positive, scrolled up
 				break;
 			}
-			ImGui_ImplSdlGL_ProcessEvent(&event);
+			ImGui_ImplSDL3_ProcessEvent(&event);
 		}
 	}
 
@@ -93,12 +88,12 @@ namespace rse
 		}
 	}
 
-	void InputManager::HandleControllerButton(SDL_ControllerButtonEvent event)
+	void InputManager::HandleControllerButton(SDL_GamepadButtonEvent event)
 	{
 		//TODO Add controller support
 	}
 
-	void InputManager::HandleControllerAxis(SDL_ControllerAxisEvent event)
+	void InputManager::HandleControllerAxis(SDL_GamepadAxisEvent event)
 	{
 		//TODO Add controller support
 	}

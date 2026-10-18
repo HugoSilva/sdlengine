@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Box2D.h>
+#include <box2d/box2d.h>
 #include "Updatable.h"
 #include "../Components/Sprite.hpp"
 #include "Rigidbody.h"
@@ -21,7 +21,7 @@ private:
 	static b2Vec2 m_gravity;
 	static b2World* m_world;
 
-	static float32 timeStep;
+	static float timeStep;
 	static int32 velocityIterations;
 	static int32 positionIterations;
 };

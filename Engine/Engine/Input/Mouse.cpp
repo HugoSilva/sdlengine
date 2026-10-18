@@ -41,19 +41,19 @@ namespace rse
 		if (button < 0)
 			return;
 
-		if (event.state != SDL_RELEASED && s_buttons[button] == false)
+		if (event.down && s_buttons[button] == false)
 		{
 			s_buttonsDown[button] = true;
 			s_buttonsUp[button] = false;
 		}
 
-		if (event.state == SDL_RELEASED && s_buttons[button] == true)
+		if (!event.down && s_buttons[button] == true)
 		{
 			s_buttonsDown[button] = false;
 			s_buttonsUp[button] = true;
 		}
 
-		s_buttons[button] = event.state != SDL_RELEASED;
+		s_buttons[button] = event.down;
 	}
 
 	const bool Mouse::IsButtonDown(int button)

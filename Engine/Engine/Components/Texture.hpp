@@ -45,6 +45,6 @@ namespace rse
 		unsigned int m_Id;
 		std::string m_Name;
 		std::string m_Filename;
-		int m_Width, m_Height;
+		int m_Width = 0, m_Height = 0;
 	};
 }

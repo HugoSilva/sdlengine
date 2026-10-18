@@ -1,5 +1,7 @@
 #include "Scene01.h"
 
+#include <string>
+
 SpriteTest::SpriteTest(SDL_Window* win)
 {
 	FontManager::add(new Font("Arial", "Resources/arial.ttf", 24));
@@ -51,7 +53,7 @@ SpriteTest::SpriteTest(SDL_Window* win)
 		testSprite->setColor(0xff << 24 | b << 16 | g << 8 | r);
 
 		uint32_t m_SelectedEntity = rse::ECSManager::createEntity();
-		rse::ECSManager::addComponent<BasicComponent>(m_SelectedEntity, ("entity_"+i), true, 0, 0);
+		rse::ECSManager::addComponent<BasicComponent>(m_SelectedEntity, ("entity_" + std::to_string(i)).c_str(), true, 0, 0);
 		rse::ECSManager::addComponent<TransformComponent>(m_SelectedEntity, position, glm::vec3(0.f), glm::vec3(1.f));
 		rse::ECSManager::addComponent<SpriteComponent>(m_SelectedEntity, testSprite);
 	}

@@ -1,5 +1,5 @@
 #include <Core.h>
-#include <glm\glm.hpp>
+#include <glm/glm.hpp>
 #include "./Views/SetupView.h"
 
 #if _WIN32

@@ -20,6 +20,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # The presets drive Ninja with cl.exe, so the MSVC environment has to be
+      # on PATH before configuring (the hosted runner does not set it up).
+      - name: Set up MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
       - name: Configure
         run: cmake --preset ${{ matrix.preset }}
 

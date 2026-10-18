@@ -29,7 +29,7 @@ public:
 private:
 	b2Vec2 m_gravity{ 0.0f, -10.0f };
 	b2World* m_world;
-	float32 timeStep = 1.0f / 6000.0f;
+	float timeStep = 1.0f / 6000.0f;
 	int32 velocityIterations = 6;
 	int32 positionIterations = 2;
 };

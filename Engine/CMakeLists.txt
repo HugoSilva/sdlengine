@@ -18,17 +18,6 @@ file(GLOB_RECURSE ENGINE_DEBUG_FILES CONFIGURE_DEPENDS
   "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.h")
 list(APPEND ENGINE_FILES ${ENGINE_DEBUG_FILES})
 
-# ImGui's SDL backend: GL3 on desktop, GLES2 on Emscripten. Exactly one of the
-# two implementations must be compiled (previously the selection never fired
-# because of the invalid `if(DEFINED ${EMSCRIPTEN})` condition).
-if(EMSCRIPTEN)
-  set(_rse_imgui_backend "imgui_impl_sdl_gl3")
-else()
-  set(_rse_imgui_backend "imgui_impl_sdl_gles2")
-endif()
-list(REMOVE_ITEM ENGINE_FILES
-  "${CMAKE_CURRENT_SOURCE_DIR}/Engine/Utils/${_rse_imgui_backend}.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/Engine/Utils/${_rse_imgui_backend}.h")
 
 add_library(Engine STATIC ${ENGINE_FILES})
 add_library(RSE::Engine ALIAS Engine)
@@ -45,10 +34,9 @@ target_link_libraries(Engine
     RSE::ThirdParty
     Imgui
     GLEW::GLEW
-    SDL2::SDL2
-    SDL2::SDL2main
-    SDL2::Image
-    SDL2::Mixer
-    SDL2::TTF
+    SDL3::SDL3
+    SDL3_image::SDL3_image
+    SDL3_mixer::SDL3_mixer
+    SDL3_ttf::SDL3_ttf
     Box2D::Box2D
     OpenGL::GL)

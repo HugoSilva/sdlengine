@@ -1,7 +1,7 @@
 #pragma once
 
 #include <iostream>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 namespace rse
 {

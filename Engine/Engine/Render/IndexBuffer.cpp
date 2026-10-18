@@ -1,7 +1,7 @@
 #include "IndexBuffer.hpp"
 
 #ifdef EMSCRIPTEN
-#include <SDL_opengles2.h>
+#include <SDL3/SDL_opengles2.h>
 #else
 #include <GL/glew.h>
 #endif // EMSCRIPTEN

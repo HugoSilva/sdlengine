@@ -33,10 +33,12 @@ public:
 					BasicComponent& basicData = EditorManager::getComponent<BasicComponent>();
 
 					char str0[128] = "";
-					
-					strcpy_s(str0, basicData.m_Name);
+					basicData.m_Name.copy(str0, IM_ARRAYSIZE(str0) - 1);
 
-					ImGui::InputText("", str0, IM_ARRAYSIZE(str0));
+					if (ImGui::InputText("##name", str0, IM_ARRAYSIZE(str0)))
+					{
+						basicData.m_Name = str0;
+					}
 					ImGui::SameLine();
 					ImGui::Checkbox("Static", &basicData.m_IsStatic);
 				}
@@ -47,11 +49,11 @@ public:
 				{
 					TransformComponent& transform = EditorManager::getComponent<TransformComponent>();
 
-					ImGui::InputFloat3("Position", glm::value_ptr(transform.position), 2);
+					ImGui::InputFloat3("Position", glm::value_ptr(transform.position), "%.2f");
 
-					ImGui::InputFloat3("Rotation", glm::value_ptr(transform.rotation), 2);
+					ImGui::InputFloat3("Rotation", glm::value_ptr(transform.rotation), "%.2f");
 
-					ImGui::InputFloat3("Scale", glm::value_ptr(transform.scale), 2);
+					ImGui::InputFloat3("Scale", glm::value_ptr(transform.scale), "%.2f");
 				}
 			}
 			if (EditorManager::showComponentWidget<SpriteComponent>())
@@ -130,8 +132,8 @@ public:
 					ImGui::EndPopup();
 				}
 			}
-
-			ImGui::End();
 		}
+
+		ImGui::End();
 	}
 };

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 namespace rse
 {
@@ -24,8 +24,8 @@ namespace rse
 		static void HandleKeyboard(SDL_KeyboardEvent windowEvent);
 		static void HandleMouseButton(SDL_MouseButtonEvent windowEvent);
 		static void HandleMouseMotion(SDL_MouseMotionEvent windowEvent);
-		static void HandleControllerButton(SDL_ControllerButtonEvent event);
-		static void HandleControllerAxis(SDL_ControllerAxisEvent event);
+		static void HandleControllerButton(SDL_GamepadButtonEvent event);
+		static void HandleControllerAxis(SDL_GamepadAxisEvent event);
 
 		static bool s_AvailableKeyboard;
 		static bool s_AvailableMouse;

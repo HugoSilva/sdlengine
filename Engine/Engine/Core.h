@@ -10,6 +10,7 @@
 #endif
 
 #include <vector>
+#include <cstdint>
 #include <glm/glm.hpp>
 #if _WIN32
 #include <Windows.h>
@@ -65,7 +66,8 @@ protected:
 private:
 	void run();
 
-	long now, last = 0;
+	// SDL3's SDL_GetTicks() returns Uint64 (milliseconds).
+	uint64_t now = 0, last = 0;
 	float deltaTime = 0.0;
 	float deltaAccumulator = 0.0f;
 	int frames = 0;
