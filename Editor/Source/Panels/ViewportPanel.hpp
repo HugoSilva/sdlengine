@@ -298,7 +298,33 @@ private:
 		const bool viewportActive =
 			ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) || ImGui::IsItemHovered();
 
-		const bool pressed = viewportActive && !io.WantTextInput && ImGui::IsKeyPressed(ImGuiKey_F);
+		// Not while a text field has the keyboard: `W` is a letter before it is a
+		// shortcut.
+		const bool keys = viewportActive && !io.WantTextInput;
+
+		// W/E/R choose the gizmo, as they do in most editors. Nothing else has to
+		// happen on a mode change: the gizmo reads the mode every frame and so
+		// does the HUD, so the handle set and the readout follow in the same
+		// frame.
+		if (keys)
+		{
+			EditorSettings::GizmoMode& mode = EditorManager::settings().gizmo.mode;
+
+			if (ImGui::IsKeyPressed(ImGuiKey_W))
+			{
+				mode = EditorSettings::GizmoMode::Translate;
+			}
+			else if (ImGui::IsKeyPressed(ImGuiKey_E))
+			{
+				mode = EditorSettings::GizmoMode::Rotate;
+			}
+			else if (ImGui::IsKeyPressed(ImGuiKey_R))
+			{
+				mode = EditorSettings::GizmoMode::Scale;
+			}
+		}
+
+		const bool pressed = keys && ImGui::IsKeyPressed(ImGuiKey_F);
 
 		// Consumed even when the key was the reason, so a request cannot be
 		// left pending and fire a second time later.
