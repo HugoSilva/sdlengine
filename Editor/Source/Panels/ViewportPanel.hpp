@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+#include <cmath>
 #include <cstdio>
 #include <optional>
 
@@ -71,7 +73,9 @@ public:
 			ImVec2(1.0f, 0.0f));
 
 		handleNavigation(imagePos);
+		handlePicking(imagePos);
 		handleShortcuts();
+		drawSelection(imagePos);
 		drawHud(imagePos);
 
 		// Tells Core::run() where the scene pass should draw this frame.
@@ -128,6 +132,124 @@ private:
 		if (m_Panning)
 		{
 			m_Camera->pan(glm::vec2(io.MouseDelta.x, io.MouseDelta.y));
+		}
+	}
+
+	// A left click that does not turn into a drag selects what is under it;
+	// clicking empty space deselects. Latched on press and judged on release, so
+	// a drag that happens to start in the viewport -- a gizmo drag, later on --
+	// is never mistaken for a click.
+	void handlePicking(const ImVec2& imagePos)
+	{
+		if (m_Camera == nullptr)
+		{
+			return;
+		}
+
+		const ImGuiIO& io = ImGui::GetIO();
+
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+		{
+			m_ClickArmed = true;
+			m_ClickPos = io.MousePos;
+		}
+
+		if (!m_ClickArmed || !ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+		{
+			return;
+		}
+
+		m_ClickArmed = false;
+
+		const float travelled = glm::max(
+			std::abs(io.MousePos.x - m_ClickPos.x),
+			std::abs(io.MousePos.y - m_ClickPos.y));
+
+		if (travelled > kClickSlop)
+		{
+			return;
+		}
+
+		pickAt(glm::vec2(io.MousePos.x - imagePos.x, io.MousePos.y - imagePos.y));
+	}
+
+	// Whatever is under the cursor; the last hit wins, because the renderer has
+	// no depth to sort by and "on top" means "drawn later".
+	void pickAt(glm::vec2 pixel)
+	{
+		const glm::vec2 world = m_Camera->screenToWorld(pixel);
+
+		uint32_t hit = INVALID_ENTITY_ID;
+
+		rse::ECSManager::getView<TransformComponent, SpriteComponent>().each(
+			[&hit, &world](uint32_t entity, TransformComponent&, SpriteComponent&)
+			{
+				const std::optional<EntityBounds> bounds = EditorBounds::ofEntity(entity);
+
+				if (bounds && rse::pointInOrientedBox(world, bounds->center, bounds->rotationDegrees, bounds->halfExtent))
+				{
+					hit = entity;
+				}
+			});
+
+		EditorManager::setSelection(hit);
+	}
+
+	// One box per selected entity, over the scene. It is the same rectangle the
+	// renderer draws -- EntityBounds mirrors submit() -- so it lands on the
+	// sprite's own pixels rather than near them. An entity with no sprite has no
+	// rectangle to draw, and gets a cross at its position instead of nothing.
+	void drawSelection(const ImVec2& imagePos)
+	{
+		if (m_Camera == nullptr)
+		{
+			return;
+		}
+
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+		for (const uint32_t entity : EditorManager::getSelectedEntities())
+		{
+			// Only one entity can be selected today, so this is always the
+			// active colour; the other one is what multi-select will use to
+			// tell the rest of the set from the entity the inspector edits.
+			const ImU32 colour = entity == EditorManager::getSelectedEntity() ? kActiveOutline : kOutline;
+
+			const std::optional<EntityBounds> bounds = EditorBounds::ofEntity(entity);
+
+			if (!bounds)
+			{
+				const std::optional<glm::vec2> position = EditorBounds::positionOf(entity);
+
+				if (position)
+				{
+					const glm::vec2 screen = m_Camera->worldToScreen(*position);
+					const ImVec2 at(imagePos.x + screen.x, imagePos.y + screen.y);
+
+					drawList->AddLine(ImVec2(at.x - kCrossSize, at.y), ImVec2(at.x + kCrossSize, at.y), kOutlineHalo, 4.0f);
+					drawList->AddLine(ImVec2(at.x, at.y - kCrossSize), ImVec2(at.x, at.y + kCrossSize), kOutlineHalo, 4.0f);
+					drawList->AddLine(ImVec2(at.x - kCrossSize, at.y), ImVec2(at.x + kCrossSize, at.y), colour, 2.0f);
+					drawList->AddLine(ImVec2(at.x, at.y - kCrossSize), ImVec2(at.x, at.y + kCrossSize), colour, 2.0f);
+				}
+
+				continue;
+			}
+
+			const std::array<glm::vec2, 4> corners = EditorBounds::corners(*bounds);
+			ImVec2 points[4];
+
+			for (int i = 0; i < 4; i++)
+			{
+				const glm::vec2 screen = m_Camera->worldToScreen(corners[i]);
+				points[i] = ImVec2(imagePos.x + screen.x, imagePos.y + screen.y);
+			}
+
+			// Halo first, colour over it. An outline is one colour and the scene
+			// is whatever colour it likes: measured against the test sprite, the
+			// amber line landed on a pixel of (200,95,21) and the two oranges
+			// washed into each other.
+			drawList->AddPolyline(points, 4, kOutlineHalo, 4.0f, ImDrawFlags_Closed);
+			drawList->AddPolyline(points, 4, colour, 2.0f, ImDrawFlags_Closed);
 		}
 	}
 
@@ -212,10 +334,30 @@ private:
 		drawList->AddText(ImVec2(blockMin.x + 4.0f, blockMin.y + 4.0f), IM_COL32(235, 235, 235, 255), text);
 	}
 
+	// A click is a press and a release that did not travel. The slop is wide
+	// enough for an unsteady hand and narrow enough that a pan, or one of M5's
+	// gizmo drags, can never be mistaken for one.
+	static constexpr float kClickSlop{ 4.0f };
+
+	// Half the arm of the cross drawn for a selected entity with no sprite.
+	static constexpr float kCrossSize{ 6.0f };
+
+	static constexpr ImU32 kActiveOutline{ IM_COL32(255, 176, 0, 255) };
+	static constexpr ImU32 kOutline{ IM_COL32(190, 190, 190, 255) };
+
+	// Drawn under the colour and one pixel wider on each side, so the outline
+	// reads against content of its own colour as well as against the scene.
+	static constexpr ImU32 kOutlineHalo{ IM_COL32(0, 0, 0, 200) };
+
 	EditorCamera* m_Camera{ nullptr };
 	rse::Framebuffer m_Framebuffer;
 
 	// Latched on middle-press and cleared on release, so a pan survives the
 	// cursor leaving the panel mid-drag.
 	bool m_Panning{ false };
+
+	// The same latch for the left button, so a click can be judged by how far
+	// the cursor travelled rather than by whether it is still over the image.
+	bool m_ClickArmed{ false };
+	ImVec2 m_ClickPos{ 0.0f, 0.0f };
 };

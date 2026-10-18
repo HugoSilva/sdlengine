@@ -24,7 +24,23 @@ void EditorManager::handleCreateEntityEvent(const CreateEntity& event)
 
 void EditorManager::handleSelectEntityEvent(const SelectEntity& event)
 {
-	m_SelectedEntity = event.value;
+	setSelection(event.value);
+}
+
+std::span<const uint32_t> EditorManager::getSelectedEntities()
+{
+	// One element, materialised on demand: the storage is still the single
+	// active entity, so there is no second copy of the selection to keep in
+	// step with the first. The span is valid until the selection changes.
+	static uint32_t active[1];
+
+	if (m_SelectedEntity == INVALID_ENTITY_ID)
+	{
+		return {};
+	}
+
+	active[0] = m_SelectedEntity;
+	return std::span<const uint32_t>(active, 1);
 }
 
 void EditorManager::handleDestroyEntityEvent(const DestroyEntity& event)

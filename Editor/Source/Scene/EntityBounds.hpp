@@ -69,6 +69,25 @@ namespace EditorBounds
 		return bounds;
 	}
 
+	// The entity's world position. Everything selectable has one -- including an
+	// entity whose sprite has been removed, which is the case the outline draws
+	// a cross for, because there is no rectangle to draw instead.
+	inline std::optional<glm::vec2> positionOf(uint32_t entity)
+	{
+		if (entity == static_cast<uint32_t>(entt::null))
+		{
+			return std::nullopt;
+		}
+
+		if (!rse::ECSManager::hasComponent<TransformComponent>(entity))
+		{
+			return std::nullopt;
+		}
+
+		TransformComponent& transform = rse::ECSManager::getComponent<TransformComponent>(entity);
+		return glm::vec2(transform.position.x, transform.position.y);
+	}
+
 	// The four corners of a bounds, in the order the outline draws them.
 	inline std::array<glm::vec2, 4> corners(const EntityBounds& bounds)
 	{
