@@ -22,7 +22,7 @@ NamespaceIndentation: None
 # Includes: the matching header first (Google does this through
 # IncludeIsMainRegex), then the standard library, then third-party libraries,
 # then our own headers -- quoted or angled, they are all ours, and they go
-# last. Sorting our headers above a library header is what broke ECSManager.cpp
+# last. Sorting our headers above a library header is what broke ecs_manager.cpp
 # when this file was first written: it parsed cereal's make_nvp before it was
 # declared. See docs/CodingStandards.md §2.1.
 IncludeBlocks: Regroup
@@ -34,7 +34,7 @@ IncludeCategories:
   # Third-party libraries, vendored under Thirdparty/ or fetched by CMake.
   - Regex: '^<(SDL3|SDL3_image|SDL3_mixer|SDL3_ttf|GL|glm|entt|imgui|cereal|box2d|entity|signal|emscripten|gtest|Windows)'
     Priority: 3
-  # Our own headers: <Audio/Sound.hpp>, "ECSManager.hpp", "../Core.h".
+  # Our own headers: <audio/sound.h>, "core.h", <render/camera.h>.
   - Regex: '^.*$'
     Priority: 4
 ...

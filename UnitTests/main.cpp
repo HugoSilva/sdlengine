@@ -1,0 +1,15 @@
+#include <iostream>
+
+#include <gtest/gtest.h>
+
+#include "ecs_manager_project_io_test.h"
+#include "ortho_view_test.h"
+#include "sound_manager_test.h"
+#include "texture_manager_test.h"
+
+using namespace std;
+
+int main(int argc, char** argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

@@ -1,8 +1,8 @@
-#include <Core.h>
+#include <core.h>
 
 #include <glm/glm.hpp>
 
-#include "Scene01.h"
+#include "scene_01.h"
 
 #if _WIN32
 extern "C" {

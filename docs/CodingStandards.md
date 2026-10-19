@@ -38,7 +38,7 @@ not ours to reformat), CMake files, GLSL shaders (`*.vert`, `*.frag`), and asset
 | Macro definitions | `ALL_CAPS` | `NOMINMAX`, `RENDERER_MAX_SPRITES` |
 | Global variables | `g_snake_case` | `g_frame_count` (none exist today) |
 | File names | `snake_case` | `ortho_view.h`, `editor_camera.cpp` |
-| Directories | `snake_case` | `Engine/Engine/render/`, `Editor/source/panels/` |
+| Directories | `snake_case`, below the module root | `Engine/Engine/render/`, `Editor/Source/panels/` |
 | Test suites | `PascalCase`, suffixed `Test` | `TEST(OrthoViewTest, …)` |
 
 ### 1.1 Acronyms
@@ -82,9 +82,10 @@ compiler, which insists that an `#include` match a real file).
 - Every header starts with `#pragma once`. No include guards.
 - Includes are grouped: the matching header first, then the C++ standard library, then third-party
   (`<glm/...>`, `<SDL3/...>`, `<entt/...>`), then our own headers.
-- Our own headers are included as `<dir/name.h>` across modules and as `"name.h"` within a directory:
-  the module root (`Engine/Engine`, `Editor/Source`, …) is on the include path, so
-  `#include <render/ortho_view.h>` and `#include <editor_settings.h>` both resolve.
+- Our own headers are included as `<dir/name.h>` across directories and as `"name.h"` within one. The
+  include roots are `Engine/Engine`, `Editor/Source` and `Engine/` itself, which is what puts the
+  debug helper under `Engine/tests` on the path, so `#include <render/ortho_view.h>`,
+  `#include <panels/inspector_panel.h>` and `#include <tests/test.h>` all resolve.
 
 ### 2.2 Line endings
 

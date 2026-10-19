@@ -255,7 +255,7 @@ paket-files/
 out/
 inter/
 imgui.ini
-# Runtime-generated editor config (see Editor/Source/Views/SetupView.cpp)
+# Runtime-generated editor config (see Editor/Source/views/setup_view.cpp)
 Editor/default.cfg
 # The editor's own settings, written wherever the editor was run from -- which
 # is out/<preset>/bin/<config>/ normally, but the repository root if somebody

@@ -1,9 +1,9 @@
-#include <Core.h>
+#include <core.h>
 
 #include <glm/glm.hpp>
 
-#include "./EditorManager.h"
-#include "./Views/SetupView.h"
+#include "editor_manager.h"
+#include <views/setup_view.h>
 
 #if _WIN32
 extern "C" {
