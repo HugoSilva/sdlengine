@@ -1,0 +1,72 @@
+---
+# Naming conventions for this repository. Formatting is .clang-format's job;
+# this file is the machine-checkable half of docs/CodingStandards.md.
+#
+# Only the naming check is enabled: the standard says nothing else is enforced
+# by tooling, and a wider check set would turn CI into opinions.
+Checks: >
+  -*,
+  readability-identifier-naming
+
+# Our sources are the user code. Without this, findings inside Engine/Editor/
+# headers are treated as "non-user code" and suppressed, and the naming pass
+# would silently skip every header in the project. Thirdparty/ and out/ are
+# deliberately not matched (out/x64-*/_deps holds fetched dependencies).
+HeaderFilterRegex: '[\\/](Engine|Editor|Game|UnitTests)[\\/]'
+
+CheckOptions:
+  # --- main() is spelled main(); it is not ours to case-convert -------------
+  readability-identifier-naming.IgnoreMainLikeFunctions: 'true'
+
+  # --- types: PascalCase ---------------------------------------------------
+  readability-identifier-naming.ClassCase: CamelCase
+  readability-identifier-naming.StructCase: CamelCase
+  readability-identifier-naming.UnionCase: CamelCase
+  readability-identifier-naming.EnumCase: CamelCase
+  readability-identifier-naming.TypeAliasCase: CamelCase
+  readability-identifier-naming.TypedefCase: CamelCase
+  readability-identifier-naming.TemplateParameterCase: CamelCase
+
+  # --- functions and methods: one rule, accessors included -----------------
+  readability-identifier-naming.FunctionCase: CamelCase
+  readability-identifier-naming.MethodCase: CamelCase
+  readability-identifier-naming.VirtualMethodCase: CamelCase
+
+  # --- variables and parameters: snake_case --------------------------------
+  readability-identifier-naming.VariableCase: lower_case
+  readability-identifier-naming.ParameterCase: lower_case
+  readability-identifier-naming.LocalVariableCase: lower_case
+
+  # --- namespaces: lowercase ----------------------------------------------
+  readability-identifier-naming.NamespaceCase: lower_case
+
+  # --- members: snake_case -------------------------------------------------
+  # Public members are the interface of a plain-data type, so they carry no
+  # marker; private and protected members are marked with the m_ prefix the
+  # codebase already uses throughout.
+  #
+  # Static data members are deliberately absent here: clang-tidy classifies
+  # them as variables (there is no StaticMemberCase option), so they come out
+  # of VariableCase as m_settings / s_keys_down -- which is exactly how the
+  # existing code already spells them.
+  readability-identifier-naming.PublicMemberCase: lower_case
+  readability-identifier-naming.ProtectedMemberCase: lower_case
+  readability-identifier-naming.ProtectedMemberPrefix: 'm_'
+  readability-identifier-naming.PrivateMemberCase: lower_case
+  readability-identifier-naming.PrivateMemberPrefix: 'm_'
+
+  # --- constants: kPascalCase at namespace and class scope -----------------
+  # Deliberately NOT applied to function-local const/constexpr: renaming a
+  # local temporary `const float height` to `kHeight` would make the code
+  # worse, so local constants follow the variable rule instead.
+  readability-identifier-naming.GlobalConstantCase: CamelCase
+  readability-identifier-naming.GlobalConstantPrefix: k
+  readability-identifier-naming.ClassConstantCase: CamelCase
+  readability-identifier-naming.ClassConstantPrefix: k
+  readability-identifier-naming.EnumConstantCase: CamelCase
+  readability-identifier-naming.EnumConstantPrefix: k
+  readability-identifier-naming.LocalConstantCase: lower_case
+
+  # --- macros: ALL_CAPS ---------------------------------------------------
+  readability-identifier-naming.MacroDefinitionCase: UPPER_CASE
+...
