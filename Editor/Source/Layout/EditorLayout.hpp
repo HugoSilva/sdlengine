@@ -1,9 +1,8 @@
 #pragma once
 
+#include <imgui.h>
 #include <memory>
 #include <vector>
-
-#include <imgui.h>
 
 #include "EditorPanel.hpp"
 
@@ -15,23 +14,22 @@
 // layout is only generated when there is nothing to restore, or when the user
 // asks for it from View > Reset Layout.
 // ---------------------------------------------------------------------------
-class EditorLayout
-{
-public:
-	void addPanel(std::unique_ptr<EditorPanel> panel);
+class EditorLayout {
+ public:
+  void addPanel(std::unique_ptr<EditorPanel> panel);
 
-	// Draws the whole editor UI for the current frame: menu bar, dock space,
-	// then every visible panel.
-	void draw();
+  // Draws the whole editor UI for the current frame: menu bar, dock space,
+  // then every visible panel.
+  void draw();
 
-	void requestResetLayout() { m_ResetLayout = true; }
+  void requestResetLayout() { m_ResetLayout = true; }
 
-private:
-	void drawMenuBar();
-	void drawDockSpace();
-	void buildDefaultLayout(ImGuiID dockspaceId);
+ private:
+  void drawMenuBar();
+  void drawDockSpace();
+  void buildDefaultLayout(ImGuiID dockspaceId);
 
-	std::vector<std::unique_ptr<EditorPanel>> m_Panels;
-	bool m_LayoutBuilt{ false };
-	bool m_ResetLayout{ false };
+  std::vector<std::unique_ptr<EditorPanel>> m_Panels;
+  bool m_LayoutBuilt{false};
+  bool m_ResetLayout{false};
 };

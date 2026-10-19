@@ -1,10 +1,10 @@
 #pragma once
 
-#include <gtest/gtest.h>
-
 #include <filesystem>
 #include <fstream>
 #include <string>
+
+#include <gtest/gtest.h>
 
 #include <Ecs/ECSManager.hpp>
 
@@ -17,73 +17,64 @@ return false instead.
 */
 namespace {
 
-	using namespace rse;
+using namespace rse;
 
-	// save() and load() work on "project.xml" in the current working directory,
-	// so the fixtures run inside their own folder and restore the old one.
-	class ECSManagerProjectIo : public ::testing::Test
-	{
-	protected:
-		void SetUp() override
-		{
-			m_PreviousDirectory = std::filesystem::current_path();
-			m_Directory = std::filesystem::temp_directory_path() / "rse_project_io_test";
+// save() and load() work on "project.xml" in the current working directory,
+// so the fixtures run inside their own folder and restore the old one.
+class ECSManagerProjectIo : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    m_PreviousDirectory = std::filesystem::current_path();
+    m_Directory = std::filesystem::temp_directory_path() / "rse_project_io_test";
 
-			std::filesystem::remove_all(m_Directory);
-			std::filesystem::create_directories(m_Directory);
-			std::filesystem::current_path(m_Directory);
-		}
+    std::filesystem::remove_all(m_Directory);
+    std::filesystem::create_directories(m_Directory);
+    std::filesystem::current_path(m_Directory);
+  }
 
-		void TearDown() override
-		{
-			std::filesystem::current_path(m_PreviousDirectory);
-			std::filesystem::remove_all(m_Directory);
-		}
+  void TearDown() override {
+    std::filesystem::current_path(m_PreviousDirectory);
+    std::filesystem::remove_all(m_Directory);
+  }
 
-		void writeProjectFile(const std::string& contents) const
-		{
-			std::ofstream projectFile{ "project.xml" };
-			projectFile << contents;
-		}
+  void writeProjectFile(const std::string& contents) const {
+    std::ofstream projectFile{"project.xml"};
+    projectFile << contents;
+  }
 
-		std::filesystem::path m_PreviousDirectory;
-		std::filesystem::path m_Directory;
-	};
+  std::filesystem::path m_PreviousDirectory;
+  std::filesystem::path m_Directory;
+};
 
-	TEST_F(ECSManagerProjectIo, LoadWithoutAProjectFileReportsFailure)
-	{
-		ASSERT_FALSE(std::filesystem::exists("project.xml"));
+TEST_F(ECSManagerProjectIo, LoadWithoutAProjectFileReportsFailure) {
+  ASSERT_FALSE(std::filesystem::exists("project.xml"));
 
-		EXPECT_NO_THROW({ EXPECT_FALSE(ECSManager::load()); });
-	}
-
-	TEST_F(ECSManagerProjectIo, LoadOfAnEmptyProjectFileReportsFailure)
-	{
-		writeProjectFile("");
-		ASSERT_TRUE(std::filesystem::exists("project.xml"));
-
-		EXPECT_NO_THROW({ EXPECT_FALSE(ECSManager::load()); });
-	}
-
-	TEST_F(ECSManagerProjectIo, LoadOfAMalformedProjectFileReportsFailure)
-	{
-		writeProjectFile("<cereal>this is not a project file");
-
-		EXPECT_NO_THROW({ EXPECT_FALSE(ECSManager::load()); });
-	}
-
-	TEST_F(ECSManagerProjectIo, SaveWritesTheProjectFile)
-	{
-		EXPECT_TRUE(ECSManager::save());
-
-		EXPECT_TRUE(std::filesystem::exists("project.xml"));
-		EXPECT_FALSE(std::filesystem::exists("project.xml.tmp"));
-	}
-
-	TEST_F(ECSManagerProjectIo, SavedProjectCanBeLoadedAgain)
-	{
-		ASSERT_TRUE(ECSManager::save());
-
-		EXPECT_NO_THROW({ EXPECT_TRUE(ECSManager::load()); });
-	}
+  EXPECT_NO_THROW({ EXPECT_FALSE(ECSManager::load()); });
 }
+
+TEST_F(ECSManagerProjectIo, LoadOfAnEmptyProjectFileReportsFailure) {
+  writeProjectFile("");
+  ASSERT_TRUE(std::filesystem::exists("project.xml"));
+
+  EXPECT_NO_THROW({ EXPECT_FALSE(ECSManager::load()); });
+}
+
+TEST_F(ECSManagerProjectIo, LoadOfAMalformedProjectFileReportsFailure) {
+  writeProjectFile("<cereal>this is not a project file");
+
+  EXPECT_NO_THROW({ EXPECT_FALSE(ECSManager::load()); });
+}
+
+TEST_F(ECSManagerProjectIo, SaveWritesTheProjectFile) {
+  EXPECT_TRUE(ECSManager::save());
+
+  EXPECT_TRUE(std::filesystem::exists("project.xml"));
+  EXPECT_FALSE(std::filesystem::exists("project.xml.tmp"));
+}
+
+TEST_F(ECSManagerProjectIo, SavedProjectCanBeLoadedAgain) {
+  ASSERT_TRUE(ECSManager::save());
+
+  EXPECT_NO_THROW({ EXPECT_TRUE(ECSManager::load()); });
+}
+}  // namespace

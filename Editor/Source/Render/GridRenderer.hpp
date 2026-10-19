@@ -14,124 +14,110 @@
 // (12px), so even a 1920px wide framebuffer is a couple of hundred quads.
 // ---------------------------------------------------------------------------
 
+#include <Core.h>
 #include <cmath>
 
 #include <glm/glm.hpp>
-#include <Core.h>
-#include <Render/OrthoView.hpp>
 
 #include "../Camera/EditorCamera.hpp"
 #include "../EditorSettings.hpp"
+#include <Render/OrthoView.hpp>
 
-class GridRenderer
-{
-public:
-	// Alpha matters: the sprite shader blends, so these composite over the
-	// renderer's clear colour instead of hiding it.
-	struct Colors
-	{
-		unsigned int minor{ rse::makeColor(150, 150, 150, 40) };
-		unsigned int major{ rse::makeColor(160, 160, 160, 90) };
-		unsigned int axisX{ rse::makeColor(200, 60, 60, 190) };   // the line y = 0
-		unsigned int axisY{ rse::makeColor(80, 200, 80, 190) };   // the line x = 0
-	};
+class GridRenderer {
+ public:
+  // Alpha matters: the sprite shader blends, so these composite over the
+  // renderer's clear colour instead of hiding it.
+  struct Colors {
+    unsigned int minor{rse::makeColor(150, 150, 150, 40)};
+    unsigned int major{rse::makeColor(160, 160, 160, 90)};
+    unsigned int axisX{rse::makeColor(200, 60, 60, 190)};  // the line y = 0
+    unsigned int axisY{rse::makeColor(80, 200, 80, 190)};  // the line x = 0
+  };
 
-	const Colors& colors() const { return m_Colors; }
-	Colors& colors() { return m_Colors; }
+  const Colors& colors() const { return m_Colors; }
+  Colors& colors() { return m_Colors; }
 
-	// The minimum spacing the *drawn* step is allowed to fall to, in device
-	// pixels. Below this the grid reads as a solid sheet.
-	static constexpr float kMinLineSpacing = 12.0f;
+  // The minimum spacing the *drawn* step is allowed to fall to, in device
+  // pixels. Below this the grid reads as a solid sheet.
+  static constexpr float kMinLineSpacing = 12.0f;
 
-	// Safety net only: the 12px minimum already bounds the count at
-	// deviceWidth/12, but a degenerate view must not be able to spin the loop.
-	static constexpr int kMaxLines = 4096;
+  // Safety net only: the 12px minimum already bounds the count at
+  // deviceWidth/12, but a degenerate view must not be able to spin the loop.
+  static constexpr int kMaxLines = 4096;
 
-	void submit(rse::Renderer2D* renderer, const EditorCamera& camera, const EditorSettings::Grid& settings) const
-	{
-		if (renderer == nullptr || !settings.visible)
-		{
-			return;
-		}
+  void submit(rse::Renderer2D* renderer, const EditorCamera& camera, const EditorSettings::Grid& settings) const {
+    if (renderer == nullptr || !settings.visible) {
+      return;
+    }
 
-		const rse::OrthoView& view = camera.getView();
-		const float worldPerPixel = camera.getWorldPerDevicePixel();
+    const rse::OrthoView& view = camera.getView();
+    const float worldPerPixel = camera.getWorldPerDevicePixel();
 
-		if (!(worldPerPixel > 0.0f))
-		{
-			return;
-		}
+    if (!(worldPerPixel > 0.0f)) {
+      return;
+    }
 
-		const float step = rse::gridStep(settings.base, worldPerPixel, kMinLineSpacing);
-		const float half = worldPerPixel * 0.5f;
+    const float step = rse::gridStep(settings.base, worldPerPixel, kMinLineSpacing);
+    const float half = worldPerPixel * 0.5f;
 
-		// Every column before every row: the two sets overlap at the
-		// intersections and blending the same alpha twice there is visible, so it
-		// is better that it happens uniformly.
-		const int firstX = static_cast<int>(std::floor(view.min().x / step));
-		const int lastX = static_cast<int>(std::ceil(view.max().x / step));
-		if (lastX - firstX <= kMaxLines)
-		{
-			for (int i = firstX; i <= lastX; ++i)
-			{
-				if (i == 0)
-				{
-					continue;   // the axis goes on top, below
-				}
-				submitVertical(renderer, view, static_cast<float>(i) * step, half, worldPerPixel,
-					(i % kMajorEvery == 0) ? m_Colors.major : m_Colors.minor);
-			}
-		}
+    // Every column before every row: the two sets overlap at the
+    // intersections and blending the same alpha twice there is visible, so it
+    // is better that it happens uniformly.
+    const int firstX = static_cast<int>(std::floor(view.min().x / step));
+    const int lastX = static_cast<int>(std::ceil(view.max().x / step));
+    if (lastX - firstX <= kMaxLines) {
+      for (int i = firstX; i <= lastX; ++i) {
+        if (i == 0) {
+          continue;  // the axis goes on top, below
+        }
+        submitVertical(renderer, view, static_cast<float>(i) * step, half, worldPerPixel,
+                       (i % kMajorEvery == 0) ? m_Colors.major : m_Colors.minor);
+      }
+    }
 
-		const int firstY = static_cast<int>(std::floor(view.min().y / step));
-		const int lastY = static_cast<int>(std::ceil(view.max().y / step));
-		if (lastY - firstY <= kMaxLines)
-		{
-			for (int i = firstY; i <= lastY; ++i)
-			{
-				if (i == 0)
-				{
-					continue;
-				}
-				submitHorizontal(renderer, view, static_cast<float>(i) * step, half, worldPerPixel,
-					(i % kMajorEvery == 0) ? m_Colors.major : m_Colors.minor);
-			}
-		}
+    const int firstY = static_cast<int>(std::floor(view.min().y / step));
+    const int lastY = static_cast<int>(std::ceil(view.max().y / step));
+    if (lastY - firstY <= kMaxLines) {
+      for (int i = firstY; i <= lastY; ++i) {
+        if (i == 0) {
+          continue;
+        }
+        submitHorizontal(renderer, view, static_cast<float>(i) * step, half, worldPerPixel,
+                         (i % kMajorEvery == 0) ? m_Colors.major : m_Colors.minor);
+      }
+    }
 
-		// The world axes, last so they sit on top of the rest of the grid.
-		submitVertical(renderer, view, 0.0f, half, worldPerPixel, m_Colors.axisY);
-		submitHorizontal(renderer, view, 0.0f, half, worldPerPixel, m_Colors.axisX);
-	}
+    // The world axes, last so they sit on top of the rest of the grid.
+    submitVertical(renderer, view, 0.0f, half, worldPerPixel, m_Colors.axisY);
+    submitHorizontal(renderer, view, 0.0f, half, worldPerPixel, m_Colors.axisX);
+  }
 
-private:
-	// A major line every 5 minor ones. Any multiple of the step is a multiple of
-	// grid.base, so major lines stay on the snapping lattice too.
-	static constexpr int kMajorEvery = 5;
+ private:
+  // A major line every 5 minor ones. Any multiple of the step is a multiple of
+  // grid.base, so major lines stay on the snapping lattice too.
+  static constexpr int kMajorEvery = 5;
 
-	// Snaps a world coordinate to the nearest whole device pixel, so a one pixel
-	// wide quad covers exactly one pixel instead of straddling two.
-	static float alignToPixel(float world, float viewMin, float worldPerPixel)
-	{
-		return viewMin + std::round((world - viewMin) / worldPerPixel) * worldPerPixel;
-	}
+  // Snaps a world coordinate to the nearest whole device pixel, so a one pixel
+  // wide quad covers exactly one pixel instead of straddling two.
+  static float alignToPixel(float world, float viewMin, float worldPerPixel) {
+    return viewMin + std::round((world - viewMin) / worldPerPixel) * worldPerPixel;
+  }
 
-	static void submitVertical(rse::Renderer2D* renderer, const rse::OrthoView& view, float worldX,
-		float half, float worldPerPixel, unsigned int color)
-	{
-		TransformComponent transform;
-		transform.position = glm::vec3(alignToPixel(worldX, view.min().x, worldPerPixel), view.center.y, 0.0f);
+  static void submitVertical(rse::Renderer2D* renderer, const rse::OrthoView& view, float worldX, float half,
+                             float worldPerPixel, unsigned int color) {
+    TransformComponent transform;
+    transform.position = glm::vec3(alignToPixel(worldX, view.min().x, worldPerPixel), view.center.y, 0.0f);
 
-		renderer->submitQuad(transform, glm::vec2(half, view.halfExtent.y), color);
-	}
+    renderer->submitQuad(transform, glm::vec2(half, view.halfExtent.y), color);
+  }
 
-	static void submitHorizontal(rse::Renderer2D* renderer, const rse::OrthoView& view, float worldY,
-		float half, float worldPerPixel, unsigned int color)
-	{
-		TransformComponent transform;
-		transform.position = glm::vec3(view.center.x, alignToPixel(worldY, view.min().y, worldPerPixel), 0.0f);
+  static void submitHorizontal(rse::Renderer2D* renderer, const rse::OrthoView& view, float worldY, float half,
+                               float worldPerPixel, unsigned int color) {
+    TransformComponent transform;
+    transform.position = glm::vec3(view.center.x, alignToPixel(worldY, view.min().y, worldPerPixel), 0.0f);
 
-		renderer->submitQuad(transform, glm::vec2(view.halfExtent.x, half), color);
-	}
+    renderer->submitQuad(transform, glm::vec2(view.halfExtent.x, half), color);
+  }
 
-	Colors m_Colors;
+  Colors m_Colors;
 };

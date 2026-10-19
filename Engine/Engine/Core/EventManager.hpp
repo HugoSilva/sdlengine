@@ -3,12 +3,11 @@
 #include <entt.hpp>
 #include <signal/dispatcher.hpp>
 
-class EventManager
-{
-public:
-	static inline entt::Dispatcher* getEventDispatcher() { return &eventDispatcher; }
+class EventManager {
+ public:
+  static inline entt::Dispatcher* getEventDispatcher() { return &eventDispatcher; }
 
-private:
-	EventManager() { }
-	static entt::Dispatcher eventDispatcher;
+ private:
+  EventManager() {}
+  static entt::Dispatcher eventDispatcher;
 };

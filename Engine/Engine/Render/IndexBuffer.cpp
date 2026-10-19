@@ -4,40 +4,26 @@
 #include <SDL3/SDL_opengles2.h>
 #else
 #include <GL/glew.h>
-#endif // EMSCRIPTEN
+#endif  // EMSCRIPTEN
 
-namespace rse
-{
-	IndexBuffer::IndexBuffer(unsigned short* data, int count)
-		: m_Count(count)
-	{
-		glGenBuffers(1, &m_BufferID);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(unsigned short), data, GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	}
-
-	IndexBuffer::IndexBuffer(unsigned int* data, int count)
-		: m_Count(count)
-	{
-		glGenBuffers(1, &m_BufferID);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(unsigned int), data, GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	}
-
-	IndexBuffer::~IndexBuffer()
-	{
-		glDeleteBuffers(1, &m_BufferID);
-	}
-
-	void IndexBuffer::bind() const
-	{
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID);
-	}
-
-	void IndexBuffer::unbind() const
-	{
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	}
+namespace rse {
+IndexBuffer::IndexBuffer(unsigned short* data, int count) : m_Count(count) {
+  glGenBuffers(1, &m_BufferID);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(unsigned short), data, GL_STATIC_DRAW);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
+
+IndexBuffer::IndexBuffer(unsigned int* data, int count) : m_Count(count) {
+  glGenBuffers(1, &m_BufferID);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(unsigned int), data, GL_STATIC_DRAW);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+IndexBuffer::~IndexBuffer() { glDeleteBuffers(1, &m_BufferID); }
+
+void IndexBuffer::bind() const { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID); }
+
+void IndexBuffer::unbind() const { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
+}  // namespace rse

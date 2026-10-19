@@ -11,24 +11,22 @@
 // Where a panel is docked the first time the editor runs, or after
 // View > Reset Layout. Once the user rearranges anything, imgui.ini takes over
 // and this is ignored.
-enum class DockSlot
-{
-	Left,
-	Right,
-	Bottom,
-	Center,
+enum class DockSlot {
+  Left,
+  Right,
+  Bottom,
+  Center,
 };
 
-class EditorPanel
-{
-public:
-	virtual ~EditorPanel() = default;
+class EditorPanel {
+ public:
+  virtual ~EditorPanel() = default;
 
-	virtual const char* id() const = 0;
-	virtual void draw() = 0;
+  virtual const char* id() const = 0;
+  virtual void draw() = 0;
 
-	virtual DockSlot slot() const { return DockSlot::Center; }
+  virtual DockSlot slot() const { return DockSlot::Center; }
 
-	// Toggled from the View menu and by the panel's own close button.
-	bool visible{ true };
+  // Toggled from the View menu and by the panel's own close button.
+  bool visible{true};
 };

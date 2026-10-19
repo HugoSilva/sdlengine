@@ -21,159 +21,133 @@
 
 #include <Utils/File.hpp>
 
-struct EditorSettings
-{
-	struct Grid
-	{
-		bool visible{ true };
+struct EditorSettings {
+  struct Grid {
+    bool visible{true};
 
-		// World units across one grid square, and the quantum snapping rounds
-		// to. Both uses are the same number on purpose: a grid you can see has
-		// to be the grid you snap to.
-		float base{ 32.0f };
-	};
+    // World units across one grid square, and the quantum snapping rounds
+    // to. Both uses are the same number on purpose: a grid you can see has
+    // to be the grid you snap to.
+    float base{32.0f};
+  };
 
-	// Which gizmo the viewport draws. The viewport HUD reports it and the W/E/R
-	// keys set it.
-	enum class GizmoMode
-	{
-		Translate,
-		Rotate,
-		Scale
-	};
+  // Which gizmo the viewport draws. The viewport HUD reports it and the W/E/R
+  // keys set it.
+  enum class GizmoMode { Translate, Rotate, Scale };
 
-	struct Gizmo
-	{
-		GizmoMode mode{ GizmoMode::Translate };
-	};
+  struct Gizmo {
+    GizmoMode mode{GizmoMode::Translate};
+  };
 
-	Grid grid;
-	Gizmo gizmo;
+  Grid grid;
+  Gizmo gizmo;
 
-	// The settings file, in the working directory next to imgui.ini.
-	static constexpr const char* kFilePath = "editor.cfg";
+  // The settings file, in the working directory next to imgui.ini.
+  static constexpr const char* kFilePath = "editor.cfg";
 
-	// Reads the file over the built-in defaults. A key that is missing -- a file
-	// from an older build, or one somebody has trimmed -- leaves its default in
-	// place, and so does a value that cannot be parsed: a typo should not
-	// silently turn a setting into something arbitrary.
-	void load();
+  // Reads the file over the built-in defaults. A key that is missing -- a file
+  // from an older build, or one somebody has trimmed -- leaves its default in
+  // place, and so does a value that cannot be parsed: a typo should not
+  // silently turn a setting into something arbitrary.
+  void load();
 
-	// Writes the whole struct. There is no "dirty" flag anywhere because there
-	// are two places a setting can change and they both call this; nothing else
-	// has to remember, and nothing rewrites the file every frame.
-	void save() const;
+  // Writes the whole struct. There is no "dirty" flag anywhere because there
+  // are two places a setting can change and they both call this; nothing else
+  // has to remember, and nothing rewrites the file every frame.
+  void save() const;
 };
 
-inline const char* gizmoModeName(EditorSettings::GizmoMode mode)
-{
-	switch (mode)
-	{
-		case EditorSettings::GizmoMode::Rotate: return "rotate";
-		case EditorSettings::GizmoMode::Scale: return "scale";
-		case EditorSettings::GizmoMode::Translate: break;
-	}
+inline const char* gizmoModeName(EditorSettings::GizmoMode mode) {
+  switch (mode) {
+    case EditorSettings::GizmoMode::Rotate:
+      return "rotate";
+    case EditorSettings::GizmoMode::Scale:
+      return "scale";
+    case EditorSettings::GizmoMode::Translate:
+      break;
+  }
 
-	return "translate";
+  return "translate";
 }
 
-inline void EditorSettings::load()
-{
-	// exists() first: File::read logs an error for a file that is not there, and
-	// the very first run has no settings file yet. That is not an error.
-	if (!File::exists(kFilePath))
-	{
-		return;
-	}
+inline void EditorSettings::load() {
+  // exists() first: File::read logs an error for a file that is not there, and
+  // the very first run has no settings file yet. That is not an error.
+  if (!File::exists(kFilePath)) {
+    return;
+  }
 
-	// Files get hand-edited, and hand-edited files get spaces around the '=' and
-	// CRLF line endings. Both are the editor's problem, not the writer's.
-	const auto trimmed = [](std::string text)
-	{
-		const std::size_t first = text.find_first_not_of(" \t\r\n");
+  // Files get hand-edited, and hand-edited files get spaces around the '=' and
+  // CRLF line endings. Both are the editor's problem, not the writer's.
+  const auto trimmed = [](std::string text) {
+    const std::size_t first = text.find_first_not_of(" \t\r\n");
 
-		if (first == std::string::npos)
-		{
-			return std::string{};
-		}
+    if (first == std::string::npos) {
+      return std::string{};
+    }
 
-		return text.substr(first, text.find_last_not_of(" \t\r\n") - first + 1);
-	};
+    return text.substr(first, text.find_last_not_of(" \t\r\n") - first + 1);
+  };
 
-	std::istringstream lines(File::read(kFilePath));
-	std::string line;
+  std::istringstream lines(File::read(kFilePath));
+  std::string line;
 
-	while (std::getline(lines, line))
-	{
-		// A comment, or a line somebody left half-finished. Both are ignored
-		// rather than guessed at.
-		if (line.empty() || line.front() == '#')
-		{
-			continue;
-		}
+  while (std::getline(lines, line)) {
+    // A comment, or a line somebody left half-finished. Both are ignored
+    // rather than guessed at.
+    if (line.empty() || line.front() == '#') {
+      continue;
+    }
 
-		const std::size_t separator = line.find('=');
+    const std::size_t separator = line.find('=');
 
-		if (separator == std::string::npos)
-		{
-			continue;
-		}
+    if (separator == std::string::npos) {
+      continue;
+    }
 
-		const std::string key = trimmed(line.substr(0, separator));
-		const std::string value = trimmed(line.substr(separator + 1));
+    const std::string key = trimmed(line.substr(0, separator));
+    const std::string value = trimmed(line.substr(separator + 1));
 
-		if (key == "grid.visible")
-		{
-			if (value == "true")
-			{
-				grid.visible = true;
-			}
-			else if (value == "false")
-			{
-				grid.visible = false;
-			}
-		}
-		else if (key == "grid.base")
-		{
-			float parsed = 0.0f;
-			const char* first = value.data();
-			const char* last = first + value.size();
-			const std::from_chars_result result = std::from_chars(first, last, parsed);
+    if (key == "grid.visible") {
+      if (value == "true") {
+        grid.visible = true;
+      } else if (value == "false") {
+        grid.visible = false;
+      }
+    } else if (key == "grid.base") {
+      float parsed = 0.0f;
+      const char* first = value.data();
+      const char* last = first + value.size();
+      const std::from_chars_result result = std::from_chars(first, last, parsed);
 
-			// from_chars rather than stof: it does not throw, and it has no
-			// locale to disagree with the decimal point the file was written
-			// with. Trailing junk and a base of zero or less are not a grid, so
-			// they are ignored like everything else unparsable.
-			if (result.ec == std::errc() && result.ptr == last && parsed > 0.0f)
-			{
-				grid.base = parsed;
-			}
-		}
-		else if (key == "gizmo.mode")
-		{
-			// The names come from the one place they are written, so a mode
-			// cannot be spelled one way in the file and another in the HUD.
-			for (const GizmoMode candidate : { GizmoMode::Translate, GizmoMode::Rotate, GizmoMode::Scale })
-			{
-				if (value == gizmoModeName(candidate))
-				{
-					gizmo.mode = candidate;
-				}
-			}
-		}
-	}
+      // from_chars rather than stof: it does not throw, and it has no
+      // locale to disagree with the decimal point the file was written
+      // with. Trailing junk and a base of zero or less are not a grid, so
+      // they are ignored like everything else unparsable.
+      if (result.ec == std::errc() && result.ptr == last && parsed > 0.0f) {
+        grid.base = parsed;
+      }
+    } else if (key == "gizmo.mode") {
+      // The names come from the one place they are written, so a mode
+      // cannot be spelled one way in the file and another in the HUD.
+      for (const GizmoMode candidate : {GizmoMode::Translate, GizmoMode::Rotate, GizmoMode::Scale}) {
+        if (value == gizmoModeName(candidate)) {
+          gizmo.mode = candidate;
+        }
+      }
+    }
+  }
 }
 
-inline void EditorSettings::save() const
-{
-	std::ostringstream out;
+inline void EditorSettings::save() const {
+  std::ostringstream out;
 
-	out << "grid.visible=" << (grid.visible ? "true" : "false") << "\n";
+  out << "grid.visible=" << (grid.visible ? "true" : "false") << "\n";
 
-	// The default float formatting, because it round-trips what a person would
-	// write: 32 saves as "32" and reloads as 32.
-	out << "grid.base=" << grid.base << "\n";
-	out << "gizmo.mode=" << gizmoModeName(gizmo.mode) << "\n";
+  // The default float formatting, because it round-trips what a person would
+  // write: 32 saves as "32" and reloads as 32.
+  out << "grid.base=" << grid.base << "\n";
+  out << "gizmo.mode=" << gizmoModeName(gizmo.mode) << "\n";
 
-	File::write(kFilePath, out.str().c_str());
+  File::write(kFilePath, out.str().c_str());
 }

@@ -2,15 +2,13 @@
 
 #include "../Components/Sprite.hpp"
 
-namespace physics 
-{
-	class Updatable
-	{
-	public:
-		Updatable() { }
+namespace physics {
+class Updatable {
+ public:
+  Updatable() {}
 
-		virtual ~Updatable() { }
+  virtual ~Updatable() {}
 
-		virtual void Update() { }
-	};
-}
+  virtual void Update() {}
+};
+}  // namespace physics

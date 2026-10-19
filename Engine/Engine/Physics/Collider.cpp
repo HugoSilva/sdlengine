@@ -1,11 +1,5 @@
 #include "Collider.h"
 
-Collider::Collider()
-{
+Collider::Collider() {}
 
-}
-
-void Collider::Update()
-{
-
-}
+void Collider::Update() {}
