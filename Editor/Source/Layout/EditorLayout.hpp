@@ -16,18 +16,18 @@
 // ---------------------------------------------------------------------------
 class EditorLayout {
  public:
-  void addPanel(std::unique_ptr<EditorPanel> panel);
+  void AddPanel(std::unique_ptr<EditorPanel> panel);
 
   // Draws the whole editor UI for the current frame: menu bar, dock space,
   // then every visible panel.
-  void draw();
+  void Draw();
 
-  void requestResetLayout() { m_ResetLayout = true; }
+  void RequestResetLayout() { m_ResetLayout = true; }
 
  private:
-  void drawMenuBar();
-  void drawDockSpace();
-  void buildDefaultLayout(ImGuiID dockspaceId);
+  void DrawMenuBar();
+  void DrawDockSpace();
+  void BuildDefaultLayout(ImGuiID dockspaceId);
 
   std::vector<std::unique_ptr<EditorPanel>> m_Panels;
   bool m_LayoutBuilt{false};

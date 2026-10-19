@@ -11,16 +11,16 @@ class Music;  // forward declaration for Music
 
 class SoundManager {
  public:
-  static void init();
-  static void add(Sound* sound);
-  static void add(Music* music);
-  static Sound* getSound(const std::string& name);
-  static Music* getMusic(const std::string& name);
-  static void clean();
+  static void Init();
+  static void Add(Sound* sound);
+  static void Add(Music* music);
+  static Sound* GetSound(const std::string& name);
+  static Music* GetMusic(const std::string& name);
+  static void Clean();
 
   // SDL3_mixer has no global mixer: the engine owns one and shares it with
   // every Sound/Music instance.
-  static MIX_Mixer* getMixer() { return s_Mixer; }
+  static MIX_Mixer* GetMixer() { return s_Mixer; }
 
  private:
   SoundManager() {}

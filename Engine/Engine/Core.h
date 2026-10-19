@@ -46,15 +46,15 @@
 
 class Core {
  public:
-  void start();
-  static bool getRunning() { return m_Running; }
-  static rse::Renderer2D* getRenderer() { return m_Renderer; }
-  static rse::Window* getWindow() { return m_Window; }
+  void Start();
+  static bool GetRunning() { return m_Running; }
+  static rse::Renderer2D* GetRenderer() { return m_Renderer; }
+  static rse::Window* GetWindow() { return m_Window; }
 
   // Render target the scene pass should draw into, or nullptr to draw into the
   // window's back buffer. The editor overrides this so the scene lands in its
   // viewport panel instead of the whole window.
-  virtual rse::Framebuffer* getSceneTarget() { return nullptr; }
+  virtual rse::Framebuffer* GetSceneTarget() { return nullptr; }
 
  protected:
   Core();
@@ -62,15 +62,15 @@ class Core {
 
   rse::Window* createWindow(const char* name, int width, int height);
 
-  virtual void init() = 0;
-  virtual void tick() {}
-  virtual void update() {}
-  virtual void render() = 0;
+  virtual void Init() = 0;
+  virtual void Tick() {}
+  virtual void Update() {}
+  virtual void Render() = 0;
 
-  const unsigned int getFPS() const { return m_FramesPerSecond; }
+  const unsigned int GetFps() const { return m_FramesPerSecond; }
 
  private:
-  void run();
+  void Run();
 
   // SDL3's SDL_GetTicks() returns Uint64 (milliseconds).
   uint64_t now = 0, last = 0;

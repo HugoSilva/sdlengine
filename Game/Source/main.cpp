@@ -17,17 +17,17 @@ class Game : public Core {
 
   ~Game() {}
 
-  void init() override {
+  void Init() override {
     // m_Window = createWindow("RockSlide Engine", 1280, 720);
-    SceneManager::add(new SpriteTest(Core::getWindow()->getWindow()));
+    SceneManager::Add(new SpriteTest(Core::GetWindow()->GetWindow()));
 #ifdef EMSCRIPTEN
 #else
-    ThreadManager::init();
-    ThreadManager::start();
+    ThreadManager::Init();
+    ThreadManager::Start();
 #endif
   }
 
-  void render() override {}
+  void Render() override {}
 
  private:
   rse::Window* m_Window;
@@ -35,6 +35,6 @@ class Game : public Core {
 
 int main(int argc, char** argv) {
   Game game;
-  game.start();
+  game.Start();
   return EXIT_SUCCESS;
 }

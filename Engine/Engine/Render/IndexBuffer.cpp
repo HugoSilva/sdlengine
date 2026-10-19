@@ -23,7 +23,7 @@ IndexBuffer::IndexBuffer(unsigned int* data, int count) : m_Count(count) {
 
 IndexBuffer::~IndexBuffer() { glDeleteBuffers(1, &m_BufferID); }
 
-void IndexBuffer::bind() const { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID); }
+void IndexBuffer::Bind() const { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID); }
 
-void IndexBuffer::unbind() const { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
+void IndexBuffer::Unbind() const { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
 }  // namespace rse

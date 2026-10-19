@@ -4,23 +4,23 @@
 
 std::vector<Resource*> ResourceManager::s_Resources;
 
-void ResourceManager::init() {}
+void ResourceManager::Init() {}
 
-void ResourceManager::add(Resource* resource) {
+void ResourceManager::Add(Resource* resource) {
   for (std::vector<Resource*>::iterator it = s_Resources.begin(); it != s_Resources.end(); ++it) {
     Resource* res = *it;
-    if (res->getFileName().compare(resource->getFileName()) == 0) return;
+    if (res->GetFileName().compare(resource->GetFileName()) == 0) return;
   }
 
   s_Resources.push_back(resource);
 }
 
-Resource* ResourceManager::get(const std::string& name) {
+Resource* ResourceManager::Get(const std::string& name) {
   for (std::vector<Resource*>::iterator it = s_Resources.begin(); it != s_Resources.end(); ++it) {
     Resource* res = *it;
-    if (res->getFileName().compare(name) == 0) return res;
+    if (res->GetFileName().compare(name) == 0) return res;
   }
   return nullptr;
 }
 
-void ResourceManager::clean() { s_Resources.clear(); }
+void ResourceManager::Clean() { s_Resources.clear(); }

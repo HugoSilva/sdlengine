@@ -15,20 +15,20 @@ namespace {
 using namespace rse;
 
 TEST(TextureManager, AddTexture) {
-  TextureManager::add(new Texture("test", "test.png"));
-  Texture* testTexture = TextureManager::get("test");
+  TextureManager::Add(new Texture("test", "test.png"));
+  Texture* testTexture = TextureManager::Get("test");
   EXPECT_NE(nullptr, testTexture);
 }
 
 TEST(TextureManager, AddTexturePNGFormat) {
-  TextureManager::add(new Texture("test", "test.png"));
-  Texture* testTexture = TextureManager::get("test");
+  TextureManager::Add(new Texture("test", "test.png"));
+  Texture* testTexture = TextureManager::Get("test");
   EXPECT_NE(nullptr, testTexture);
 }
 
 TEST(TextureManager, AddTextureJPEGFormat) {
-  TextureManager::add(new Texture("test", "test.jpeg"));
-  Texture* testTexture = TextureManager::get("test");
+  TextureManager::Add(new Texture("test", "test.jpeg"));
+  Texture* testTexture = TextureManager::Get("test");
   EXPECT_NE(nullptr, testTexture);
 }
 }  // namespace

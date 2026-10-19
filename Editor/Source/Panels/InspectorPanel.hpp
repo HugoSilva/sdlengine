@@ -26,49 +26,49 @@
 // ---------------------------------------------------------------------------
 class InspectorPanel : public EditorPanel {
  public:
-  const char* id() const override { return "Inspector"; }
-  DockSlot slot() const override { return DockSlot::Right; }
+  const char* Id() const override { return "Inspector"; }
+  DockSlot Slot() const override { return DockSlot::Right; }
 
-  void draw() override {
-    if (!ImGui::Begin(id(), &visible)) {
+  void Draw() override {
+    if (!ImGui::Begin(Id(), &visible)) {
       ImGui::End();
       return;
     }
 
-    if (EditorManager::getSelectedEntity() == INVALID_ENTITY_ID) {
+    if (EditorManager::GetSelectedEntity() == INVALID_ENTITY_ID) {
       ImGui::TextDisabled("Nothing selected.");
       ImGui::End();
       return;
     }
 
-    drawEntityHeader();
-    drawBasic();
-    drawTransform();
-    drawSprite();
-    drawAudio();
-    drawRigidbody();
+    DrawEntityHeader();
+    DrawBasic();
+    DrawTransform();
+    DrawSprite();
+    DrawAudio();
+    DrawRigidbody();
 
-    if (EditorManager::showComponentWidget<BasicComponent>()) {
+    if (EditorManager::ShowComponentWidget<BasicComponent>()) {
       ImGui::Separator();
-      drawAddComponentMenu();
+      DrawAddComponentMenu();
     }
 
     ImGui::End();
   }
 
  private:
-  void drawEntityHeader() {
+  void DrawEntityHeader() {
     ImGui::AlignTextToFramePadding();
     ImGui::Text("Entity");
     ImGui::SameLine();
-    ImGui::TextDisabled("(%u)", EditorManager::getSelectedEntity());
+    ImGui::TextDisabled("(%u)", EditorManager::GetSelectedEntity());
 
-    if (!EditorManager::showComponentWidget<BasicComponent>()) {
+    if (!EditorManager::ShowComponentWidget<BasicComponent>()) {
       ImGui::Separator();
       return;
     }
 
-    BasicComponent& basic = EditorManager::getComponent<BasicComponent>();
+    BasicComponent& basic = EditorManager::GetComponent<BasicComponent>();
 
     char name[128] = "";
     basic.m_Name.copy(name, IM_ARRAYSIZE(name) - 1);
@@ -81,13 +81,13 @@ class InspectorPanel : public EditorPanel {
     ImGui::Separator();
   }
 
-  void drawBasic() {
-    if (!EditorManager::showComponentWidget<BasicComponent>()) {
+  void DrawBasic() {
+    if (!EditorManager::ShowComponentWidget<BasicComponent>()) {
       return;
     }
 
     if (ImGui::CollapsingHeader("Basic", ImGuiTreeNodeFlags_DefaultOpen)) {
-      BasicComponent& basic = EditorManager::getComponent<BasicComponent>();
+      BasicComponent& basic = EditorManager::GetComponent<BasicComponent>();
 
       bool isStatic = basic.m_IsStatic;
       if (ImGui::Checkbox("Static", &isStatic)) {
@@ -96,13 +96,13 @@ class InspectorPanel : public EditorPanel {
     }
   }
 
-  void drawTransform() {
-    if (!EditorManager::showComponentWidget<TransformComponent>()) {
+  void DrawTransform() {
+    if (!EditorManager::ShowComponentWidget<TransformComponent>()) {
       return;
     }
 
     if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
-      TransformComponent& transform = EditorManager::getComponent<TransformComponent>();
+      TransformComponent& transform = EditorManager::GetComponent<TransformComponent>();
 
       ImGui::InputFloat3("Position", glm::value_ptr(transform.position), "%.2f");
       ImGui::InputFloat3("Rotation", glm::value_ptr(transform.rotation), "%.2f");
@@ -110,13 +110,13 @@ class InspectorPanel : public EditorPanel {
     }
   }
 
-  void drawSprite() {
-    if (!EditorManager::showComponentWidget<SpriteComponent>()) {
+  void DrawSprite() {
+    if (!EditorManager::ShowComponentWidget<SpriteComponent>()) {
       return;
     }
 
     if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen)) {
-      SpriteComponent& component = EditorManager::getComponent<SpriteComponent>();
+      SpriteComponent& component = EditorManager::GetComponent<SpriteComponent>();
       rse::Sprite* sprite = component.m_Sprite.get();
 
       if (sprite == nullptr) {
@@ -124,7 +124,7 @@ class InspectorPanel : public EditorPanel {
       } else {
         // The tint is packed into an unsigned int, so it has to be
         // unpacked for the widget and re-packed when it changes.
-        const unsigned int packed = sprite->getColor();
+        const unsigned int packed = sprite->GetColor();
 
         float rgba[4] = {
             static_cast<float>((packed >> 0) & 0xFF) / 255.0f,
@@ -134,63 +134,63 @@ class InspectorPanel : public EditorPanel {
         };
 
         if (ImGui::ColorEdit4("Color", rgba)) {
-          sprite->setColor((static_cast<unsigned int>(rgba[0] * 255.0f) << 0) |
+          sprite->SetColor((static_cast<unsigned int>(rgba[0] * 255.0f) << 0) |
                            (static_cast<unsigned int>(rgba[1] * 255.0f) << 8) |
                            (static_cast<unsigned int>(rgba[2] * 255.0f) << 16) |
                            (static_cast<unsigned int>(rgba[3] * 255.0f) << 24));
         }
 
-        const std::string textureName = sprite->getTextureName();
+        const std::string textureName = sprite->GetTextureName();
         ImGui::LabelText("Texture", "%s", textureName.empty() ? "(none)" : textureName.c_str());
       }
 
-      drawRemoveComponentButton(Components::Sprite, "Remove Sprite");
+      DrawRemoveComponentButton(Components::Sprite, "Remove Sprite");
     }
   }
 
-  void drawAudio() {
-    if (!EditorManager::showComponentWidget<AudioComponent>()) {
+  void DrawAudio() {
+    if (!EditorManager::ShowComponentWidget<AudioComponent>()) {
       return;
     }
 
     if (ImGui::CollapsingHeader("Audio", ImGuiTreeNodeFlags_DefaultOpen)) {
-      AudioComponent& component = EditorManager::getComponent<AudioComponent>();
+      AudioComponent& component = EditorManager::GetComponent<AudioComponent>();
       rse::Sound* sound = component.m_Sound.get();
 
       if (sound == nullptr) {
         ImGui::TextDisabled("No sound assigned.");
       } else {
-        const std::string fileName = sound->getFileName();
+        const std::string fileName = sound->GetFileName();
         ImGui::LabelText("File", "%s", fileName.empty() ? "(none)" : fileName.c_str());
 
-        ImGui::Checkbox("Mute", sound->getMute());
-        ImGui::Checkbox("Play on play", sound->getPlayTrigger());
-        ImGui::Checkbox("Loop", sound->getLoop());
+        ImGui::Checkbox("Mute", sound->GetMute());
+        ImGui::Checkbox("Play on play", sound->GetPlayTrigger());
+        ImGui::Checkbox("Loop", sound->GetLoop());
       }
 
-      drawRemoveComponentButton(Components::Audio, "Remove Audio");
+      DrawRemoveComponentButton(Components::Audio, "Remove Audio");
     }
   }
 
-  void drawRigidbody() {
-    if (!EditorManager::showComponentWidget<RigidBodyComponent>()) {
+  void DrawRigidbody() {
+    if (!EditorManager::ShowComponentWidget<RigidBodyComponent>()) {
       return;
     }
 
     if (ImGui::CollapsingHeader("Rigidbody", ImGuiTreeNodeFlags_DefaultOpen)) {
-      RigidBodyComponent& component = EditorManager::getComponent<RigidBodyComponent>();
+      RigidBodyComponent& component = EditorManager::GetComponent<RigidBodyComponent>();
       Rigidbody* rigidbody = component.m_Rigidbody.get();
 
       if (rigidbody == nullptr) {
         ImGui::TextDisabled("No rigidbody assigned.");
       } else {
-        ImGui::InputFloat("Density", rigidbody->getDensity());
-        ImGui::InputFloat("Friction", rigidbody->getFriction());
+        ImGui::InputFloat("Density", rigidbody->GetDensity());
+        ImGui::InputFloat("Friction", rigidbody->GetFriction());
 
         // Combo wants an int, so convert instead of aliasing the enum
         // pointer as an int pointer.
         static const char* items[] = {"b2_staticBody", "b2_kinematicBody", "b2_dynamicBody"};
-        b2BodyType* bodyType = rigidbody->getBodyType();
+        b2BodyType* bodyType = rigidbody->GetBodyType();
         int type = static_cast<int>(*bodyType);
 
         if (ImGui::Combo("Body Type", &type, items, IM_ARRAYSIZE(items))) {
@@ -198,31 +198,31 @@ class InspectorPanel : public EditorPanel {
         }
       }
 
-      drawRemoveComponentButton(Components::Rigidbody, "Remove Rigidbody");
+      DrawRemoveComponentButton(Components::Rigidbody, "Remove Rigidbody");
     }
   }
 
-  void drawRemoveComponentButton(Components component, const char* label) {
+  void DrawRemoveComponentButton(Components component, const char* label) {
     ImGui::Spacing();
     if (ImGui::SmallButton(label)) {
-      EventManager::getEventDispatcher()->trigger<EditorManager::RemoveComponent>(component);
+      EventManager::GetEventDispatcher()->trigger<EditorManager::RemoveComponent>(component);
     }
   }
 
-  void drawAddComponentMenu() {
+  void DrawAddComponentMenu() {
     if (ImGui::Button("Add Component")) {
       ImGui::OpenPopup("add_component");
     }
 
     if (ImGui::BeginPopup("add_component")) {
       if (ImGui::MenuItem("Audio")) {
-        EventManager::getEventDispatcher()->trigger<EditorManager::AddComponent>(Components::Audio);
+        EventManager::GetEventDispatcher()->trigger<EditorManager::AddComponent>(Components::Audio);
       }
       if (ImGui::MenuItem("Ridigbody")) {
-        EventManager::getEventDispatcher()->trigger<EditorManager::AddComponent>(Components::Rigidbody);
+        EventManager::GetEventDispatcher()->trigger<EditorManager::AddComponent>(Components::Rigidbody);
       }
       if (ImGui::MenuItem("Sprite")) {
-        EventManager::getEventDispatcher()->trigger<EditorManager::AddComponent>(Components::Sprite);
+        EventManager::GetEventDispatcher()->trigger<EditorManager::AddComponent>(Components::Sprite);
       }
       ImGui::EndPopup();
     }

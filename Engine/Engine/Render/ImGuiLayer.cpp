@@ -10,7 +10,7 @@ namespace {
 SDL_Window* s_Window{nullptr};
 }
 
-void ImGuiLayer::init(SDL_Window* window, SDL_GLContext context) {
+void ImGuiLayer::Init(SDL_Window* window, SDL_GLContext context) {
   s_Window = window;
 
   ImGui::CreateContext();
@@ -25,7 +25,7 @@ void ImGuiLayer::init(SDL_Window* window, SDL_GLContext context) {
   ImGui::StyleColorsDark();
 }
 
-void ImGuiLayer::shutdown() {
+void ImGuiLayer::Shutdown() {
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplSDL3_Shutdown();
   ImGui::DestroyContext();
@@ -33,18 +33,18 @@ void ImGuiLayer::shutdown() {
   s_Window = nullptr;
 }
 
-void ImGuiLayer::beginFrame() {
+void ImGuiLayer::BeginFrame() {
   ImGui_ImplSDL3_NewFrame();
   ImGui_ImplOpenGL3_NewFrame();
   ImGui::NewFrame();
 }
 
-void ImGuiLayer::endFrame() {
+void ImGuiLayer::EndFrame() {
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
   SDL_GL_SwapWindow(s_Window);
 }
 
-void ImGuiLayer::processEvent(const SDL_Event& event) { ImGui_ImplSDL3_ProcessEvent(&event); }
+void ImGuiLayer::ProcessEvent(const SDL_Event& event) { ImGui_ImplSDL3_ProcessEvent(&event); }
 }  // namespace rse

@@ -117,6 +117,11 @@ Every one of these is a decision, not an oversight.
 | **Project includes are `<dir/name.h>`** | See §2.1 — CMake puts the module root on the include path, so Google's repo-root-relative quoted form does not resolve |
 | **Exceptions are permitted** | The engine uses them deliberately for load/save failure; removing them would be a design change, not a style change |
 | **`_test.h` for unit tests** | Google's `_unittest.cc` spelled the way the rest of the tree names test files |
+| **Framework hooks keep the framework's spelling** | cereal resolves its hooks by name (`serialize`, `save`/`load`, `*_minimal`, `load_and_construct`). Renaming one still compiles, but the type quietly drops out of serialization, so the mistake surfaces later and somewhere else |
+| **`createWindow` stays `camelCase`** | `winuser.h` defines `CreateWindow` as a macro, so the PascalCase spelling cannot be declared at all |
+
+The last two rows are the only names exempted in `.clang-tidy`, and they are exempted by name rather than
+by rule, so nothing else escapes the check.
 
 ---
 

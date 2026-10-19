@@ -30,16 +30,16 @@ entt::DefaultRegistry ECSManager::registry;
 std::vector<BaseSystem*> ECSManager::m_systemsList;
 std::vector<BaseSystem*> ECSManager::m_preSceneSystems;
 
-void ECSManager::init() {
+void ECSManager::Init() {
   AudioSystem* audioSystem = new AudioSystem();
-  addSystem(audioSystem);
+  AddSystem(audioSystem);
   PhysicsSystem* physicsSystem = new PhysicsSystem();
-  addSystem(physicsSystem);
-  SpriteRenderSystem* spriteSystem = new SpriteRenderSystem(Core::getRenderer());
-  addSystem(spriteSystem);
+  AddSystem(physicsSystem);
+  SpriteRenderSystem* spriteSystem = new SpriteRenderSystem(Core::GetRenderer());
+  AddSystem(spriteSystem);
 }
 
-void ECSManager::addSystem(BaseSystem* system, SystemPhase phase) {
+void ECSManager::AddSystem(BaseSystem* system, SystemPhase phase) {
   if (phase == SystemPhase::PreScene) {
     m_preSceneSystems.push_back(system);
     return;
@@ -48,22 +48,22 @@ void ECSManager::addSystem(BaseSystem* system, SystemPhase phase) {
   m_systemsList.push_back(system);
 }
 
-void ECSManager::update(float delta) {
-  for (unsigned int i = 0; i < m_preSceneSystems.size(); i++) m_preSceneSystems[i]->update(delta);
+void ECSManager::Update(float delta) {
+  for (unsigned int i = 0; i < m_preSceneSystems.size(); i++) m_preSceneSystems[i]->Update(delta);
 
-  for (unsigned int i = 0; i < m_systemsList.size(); i++) m_systemsList[i]->update(delta);
+  for (unsigned int i = 0; i < m_systemsList.size(); i++) m_systemsList[i]->Update(delta);
 }
 
-void ECSManager::updateUI() {
+void ECSManager::UpdateUi() {
   // Only the editor's RenderSystem implements renderUI, so the order of the
   // two phases makes no difference here; walking them the same way as
   // update() just keeps the two functions from disagreeing.
-  for (unsigned int i = 0; i < m_preSceneSystems.size(); i++) m_preSceneSystems[i]->renderUI();
+  for (unsigned int i = 0; i < m_preSceneSystems.size(); i++) m_preSceneSystems[i]->RenderUi();
 
-  for (unsigned int i = 0; i < m_systemsList.size(); i++) m_systemsList[i]->renderUI();
+  for (unsigned int i = 0; i < m_systemsList.size(); i++) m_systemsList[i]->RenderUi();
 }
 
-void ECSManager::clean() {
+void ECSManager::Clean() {
   for (unsigned int i = 0; i < m_preSceneSystems.size(); i++) delete m_preSceneSystems[i];
   m_preSceneSystems.clear();
 
@@ -71,11 +71,11 @@ void ECSManager::clean() {
   m_systemsList.clear();
 }
 
-bool ECSManager::save() {
+bool ECSManager::Save() {
   std::ofstream os(kProjectFileScratch);
 
   if (!os.is_open()) {
-    Logger::error("Failed to save the project: project.xml could not be opened for writing.");
+    Logger::Error("Failed to save the project: project.xml could not be opened for writing.");
     return false;
   }
 
@@ -86,10 +86,10 @@ bool ECSManager::save() {
 
     registry.snapshot().entities(output).component<BasicComponent, TransformComponent, SpriteComponent>(output);
   } catch (const std::exception& error) {
-    Logger::error(std::string("Failed to save the project: ") + error.what());
+    Logger::Error(std::string("Failed to save the project: ") + error.what());
     succeeded = false;
   } catch (...) {
-    Logger::error("Failed to save the project: unknown error.");
+    Logger::Error("Failed to save the project: unknown error.");
     succeeded = false;
   }
 
@@ -105,20 +105,20 @@ bool ECSManager::save() {
   std::filesystem::rename(kProjectFileScratch, kProjectFile, error);
 
   if (error) {
-    Logger::error(std::string("Failed to save the project: ") + error.message());
+    Logger::Error(std::string("Failed to save the project: ") + error.message());
     std::filesystem::remove(kProjectFileScratch, error);
     return false;
   }
 
-  Logger::log("Project saved to project.xml");
+  Logger::Log("Project saved to project.xml");
   return true;
 }
 
-bool ECSManager::load() {
+bool ECSManager::Load() {
   std::ifstream is(kProjectFile);
 
   if (!is.is_open()) {
-    Logger::error("Failed to load the project: project.xml was not found.");
+    Logger::Error("Failed to load the project: project.xml was not found.");
     return false;
   }
 
@@ -127,14 +127,14 @@ bool ECSManager::load() {
 
     registry.restore().entities(input).component<BasicComponent, TransformComponent, SpriteComponent>(input);
   } catch (const std::exception& error) {
-    Logger::error(std::string("Failed to load the project: ") + error.what());
+    Logger::Error(std::string("Failed to load the project: ") + error.what());
     return false;
   } catch (...) {
-    Logger::error("Failed to load the project: unknown error.");
+    Logger::Error("Failed to load the project: unknown error.");
     return false;
   }
 
-  Logger::log("Project loaded from project.xml");
+  Logger::Log("Project loaded from project.xml");
   return true;
 }
 }  // namespace rse

@@ -32,27 +32,27 @@ class ViewportPanel : public EditorPanel {
  public:
   explicit ViewportPanel(EditorCamera* camera) : m_Camera(camera) {}
 
-  const char* id() const override { return "Viewport"; }
+  const char* Id() const override { return "Viewport"; }
 
-  void draw() override {
-    if (!ImGui::Begin(id(), &visible)) {
+  void Draw() override {
+    if (!ImGui::Begin(Id(), &visible)) {
       // Collapsed. There is nothing to present, but the scene still needs
       // a target: without one it would be drawn into the window and show
       // through the dock space, whose host window has no background of
       // its own. The framebuffer keeps its last size instead.
-      claimSceneTarget();
+      ClaimSceneTarget();
       ImGui::End();
       return;
     }
 
     const ImVec2 available = ImGui::GetContentRegionAvail();
-    const float dpiScale = displayScale();
+    const float dpiScale = DisplayScale();
 
-    m_Framebuffer.resize(static_cast<int>(available.x * dpiScale), static_cast<int>(available.y * dpiScale));
+    m_Framebuffer.Resize(static_cast<int>(available.x * dpiScale), static_cast<int>(available.y * dpiScale));
 
     if (m_Camera != nullptr) {
-      m_Camera->setViewportSize(
-          glm::vec2(static_cast<float>(m_Framebuffer.getWidth()), static_cast<float>(m_Framebuffer.getHeight())),
+      m_Camera->SetViewportSize(
+          glm::vec2(static_cast<float>(m_Framebuffer.GetWidth()), static_cast<float>(m_Framebuffer.GetHeight())),
           dpiScale);
     }
 
@@ -61,36 +61,36 @@ class ViewportPanel : public EditorPanel {
     const ImVec2 imagePos = ImGui::GetCursorScreenPos();
 
     // GL textures are bottom-up, ImGui images are top-down.
-    ImGui::Image((ImTextureID)(intptr_t)m_Framebuffer.getColorTexture(), available, ImVec2(0.0f, 1.0f),
+    ImGui::Image((ImTextureID)(intptr_t)m_Framebuffer.GetColorTexture(), available, ImVec2(0.0f, 1.0f),
                  ImVec2(1.0f, 0.0f));
 
-    handleNavigation(imagePos);
+    HandleNavigation(imagePos);
 
     // The gizmo gets the press before the picking does: a click on a handle
     // is a drag, not a selection.
-    const bool gizmoOwnsMouse = handleGizmo(imagePos);
+    const bool gizmoOwnsMouse = HandleGizmo(imagePos);
 
-    handlePicking(imagePos, gizmoOwnsMouse);
-    handleShortcuts();
-    drawSelection(imagePos);
-    drawGizmo(imagePos);
-    drawHud(imagePos);
+    HandlePicking(imagePos, gizmoOwnsMouse);
+    HandleShortcuts();
+    DrawSelection(imagePos);
+    DrawGizmo(imagePos);
+    DrawHud(imagePos);
 
     // Tells Core::run() where the scene pass should draw this frame.
-    claimSceneTarget();
+    ClaimSceneTarget();
 
     ImGui::End();
   }
 
  private:
-  static float displayScale() {
+  static float DisplayScale() {
     const float scale = ImGui::GetIO().DisplayFramebufferScale.x;
     return scale > 0.0f ? scale : 1.0f;
   }
 
-  void claimSceneTarget() { EditorManager::setSceneTarget(&m_Framebuffer); }
+  void ClaimSceneTarget() { EditorManager::SetSceneTarget(&m_Framebuffer); }
 
-  void handleNavigation(const ImVec2& imagePos) {
+  void HandleNavigation(const ImVec2& imagePos) {
     if (m_Camera == nullptr) {
       return;
     }
@@ -106,7 +106,7 @@ class ViewportPanel : public EditorPanel {
       // The mouse and the image are both in ImGui pixels, so this is a
       // subtraction; the camera turns it into device pixels.
       const glm::vec2 anchor(io.MousePos.x - imagePos.x, io.MousePos.y - imagePos.y);
-      m_Camera->zoomAt(io.MouseWheel, anchor);
+      m_Camera->ZoomAt(io.MouseWheel, anchor);
     }
 
     // Middle-drag pans, as it does in most editors.
@@ -119,27 +119,27 @@ class ViewportPanel : public EditorPanel {
     }
 
     if (m_Panning) {
-      m_Camera->pan(glm::vec2(io.MouseDelta.x, io.MouseDelta.y));
+      m_Camera->Pan(glm::vec2(io.MouseDelta.x, io.MouseDelta.y));
     }
   }
 
   // The gizmo's mouse work, and whether it took the press. Guarded here rather
   // than in the gizmo so that a panel with no camera does not have to know
   // about one.
-  bool handleGizmo(const ImVec2& imagePos) {
+  bool HandleGizmo(const ImVec2& imagePos) {
     if (m_Camera == nullptr) {
       return false;
     }
 
-    return m_Gizmo.handleInput(*m_Camera, imagePos, ImGui::IsItemHovered());
+    return m_Gizmo.HandleInput(*m_Camera, imagePos, ImGui::IsItemHovered());
   }
 
-  void drawGizmo(const ImVec2& imagePos) {
+  void DrawGizmo(const ImVec2& imagePos) {
     if (m_Camera == nullptr) {
       return;
     }
 
-    m_Gizmo.draw(*m_Camera, imagePos);
+    m_Gizmo.Draw(*m_Camera, imagePos);
   }
 
   // A left click that does not turn into a drag selects what is under it;
@@ -147,7 +147,7 @@ class ViewportPanel : public EditorPanel {
   // a drag -- a pan, or one of the gizmo's own -- is never mistaken for a
   // click. `taken` is this frame's answer from the gizmo: pressing a handle
   // starts a drag, and the same press must not also re-pick.
-  void handlePicking(const ImVec2& imagePos, bool taken) {
+  void HandlePicking(const ImVec2& imagePos, bool taken) {
     if (m_Camera == nullptr) {
       return;
     }
@@ -171,52 +171,52 @@ class ViewportPanel : public EditorPanel {
       return;
     }
 
-    pickAt(glm::vec2(io.MousePos.x - imagePos.x, io.MousePos.y - imagePos.y));
+    PickAt(glm::vec2(io.MousePos.x - imagePos.x, io.MousePos.y - imagePos.y));
   }
 
   // Whatever is under the cursor; the last hit wins, because the renderer has
   // no depth to sort by and "on top" means "drawn later".
-  void pickAt(glm::vec2 pixel) {
-    const glm::vec2 world = m_Camera->screenToWorld(pixel);
+  void PickAt(glm::vec2 pixel) {
+    const glm::vec2 world = m_Camera->ScreenToWorld(pixel);
 
     uint32_t hit = INVALID_ENTITY_ID;
 
-    rse::ECSManager::getView<TransformComponent, SpriteComponent>().each(
+    rse::ECSManager::GetView<TransformComponent, SpriteComponent>().each(
         [&hit, &world](uint32_t entity, TransformComponent&, SpriteComponent&) {
-          const std::optional<EntityBounds> bounds = editor_bounds::ofEntity(entity);
+          const std::optional<EntityBounds> bounds = editor_bounds::OfEntity(entity);
 
-          if (bounds && rse::pointInOrientedBox(world, bounds->center, bounds->rotationDegrees, bounds->halfExtent)) {
+          if (bounds && rse::PointInOrientedBox(world, bounds->center, bounds->rotationDegrees, bounds->halfExtent)) {
             hit = entity;
           }
         });
 
-    EditorManager::setSelection(hit);
+    EditorManager::SetSelection(hit);
   }
 
   // One box per selected entity, over the scene. It is the same rectangle the
   // renderer draws -- EntityBounds mirrors submit() -- so it lands on the
   // sprite's own pixels rather than near them. An entity with no sprite has no
   // rectangle to draw, and gets a cross at its position instead of nothing.
-  void drawSelection(const ImVec2& imagePos) {
+  void DrawSelection(const ImVec2& imagePos) {
     if (m_Camera == nullptr) {
       return;
     }
 
     ImDrawList* drawList = ImGui::GetWindowDrawList();
 
-    for (const uint32_t entity : EditorManager::getSelectedEntities()) {
+    for (const uint32_t entity : EditorManager::GetSelectedEntities()) {
       // Only one entity can be selected today, so this is always the
       // active colour; the other one is what multi-select will use to
       // tell the rest of the set from the entity the inspector edits.
-      const ImU32 colour = entity == EditorManager::getSelectedEntity() ? kActiveOutline : kOutline;
+      const ImU32 colour = entity == EditorManager::GetSelectedEntity() ? kActiveOutline : kOutline;
 
-      const std::optional<EntityBounds> bounds = editor_bounds::ofEntity(entity);
+      const std::optional<EntityBounds> bounds = editor_bounds::OfEntity(entity);
 
       if (!bounds) {
-        const std::optional<glm::vec2> position = editor_bounds::positionOf(entity);
+        const std::optional<glm::vec2> position = editor_bounds::PositionOf(entity);
 
         if (position) {
-          const glm::vec2 screen = m_Camera->worldToScreen(*position);
+          const glm::vec2 screen = m_Camera->WorldToScreen(*position);
           const ImVec2 at(imagePos.x + screen.x, imagePos.y + screen.y);
 
           drawList->AddLine(ImVec2(at.x - kCrossSize, at.y), ImVec2(at.x + kCrossSize, at.y), kOutlineHalo, 4.0f);
@@ -228,11 +228,11 @@ class ViewportPanel : public EditorPanel {
         continue;
       }
 
-      const std::array<glm::vec2, 4> corners = editor_bounds::corners(*bounds);
+      const std::array<glm::vec2, 4> corners = editor_bounds::Corners(*bounds);
       ImVec2 points[4];
 
       for (int i = 0; i < 4; i++) {
-        const glm::vec2 screen = m_Camera->worldToScreen(corners[i]);
+        const glm::vec2 screen = m_Camera->WorldToScreen(corners[i]);
         points[i] = ImVec2(imagePos.x + screen.x, imagePos.y + screen.y);
       }
 
@@ -248,7 +248,7 @@ class ViewportPanel : public EditorPanel {
   // F frames the selection, or the whole scene when nothing is selected. The
   // hierarchy's double-click asks for the same thing, through EditorManager,
   // because it happens in another panel.
-  void handleShortcuts() {
+  void HandleShortcuts() {
     if (m_Camera == nullptr) {
       return;
     }
@@ -265,7 +265,7 @@ class ViewportPanel : public EditorPanel {
     // does the HUD, so the handle set and the readout follow in the same
     // frame.
     if (keys) {
-      EditorSettings& settings = EditorManager::settings();
+      EditorSettings& settings = EditorManager::Settings();
       const EditorSettings::GizmoMode previous = settings.gizmo.mode;
 
       if (ImGui::IsKeyPressed(ImGuiKey_W)) {
@@ -279,7 +279,7 @@ class ViewportPanel : public EditorPanel {
       // Only on a real change: holding a key down would otherwise rewrite
       // the file once a frame for nothing.
       if (settings.gizmo.mode != previous) {
-        settings.save();
+        settings.Save();
       }
     }
 
@@ -287,48 +287,48 @@ class ViewportPanel : public EditorPanel {
 
     // Consumed even when the key was the reason, so a request cannot be
     // left pending and fire a second time later.
-    const bool requested = EditorManager::consumeFrameRequest();
+    const bool requested = EditorManager::ConsumeFrameRequest();
 
     if (pressed || requested) {
-      frameSelection();
+      FrameSelection();
     }
   }
 
-  void frameSelection() {
+  void FrameSelection() {
     // The selection first, then everything there is. An empty scene has
     // nothing to frame, so the view is left alone rather than zoomed to its
     // maximum on the origin.
     std::optional<rse::Bounds2D> bounds;
 
-    const std::optional<EntityBounds> selection = editor_bounds::ofEntity(EditorManager::getSelectedEntity());
+    const std::optional<EntityBounds> selection = editor_bounds::OfEntity(EditorManager::GetSelectedEntity());
     if (selection) {
       // The box that frames it, which is not the box that gets drawn: a
       // rotated entity needs its corners boxed first.
-      bounds = editor_bounds::aabb(*selection);
+      bounds = editor_bounds::Aabb(*selection);
     }
 
     if (!bounds) {
-      bounds = editor_bounds::ofScene();
+      bounds = editor_bounds::OfScene();
     }
 
     if (!bounds) {
       return;
     }
 
-    m_Camera->focusOn(bounds->center(), bounds->size());
+    m_Camera->FocusOn(bounds->Center(), bounds->Size());
   }
 
   // Zoom, camera centre and gizmo mode, over the top-left of the scene. Drawn
   // into the draw list rather than as widgets: widgets here would add to the
   // window's content size and could give the panel scrollbars.
-  void drawHud(const ImVec2& imagePos) {
+  void DrawHud(const ImVec2& imagePos) {
     if (m_Camera == nullptr) {
       return;
     }
 
     char text[192];
-    snprintf(text, sizeof(text), "Zoom %.0f%%\nCentre %.0f, %.0f\nGizmo %s", m_Camera->getZoom() * 100.0f,
-             m_Camera->getCenter().x, m_Camera->getCenter().y, gizmoModeName(EditorManager::settings().gizmo.mode));
+    snprintf(text, sizeof(text), "Zoom %.0f%%\nCentre %.0f, %.0f\nGizmo %s", m_Camera->GetZoom() * 100.0f,
+             m_Camera->GetCenter().x, m_Camera->GetCenter().y, GizmoModeName(EditorManager::Settings().gizmo.mode));
 
     const ImVec2 textSize = ImGui::CalcTextSize(text);
     const ImVec2 blockMin(imagePos.x + 6.0f, imagePos.y + 6.0f);

@@ -8,12 +8,12 @@ class Font;  // forward declaration for Font
 
 class FontManager {
  public:
-  static void init();
-  static void add(Font* font);
-  static Font* get();
-  static Font* get(const std::string& name);
-  static Font* get(const std::string& name, unsigned int size);
-  static void clean();
+  static void Init();
+  static void Add(Font* font);
+  static Font* Get();
+  static Font* Get(const std::string& name);
+  static Font* Get(const std::string& name, unsigned int size);
+  static void Clean();
 
  private:
   FontManager() {}

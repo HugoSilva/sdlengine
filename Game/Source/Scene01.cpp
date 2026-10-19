@@ -3,7 +3,7 @@
 #include <string>
 
 SpriteTest::SpriteTest(SDL_Window* win) {
-  FontManager::add(new Font("Arial", "Resources/arial.ttf", 24));
+  FontManager::Add(new Font("Arial", "Resources/arial.ttf", 24));
 
 #ifdef EMSCRIPTEN
   m_Shader = new Shader("Resources/ES3.vert", "Resources/ES3.frag");
@@ -14,7 +14,7 @@ SpriteTest::SpriteTest(SDL_Window* win) {
   // m_Layer = new Layer(new SDLRenderer(win), m_Shader);
   m_Layer = new Layer(new OpenGLRenderer(win, m_Shader), m_Shader);
 
-  TextureManager::add(new Texture("test00", "Resources/tex3.png"));
+  TextureManager::Add(new Texture("test00", "Resources/tex3.png"));
   /*
           m_GroundSprite = new Sprite(glm::vec3(40, 40, 0), glm::vec2(40, 40), TextureManager::get("test00"));
           m_PlayerSprite = new Sprite(glm::vec3(40, 40, 0), glm::vec2(40, 40), 0xaa0011ff);
@@ -46,17 +46,17 @@ SpriteTest::SpriteTest(SDL_Window* win) {
     glm::vec3 position{(rand() % (1200 - 40 + 1) + 10), (rand() % (720 - 40 + 1) + 10), 0.f};
 
     Sprite* testSprite =
-        new Sprite(glm::vec3(position.x, position.y, position.z), glm::vec2(40, 40), TextureManager::get("test00"));
+        new Sprite(glm::vec3(position.x, position.y, position.z), glm::vec2(40, 40), TextureManager::Get("test00"));
     int r = rand() % 256;
     int g = rand() % 256;
     int b = rand() % 256;
-    testSprite->setColor(0xff << 24 | b << 16 | g << 8 | r);
+    testSprite->SetColor(0xff << 24 | b << 16 | g << 8 | r);
 
-    uint32_t m_SelectedEntity = rse::ECSManager::createEntity();
-    rse::ECSManager::addComponent<BasicComponent>(m_SelectedEntity, ("entity_" + std::to_string(i)).c_str(), true, 0,
+    uint32_t m_SelectedEntity = rse::ECSManager::CreateEntity();
+    rse::ECSManager::AddComponent<BasicComponent>(m_SelectedEntity, ("entity_" + std::to_string(i)).c_str(), true, 0,
                                                   0);
-    rse::ECSManager::addComponent<TransformComponent>(m_SelectedEntity, position, glm::vec3(0.f), glm::vec3(1.f));
-    rse::ECSManager::addComponent<SpriteComponent>(m_SelectedEntity, testSprite);
+    rse::ECSManager::AddComponent<TransformComponent>(m_SelectedEntity, position, glm::vec3(0.f), glm::vec3(1.f));
+    rse::ECSManager::AddComponent<SpriteComponent>(m_SelectedEntity, testSprite);
   }
 }
 
@@ -75,12 +75,12 @@ void SpriteTest::Update(float deltaTime) {
   else if (InputManager::IsKeyPressed(SDL_SCANCODE_RIGHT))
     m_PlayerSprite->position.x += speed;
   else if (InputManager::IsKeyPressed(SDL_SCANCODE_F1))
-    rse::ECSManager::save();
+    rse::ECSManager::Save();
 }
 
 void SpriteTest::Render() {
   // TODO needs to be removed only has shader code for now
-  m_Shader->enable();
+  m_Shader->Enable();
   // TODO create a camera system to replace old camera
   m_Camera->Render(m_Shader);
   // m_Layer->render();

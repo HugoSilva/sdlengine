@@ -4,7 +4,7 @@
 
 Rigidbody::Rigidbody(glm::vec2 position, glm::vec2 size) : m_position(position), m_size(size) {}
 
-void Rigidbody::init(b2World* world) {
+void Rigidbody::Init(b2World* world) {
   b2BodyDef bodyDefinition;
 
   bodyDefinition.position.Set(m_position.x, m_position.y);

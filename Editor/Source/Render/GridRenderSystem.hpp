@@ -17,15 +17,15 @@ class GridRenderSystem : public BaseSystem {
   GridRenderSystem(rse::Renderer2D* renderer, const EditorCamera* camera)
       : BaseSystem(), m_Renderer(renderer), m_Camera(camera) {}
 
-  void update(const float alpha) override {
+  void Update(const float alpha) override {
     if (m_Camera == nullptr) {
       return;
     }
 
-    m_Grid.submit(m_Renderer, *m_Camera, EditorManager::settings().grid);
+    m_Grid.Submit(m_Renderer, *m_Camera, EditorManager::Settings().grid);
   }
 
-  GridRenderer& grid() { return m_Grid; }
+  GridRenderer& Grid() { return m_Grid; }
 
  private:
   rse::Renderer2D* m_Renderer{nullptr};

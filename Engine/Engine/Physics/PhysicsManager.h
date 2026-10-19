@@ -8,8 +8,8 @@
 
 class PhysicsManager : public physics::Updatable {
  public:
-  static void init();
-  static void add(Rigidbody* rb);
+  static void Init();
+  static void Add(Rigidbody* rb);
   void Update() override;
   static void UpdateObjects();
   static void Clean();

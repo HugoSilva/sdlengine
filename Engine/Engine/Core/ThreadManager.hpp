@@ -6,9 +6,9 @@
 
 class ThreadManager {
  public:
-  static void init();
-  static void start();
-  static void clean();
+  static void Init();
+  static void Start();
+  static void Clean();
 
  private:
   ThreadManager() {}

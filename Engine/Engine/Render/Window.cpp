@@ -18,11 +18,11 @@ Window::~Window() {
   SDL_Quit();
 }
 
-bool Window::init() {
+bool Window::Init() {
   // SDL3 removed SDL_INIT_EVERYTHING; ask for exactly what the engine uses.
   // VIDEO/AUDIO/GAMEPAD all imply SDL_INIT_EVENTS.
   if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD)) {
-    Logger::error(std::string("Failed to initialize SDL: ") + SDL_GetError());
+    Logger::Error(std::string("Failed to initialize SDL: ") + SDL_GetError());
     return false;
   }
 
@@ -39,7 +39,7 @@ bool Window::init() {
   m_Window = SDL_CreateWindow(m_Title, m_Width, m_Height,
                               SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
   if (m_Window == nullptr) {
-    Logger::error(std::string("Failed to create SDL Window: ") + SDL_GetError());
+    Logger::Error(std::string("Failed to create SDL Window: ") + SDL_GetError());
     SDL_Quit();
     return false;
   }
@@ -50,7 +50,7 @@ bool Window::init() {
   glewExperimental = GL_TRUE;
   GLenum result = glewInit();
   if (result != GLEW_OK) {
-    Logger::error(std::string("Failed to initialize GLEW: ") +
+    Logger::Error(std::string("Failed to initialize GLEW: ") +
                   reinterpret_cast<const char*>(glewGetErrorString(result)));
   }
 #endif
@@ -74,19 +74,19 @@ bool Window::init() {
   glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
   const GLubyte* version = glGetString(GL_VERSION);
-  Logger::log(std::string("OpenGL ") + (version != nullptr ? reinterpret_cast<const char*>(version) : "unknown"));
+  Logger::Log(std::string("OpenGL ") + (version != nullptr ? reinterpret_cast<const char*>(version) : "unknown"));
 
   // ImGui is initialised separately once the window exists -- see
   // rse::ImGuiLayer::init(), called from Core.
   return true;
 }
 
-bool Window::getRunning() {
+bool Window::GetRunning() {
   // TODO I need to rethink the quit logic for the window
   return !InputManager::IsQuitRequested();
 }
 
-void Window::bindDefaultFramebuffer() {
+void Window::BindDefaultFramebuffer() {
   int width = 0;
   int height = 0;
   SDL_GetWindowSizeInPixels(m_Window, &width, &height);

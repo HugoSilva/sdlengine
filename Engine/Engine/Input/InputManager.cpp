@@ -59,7 +59,7 @@ void InputManager::Update() {
         // // If positive, scrolled up
         break;
     }
-    ImGuiLayer::processEvent(event);
+    ImGuiLayer::ProcessEvent(event);
   }
 }
 

@@ -7,9 +7,9 @@
 #include "../Utils/Logger.hpp"
 
 namespace rse {
-Framebuffer::~Framebuffer() { destroy(); }
+Framebuffer::~Framebuffer() { Destroy(); }
 
-void Framebuffer::destroy() {
+void Framebuffer::Destroy() {
   if (m_ColorTexture != 0) {
     glDeleteTextures(1, &m_ColorTexture);
     m_ColorTexture = 0;
@@ -27,7 +27,7 @@ void Framebuffer::destroy() {
   m_Height = 0;
 }
 
-void Framebuffer::resize(int width, int height) {
+void Framebuffer::Resize(int width, int height) {
   // A docked panel can be dragged to zero width; a zero sized attachment
   // is a GL error, not something worth showing.
   width = std::max(width, 1);
@@ -37,7 +37,7 @@ void Framebuffer::resize(int width, int height) {
     return;
   }
 
-  destroy();
+  Destroy();
 
   m_Width = width;
   m_Height = height;
@@ -71,7 +71,7 @@ void Framebuffer::resize(int width, int height) {
   if (status != GL_FRAMEBUFFER_COMPLETE) {
     std::ostringstream message;
     message << "Viewport framebuffer incomplete (0x" << std::hex << status << std::dec << ")";
-    Logger::error(message.str());
+    Logger::Error(message.str());
   }
 
   glBindTexture(GL_TEXTURE_2D, 0);
@@ -79,10 +79,10 @@ void Framebuffer::resize(int width, int height) {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Framebuffer::bind() const {
+void Framebuffer::Bind() const {
   glBindFramebuffer(GL_FRAMEBUFFER, m_Framebuffer);
   glViewport(0, 0, m_Width, m_Height);
 }
 
-void Framebuffer::unbind() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
+void Framebuffer::Unbind() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
 }  // namespace rse

@@ -10,15 +10,15 @@ class Window {
   Window(const char* title, int width, int height);
   ~Window();
 
-  bool init();
-  bool getRunning();
-  SDL_Window* getWindow() { return m_Window; };
-  SDL_GLContext getContext() { return m_Context; };
+  bool Init();
+  bool GetRunning();
+  SDL_Window* GetWindow() { return m_Window; };
+  SDL_GLContext GetContext() { return m_Context; };
 
   // Makes the window's back buffer the render target again and resets the
   // GL viewport to the current pixel size (the window may have been
   // resized since the last frame).
-  void bindDefaultFramebuffer();
+  void BindDefaultFramebuffer();
 
  private:
   SDL_Event m_WindowEvent;

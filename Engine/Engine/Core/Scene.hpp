@@ -10,7 +10,7 @@ class Scene {
 
   virtual void Render() = 0;
 
-  inline const std::string& getName() const { return m_Name; }
+  inline const std::string& GetName() const { return m_Name; }
 
  protected:
   std::string m_Name;

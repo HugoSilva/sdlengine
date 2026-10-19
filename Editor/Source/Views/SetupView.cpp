@@ -11,10 +11,10 @@
 #include "../Render/GridRenderSystem.hpp"
 
 SetupView::SetupView(std::string name, SDL_Window* win) {
-  if (File::exists("default.cfg")) {
-    File::read("default.cfg");
+  if (File::Exists("default.cfg")) {
+    File::Read("default.cfg");
   } else {
-    File::write("default.cfg", "definitions should be passed here");
+    File::Write("default.cfg", "definitions should be passed here");
   }
 
   using namespace rse;
@@ -22,8 +22,8 @@ SetupView::SetupView(std::string name, SDL_Window* win) {
   m_Shader = new Shader("Resources/Default.vert", "Resources/Default.frag");
 
   // TODO I need to add a function to load resources in the project
-  TextureManager::add(new Texture("test00", "Resources/tex3.png"));
-  SoundManager::add(new Sound("eff", "Resources/effect.wav"));
+  TextureManager::Add(new Texture("test00", "Resources/tex3.png"));
+  SoundManager::Add(new Sound("eff", "Resources/effect.wav"));
 
   // The viewport gets the editor's own camera, not the engine's game camera:
   // the engine camera keeps its WASD/mouse-look path and the editor camera
@@ -31,19 +31,19 @@ SetupView::SetupView(std::string name, SDL_Window* win) {
   m_Camera = new EditorCamera();
 
   m_Layout = new EditorLayout();
-  m_Layout->addPanel(std::make_unique<HierarchyPanel>());
-  m_Layout->addPanel(std::make_unique<ContentBrowserPanel>());
-  m_Layout->addPanel(std::make_unique<DebugPanel>());
-  m_Layout->addPanel(std::make_unique<ViewportPanel>(m_Camera));
-  m_Layout->addPanel(std::make_unique<InspectorPanel>());
-  m_Layout->addPanel(std::make_unique<ConsolePanel>());
+  m_Layout->AddPanel(std::make_unique<HierarchyPanel>());
+  m_Layout->AddPanel(std::make_unique<ContentBrowserPanel>());
+  m_Layout->AddPanel(std::make_unique<DebugPanel>());
+  m_Layout->AddPanel(std::make_unique<ViewportPanel>(m_Camera));
+  m_Layout->AddPanel(std::make_unique<InspectorPanel>());
+  m_Layout->AddPanel(std::make_unique<ConsolePanel>());
 
   m_render = new RenderSystem(m_Layout);
-  rse::ECSManager::addSystem(m_render);
+  rse::ECSManager::AddSystem(m_render);
 
   // The grid is submitted into the scene pass before the sprites are, which is
   // what puts it underneath them.
-  rse::ECSManager::addSystem(new GridRenderSystem(Core::getRenderer(), m_Camera), rse::SystemPhase::PreScene);
+  rse::ECSManager::AddSystem(new GridRenderSystem(Core::GetRenderer(), m_Camera), rse::SystemPhase::PreScene);
 
   // New Entities code
   // for (int i = 0; i < 5000; i++)
@@ -64,17 +64,17 @@ SetupView::SetupView(std::string name, SDL_Window* win) {
 
   m_Name = name;
 
-  EditorManager::init();
+  EditorManager::Init();
 }
 
 void SetupView::Update(float deltaTime) {
   // SceneManager::change("SelectProject");
 
-  if (rse::InputManager::IsKeyPressed(SDL_SCANCODE_F1)) rse::ECSManager::save();
-  if (rse::InputManager::IsKeyPressed(SDL_SCANCODE_F2)) rse::ECSManager::load();
+  if (rse::InputManager::IsKeyPressed(SDL_SCANCODE_F1)) rse::ECSManager::Save();
+  if (rse::InputManager::IsKeyPressed(SDL_SCANCODE_F2)) rse::ECSManager::Load();
 }
 
 void SetupView::Render() {
-  m_Shader->enable();
-  m_Camera->apply(m_Shader);
+  m_Shader->Enable();
+  m_Camera->Apply(m_Shader);
 }

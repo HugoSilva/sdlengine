@@ -13,9 +13,9 @@ namespace rse {
 Texture::Texture(const std::string& name, const std::string& filename) : m_Name(name), m_Filename(filename) {
   int Mode = GL_RGB;
   // Image::loadImage hands us an owned surface; it must outlive the upload.
-  SDL_Surface* surface = Image::loadImage(m_Filename.c_str());
+  SDL_Surface* surface = Image::LoadImage(m_Filename.c_str());
   if (surface != nullptr) {
-    Image::checkImageMode(&Mode, surface);
+    Image::CheckImageMode(&Mode, surface);
     m_Width = surface->w;
     m_Height = surface->h;
   }
@@ -41,9 +41,9 @@ Texture::Texture(const std::string& name, Font* font, const std::string text, un
   SDL_Color textColor = {static_cast<unsigned char>(color), static_cast<unsigned char>(color >> 8),
                          static_cast<unsigned char>(color >> 16), static_cast<unsigned char>(color >> 24)};
   int Mode = GL_RGB;
-  SDL_Surface* surface = Image::loadFont(font->getFTFont(), text.c_str(), textColor);
+  SDL_Surface* surface = Image::LoadFont(font->GetFtFont(), text.c_str(), textColor);
   if (surface != nullptr) {
-    Image::checkImageMode(&Mode, surface);
+    Image::CheckImageMode(&Mode, surface);
     m_Width = surface->w;
     m_Height = surface->h;
   }
@@ -67,7 +67,7 @@ Texture::Texture(const std::string& name, Font* font, const std::string text, un
 
 Texture::~Texture() { glDeleteTextures(1, &m_Id); }
 
-void Texture::bind() const { glBindTexture(GL_TEXTURE_2D, m_Id); }
+void Texture::Bind() const { glBindTexture(GL_TEXTURE_2D, m_Id); }
 
-void Texture::unbind() const { glBindTexture(GL_TEXTURE_2D, 0); }
+void Texture::Unbind() const { glBindTexture(GL_TEXTURE_2D, 0); }
 }  // namespace rse

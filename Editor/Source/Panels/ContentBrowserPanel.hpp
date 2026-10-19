@@ -39,35 +39,35 @@ class ContentBrowserPanel : public EditorPanel {
       m_Directory = resources;
     }
 
-    refresh();
+    Refresh();
   }
 
-  const char* id() const override { return "Content Browser"; }
-  DockSlot slot() const override { return DockSlot::Left; }
+  const char* Id() const override { return "Content Browser"; }
+  DockSlot Slot() const override { return DockSlot::Left; }
 
-  void draw() override {
-    if (!ImGui::Begin(id(), &visible)) {
+  void Draw() override {
+    if (!ImGui::Begin(Id(), &visible)) {
       ImGui::End();
       return;
     }
 
-    drawToolbar();
+    DrawToolbar();
     ImGui::Separator();
-    drawEntryList();
-    drawDetails();
+    DrawEntryList();
+    DrawDetails();
 
     ImGui::End();
   }
 
  private:
-  void refresh() {
+  void Refresh() {
     m_Entries.clear();
     m_Selected = -1;
 
     std::error_code error;
     std::filesystem::directory_iterator iterator{m_Directory, error};
     if (error) {
-      Logger::error("Cannot list " + m_Directory.string() + ": " + error.message());
+      Logger::Error("Cannot list " + m_Directory.string() + ": " + error.message());
       return;
     }
 
@@ -86,32 +86,32 @@ class ContentBrowserPanel : public EditorPanel {
         return aIsDirectory;
       }
 
-      return toLower(a.filename().string()) < toLower(b.filename().string());
+      return ToLower(a.filename().string()) < ToLower(b.filename().string());
     });
   }
 
-  void navigate(const std::filesystem::path& directory) {
+  void Navigate(const std::filesystem::path& directory) {
     std::error_code error;
     if (!std::filesystem::is_directory(directory, error)) {
       return;
     }
 
     m_Directory = directory;
-    refresh();
+    Refresh();
   }
 
-  void drawToolbar() {
+  void DrawToolbar() {
     const bool atRoot = m_Directory == m_Root;
 
     ImGui::BeginDisabled(atRoot);
     if (ImGui::Button("Up")) {
-      navigate(m_Directory.parent_path());
+      Navigate(m_Directory.parent_path());
     }
     ImGui::EndDisabled();
 
     ImGui::SameLine();
     if (ImGui::Button("Refresh")) {
-      refresh();
+      Refresh();
     }
 
     // Relative to the root, so the line stays short enough to read in a
@@ -124,7 +124,7 @@ class ContentBrowserPanel : public EditorPanel {
     ImGui::TextDisabled("%s", label.c_str());
   }
 
-  void drawEntryList() {
+  void DrawEntryList() {
     // The listing takes most of the column; the rest is for the preview.
     const float listHeight = ImGui::GetContentRegionAvail().y * 0.62f;
 
@@ -159,7 +159,7 @@ class ContentBrowserPanel : public EditorPanel {
           // Copied because navigate() refreshes the listing this
           // element lives in.
           const std::filesystem::path target = path;
-          navigate(target);
+          Navigate(target);
           ImGui::EndChild();
           return;
         }
@@ -173,7 +173,7 @@ class ContentBrowserPanel : public EditorPanel {
     ImGui::EndChild();
   }
 
-  void drawDetails() {
+  void DrawDetails() {
     ImGui::Separator();
 
     if (m_Selected < 0 || m_Selected >= static_cast<int>(m_Entries.size())) {
@@ -193,14 +193,14 @@ class ContentBrowserPanel : public EditorPanel {
       return;
     }
 
-    ImGui::TextDisabled("%s", describeSize(path).c_str());
+    ImGui::TextDisabled("%s", DescribeSize(path).c_str());
 
-    if (!isImage(path.extension().string())) {
+    if (!IsImage(path.extension().string())) {
       return;
     }
 
-    rse::Texture* preview = previewFor(path);
-    if (preview == nullptr || preview->getWidth() == 0 || preview->getHeight() == 0) {
+    rse::Texture* preview = PreviewFor(path);
+    if (preview == nullptr || preview->GetWidth() == 0 || preview->GetHeight() == 0) {
       ImGui::TextDisabled("(no preview)");
       return;
     }
@@ -211,7 +211,7 @@ class ContentBrowserPanel : public EditorPanel {
     }
 
     // Fit inside whatever room is left without distorting the image.
-    const float aspect = static_cast<float>(preview->getHeight()) / static_cast<float>(preview->getWidth());
+    const float aspect = static_cast<float>(preview->GetHeight()) / static_cast<float>(preview->GetWidth());
     float width = available.x;
     float height = width * aspect;
     if (height > available.y) {
@@ -219,12 +219,12 @@ class ContentBrowserPanel : public EditorPanel {
       width = height / aspect;
     }
 
-    ImGui::Image(static_cast<ImTextureID>(static_cast<intptr_t>(preview->getID())), ImVec2(width, height));
+    ImGui::Image(static_cast<ImTextureID>(static_cast<intptr_t>(preview->GetId())), ImVec2(width, height));
   }
 
   // Loads an image the first time it is selected and keeps it, so clicking
   // through a folder does not re-upload the same file every time.
-  rse::Texture* previewFor(const std::filesystem::path& path) {
+  rse::Texture* PreviewFor(const std::filesystem::path& path) {
     const std::string key = path.string();
 
     const std::map<std::string, std::unique_ptr<rse::Texture>>::iterator found = m_Previews.find(key);
@@ -236,20 +236,20 @@ class ContentBrowserPanel : public EditorPanel {
     rse::Texture* raw = preview.get();
     m_Previews.emplace(key, std::move(preview));
 
-    if (raw->getWidth() == 0 || raw->getHeight() == 0) {
-      Logger::warning("Could not preview " + key);
+    if (raw->GetWidth() == 0 || raw->GetHeight() == 0) {
+      Logger::Warning("Could not preview " + key);
     }
 
     return raw;
   }
 
-  static bool isImage(const std::string& extension) {
-    const std::string lowered = toLower(extension);
+  static bool IsImage(const std::string& extension) {
+    const std::string lowered = ToLower(extension);
     return lowered == ".png" || lowered == ".jpg" || lowered == ".jpeg" || lowered == ".bmp" || lowered == ".gif" ||
            lowered == ".tga" || lowered == ".webp" || lowered == ".avif" || lowered == ".qoi";
   }
 
-  static std::string describeSize(const std::filesystem::path& path) {
+  static std::string DescribeSize(const std::filesystem::path& path) {
     std::error_code error;
     const std::uintmax_t bytes = std::filesystem::file_size(path, error);
     if (error) {
@@ -270,7 +270,7 @@ class ContentBrowserPanel : public EditorPanel {
     return out.str();
   }
 
-  static std::string toLower(std::string value) {
+  static std::string ToLower(std::string value) {
     std::transform(value.begin(), value.end(), value.begin(),
                    [](unsigned char character) { return static_cast<char>(std::tolower(character)); });
     return value;

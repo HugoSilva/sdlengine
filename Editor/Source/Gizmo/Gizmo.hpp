@@ -60,9 +60,9 @@ class Gizmo {
 
   // Reads the mouse for this frame and returns true when a handle owns the
   // press, so the viewport knows the click was not aimed at the scene.
-  bool handleInput(const EditorCamera& camera, const ImVec2& imagePos, bool hovered);
+  bool HandleInput(const EditorCamera& camera, const ImVec2& imagePos, bool hovered);
 
-  void draw(const EditorCamera& camera, const ImVec2& imagePos) const;
+  void Draw(const EditorCamera& camera, const ImVec2& imagePos) const;
 
  private:
   // Screen pixels. The handles are the same size at every zoom by design.
@@ -118,26 +118,26 @@ class Gizmo {
 
   // Where the handles sit, in screen pixels. Fails when the selection has no
   // position at all, which is also when there is no gizmo to draw.
-  bool anchor(const EditorCamera& camera, const ImVec2& imagePos, ImVec2& out) const;
+  bool Anchor(const EditorCamera& camera, const ImVec2& imagePos, ImVec2& out) const;
 
-  TransformComponent* activeTransform() const;
+  TransformComponent* ActiveTransform() const;
 
-  Axis hitTest(glm::vec2 mouse, const ImVec2& origin) const;
-  Axis hitTestAxes(glm::vec2 mouse, const ImVec2& origin) const;
-  Axis hitTestRing(glm::vec2 mouse, const ImVec2& origin) const;
+  Axis HitTest(glm::vec2 mouse, const ImVec2& origin) const;
+  Axis HitTestAxes(glm::vec2 mouse, const ImVec2& origin) const;
+  Axis HitTestRing(glm::vec2 mouse, const ImVec2& origin) const;
 
-  void beginDrag(glm::vec2 mouse, Axis axis);
-  void applyDrag(const EditorCamera& camera);
-  void applyTranslate(glm::vec2 travel, float worldPerPixel);
-  void applyRotate(glm::vec2 mouse);
-  void applyScale(glm::vec2 travel);
+  void BeginDrag(glm::vec2 mouse, Axis axis);
+  void ApplyDrag(const EditorCamera& camera);
+  void ApplyTranslate(glm::vec2 travel, float worldPerPixel);
+  void ApplyRotate(glm::vec2 mouse);
+  void ApplyScale(glm::vec2 travel);
 
-  void drawAxes(ImDrawList* drawList, const ImVec2& origin, Axis lit, bool boxes) const;
-  void drawRing(ImDrawList* drawList, const ImVec2& origin, Axis lit) const;
+  void DrawAxes(ImDrawList* drawList, const ImVec2& origin, Axis lit, bool boxes) const;
+  void DrawRing(ImDrawList* drawList, const ImVec2& origin, Axis lit) const;
 
-  static void stroke(ImDrawList* drawList, const ImVec2& from, const ImVec2& to, ImU32 colour);
-  static void head(ImDrawList* drawList, const ImVec2& tip, const ImVec2& left, const ImVec2& right, ImU32 colour);
-  static void box(ImDrawList* drawList, const ImVec2& centre, float half, ImU32 colour);
+  static void Stroke(ImDrawList* drawList, const ImVec2& from, const ImVec2& to, ImU32 colour);
+  static void Head(ImDrawList* drawList, const ImVec2& tip, const ImVec2& left, const ImVec2& right, ImU32 colour);
+  static void Box(ImDrawList* drawList, const ImVec2& centre, float half, ImU32 colour);
 
   Axis m_Active{Axis::None};
   Axis m_Hovered{Axis::None};
@@ -156,66 +156,66 @@ class Gizmo {
   std::vector<Grabbed> m_Grabbed;
 };
 
-inline bool Gizmo::anchor(const EditorCamera& camera, const ImVec2& imagePos, ImVec2& out) const {
+inline bool Gizmo::Anchor(const EditorCamera& camera, const ImVec2& imagePos, ImVec2& out) const {
   // The active entity anchors the drag; with one entity selected that is the
   // only one there is.
-  const std::optional<glm::vec2> position = editor_bounds::positionOf(EditorManager::getSelectedEntity());
+  const std::optional<glm::vec2> position = editor_bounds::PositionOf(EditorManager::GetSelectedEntity());
 
   if (!position) {
     return false;
   }
 
-  const glm::vec2 screen = camera.worldToScreen(*position);
+  const glm::vec2 screen = camera.WorldToScreen(*position);
   out = ImVec2(imagePos.x + screen.x, imagePos.y + screen.y);
   return true;
 }
 
-inline TransformComponent* Gizmo::activeTransform() const {
-  const uint32_t entity = EditorManager::getSelectedEntity();
+inline TransformComponent* Gizmo::ActiveTransform() const {
+  const uint32_t entity = EditorManager::GetSelectedEntity();
 
-  if (entity == INVALID_ENTITY_ID || !rse::ECSManager::hasComponent<TransformComponent>(entity)) {
+  if (entity == INVALID_ENTITY_ID || !rse::ECSManager::HasComponent<TransformComponent>(entity)) {
     return nullptr;
   }
 
-  return &rse::ECSManager::getComponent<TransformComponent>(entity);
+  return &rse::ECSManager::GetComponent<TransformComponent>(entity);
 }
 
-inline Gizmo::Axis Gizmo::hitTest(glm::vec2 mouse, const ImVec2& origin) const {
-  switch (EditorManager::settings().gizmo.mode) {
+inline Gizmo::Axis Gizmo::HitTest(glm::vec2 mouse, const ImVec2& origin) const {
+  switch (EditorManager::Settings().gizmo.mode) {
     case EditorSettings::GizmoMode::Rotate:
-      return hitTestRing(mouse, origin);
+      return HitTestRing(mouse, origin);
     case EditorSettings::GizmoMode::Scale:
     case EditorSettings::GizmoMode::Translate:
     default:
-      return hitTestAxes(mouse, origin);
+      return HitTestAxes(mouse, origin);
   }
 }
 
-inline Gizmo::Axis Gizmo::hitTestAxes(glm::vec2 mouse, const ImVec2& origin) const {
+inline Gizmo::Axis Gizmo::HitTestAxes(glm::vec2 mouse, const ImVec2& origin) const {
   const glm::vec2 at(origin.x, origin.y);
 
   // The centre square is tested first: it sits on top of both axes where they
   // meet, and it is the handle most likely to be aimed at.
-  if (rse::pointInBox(mouse, at - glm::vec2(kCentreSize), at + glm::vec2(kCentreSize))) {
+  if (rse::PointInBox(mouse, at - glm::vec2(kCentreSize), at + glm::vec2(kCentreSize))) {
     return Axis::Both;
   }
 
   // The bands run the length of the arms, including the heads, so the whole
   // thing is grabbable and not just the shaft.
   const glm::vec2 xEnd(at.x + kArmLength + kArrowLength, at.y);
-  if (rse::pointInBox(mouse, glm::vec2(at.x, at.y - kGrabWidth), glm::vec2(xEnd.x, at.y + kGrabWidth))) {
+  if (rse::PointInBox(mouse, glm::vec2(at.x, at.y - kGrabWidth), glm::vec2(xEnd.x, at.y + kGrabWidth))) {
     return Axis::X;
   }
 
   const glm::vec2 yEnd(at.x, at.y - kArmLength - kArrowLength);
-  if (rse::pointInBox(mouse, glm::vec2(at.x - kGrabWidth, yEnd.y), glm::vec2(at.x + kGrabWidth, at.y))) {
+  if (rse::PointInBox(mouse, glm::vec2(at.x - kGrabWidth, yEnd.y), glm::vec2(at.x + kGrabWidth, at.y))) {
     return Axis::Y;
   }
 
   return Axis::None;
 }
 
-inline Gizmo::Axis Gizmo::hitTestRing(glm::vec2 mouse, const ImVec2& origin) const {
+inline Gizmo::Axis Gizmo::HitTestRing(glm::vec2 mouse, const ImVec2& origin) const {
   const float distance = glm::length(mouse - glm::vec2(origin.x, origin.y));
 
   // A band around the circle, not a filled disc: the middle of the ring is
@@ -223,23 +223,23 @@ inline Gizmo::Axis Gizmo::hitTestRing(glm::vec2 mouse, const ImVec2& origin) con
   return std::abs(distance - kRingRadius) <= kRingGrabWidth ? Axis::Ring : Axis::None;
 }
 
-inline void Gizmo::beginDrag(glm::vec2 mouse, Axis axis) {
+inline void Gizmo::BeginDrag(glm::vec2 mouse, Axis axis) {
   m_Active = axis;
   m_GrabScreen = mouse;
 
   m_Grabbed.clear();
 
-  for (const uint32_t entity : EditorManager::getSelectedEntities()) {
-    if (!rse::ECSManager::hasComponent<TransformComponent>(entity)) {
+  for (const uint32_t entity : EditorManager::GetSelectedEntities()) {
+    if (!rse::ECSManager::HasComponent<TransformComponent>(entity)) {
       continue;
     }
 
-    const TransformComponent& transform = rse::ECSManager::getComponent<TransformComponent>(entity);
+    const TransformComponent& transform = rse::ECSManager::GetComponent<TransformComponent>(entity);
     m_Grabbed.push_back({entity, transform.position, transform.rotation, transform.scale});
   }
 }
 
-inline void Gizmo::applyTranslate(glm::vec2 travel, float worldPerPixel) {
+inline void Gizmo::ApplyTranslate(glm::vec2 travel, float worldPerPixel) {
   const bool dragX = m_Active == Axis::X || m_Active == Axis::Both;
   const bool dragY = m_Active == Axis::Y || m_Active == Axis::Both;
 
@@ -249,11 +249,11 @@ inline void Gizmo::applyTranslate(glm::vec2 travel, float worldPerPixel) {
   const glm::vec2 projected(dragX ? travel.x : 0.0f, dragY ? -travel.y : 0.0f);
   const glm::vec2 offset = projected * worldPerPixel;
 
-  const float step = EditorManager::settings().grid.base;
+  const float step = EditorManager::Settings().grid.base;
   const bool snapping = ImGui::GetIO().KeyShift;
 
   for (const Grabbed& grabbed : m_Grabbed) {
-    TransformComponent& transform = rse::ECSManager::getComponent<TransformComponent>(grabbed.entity);
+    TransformComponent& transform = rse::ECSManager::GetComponent<TransformComponent>(grabbed.entity);
 
     glm::vec3 moved = grabbed.position;
     moved.x += offset.x;
@@ -263,11 +263,11 @@ inline void Gizmo::applyTranslate(glm::vec2 travel, float worldPerPixel) {
       // Only the axes being dragged are snapped: the other one is where it
       // was, and rounding it would move the entity sideways.
       if (dragX) {
-        moved.x = rse::snapToStep(moved.x, step);
+        moved.x = rse::SnapToStep(moved.x, step);
       }
 
       if (dragY) {
-        moved.y = rse::snapToStep(moved.y, step);
+        moved.y = rse::SnapToStep(moved.y, step);
       }
     }
 
@@ -275,7 +275,7 @@ inline void Gizmo::applyTranslate(glm::vec2 travel, float worldPerPixel) {
   }
 }
 
-inline void Gizmo::applyRotate(glm::vec2 mouse) {
+inline void Gizmo::ApplyRotate(glm::vec2 mouse) {
   // Anticlockwise from +X about the pivot the drag started from. Screen y grows
   // downwards, so it is negated: rotation.z turns the sprite anticlockwise on
   // screen, which is the way round the user drags it.
@@ -294,12 +294,12 @@ inline void Gizmo::applyRotate(glm::vec2 mouse) {
   const bool snapping = ImGui::GetIO().KeyShift;
 
   for (const Grabbed& grabbed : m_Grabbed) {
-    TransformComponent& transform = rse::ECSManager::getComponent<TransformComponent>(grabbed.entity);
+    TransformComponent& transform = rse::ECSManager::GetComponent<TransformComponent>(grabbed.entity);
 
     float degrees = grabbed.rotation.z + glm::degrees(m_AngleTravelled);
 
     if (snapping) {
-      degrees = rse::snapToStep(degrees, kRotationSnap);
+      degrees = rse::SnapToStep(degrees, kRotationSnap);
     }
 
     // X and Y rotation are not modelled by this gizmo (or by EntityBounds,
@@ -308,7 +308,7 @@ inline void Gizmo::applyRotate(glm::vec2 mouse) {
   }
 }
 
-inline void Gizmo::applyScale(glm::vec2 travel) {
+inline void Gizmo::ApplyScale(glm::vec2 travel) {
   const bool dragX = m_Active == Axis::X || m_Active == Axis::Both;
   const bool dragY = m_Active == Axis::Y || m_Active == Axis::Both;
 
@@ -323,7 +323,7 @@ inline void Gizmo::applyScale(glm::vec2 travel) {
   const bool snapping = ImGui::GetIO().KeyShift;
 
   for (const Grabbed& grabbed : m_Grabbed) {
-    TransformComponent& transform = rse::ECSManager::getComponent<TransformComponent>(grabbed.entity);
+    TransformComponent& transform = rse::ECSManager::GetComponent<TransformComponent>(grabbed.entity);
 
     glm::vec3 scaled = grabbed.scale;
 
@@ -343,13 +343,13 @@ inline void Gizmo::applyScale(glm::vec2 travel) {
 
     if (snapping) {
       if (dragX) {
-        scaled.x = rse::snapToStep(scaled.x, kScaleSnap);
+        scaled.x = rse::SnapToStep(scaled.x, kScaleSnap);
       }
       if (dragY) {
-        scaled.y = rse::snapToStep(scaled.y, kScaleSnap);
+        scaled.y = rse::SnapToStep(scaled.y, kScaleSnap);
       }
       if (m_Active == Axis::Both) {
-        scaled.z = rse::snapToStep(scaled.z, kScaleSnap);
+        scaled.z = rse::SnapToStep(scaled.z, kScaleSnap);
       }
     }
 
@@ -361,29 +361,29 @@ inline void Gizmo::applyScale(glm::vec2 travel) {
   }
 }
 
-inline void Gizmo::applyDrag(const EditorCamera& camera) {
+inline void Gizmo::ApplyDrag(const EditorCamera& camera) {
   const ImGuiIO& io = ImGui::GetIO();
   const glm::vec2 mouse(io.MousePos.x, io.MousePos.y);
   const glm::vec2 travel = mouse - m_GrabScreen;
 
-  switch (EditorManager::settings().gizmo.mode) {
+  switch (EditorManager::Settings().gizmo.mode) {
     case EditorSettings::GizmoMode::Rotate:
-      applyRotate(mouse);
+      ApplyRotate(mouse);
       break;
     case EditorSettings::GizmoMode::Scale:
-      applyScale(travel);
+      ApplyScale(travel);
       break;
     case EditorSettings::GizmoMode::Translate:
     default:
-      applyTranslate(travel, camera.getWorldPerPixel());
+      ApplyTranslate(travel, camera.GetWorldPerPixel());
       break;
   }
 }
 
-inline bool Gizmo::handleInput(const EditorCamera& camera, const ImVec2& imagePos, bool hovered) {
+inline bool Gizmo::HandleInput(const EditorCamera& camera, const ImVec2& imagePos, bool hovered) {
   ImVec2 origin;
 
-  if (!anchor(camera, imagePos, origin)) {
+  if (!Anchor(camera, imagePos, origin)) {
     // Nothing to move. Any drag in flight is dropped rather than carried on:
     // the entity it was moving may be the one that just went away.
     m_Active = Axis::None;
@@ -398,19 +398,19 @@ inline bool Gizmo::handleInput(const EditorCamera& camera, const ImVec2& imagePo
     if (!ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
       // Released. One last apply, in case the cursor moved and let go
       // between frames, and then the drag is over.
-      applyDrag(camera);
+      ApplyDrag(camera);
       m_Active = Axis::None;
       m_Grabbed.clear();
       return false;
     }
 
-    applyDrag(camera);
+    ApplyDrag(camera);
     return true;
   }
 
   // Hovering is only meaningful while the cursor is over the image: the
   // handles are drawn there, and off the panel they are not on screen.
-  m_Hovered = hovered ? hitTest(glm::vec2(io.MousePos.x, io.MousePos.y), origin) : Axis::None;
+  m_Hovered = hovered ? HitTest(glm::vec2(io.MousePos.x, io.MousePos.y), origin) : Axis::None;
 
   if (m_Hovered != Axis::None && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
     const glm::vec2 mouse(io.MousePos.x, io.MousePos.y);
@@ -423,25 +423,25 @@ inline bool Gizmo::handleInput(const EditorCamera& camera, const ImVec2& imagePo
     m_LastAngle = std::atan2(m_GrabOrigin.y - mouse.y, mouse.x - m_GrabOrigin.x);
     m_AngleTravelled = 0.0f;
 
-    beginDrag(mouse, m_Hovered);
+    BeginDrag(mouse, m_Hovered);
     return true;
   }
 
   return false;
 }
 
-inline void Gizmo::stroke(ImDrawList* drawList, const ImVec2& from, const ImVec2& to, ImU32 colour) {
+inline void Gizmo::Stroke(ImDrawList* drawList, const ImVec2& from, const ImVec2& to, ImU32 colour) {
   drawList->AddLine(from, to, kHalo, 4.0f);
   drawList->AddLine(from, to, colour, 2.0f);
 }
 
-inline void Gizmo::head(ImDrawList* drawList, const ImVec2& tip, const ImVec2& left, const ImVec2& right,
+inline void Gizmo::Head(ImDrawList* drawList, const ImVec2& tip, const ImVec2& left, const ImVec2& right,
                         ImU32 colour) {
   drawList->AddTriangleFilled(tip, left, right, colour);
   drawList->AddTriangle(tip, left, right, kHalo, 2.0f);
 }
 
-inline void Gizmo::box(ImDrawList* drawList, const ImVec2& centre, float half, ImU32 colour) {
+inline void Gizmo::Box(ImDrawList* drawList, const ImVec2& centre, float half, ImU32 colour) {
   const ImVec2 min(centre.x - half, centre.y - half);
   const ImVec2 max(centre.x + half, centre.y + half);
 
@@ -449,7 +449,7 @@ inline void Gizmo::box(ImDrawList* drawList, const ImVec2& centre, float half, I
   drawList->AddRectFilled(min, max, colour);
 }
 
-inline void Gizmo::drawAxes(ImDrawList* drawList, const ImVec2& origin, Axis lit, bool boxes) const {
+inline void Gizmo::DrawAxes(ImDrawList* drawList, const ImVec2& origin, Axis lit, bool boxes) const {
   const ImU32 xColour = lit == Axis::X || lit == Axis::Both ? kXLit : kXDim;
   const ImU32 yColour = lit == Axis::Y || lit == Axis::Both ? kYLit : kYDim;
   const ImU32 planeColour = lit == Axis::Both ? kPlaneLit : kPlaneDim;
@@ -457,21 +457,21 @@ inline void Gizmo::drawAxes(ImDrawList* drawList, const ImVec2& origin, Axis lit
   const ImVec2 xTip(origin.x + kArmLength, origin.y);
   const ImVec2 yTip(origin.x, origin.y - kArmLength);
 
-  stroke(drawList, origin, xTip, xColour);
-  stroke(drawList, origin, yTip, yColour);
+  Stroke(drawList, origin, xTip, xColour);
+  Stroke(drawList, origin, yTip, yColour);
 
   if (boxes) {
     // Scale: a box on the end of each arm, and a smaller one in the middle
     // to tell the uniform handle from the axis handles.
-    box(drawList, xTip, kHandleBoxSize, xColour);
-    box(drawList, yTip, kHandleBoxSize, yColour);
+    Box(drawList, xTip, kHandleBoxSize, xColour);
+    Box(drawList, yTip, kHandleBoxSize, yColour);
   } else {
     // Translate: an arrowhead past the end of each shaft.
     const ImVec2 xHead(xTip.x + kArrowLength, xTip.y);
     const ImVec2 yHead(yTip.x, yTip.y - kArrowLength);
 
-    head(drawList, xHead, ImVec2(xTip.x, xTip.y - kArrowHalfWidth), ImVec2(xTip.x, xTip.y + kArrowHalfWidth), xColour);
-    head(drawList, yHead, ImVec2(yTip.x + kArrowHalfWidth, yTip.y), ImVec2(yTip.x - kArrowHalfWidth, yTip.y), yColour);
+    Head(drawList, xHead, ImVec2(xTip.x, xTip.y - kArrowHalfWidth), ImVec2(xTip.x, xTip.y + kArrowHalfWidth), xColour);
+    Head(drawList, yHead, ImVec2(yTip.x + kArrowHalfWidth, yTip.y), ImVec2(yTip.x - kArrowHalfWidth, yTip.y), yColour);
   }
 
   // The centre square: the plane drag for translate, the uniform one for
@@ -485,7 +485,7 @@ inline void Gizmo::drawAxes(ImDrawList* drawList, const ImVec2& origin, Axis lit
                           ImVec2(squareMax.x - 2.0f, squareMax.y - 2.0f), planeColour);
 }
 
-inline void Gizmo::drawRing(ImDrawList* drawList, const ImVec2& origin, Axis lit) const {
+inline void Gizmo::DrawRing(ImDrawList* drawList, const ImVec2& origin, Axis lit) const {
   const ImU32 colour = lit == Axis::Ring ? kRingLit : kRingDim;
 
   drawList->AddCircle(origin, kRingRadius, kHalo, 0, 5.0f);
@@ -493,20 +493,20 @@ inline void Gizmo::drawRing(ImDrawList* drawList, const ImVec2& origin, Axis lit
 
   // A spoke at the entity's own angle, so the ring says which way round the
   // thing is as well as where to grab it.
-  const TransformComponent* transform = activeTransform();
+  const TransformComponent* transform = ActiveTransform();
 
   if (transform != nullptr) {
     const float radians = glm::radians(transform->rotation.z);
     const ImVec2 tip(origin.x + std::cos(radians) * kRingRadius, origin.y - std::sin(radians) * kRingRadius);
 
-    stroke(drawList, origin, tip, colour);
+    Stroke(drawList, origin, tip, colour);
   }
 }
 
-inline void Gizmo::draw(const EditorCamera& camera, const ImVec2& imagePos) const {
+inline void Gizmo::Draw(const EditorCamera& camera, const ImVec2& imagePos) const {
   ImVec2 origin;
 
-  if (!anchor(camera, imagePos, origin)) {
+  if (!Anchor(camera, imagePos, origin)) {
     return;
   }
 
@@ -516,16 +516,16 @@ inline void Gizmo::draw(const EditorCamera& camera, const ImVec2& imagePos) cons
   // anywhere, and the handle being moved is the one that should be lit.
   const Axis lit = m_Active != Axis::None ? m_Active : m_Hovered;
 
-  switch (EditorManager::settings().gizmo.mode) {
+  switch (EditorManager::Settings().gizmo.mode) {
     case EditorSettings::GizmoMode::Rotate:
-      drawRing(drawList, origin, lit);
+      DrawRing(drawList, origin, lit);
       break;
     case EditorSettings::GizmoMode::Scale:
-      drawAxes(drawList, origin, lit, true);
+      DrawAxes(drawList, origin, lit, true);
       break;
     case EditorSettings::GizmoMode::Translate:
     default:
-      drawAxes(drawList, origin, lit, false);
+      DrawAxes(drawList, origin, lit, false);
       break;
   }
 }

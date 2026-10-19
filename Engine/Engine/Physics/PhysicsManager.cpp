@@ -10,9 +10,9 @@ float PhysicsManager::timeStep = 1.0f / 6000.0f;
 int32 PhysicsManager::velocityIterations = 6;
 int32 PhysicsManager::positionIterations = 2;
 
-void PhysicsManager::init() { m_world = new b2World{m_gravity}; }
+void PhysicsManager::Init() { m_world = new b2World{m_gravity}; }
 
-void PhysicsManager::add(Rigidbody* rb) { m_Rigidbodies.push_back(rb); }
+void PhysicsManager::Add(Rigidbody* rb) { m_Rigidbodies.push_back(rb); }
 
 void PhysicsManager::Update() {
   // Prepare for simulation. Typically we use a time step of 1/60 of a
@@ -22,7 +22,7 @@ void PhysicsManager::Update() {
 }
 
 void PhysicsManager::UpdateObjects() {
-  while (Core::getRunning()) {
+  while (Core::GetRunning()) {
     m_world->Step(timeStep, velocityIterations, positionIterations);
 
     // for (Rigidbody* rb : m_Rigidbodies)

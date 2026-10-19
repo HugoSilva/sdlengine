@@ -16,33 +16,33 @@
 // ---------------------------------------------------------------------------
 class HierarchyPanel : public EditorPanel {
  public:
-  const char* id() const override { return "Hierarchy"; }
-  DockSlot slot() const override { return DockSlot::Left; }
+  const char* Id() const override { return "Hierarchy"; }
+  DockSlot Slot() const override { return DockSlot::Left; }
 
-  void draw() override {
-    if (!ImGui::Begin(id(), &visible)) {
+  void Draw() override {
+    if (!ImGui::Begin(Id(), &visible)) {
       ImGui::End();
       return;
     }
 
-    drawToolbar();
+    DrawToolbar();
     ImGui::Separator();
-    drawEntityList();
+    DrawEntityList();
 
     ImGui::End();
   }
 
  private:
-  void drawToolbar() {
+  void DrawToolbar() {
     if (ImGui::Button("Create")) {
-      EventManager::getEventDispatcher()->trigger<EditorManager::CreateEntity>();
+      EventManager::GetEventDispatcher()->trigger<EditorManager::CreateEntity>();
     }
 
     ImGui::SameLine();
     m_Filter.Draw("##hierarchy_filter", -1.0f);
   }
 
-  void drawEntityList() {
+  void DrawEntityList() {
     // A child region keeps the list scrolling instead of the window, so the
     // toolbar stays put.
     if (!ImGui::BeginChild("##hierarchy_entities", ImVec2(0.0f, 0.0f), ImGuiChildFlags_None,
@@ -51,7 +51,7 @@ class HierarchyPanel : public EditorPanel {
       return;
     }
 
-    const uint32_t selected = EditorManager::getSelectedEntity();
+    const uint32_t selected = EditorManager::GetSelectedEntity();
 
     uint32_t clicked = INVALID_ENTITY_ID;
     uint32_t toDestroy = INVALID_ENTITY_ID;
@@ -59,7 +59,7 @@ class HierarchyPanel : public EditorPanel {
     // Counted up front so the toolbar can report it without a second pass.
     uint32_t visibleCount = 0;
 
-    rse::ECSManager::getView<BasicComponent>().each([&](auto entity, BasicComponent& basic) {
+    rse::ECSManager::GetView<BasicComponent>().each([&](auto entity, BasicComponent& basic) {
       const uint32_t entityId = static_cast<uint32_t>(entity);
 
       if (!m_Filter.PassFilter(basic.m_Name.c_str())) {
@@ -87,7 +87,7 @@ class HierarchyPanel : public EditorPanel {
 
       // Double-click frames it, the same thing F does in the viewport.
       if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-        EditorManager::requestFrameSelection();
+        EditorManager::RequestFrameSelection();
       }
 
       if (ImGui::BeginPopupContextItem("##entity_context")) {
@@ -110,11 +110,11 @@ class HierarchyPanel : public EditorPanel {
     // Enter a context menu target into the selection so the inspector follows
     // what is about to be acted on.
     if (clicked != INVALID_ENTITY_ID) {
-      EventManager::getEventDispatcher()->trigger<EditorManager::SelectEntity>(clicked);
+      EventManager::GetEventDispatcher()->trigger<EditorManager::SelectEntity>(clicked);
     }
 
     if (toDestroy != INVALID_ENTITY_ID) {
-      EventManager::getEventDispatcher()->trigger<EditorManager::DestroyEntity>(toDestroy);
+      EventManager::GetEventDispatcher()->trigger<EditorManager::DestroyEntity>(toDestroy);
     }
 
     if (visibleCount == 0) {

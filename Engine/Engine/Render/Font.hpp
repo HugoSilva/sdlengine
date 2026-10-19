@@ -11,10 +11,10 @@ class Font {
   Font(std::string name, std::string filename, int size);
   ~Font();
 
-  inline TTF_Font* getFTFont() const { return m_Font; }
-  inline const std::string& getName() const { return m_Name; }
-  inline const std::string& getFileName() const { return m_Filename; }
-  inline const int getSize() const { return m_Size; }
+  inline TTF_Font* GetFtFont() const { return m_Font; }
+  inline const std::string& GetName() const { return m_Name; }
+  inline const std::string& GetFileName() const { return m_Filename; }
+  inline const int GetSize() const { return m_Size; }
 
  private:
   TTF_Font* m_Font;

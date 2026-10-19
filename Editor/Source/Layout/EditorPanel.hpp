@@ -22,10 +22,10 @@ class EditorPanel {
  public:
   virtual ~EditorPanel() = default;
 
-  virtual const char* id() const = 0;
-  virtual void draw() = 0;
+  virtual const char* Id() const = 0;
+  virtual void Draw() = 0;
 
-  virtual DockSlot slot() const { return DockSlot::Center; }
+  virtual DockSlot Slot() const { return DockSlot::Center; }
 
   // Toggled from the View menu and by the panel's own close button.
   bool visible{true};

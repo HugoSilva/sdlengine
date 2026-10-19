@@ -14,13 +14,13 @@ class Texture {
   Texture(const std::string& name, Font* font, const std::string text, unsigned int color);
   ~Texture();
 
-  void bind() const;
-  void unbind() const;
+  void Bind() const;
+  void Unbind() const;
 
-  inline const unsigned int getID() const { return m_Id; }
-  inline const std::string& getName() const { return m_Name; }
-  inline const unsigned int getWidth() const { return m_Width; }
-  inline const unsigned int getHeight() const { return m_Height; }
+  inline const unsigned int GetId() const { return m_Id; }
+  inline const std::string& GetName() const { return m_Name; }
+  inline const unsigned int GetWidth() const { return m_Width; }
+  inline const unsigned int GetHeight() const { return m_Height; }
 
   template <typename Archive>
   void serialize(Archive& archive) {

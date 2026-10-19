@@ -32,6 +32,19 @@ CheckOptions:
   readability-identifier-naming.MethodCase: CamelCase
   readability-identifier-naming.VirtualMethodCase: CamelCase
 
+  # --- framework and platform names are spelled by the framework -----------
+  # cereal finds a type's hooks by name: `serialize`, `save`/`load`, the
+  # `*_minimal` pair, and the static `load_and_construct` it uses for types
+  # with no default constructor. Renaming one to camel case does not fail to
+  # build: the type quietly drops out of serialization, and only an archive
+  # that touches it trips cereal's static_assert.
+  # createWindow cannot become CreateWindow at all: winuser.h defines that
+  # spelling as a macro, so clang-tidy refuses the fix and so would the
+  # compiler.
+  # These are the only names exempted; docs/CodingStandards.md lists them.
+  readability-identifier-naming.FunctionIgnoredRegexp: '^(serialize|save|load|save_minimal|load_minimal|load_and_construct|createWindow)$'
+  readability-identifier-naming.MethodIgnoredRegexp: '^(serialize|save|load|save_minimal|load_minimal|load_and_construct|createWindow)$'
+
   # --- variables and parameters: snake_case --------------------------------
   readability-identifier-naming.VariableCase: lower_case
   readability-identifier-naming.ParameterCase: lower_case

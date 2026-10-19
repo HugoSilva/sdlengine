@@ -49,15 +49,15 @@ struct EditorSettings {
   // from an older build, or one somebody has trimmed -- leaves its default in
   // place, and so does a value that cannot be parsed: a typo should not
   // silently turn a setting into something arbitrary.
-  void load();
+  void Load();
 
   // Writes the whole struct. There is no "dirty" flag anywhere because there
   // are two places a setting can change and they both call this; nothing else
   // has to remember, and nothing rewrites the file every frame.
-  void save() const;
+  void Save() const;
 };
 
-inline const char* gizmoModeName(EditorSettings::GizmoMode mode) {
+inline const char* GizmoModeName(EditorSettings::GizmoMode mode) {
   switch (mode) {
     case EditorSettings::GizmoMode::Rotate:
       return "rotate";
@@ -70,10 +70,10 @@ inline const char* gizmoModeName(EditorSettings::GizmoMode mode) {
   return "translate";
 }
 
-inline void EditorSettings::load() {
+inline void EditorSettings::Load() {
   // exists() first: File::read logs an error for a file that is not there, and
   // the very first run has no settings file yet. That is not an error.
-  if (!File::exists(kFilePath)) {
+  if (!File::Exists(kFilePath)) {
     return;
   }
 
@@ -89,7 +89,7 @@ inline void EditorSettings::load() {
     return text.substr(first, text.find_last_not_of(" \t\r\n") - first + 1);
   };
 
-  std::istringstream lines(File::read(kFilePath));
+  std::istringstream lines(File::Read(kFilePath));
   std::string line;
 
   while (std::getline(lines, line)) {
@@ -131,7 +131,7 @@ inline void EditorSettings::load() {
       // The names come from the one place they are written, so a mode
       // cannot be spelled one way in the file and another in the HUD.
       for (const GizmoMode candidate : {GizmoMode::Translate, GizmoMode::Rotate, GizmoMode::Scale}) {
-        if (value == gizmoModeName(candidate)) {
+        if (value == GizmoModeName(candidate)) {
           gizmo.mode = candidate;
         }
       }
@@ -139,7 +139,7 @@ inline void EditorSettings::load() {
   }
 }
 
-inline void EditorSettings::save() const {
+inline void EditorSettings::Save() const {
   std::ostringstream out;
 
   out << "grid.visible=" << (grid.visible ? "true" : "false") << "\n";
@@ -147,7 +147,7 @@ inline void EditorSettings::save() const {
   // The default float formatting, because it round-trips what a person would
   // write: 32 saves as "32" and reloads as 32.
   out << "grid.base=" << grid.base << "\n";
-  out << "gizmo.mode=" << gizmoModeName(gizmo.mode) << "\n";
+  out << "gizmo.mode=" << GizmoModeName(gizmo.mode) << "\n";
 
-  File::write(kFilePath, out.str().c_str());
+  File::Write(kFilePath, out.str().c_str());
 }

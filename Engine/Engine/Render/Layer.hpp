@@ -11,11 +11,11 @@ class Layer {
  public:
   Layer(Renderer2D* renderer, Shader* shader);
   virtual ~Layer();
-  virtual void add(Renderable2D* renderable);
-  virtual void remove(Renderable2D* renderable);
-  virtual void render();
+  virtual void Add(Renderable2D* renderable);
+  virtual void Remove(Renderable2D* renderable);
+  virtual void Render();
 
-  inline const std::vector<Renderable2D*>& getRenderables() const { return m_Renderables; }
+  inline const std::vector<Renderable2D*>& GetRenderables() const { return m_Renderables; }
 
  protected:
   Renderer2D* m_Renderer;

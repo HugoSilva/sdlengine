@@ -7,14 +7,14 @@
 class Rigidbody {
  public:
   Rigidbody(glm::vec2 position, glm::vec2 size);
-  void init(b2World* world);
+  void Init(b2World* world);
   void Update(glm::vec3& position);
   // TODO lazy public variable need to fix this in the future
   bool m_init{false};
 
-  inline float* getDensity() { return &m_density; }
-  inline float* getFriction() { return &m_friction; }
-  inline b2BodyType* getBodyType() { return &m_bodyType; }
+  inline float* GetDensity() { return &m_density; }
+  inline float* GetFriction() { return &m_friction; }
+  inline b2BodyType* GetBodyType() { return &m_bodyType; }
 
  private:
   b2Body* m_body;

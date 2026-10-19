@@ -14,7 +14,7 @@ class Sprite : public rse::Renderable2D {
   Sprite(glm::vec3 position, glm::vec2 size, unsigned int color);
   Sprite(glm::vec3 position, glm::vec2 size, Texture* texture);
 
-  void submit(rse::Renderer2D* renderer) {};
+  void Submit(rse::Renderer2D* renderer) {};
   glm::vec3& position;
 
   template <typename Archive>

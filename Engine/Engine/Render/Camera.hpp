@@ -19,7 +19,7 @@ class Camera {
   Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch);
   Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch);
 
-  void setup();
+  void Setup();
   void Update(float deltaTime);
   void Render(Shader* shader);
   glm::mat4 GetViewMatrix();
@@ -27,13 +27,13 @@ class Camera {
   void ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch = true);
   void ProcessMouseScroll(float yOffset);
 
-  inline const float getZoom() const { return m_Zoom; }
-  inline const glm::vec3 getPosition() const { return m_Position; }
-  inline const glm::vec3 getFront() const { return m_Front; }
+  inline const float GetZoom() const { return m_Zoom; }
+  inline const glm::vec3 GetPosition() const { return m_Position; }
+  inline const glm::vec3 GetFront() const { return m_Front; }
 
  private:
-  void updateCameraVectors();
-  void updateOrthoProjection();
+  void UpdateCameraVectors();
+  void UpdateOrthoProjection();
 
   glm::vec3 m_Position{glm::vec3(0.0f, 0.0f, 0.0f)};
   glm::vec3 m_WorldUp{glm::vec3(0.0f, 1.0f, 0.0f)};

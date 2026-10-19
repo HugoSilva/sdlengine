@@ -16,19 +16,19 @@
 #include "OrthoView.hpp"
 
 namespace rse {
-Camera::Camera(glm::vec3 position) : m_Position(position) { setup(); }
+Camera::Camera(glm::vec3 position) : m_Position(position) { Setup(); }
 
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
     : m_Position(position), m_WorldUp(up), m_Yaw(yaw), m_Pitch(pitch) {
-  setup();
+  Setup();
 }
 
 Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch)
     : m_Position(glm::vec3(posX, posY, posZ)), m_WorldUp(glm::vec3(upX, upY, upZ)), m_Yaw(yaw), m_Pitch(pitch) {
-  setup();
+  Setup();
 }
 
-void Camera::setup() {
+void Camera::Setup() {
   // TODO Need to fix the hard coded values for the camera
   this->m_Front = glm::normalize(m_Front);
   this->m_Right = glm::normalize(glm::cross(this->m_Front, this->m_WorldUp));
@@ -37,14 +37,14 @@ void Camera::setup() {
 
   // TODO Implement perspective support
   // TODO Add support for multiple resolutions
-  updateOrthoProjection();
+  UpdateOrthoProjection();
 }
 
-void Camera::updateOrthoProjection() {
+void Camera::UpdateOrthoProjection() {
   // Centred on the reference rectangle's middle, so the default framing is
   // exactly what it always was: (0,0)-(1280,720) at zoom 1.
-  const OrthoView view = makeOrthoView(m_ReferenceSize * 0.5f, 1.0f, m_TargetSize, m_ReferenceSize);
-  m_Projection = makeOrthoProjection(view);
+  const OrthoView view = MakeOrthoView(m_ReferenceSize * 0.5f, 1.0f, m_TargetSize, m_ReferenceSize);
+  m_Projection = MakeOrthoProjection(view);
 }
 
 void Camera::Update(float deltaTime) {
@@ -96,13 +96,13 @@ void Camera::Render(Shader* shader) {
     const glm::vec2 targetSize(static_cast<float>(viewport[2]), static_cast<float>(viewport[3]));
     if (targetSize != m_TargetSize) {
       m_TargetSize = targetSize;
-      updateOrthoProjection();
+      UpdateOrthoProjection();
     }
   }
 
   glm::mat4 view = GetViewMatrix();
-  shader->setUniformMat4("view", glm::value_ptr(view));
-  shader->setUniformMat4("projection", glm::value_ptr(m_Projection));
+  shader->SetUniformMat4("view", glm::value_ptr(view));
+  shader->SetUniformMat4("projection", glm::value_ptr(m_Projection));
 }
 
 glm::mat4 Camera::GetViewMatrix() {
@@ -151,7 +151,7 @@ void Camera::ProcessMouseMovement(float xOffset, float yOffset, bool constrainPi
 
 void Camera::ProcessMouseScroll(float yOffset) {}
 
-void Camera::updateCameraVectors() {
+void Camera::UpdateCameraVectors() {
   // Calculate the new Front vector
   glm::vec3 front;
   front.x = cos(glm::radians(this->m_Yaw)) * cos(glm::radians(this->m_Pitch));

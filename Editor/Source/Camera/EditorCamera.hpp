@@ -35,35 +35,35 @@ class EditorCamera {
   EditorCamera();
 
   // Published by the viewport panel every frame.
-  void setViewportSize(glm::vec2 devicePixels, float dpiScale);
+  void SetViewportSize(glm::vec2 devicePixels, float dpiScale);
 
-  const rse::OrthoView& getView() const { return m_View; }
-  const glm::mat4& getProjection() const { return m_Projection; }
+  const rse::OrthoView& GetView() const { return m_View; }
+  const glm::mat4& GetProjection() const { return m_Projection; }
 
   // Uploads the frame's uniforms: identity view (the ortho rectangle already
   // carries the camera position) plus the projection.
-  void apply(rse::Shader* shader) const;
+  void Apply(rse::Shader* shader) const;
 
-  glm::vec2 getCenter() const { return m_Center; }
-  float getZoom() const { return m_Zoom; }
+  glm::vec2 GetCenter() const { return m_Center; }
+  float GetZoom() const { return m_Zoom; }
 
   // World units per *device* pixel, so a grid line can be exactly one pixel
   // thick at any zoom.
-  float getWorldPerDevicePixel() const;
+  float GetWorldPerDevicePixel() const;
 
   // World units per *ImGui* pixel. That is the unit a mouse delta arrives in,
   // so it is what turns a gizmo drag of N pixels into a world offset.
-  float getWorldPerPixel() const;
+  float GetWorldPerPixel() const;
 
-  glm::vec2 screenToWorld(glm::vec2 pixel) const;
-  glm::vec2 worldToScreen(glm::vec2 world) const;
+  glm::vec2 ScreenToWorld(glm::vec2 pixel) const;
+  glm::vec2 WorldToScreen(glm::vec2 world) const;
 
-  void pan(glm::vec2 pixelDelta);
-  void zoomAt(float wheelSteps, glm::vec2 pixelAnchor);
-  void focusOn(glm::vec2 worldCenter, glm::vec2 worldSize);
+  void Pan(glm::vec2 pixelDelta);
+  void ZoomAt(float wheelSteps, glm::vec2 pixelAnchor);
+  void FocusOn(glm::vec2 worldCenter, glm::vec2 worldSize);
 
  private:
-  void rebuild();
+  void Rebuild();
 
   rse::OrthoView m_View;
   glm::mat4 m_Projection{1.0f};

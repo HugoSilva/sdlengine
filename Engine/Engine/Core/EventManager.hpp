@@ -5,7 +5,7 @@
 
 class EventManager {
  public:
-  static inline entt::Dispatcher* getEventDispatcher() { return &eventDispatcher; }
+  static inline entt::Dispatcher* GetEventDispatcher() { return &eventDispatcher; }
 
  private:
   EventManager() {}

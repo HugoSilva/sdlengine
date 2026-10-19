@@ -7,14 +7,14 @@ class Scene;  // forward declaration for Scene
 
 class SceneManager {
  public:
-  static void init();
-  static void add(Scene* scene);
-  static Scene* get(const std::string& name);
-  static bool change(const std::string& name);
-  static void clean();
+  static void Init();
+  static void Add(Scene* scene);
+  static Scene* Get(const std::string& name);
+  static bool Change(const std::string& name);
+  static void Clean();
 
-  static void update(float deltaTime);
-  static void render();
+  static void Update(float deltaTime);
+  static void Render();
 
  private:
   SceneManager() {}

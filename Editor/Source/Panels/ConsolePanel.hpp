@@ -16,36 +16,36 @@
 // ---------------------------------------------------------------------------
 class ConsolePanel : public EditorPanel {
  public:
-  const char* id() const override { return "Console"; }
-  DockSlot slot() const override { return DockSlot::Bottom; }
+  const char* Id() const override { return "Console"; }
+  DockSlot Slot() const override { return DockSlot::Bottom; }
 
-  void draw() override {
-    if (!ImGui::Begin(id(), &visible)) {
+  void Draw() override {
+    if (!ImGui::Begin(Id(), &visible)) {
       ImGui::End();
       return;
     }
 
-    refreshEntries();
-    drawToolbar();
+    RefreshEntries();
+    DrawToolbar();
     ImGui::Separator();
-    drawEntries();
+    DrawEntries();
 
     ImGui::End();
   }
 
  private:
-  void refreshEntries() {
-    const uint64_t revision = Logger::getRevision();
+  void RefreshEntries() {
+    const uint64_t revision = Logger::GetRevision();
     if (revision == m_Revision) {
       return;
     }
 
     m_Revision = revision;
-    m_Entries = Logger::getEntries();
+    m_Entries = Logger::GetEntries();
     m_ScrollToBottom = m_Follow;
   }
 
-  void drawToolbar() {
+  void DrawToolbar() {
     ImGui::SetNextItemWidth(80.0f);
     ImGui::Checkbox("Log", &m_ShowLog);
     ImGui::SameLine();
@@ -57,25 +57,25 @@ class ConsolePanel : public EditorPanel {
     ImGui::SameLine();
 
     if (ImGui::Button("Clear")) {
-      Logger::clear();
+      Logger::Clear();
     }
 
     ImGui::SameLine();
     ImGui::TextDisabled("(%zu)", m_Entries.size());
   }
 
-  void drawEntries() {
+  void DrawEntries() {
     // The horizontal scrollbar keeps long messages readable rather than
     // wrapping them into an unreadable block.
     ImGui::BeginChild("##console_entries", ImVec2(0.0f, 0.0f), ImGuiChildFlags_None,
                       ImGuiWindowFlags_HorizontalScrollbar);
 
     for (const Logger::Entry& entry : m_Entries) {
-      if (!isVisible(entry.level)) {
+      if (!IsVisible(entry.level)) {
         continue;
       }
 
-      ImGui::PushStyleColor(ImGuiCol_Text, colorFor(entry.level));
+      ImGui::PushStyleColor(ImGuiCol_Text, ColorFor(entry.level));
       ImGui::TextUnformatted(entry.message.c_str());
       ImGui::PopStyleColor();
     }
@@ -88,7 +88,7 @@ class ConsolePanel : public EditorPanel {
     ImGui::EndChild();
   }
 
-  bool isVisible(Logger::Level level) const {
+  bool IsVisible(Logger::Level level) const {
     switch (level) {
       case Logger::Level::Warning:
         return m_ShowWarning;
@@ -99,7 +99,7 @@ class ConsolePanel : public EditorPanel {
     }
   }
 
-  static ImVec4 colorFor(Logger::Level level) {
+  static ImVec4 ColorFor(Logger::Level level) {
     switch (level) {
       case Logger::Level::Warning:
         return ImVec4(0.95f, 0.78f, 0.28f, 1.0f);

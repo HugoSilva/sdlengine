@@ -15,17 +15,17 @@
 // ---------------------------------------------------------------------------
 class DebugPanel : public EditorPanel {
  public:
-  const char* id() const override { return "Debug"; }
-  DockSlot slot() const override { return DockSlot::Left; }
+  const char* Id() const override { return "Debug"; }
+  DockSlot Slot() const override { return DockSlot::Left; }
 
-  void draw() override {
-    if (!ImGui::Begin(id(), &visible)) {
+  void Draw() override {
+    if (!ImGui::Begin(Id(), &visible)) {
       ImGui::End();
       return;
     }
 
-    rse::Renderer2D* renderer = Core::getRenderer();
-    float* clearColor = renderer != nullptr ? renderer->getClearColor() : nullptr;
+    rse::Renderer2D* renderer = Core::GetRenderer();
+    float* clearColor = renderer != nullptr ? renderer->GetClearColor() : nullptr;
 
     if (clearColor != nullptr) {
       ImGui::ColorEdit4("Clear Color", clearColor);

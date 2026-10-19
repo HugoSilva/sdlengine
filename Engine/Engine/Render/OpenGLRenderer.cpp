@@ -59,7 +59,7 @@ OpenGLRenderer::~OpenGLRenderer() {
   glDeleteVertexArrays(1, &m_VAO);
 }
 
-void OpenGLRenderer::begin() {
+void OpenGLRenderer::Begin() {
   glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 #ifdef EMSCRIPTEN
   m_Buffer = m_BufferBase;
@@ -70,14 +70,14 @@ void OpenGLRenderer::begin() {
   clearColor->OnRender();
 }
 
-float* OpenGLRenderer::getClearColor() { return clearColor->getClearColor(); }
+float* OpenGLRenderer::GetClearColor() { return clearColor->GetClearColor(); }
 
-void OpenGLRenderer::submit(TransformComponent& transform, const Renderable2D* renderable) {
+void OpenGLRenderer::Submit(TransformComponent& transform, const Renderable2D* renderable) {
   // const glm::vec3& position = renderable->getPosition();
-  const glm::vec2& size = renderable->getSize();
-  const unsigned int& color = renderable->getColor();
-  const std::vector<glm::vec2>& uv = renderable->getUV();
-  const unsigned int tid = renderable->getTId();
+  const glm::vec2& size = renderable->GetSize();
+  const unsigned int& color = renderable->GetColor();
+  const std::vector<glm::vec2>& uv = renderable->GetUv();
+  const unsigned int tid = renderable->GetTId();
 
   float ts = 0.0f;
   if (tid > 0) {
@@ -92,9 +92,9 @@ void OpenGLRenderer::submit(TransformComponent& transform, const Renderable2D* r
 
     if (!found) {
       if (m_TextureSlots.size() >= RENDERER_MAX_TEXTURES) {
-        end();
-        flush();
-        begin();
+        End();
+        Flush();
+        Begin();
       }
       m_TextureSlots.push_back(tid);
       ts = (float)(m_TextureSlots.size());
@@ -141,7 +141,7 @@ void OpenGLRenderer::submit(TransformComponent& transform, const Renderable2D* r
   m_IndexCount += 6;
 }
 
-void OpenGLRenderer::submitQuad(TransformComponent& transform, glm::vec2 halfExtent, unsigned int color) {
+void OpenGLRenderer::SubmitQuad(TransformComponent& transform, glm::vec2 halfExtent, unsigned int color) {
   // Same transform and corner order as submit(), so the index buffer's
   // winding applies unchanged; the difference is that tid stays 0, which is
   // what makes Default.frag fall through to fs_in.color instead of sampling
@@ -184,7 +184,7 @@ void OpenGLRenderer::submitQuad(TransformComponent& transform, glm::vec2 halfExt
   m_IndexCount += 6;
 }
 
-void OpenGLRenderer::end() {
+void OpenGLRenderer::End() {
 #ifdef EMSCRIPTEN
   glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
   glBufferSubData(GL_ARRAY_BUFFER, 0, (m_Buffer - m_BufferBase) * RENDERER_VERTEX_SIZE, m_BufferBase);
@@ -196,18 +196,18 @@ void OpenGLRenderer::end() {
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void OpenGLRenderer::flush() {
+void OpenGLRenderer::Flush() {
   for (unsigned int i = 0; i < m_TextureSlots.size(); i++) {
     glActiveTexture(GL_TEXTURE0 + i);
     glBindTexture(GL_TEXTURE_2D, m_TextureSlots[i]);
   }
 
   glBindVertexArray(m_VAO);
-  m_IBO->bind();
+  m_IBO->Bind();
 
   glDrawElements(GL_TRIANGLES, m_IndexCount, GL_UNSIGNED_INT, NULL);
 
-  m_IBO->unbind();
+  m_IBO->Unbind();
   glBindVertexArray(0);
 
   m_IndexCount = 0;

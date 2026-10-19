@@ -18,31 +18,31 @@ rse::Window* Core::m_Window;
 
 Core::Core() : m_FramesPerSecond(0) {
   m_Window = new rse::Window("RockSlide Engine", 1280, 720);
-  m_Window->init();
+  m_Window->Init();
 
-  rse::SoundManager::init();
-  rse::FontManager::init();
-  rse::TextureManager::init();
+  rse::SoundManager::Init();
+  rse::FontManager::Init();
+  rse::TextureManager::Init();
   rse::InputManager::Init();
-  PhysicsManager::init();
+  PhysicsManager::Init();
 
   rse::Shader* defaultShader = new rse::Shader("Resources/Default.vert", "Resources/Default.frag");
-  m_Renderer = new rse::OpenGLRenderer(m_Window->getWindow(), defaultShader);
+  m_Renderer = new rse::OpenGLRenderer(m_Window->GetWindow(), defaultShader);
 
-  rse::ImGuiLayer::init(m_Window->getWindow(), m_Window->getContext());
+  rse::ImGuiLayer::Init(m_Window->GetWindow(), m_Window->GetContext());
 
-  rse::ECSManager::init();
+  rse::ECSManager::Init();
 }
 
 Core::~Core() {
-  rse::SoundManager::clean();
-  rse::FontManager::clean();
-  rse::TextureManager::clean();
+  rse::SoundManager::Clean();
+  rse::FontManager::Clean();
+  rse::TextureManager::Clean();
   PhysicsManager::Clean();
-  rse::ECSManager::clean();
+  rse::ECSManager::Clean();
 
   // Must happen while the GL context and the SDL window are still alive.
-  rse::ImGuiLayer::shutdown();
+  rse::ImGuiLayer::Shutdown();
 
   delete m_Window;
 }
@@ -54,15 +54,15 @@ rse::Window* Core::createWindow(const char* name, int width, int height) {
   return nullptr;
 }
 
-void Core::start() {
-  init();
+void Core::Start() {
+  Init();
   try {
 #ifdef EMSCRIPTEN
     std::function<void()> fGameLoop = [&]() {
 #else
-    while (m_Window->getRunning()) {
+    while (m_Window->GetRunning()) {
 #endif
-      run();
+      Run();
 
 #ifdef EMSCRIPTEN
     };
@@ -72,11 +72,11 @@ void Core::start() {
     m_Running = false;
 #endif
   } catch (...) {
-    Logger::error("Failed to start the application");
+    Logger::Error("Failed to start the application");
   }
 }
 
-void Core::run() {
+void Core::Run() {
   now = SDL_GetTicks();
   deltaTime = (now - last) / 1000.0f;
   last = now;
@@ -85,22 +85,22 @@ void Core::run() {
 
   // The ImGui frame has to be open before anything submits widgets, and
   // closed after the scene has been drawn, so that the UI ends up on top.
-  rse::ImGuiLayer::beginFrame();
+  rse::ImGuiLayer::BeginFrame();
 
   // TODO review scene manager logic now that we are using ECS
-  SceneManager::update(deltaTime);
+  SceneManager::Update(deltaTime);
 
   // The UI is built before the scene is drawn: panels may need to know their
   // own size in order to size a render target (the viewport does this).
-  rse::ECSManager::updateUI();
+  rse::ECSManager::UpdateUi();
 
   // The editor draws the scene into its viewport panel's framebuffer; a game
   // returns nullptr here and draws straight to the window.
-  rse::Framebuffer* sceneTarget = getSceneTarget();
+  rse::Framebuffer* sceneTarget = GetSceneTarget();
   if (sceneTarget != nullptr) {
-    sceneTarget->bind();
+    sceneTarget->Bind();
   } else {
-    m_Window->bindDefaultFramebuffer();
+    m_Window->BindDefaultFramebuffer();
   }
 
   // The scene's shader uniforms are uploaded *after* the target is bound and
@@ -108,19 +108,19 @@ void Core::run() {
   // the viewport the camera sizes its projection to, and the UI is where the
   // viewport panel pans and zooms. Uploading them any earlier is what made
   // every pan and zoom lag the scene by exactly one frame.
-  SceneManager::render();  // Only for shader
+  SceneManager::Render();  // Only for shader
 
-  m_Renderer->begin();
+  m_Renderer->Begin();
   // TODO need to split this up for normal systems and render systems
-  rse::ECSManager::update(deltaTime);
-  m_Renderer->end();
-  m_Renderer->flush();
+  rse::ECSManager::Update(deltaTime);
+  m_Renderer->End();
+  m_Renderer->Flush();
 
   if (sceneTarget != nullptr) {
-    rse::Framebuffer::unbind();
+    rse::Framebuffer::Unbind();
   }
 
-  rse::ImGuiLayer::endFrame();
+  rse::ImGuiLayer::EndFrame();
 
   deltaAccumulator += deltaTime;
   frames++;
@@ -129,6 +129,6 @@ void Core::run() {
     m_FramesPerSecond = frames;
     frames = 0;
     deltaAccumulator = 0.f;
-    tick();
+    Tick();
   }
 }

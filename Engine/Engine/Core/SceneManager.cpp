@@ -5,20 +5,20 @@
 std::vector<Scene*> SceneManager::m_Scenes;
 unsigned int SceneManager::m_ActiveScene{0};
 
-void SceneManager::init() {}
+void SceneManager::Init() {}
 
-void SceneManager::add(Scene* scene) { m_Scenes.push_back(scene); }
+void SceneManager::Add(Scene* scene) { m_Scenes.push_back(scene); }
 
-Scene* SceneManager::get(const std::string& name) {
+Scene* SceneManager::Get(const std::string& name) {
   for (Scene* scene : m_Scenes) {
-    if (scene->getName() == name) return scene;
+    if (scene->GetName() == name) return scene;
   }
   return nullptr;
 }
 
-bool SceneManager::change(const std::string& name) {
+bool SceneManager::Change(const std::string& name) {
   for (unsigned int i = 0; i < m_Scenes.size(); i++) {
-    if (m_Scenes.at(i)->getName() == name) {
+    if (m_Scenes.at(i)->GetName() == name) {
       m_ActiveScene = i;
       return true;
     }
@@ -26,17 +26,17 @@ bool SceneManager::change(const std::string& name) {
   return false;
 }
 
-void SceneManager::clean() {
+void SceneManager::Clean() {
   for (unsigned int i = 0; i < m_Scenes.size(); i++) delete m_Scenes[i];
 }
 
-void SceneManager::update(float deltaTime) {
+void SceneManager::Update(float deltaTime) {
   if (m_Scenes.size() > 0) {
     m_Scenes[m_ActiveScene]->Update(deltaTime);
   }
 }
 
-void SceneManager::render() {
+void SceneManager::Render() {
   if (m_Scenes.size() > 0) {
     m_Scenes[m_ActiveScene]->Render();
   }

@@ -36,7 +36,7 @@ struct EntityBounds {
 namespace editor_bounds {
 // The entity's on-screen rectangle. Nothing when it has no sprite to
 // measure, which is the same condition the renderer uses to skip it.
-inline std::optional<EntityBounds> ofEntity(uint32_t entity) {
+inline std::optional<EntityBounds> OfEntity(uint32_t entity) {
   // The selection is entt::null (EditorManager's INVALID_ENTITY_ID) when
   // nothing is selected, and entt would rather assert than answer for
   // that, so it is checked here rather than at every call site.
@@ -44,13 +44,13 @@ inline std::optional<EntityBounds> ofEntity(uint32_t entity) {
     return std::nullopt;
   }
 
-  if (!rse::ECSManager::hasComponent<TransformComponent>(entity) ||
-      !rse::ECSManager::hasComponent<SpriteComponent>(entity)) {
+  if (!rse::ECSManager::HasComponent<TransformComponent>(entity) ||
+      !rse::ECSManager::HasComponent<SpriteComponent>(entity)) {
     return std::nullopt;
   }
 
-  TransformComponent& transform = rse::ECSManager::getComponent<TransformComponent>(entity);
-  SpriteComponent& sprite = rse::ECSManager::getComponent<SpriteComponent>(entity);
+  TransformComponent& transform = rse::ECSManager::GetComponent<TransformComponent>(entity);
+  SpriteComponent& sprite = rse::ECSManager::GetComponent<SpriteComponent>(entity);
 
   if (sprite.m_Sprite == nullptr) {
     return std::nullopt;
@@ -59,49 +59,49 @@ inline std::optional<EntityBounds> ofEntity(uint32_t entity) {
   EntityBounds bounds;
   bounds.center = glm::vec2(transform.position.x, transform.position.y);
   bounds.rotationDegrees = transform.rotation.z;
-  bounds.halfExtent = sprite.m_Sprite->getSize() * glm::vec2(transform.scale.x, transform.scale.y);
+  bounds.halfExtent = sprite.m_Sprite->GetSize() * glm::vec2(transform.scale.x, transform.scale.y);
   return bounds;
 }
 
 // The entity's world position. Everything selectable has one -- including an
 // entity whose sprite has been removed, which is the case the outline draws
 // a cross for, because there is no rectangle to draw instead.
-inline std::optional<glm::vec2> positionOf(uint32_t entity) {
+inline std::optional<glm::vec2> PositionOf(uint32_t entity) {
   if (entity == static_cast<uint32_t>(entt::null)) {
     return std::nullopt;
   }
 
-  if (!rse::ECSManager::hasComponent<TransformComponent>(entity)) {
+  if (!rse::ECSManager::HasComponent<TransformComponent>(entity)) {
     return std::nullopt;
   }
 
-  TransformComponent& transform = rse::ECSManager::getComponent<TransformComponent>(entity);
+  TransformComponent& transform = rse::ECSManager::GetComponent<TransformComponent>(entity);
   return glm::vec2(transform.position.x, transform.position.y);
 }
 
 // The four corners of a bounds, in the order the outline draws them.
-inline std::array<glm::vec2, 4> corners(const EntityBounds& bounds) {
-  return rse::orientedBoxCorners(bounds.center, bounds.rotationDegrees, bounds.halfExtent);
+inline std::array<glm::vec2, 4> Corners(const EntityBounds& bounds) {
+  return rse::OrientedBoxCorners(bounds.center, bounds.rotationDegrees, bounds.halfExtent);
 }
 
 // The box around the rotated rectangle: what to frame, not what to draw.
-inline rse::Bounds2D aabb(const EntityBounds& bounds) { return rse::boundsOfCorners(corners(bounds)); }
+inline rse::Bounds2D Aabb(const EntityBounds& bounds) { return rse::BoundsOfCorners(Corners(bounds)); }
 
 // Everything in the scene that can be drawn, as one box. Nothing when the
 // scene is empty -- which is different from a box at the origin, and is
 // what keeps F from zooming off to nowhere.
-inline std::optional<rse::Bounds2D> ofScene() {
+inline std::optional<rse::Bounds2D> OfScene() {
   std::optional<rse::Bounds2D> total;
 
-  rse::ECSManager::getView<TransformComponent, SpriteComponent>().each(
+  rse::ECSManager::GetView<TransformComponent, SpriteComponent>().each(
       [&total](uint32_t entity, TransformComponent&, SpriteComponent&) {
-        const std::optional<EntityBounds> bounds = ofEntity(entity);
+        const std::optional<EntityBounds> bounds = OfEntity(entity);
         if (!bounds) {
           return;
         }
 
-        const rse::Bounds2D boxed = aabb(*bounds);
-        total = total ? rse::unionOf(*total, boxed) : boxed;
+        const rse::Bounds2D boxed = Aabb(*bounds);
+        total = total ? rse::UnionOf(*total, boxed) : boxed;
       });
 
   return total;

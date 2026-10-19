@@ -8,7 +8,7 @@
 
 class File {
  public:
-  static std::string read(const char* filepath) {
+  static std::string Read(const char* filepath) {
     std::ifstream inputStream;
 
     inputStream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -25,17 +25,17 @@ class File {
       return fileStream.str();
     } catch (std::ifstream::failure e) {
       std::string failedFile(filepath);
-      Logger::error("Failed to read file: " + failedFile);
+      Logger::Error("Failed to read file: " + failedFile);
       return "";
     }
   }
 
-  static bool exists(const char* filepath) {
+  static bool Exists(const char* filepath) {
     struct stat buffer;
     return (stat(filepath, &buffer) == 0);
   }
 
-  static bool write(const char* filepath, const char* content) {
+  static bool Write(const char* filepath, const char* content) {
     std::ofstream file(filepath);
 
     if (file.is_open()) {

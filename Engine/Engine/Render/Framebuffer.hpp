@@ -29,21 +29,21 @@ class Framebuffer {
 
   // (Re)allocates the attachments when the size changes and does nothing
   // otherwise, so it is safe to call every frame.
-  void resize(int width, int height);
+  void Resize(int width, int height);
 
   // Binds the target and sets the GL viewport to its size.
-  void bind() const;
+  void Bind() const;
 
   // Back to the window's back buffer.
-  static void unbind();
+  static void Unbind();
 
-  unsigned int getColorTexture() const { return m_ColorTexture; }
-  int getWidth() const { return m_Width; }
-  int getHeight() const { return m_Height; }
-  bool isValid() const { return m_Framebuffer != 0; }
+  unsigned int GetColorTexture() const { return m_ColorTexture; }
+  int GetWidth() const { return m_Width; }
+  int GetHeight() const { return m_Height; }
+  bool IsValid() const { return m_Framebuffer != 0; }
 
  private:
-  void destroy();
+  void Destroy();
 
   unsigned int m_Framebuffer{0};
   unsigned int m_ColorTexture{0};

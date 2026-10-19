@@ -7,22 +7,22 @@ class Shader {
   Shader(const char* name, const char* vertexSource, const char* fragmentSource);
   ~Shader();
 
-  void enable() const;
-  void disable() const;
+  void Enable() const;
+  void Disable() const;
 
-  unsigned int getUniformLocation(const char* name);
-  void setUniform1i(const char* name, int value);
-  void setUniform1iv(const char* name, int* value, int count);
-  void setUniformMat4(const char* name, const float* matrix);
+  unsigned int GetUniformLocation(const char* name);
+  void SetUniform1i(const char* name, int value);
+  void SetUniform1iv(const char* name, int* value, int count);
+  void SetUniformMat4(const char* name, const float* matrix);
 
-  static Shader* fromFile(const char* vertexPath, const char* fragmentPath);
-  static Shader* fromSource(const char* vertexSource, const char* fragmentSource);
-  static Shader* fromSource(const char* name, const char* vertexSource, const char* fragmentSource);
+  static Shader* FromFile(const char* vertexPath, const char* fragmentPath);
+  static Shader* FromSource(const char* vertexSource, const char* fragmentSource);
+  static Shader* FromSource(const char* name, const char* vertexSource, const char* fragmentSource);
 
-  unsigned int getShaderID() const { return m_ShaderID; };
+  unsigned int GetShaderId() const { return m_ShaderID; };
 
  private:
-  unsigned int load(const char* vertexSource, const char* fragmentSource);
+  unsigned int Load(const char* vertexSource, const char* fragmentSource);
 
   unsigned int m_ShaderID;
   const char* m_Name;

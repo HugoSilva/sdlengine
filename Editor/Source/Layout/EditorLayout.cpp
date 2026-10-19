@@ -15,9 +15,9 @@ constexpr const char* kDockSpaceId = "RSE_DockSpace";
 constexpr const char* kDockSpaceHost = "###RSE_DockSpaceHost";
 }  // namespace
 
-void EditorLayout::addPanel(std::unique_ptr<EditorPanel> panel) { m_Panels.push_back(std::move(panel)); }
+void EditorLayout::AddPanel(std::unique_ptr<EditorPanel> panel) { m_Panels.push_back(std::move(panel)); }
 
-void EditorLayout::draw() {
+void EditorLayout::Draw() {
   // The scene target is deliberately *not* reset here. The viewport panel owns
   // it and publishes it whenever it is given the chance to draw, so hiding or
   // collapsing the panel keeps the scene offscreen instead of letting it fall
@@ -26,17 +26,17 @@ void EditorLayout::draw() {
 
   // The menu bar has to be submitted first: it is what shrinks the viewport
   // work area that the dock space then fills.
-  drawMenuBar();
-  drawDockSpace();
+  DrawMenuBar();
+  DrawDockSpace();
 
   for (const std::unique_ptr<EditorPanel>& panel : m_Panels) {
     if (panel->visible) {
-      panel->draw();
+      panel->Draw();
     }
   }
 }
 
-void EditorLayout::drawMenuBar() {
+void EditorLayout::DrawMenuBar() {
   if (!ImGui::BeginMainMenuBar()) {
     return;
   }
@@ -46,10 +46,10 @@ void EditorLayout::drawMenuBar() {
     }
     ImGui::Separator();
     if (ImGui::MenuItem("Save", "F1")) {
-      rse::ECSManager::save();
+      rse::ECSManager::Save();
     }
     if (ImGui::MenuItem("Load", "F2")) {
-      rse::ECSManager::load();
+      rse::ECSManager::Load();
     }
     ImGui::Separator();
     if (ImGui::MenuItem("Quit", "Alt+F4")) {
@@ -77,20 +77,20 @@ void EditorLayout::drawMenuBar() {
 
   if (ImGui::BeginMenu("View")) {
     for (const std::unique_ptr<EditorPanel>& panel : m_Panels) {
-      ImGui::MenuItem(panel->id(), nullptr, &panel->visible);
+      ImGui::MenuItem(panel->Id(), nullptr, &panel->visible);
     }
     ImGui::Separator();
 
     // MenuItem flips the bool itself and reports the click, so by the time
     // this returns, the setting is already the new value and saving cannot
     // write the old one.
-    if (ImGui::MenuItem("Show Grid", nullptr, &EditorManager::settings().grid.visible)) {
-      EditorManager::settings().save();
+    if (ImGui::MenuItem("Show Grid", nullptr, &EditorManager::Settings().grid.visible)) {
+      EditorManager::Settings().Save();
     }
 
     ImGui::Separator();
     if (ImGui::MenuItem("Reset Layout")) {
-      requestResetLayout();
+      RequestResetLayout();
     }
     ImGui::EndMenu();
   }
@@ -101,7 +101,7 @@ void EditorLayout::drawMenuBar() {
   ImGui::EndMainMenuBar();
 }
 
-void EditorLayout::drawDockSpace() {
+void EditorLayout::DrawDockSpace() {
   const ImGuiViewport* viewport = ImGui::GetMainViewport();
 
   ImGui::SetNextWindowPos(viewport->WorkPos);
@@ -127,7 +127,7 @@ void EditorLayout::drawDockSpace() {
   // or when a reset was requested.
   const bool hasSavedLayout = ImGui::DockBuilderGetNode(dockspaceId) != nullptr;
   if (m_ResetLayout || (!m_LayoutBuilt && !hasSavedLayout)) {
-    buildDefaultLayout(dockspaceId);
+    BuildDefaultLayout(dockspaceId);
     m_ResetLayout = false;
   }
   m_LayoutBuilt = true;
@@ -137,7 +137,7 @@ void EditorLayout::drawDockSpace() {
   ImGui::End();
 }
 
-void EditorLayout::buildDefaultLayout(ImGuiID dockspaceId) {
+void EditorLayout::BuildDefaultLayout(ImGuiID dockspaceId) {
   // Viewport fills the centre, the console spans the bottom, the hierarchy
   // column sits on the left and the inspector hugs the right edge. Which panel
   // asks for which slot is up to the panel (EditorPanel::slot()).
@@ -146,7 +146,7 @@ void EditorLayout::buildDefaultLayout(ImGuiID dockspaceId) {
   bool needsBottom = false;
 
   for (const std::unique_ptr<EditorPanel>& panel : m_Panels) {
-    switch (panel->slot()) {
+    switch (panel->Slot()) {
       case DockSlot::Left:
         needsLeft = true;
         break;
@@ -187,7 +187,7 @@ void EditorLayout::buildDefaultLayout(ImGuiID dockspaceId) {
   for (const std::unique_ptr<EditorPanel>& panel : m_Panels) {
     ImGuiID target = center;
 
-    switch (panel->slot()) {
+    switch (panel->Slot()) {
       case DockSlot::Left:
         target = left;
         break;
@@ -203,7 +203,7 @@ void EditorLayout::buildDefaultLayout(ImGuiID dockspaceId) {
     }
 
     if (target != 0) {
-      ImGui::DockBuilderDockWindow(panel->id(), target);
+      ImGui::DockBuilderDockWindow(panel->Id(), target);
     }
   }
 

@@ -15,26 +15,26 @@ namespace {
 using namespace rse;
 
 TEST(SoundManager, AddSound) {
-  SoundManager::add(new Sound("test", "test.ogg"));
-  Sound* testSound = SoundManager::getSound("test");
+  SoundManager::Add(new Sound("test", "test.ogg"));
+  Sound* testSound = SoundManager::GetSound("test");
   EXPECT_NE(nullptr, testSound);
 }
 
 TEST(SoundManager, AddMusic) {
-  SoundManager::add(new Music("test", "test.ogg"));
-  Music* testMusic = SoundManager::getMusic("test");
+  SoundManager::Add(new Music("test", "test.ogg"));
+  Music* testMusic = SoundManager::GetMusic("test");
   EXPECT_NE(nullptr, testMusic);
 }
 
 TEST(SoundManager, AddSoundWaveFormat) {
-  SoundManager::add(new Music("test", "test.wav"));
-  Sound* testSound = SoundManager::getSound("test");
+  SoundManager::Add(new Music("test", "test.wav"));
+  Sound* testSound = SoundManager::GetSound("test");
   EXPECT_NE(nullptr, testSound);
 }
 
 TEST(SoundManager, AddSoundOggFormat) {
-  SoundManager::add(new Music("test", "test.ogg"));
-  Sound* testSound = SoundManager::getSound("test");
+  SoundManager::Add(new Music("test", "test.ogg"));
+  Sound* testSound = SoundManager::GetSound("test");
   EXPECT_NE(nullptr, testSound);
 }
 }  // namespace

@@ -8,10 +8,10 @@ class SpriteRenderSystem : public BaseSystem {
  public:
   SpriteRenderSystem(rse::Renderer2D* renderer) : BaseSystem(), m_renderer(renderer) {}
 
-  void update(const float alpha) {
-    rse::ECSManager::getView<TransformComponent, SpriteComponent>().each(
+  void Update(const float alpha) {
+    rse::ECSManager::GetView<TransformComponent, SpriteComponent>().each(
         [&, this](auto entity, TransformComponent& transform, SpriteComponent& sprite) {
-          m_renderer->submit(transform, sprite.m_Sprite.get());
+          m_renderer->Submit(transform, sprite.m_Sprite.get());
         });
   }
 

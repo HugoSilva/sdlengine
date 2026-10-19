@@ -7,11 +7,11 @@
 class Image {
  public:
   // Fills `mode` with the matching GL_* upload format for `surface`.
-  static void checkImageMode(int* mode, SDL_Surface* surface);
+  static void CheckImageMode(int* mode, SDL_Surface* surface);
 
   // Renders `text` into a new surface. The caller owns it (SDL_DestroySurface).
-  static SDL_Surface* loadFont(TTF_Font* font, const char* text, SDL_Color textColor);
+  static SDL_Surface* LoadFont(TTF_Font* font, const char* text, SDL_Color textColor);
 
   // Loads an image file into a new surface. The caller owns it (SDL_DestroySurface).
-  static SDL_Surface* loadImage(const char* filename);
+  static SDL_Surface* LoadImage(const char* filename);
 };

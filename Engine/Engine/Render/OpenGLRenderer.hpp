@@ -46,13 +46,13 @@ class OpenGLRenderer : public Renderer2D {
   OpenGLRenderer(SDL_Window* win, Shader* shader);
   ~OpenGLRenderer();
 
-  void begin();
-  void submit(TransformComponent& position, const Renderable2D* renderable);
-  void submitQuad(TransformComponent& transform, glm::vec2 halfExtent, unsigned int color) override;
-  void end();
-  void flush();
+  void Begin();
+  void Submit(TransformComponent& position, const Renderable2D* renderable);
+  void SubmitQuad(TransformComponent& transform, glm::vec2 halfExtent, unsigned int color) override;
+  void End();
+  void Flush();
 
-  float* getClearColor() override;
+  float* GetClearColor() override;
 
  private:
   unsigned int m_VAO, m_VBO;

@@ -18,13 +18,13 @@ namespace rse {
 // which made it impossible to render the scene into a texture first.
 class ImGuiLayer {
  public:
-  static void init(SDL_Window* window, SDL_GLContext context);
-  static void shutdown();
+  static void Init(SDL_Window* window, SDL_GLContext context);
+  static void Shutdown();
 
-  static void beginFrame();
-  static void endFrame();
+  static void BeginFrame();
+  static void EndFrame();
 
   // Forward a platform event to the SDL3 backend.
-  static void processEvent(const SDL_Event& event);
+  static void ProcessEvent(const SDL_Event& event);
 };
 }  // namespace rse

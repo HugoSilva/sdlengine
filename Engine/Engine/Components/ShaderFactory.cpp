@@ -69,10 +69,10 @@ const char* basic_light_shader_vert = "";
 const char* basic_light_shader_frag = "";
 
 rse::Shader* DefaultShader() {
-  return rse::Shader::fromSource("Default Shader", default_shader_vert, default_shader_frag);
+  return rse::Shader::FromSource("Default Shader", default_shader_vert, default_shader_frag);
 }
 
 rse::Shader* BasicLightShader() {
-  return rse::Shader::fromSource("Basic Light Shader", basic_light_shader_vert, basic_light_shader_frag);
+  return rse::Shader::FromSource("Basic Light Shader", basic_light_shader_vert, basic_light_shader_frag);
 }
 }  // namespace shader_factory

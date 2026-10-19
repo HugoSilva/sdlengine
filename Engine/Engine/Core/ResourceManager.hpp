@@ -7,10 +7,10 @@ class Resource;  // forward declaration for Resource
 
 class ResourceManager {
  public:
-  static void init();
-  static void add(Resource* sound);
-  static Resource* get(const std::string& name);
-  static void clean();
+  static void Init();
+  static void Add(Resource* sound);
+  static Resource* Get(const std::string& name);
+  static void Clean();
 
  private:
   ResourceManager() {}

@@ -11,10 +11,10 @@ std::vector<Sound*> SoundManager::s_Sounds;
 std::vector<Music*> SoundManager::s_Music;
 MIX_Mixer* SoundManager::s_Mixer = nullptr;
 
-void SoundManager::init() {
+void SoundManager::Init() {
   // SDL3_mixer: init the library, then create a mixer on the default device.
   if (!MIX_Init()) {
-    Logger::error("SDL_mixer could not initialize, " + std::string(SDL_GetError()));
+    Logger::Error("SDL_mixer could not initialize, " + std::string(SDL_GetError()));
     return;
   }
 
@@ -25,29 +25,29 @@ void SoundManager::init() {
 
   s_Mixer = MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec);
   if (s_Mixer == nullptr) {
-    Logger::error("SDL_mixer could not create a mixer, " + std::string(SDL_GetError()));
+    Logger::Error("SDL_mixer could not create a mixer, " + std::string(SDL_GetError()));
   }
 }
 
-void SoundManager::add(Sound* sound) { s_Sounds.push_back(sound); }
+void SoundManager::Add(Sound* sound) { s_Sounds.push_back(sound); }
 
-void SoundManager::add(Music* music) { s_Music.push_back(music); }
+void SoundManager::Add(Music* music) { s_Music.push_back(music); }
 
-Sound* SoundManager::getSound(const std::string& name) {
+Sound* SoundManager::GetSound(const std::string& name) {
   for (Sound* sound : s_Sounds) {
-    if (sound->getName() == name) return sound;
+    if (sound->GetName() == name) return sound;
   }
   return nullptr;
 }
 
-Music* SoundManager::getMusic(const std::string& name) {
+Music* SoundManager::GetMusic(const std::string& name) {
   for (Music* music : s_Music) {
-    if (music->getName() == name) return music;
+    if (music->GetName() == name) return music;
   }
   return nullptr;
 }
 
-void SoundManager::clean() {
+void SoundManager::Clean() {
   for (unsigned int i = 0; i < s_Sounds.size(); i++) delete s_Sounds[i];
   s_Sounds.clear();
 

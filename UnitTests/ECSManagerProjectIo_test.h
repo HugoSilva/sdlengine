@@ -37,7 +37,7 @@ class ECSManagerProjectIo : public ::testing::Test {
     std::filesystem::remove_all(m_Directory);
   }
 
-  void writeProjectFile(const std::string& contents) const {
+  void WriteProjectFile(const std::string& contents) const {
     std::ofstream projectFile{"project.xml"};
     projectFile << contents;
   }
@@ -49,32 +49,32 @@ class ECSManagerProjectIo : public ::testing::Test {
 TEST_F(ECSManagerProjectIo, LoadWithoutAProjectFileReportsFailure) {
   ASSERT_FALSE(std::filesystem::exists("project.xml"));
 
-  EXPECT_NO_THROW({ EXPECT_FALSE(ECSManager::load()); });
+  EXPECT_NO_THROW({ EXPECT_FALSE(ECSManager::Load()); });
 }
 
 TEST_F(ECSManagerProjectIo, LoadOfAnEmptyProjectFileReportsFailure) {
-  writeProjectFile("");
+  WriteProjectFile("");
   ASSERT_TRUE(std::filesystem::exists("project.xml"));
 
-  EXPECT_NO_THROW({ EXPECT_FALSE(ECSManager::load()); });
+  EXPECT_NO_THROW({ EXPECT_FALSE(ECSManager::Load()); });
 }
 
 TEST_F(ECSManagerProjectIo, LoadOfAMalformedProjectFileReportsFailure) {
-  writeProjectFile("<cereal>this is not a project file");
+  WriteProjectFile("<cereal>this is not a project file");
 
-  EXPECT_NO_THROW({ EXPECT_FALSE(ECSManager::load()); });
+  EXPECT_NO_THROW({ EXPECT_FALSE(ECSManager::Load()); });
 }
 
 TEST_F(ECSManagerProjectIo, SaveWritesTheProjectFile) {
-  EXPECT_TRUE(ECSManager::save());
+  EXPECT_TRUE(ECSManager::Save());
 
   EXPECT_TRUE(std::filesystem::exists("project.xml"));
   EXPECT_FALSE(std::filesystem::exists("project.xml.tmp"));
 }
 
 TEST_F(ECSManagerProjectIo, SavedProjectCanBeLoadedAgain) {
-  ASSERT_TRUE(ECSManager::save());
+  ASSERT_TRUE(ECSManager::Save());
 
-  EXPECT_NO_THROW({ EXPECT_TRUE(ECSManager::load()); });
+  EXPECT_NO_THROW({ EXPECT_TRUE(ECSManager::Load()); });
 }
 }  // namespace

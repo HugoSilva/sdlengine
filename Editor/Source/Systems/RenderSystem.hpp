@@ -10,7 +10,7 @@ class RenderSystem : public BaseSystem {
  public:
   RenderSystem(EditorLayout* layout) : BaseSystem(), m_Layout(layout) {}
 
-  void renderUI() override { m_Layout->draw(); }
+  void RenderUi() override { m_Layout->Draw(); }
 
  private:
   EditorLayout* m_Layout;

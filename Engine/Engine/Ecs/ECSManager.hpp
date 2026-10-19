@@ -18,45 +18,45 @@ class ECSManager {
  public:
   ECSManager() {}
 
-  static void init();
+  static void Init();
 
-  static uint32_t createEntity() { return registry.create(); }
+  static uint32_t CreateEntity() { return registry.create(); }
 
-  static void destroyEntity(uint32_t entity) { registry.destroy(entity); }
+  static void DestroyEntity(uint32_t entity) { registry.destroy(entity); }
 
   template <typename... Components, typename... TArgs>
-  static void addComponent(uint32_t entity, TArgs... arguments) {
+  static void AddComponent(uint32_t entity, TArgs... arguments) {
     registry.assign<Components...>(entity, arguments...);
   }
 
   template <typename Component>
-  static void removeComponent(uint32_t entity) {
+  static void RemoveComponent(uint32_t entity) {
     registry.remove<Component>(entity);
   }
 
   template <typename... Components>
-  static bool hasComponent(uint32_t entity) {
+  static bool HasComponent(uint32_t entity) {
     return registry.has<Components...>(entity);
   }
 
   template <typename Component>
-  static Component& getComponent(uint32_t entity) {
+  static Component& GetComponent(uint32_t entity) {
     return registry.get<Component>(entity);
   }
 
   template <typename... Components>
-  static entt::View<uint32_t, Components...> getView() {
+  static entt::View<uint32_t, Components...> GetView() {
     return registry.view<Components...>();
   }
 
-  static void addSystem(BaseSystem* system, SystemPhase phase = SystemPhase::Scene);
+  static void AddSystem(BaseSystem* system, SystemPhase phase = SystemPhase::Scene);
 
-  static void update(float delta);
-  static void updateUI();
-  static void clean();
+  static void Update(float delta);
+  static void UpdateUi();
+  static void Clean();
 
-  static bool save();
-  static bool load();
+  static bool Save();
+  static bool Load();
 
  private:
   static entt::DefaultRegistry registry;
