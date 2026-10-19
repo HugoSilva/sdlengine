@@ -1,0 +1,21 @@
+root = true
+
+# The repository is CRLF throughout; see docs/CodingStandards.md §2.2.
+[*]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# C++ sources: two spaces, per the standard (clang-format enforces the rest).
+[*.{h,hpp,cpp}]
+indent_style = space
+indent_size = 2
+
+# Build files and shaders are outside the standard's scope and use tabs today.
+[{CMakeLists.txt,*.cmake,*.vert,*.frag}]
+indent_style = tab
+
+# Markdown: trailing whitespace can be meaningful (a hard line break).
+[*.md]
+trim_trailing_whitespace = false

@@ -9,13 +9,13 @@ file(GLOB_RECURSE ENGINE_FILES CONFIGURE_DEPENDS
   "${CMAKE_CURRENT_SOURCE_DIR}/Engine/*.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/Engine/*.h")
 
-# Engine/Tests holds a runtime debug helper (Test::TestClearColor) that
+# Engine/tests holds a runtime debug helper (test::TestClearColor) that
 # OpenGLRenderer depends on -- it is NOT a unit-test folder. Include it
-# explicitly rather than pulling in an unrelated Tests/ tree by accident.
+# explicitly rather than pulling in an unrelated tests/ tree by accident.
 file(GLOB_RECURSE ENGINE_DEBUG_FILES CONFIGURE_DEPENDS
-  "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/Tests/*.h")
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.h")
 list(APPEND ENGINE_FILES ${ENGINE_DEBUG_FILES})
 
 
@@ -24,8 +24,13 @@ add_library(RSE::Engine ALIAS Engine)
 
 rse_configure_target(Engine)
 
-# Expose the engine's own headers so consumers can `#include <Core.h>`.
+# Expose the engine's own headers so consumers can `#include <core.h>`.
 target_include_directories(Engine PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Engine")
+
+# The runtime debug helper sits outside the module root, so the module
+# directory is on the include path too, for `#include <tests/...>`. It is
+# PUBLIC because a public engine header names that helper.
+target_include_directories(Engine PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # PUBLIC: everyone who links Engine gets the third-party includes, import
 # libraries and OpenGL transitively.

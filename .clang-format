@@ -1,0 +1,40 @@
+---
+# Formatting rules for this repository. See docs/CodingStandards.md.
+# Google style, with the deviations the standard lists (120 columns above all).
+Language: Cpp
+BasedOnStyle: Google
+Standard: c++20
+
+# Google says 80 columns; this project chose 120.
+ColumnLimit: 120
+
+# The tree used to be tab-indented and Allman-braced; the standard is neither.
+UseTab: Never
+IndentWidth: 2
+BreakBeforeBraces: Attach
+
+# `const Foo* p`, not `const Foo *p`.
+DerivePointerAlignment: false
+PointerAlignment: Left
+
+NamespaceIndentation: None
+
+# Includes: the matching header first (Google does this through
+# IncludeIsMainRegex), then the standard library, then third-party libraries,
+# then our own headers -- quoted or angled, they are all ours, and they go
+# last. Sorting our headers above a library header is what broke ecs_manager.cpp
+# when this file was first written: it parsed cereal's make_nvp before it was
+# declared. See docs/CodingStandards.md §2.1.
+IncludeBlocks: Regroup
+SortIncludes: CaseSensitive
+IncludeCategories:
+  # C and C++ standard library: <vector>, <cstdint>, <stdio.h>.
+  - Regex: '^<[a-z_]+(\.h)?>$'
+    Priority: 2
+  # Third-party libraries, vendored under Thirdparty/ or fetched by CMake.
+  - Regex: '^<(SDL3|SDL3_image|SDL3_mixer|SDL3_ttf|GL|glm|entt|imgui|cereal|box2d|entity|signal|emscripten|gtest|Windows)'
+    Priority: 3
+  # Our own headers: <audio/sound.h>, "core.h", <render/camera.h>.
+  - Regex: '^.*$'
+    Priority: 4
+...

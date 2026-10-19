@@ -12,5 +12,6 @@ file(GLOB_RECURSE EDITOR_FILES CONFIGURE_DEPENDS
 add_executable(Editor ${EDITOR_FILES})
 
 rse_configure_target(Editor)
+target_include_directories(Editor PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Source")
 target_link_libraries(Editor PRIVATE Engine)
 rse_deploy(Editor)

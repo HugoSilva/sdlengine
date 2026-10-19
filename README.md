@@ -52,6 +52,19 @@ GoogleTest is built from source (fetched automatically via CMake `FetchContent`,
 point `-DRSE_GTEST_SOURCE_DIR=<path>` at a local GoogleTest checkout, or disable tests with
 `-DRSE_BUILD_TESTS=OFF`.
 
+## Coding standards
+
+The project follows the [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html) with a
+short list of deliberate deviations. [`docs/CodingStandards.md`](docs/CodingStandards.md) has the rules and
+the reasons; [`.clang-format`](.clang-format) and [`.clang-tidy`](.clang-tidy) are the machine-readable half
+of it, and they are what CI enforces.
+
+```bat
+tools\format.bat                 :: reformat every source file in place
+tools\check-format.bat           :: fail if any file is not clang-format clean
+tools\check-naming.bat x64-debug :: naming check (needs: cmake --preset x64-debug)
+```
+
 ## Library dependencies
 
 ##### [Glew 2.3.1](http://glew.sourceforge.net/) - OpenGL extensions and methods
