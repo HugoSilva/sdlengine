@@ -16,25 +16,25 @@ using namespace rse;
 
 TEST(SoundManager, AddSound) {
   SoundManager::Add(new Sound("test", "test.ogg"));
-  Sound* testSound = SoundManager::GetSound("test");
-  EXPECT_NE(nullptr, testSound);
+  Sound* test_sound = SoundManager::GetSound("test");
+  EXPECT_NE(nullptr, test_sound);
 }
 
 TEST(SoundManager, AddMusic) {
   SoundManager::Add(new Music("test", "test.ogg"));
-  Music* testMusic = SoundManager::GetMusic("test");
-  EXPECT_NE(nullptr, testMusic);
+  Music* test_music = SoundManager::GetMusic("test");
+  EXPECT_NE(nullptr, test_music);
 }
 
 TEST(SoundManager, AddSoundWaveFormat) {
   SoundManager::Add(new Music("test", "test.wav"));
-  Sound* testSound = SoundManager::GetSound("test");
-  EXPECT_NE(nullptr, testSound);
+  Sound* test_sound = SoundManager::GetSound("test");
+  EXPECT_NE(nullptr, test_sound);
 }
 
 TEST(SoundManager, AddSoundOggFormat) {
   SoundManager::Add(new Music("test", "test.ogg"));
-  Sound* testSound = SoundManager::GetSound("test");
-  EXPECT_NE(nullptr, testSound);
+  Sound* test_sound = SoundManager::GetSound("test");
+  EXPECT_NE(nullptr, test_sound);
 }
 }  // namespace

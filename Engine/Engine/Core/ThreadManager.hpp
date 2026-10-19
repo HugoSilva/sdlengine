@@ -13,7 +13,7 @@ class ThreadManager {
  private:
   ThreadManager() {}
 
-  static unsigned int s_AvailableThreads;
-  static std::vector<std::thread*> s_Threads;
-  static std::vector<std::mutex*> s_Mutexes;
+  static unsigned int s_available_threads;
+  static std::vector<std::thread*> s_threads;
+  static std::vector<std::mutex*> s_mutexes;
 };

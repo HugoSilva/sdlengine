@@ -48,21 +48,21 @@ class OpenGLRenderer : public Renderer2D {
 
   void Begin();
   void Submit(TransformComponent& position, const Renderable2D* renderable);
-  void SubmitQuad(TransformComponent& transform, glm::vec2 halfExtent, unsigned int color) override;
+  void SubmitQuad(TransformComponent& transform, glm::vec2 half_extent, unsigned int color) override;
   void End();
   void Flush();
 
   float* GetClearColor() override;
 
  private:
-  unsigned int m_VAO, m_VBO;
-  int m_IndexCount;
-  VertexData* m_Buffer;
-  IndexBuffer* m_IBO;
-  SDL_Window* m_Window;
-  std::vector<unsigned int> m_TextureSlots;
-  test::TestClearColor* clearColor;
-  Shader* m_Shader;
+  unsigned int m_vao, m_vbo;
+  int m_index_count;
+  VertexData* m_buffer;
+  IndexBuffer* m_ibo;
+  SDL_Window* m_window;
+  std::vector<unsigned int> m_texture_slots;
+  test::TestClearColor* m_clear_color;
+  Shader* m_shader;
 #ifdef EMSCRIPTEN
   VertexData* m_BufferBase;
 #endif  // EMSCRIPTEN

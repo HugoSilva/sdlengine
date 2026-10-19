@@ -8,10 +8,10 @@
 // in the UI phase, and all it does is hand control to EditorLayout.
 class RenderSystem : public BaseSystem {
  public:
-  RenderSystem(EditorLayout* layout) : BaseSystem(), m_Layout(layout) {}
+  RenderSystem(EditorLayout* layout) : BaseSystem(), m_layout(layout) {}
 
-  void RenderUi() override { m_Layout->Draw(); }
+  void RenderUi() override { m_layout->Draw(); }
 
  private:
-  EditorLayout* m_Layout;
+  EditorLayout* m_layout;
 };

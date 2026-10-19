@@ -37,18 +37,18 @@ class Framebuffer {
   // Back to the window's back buffer.
   static void Unbind();
 
-  unsigned int GetColorTexture() const { return m_ColorTexture; }
-  int GetWidth() const { return m_Width; }
-  int GetHeight() const { return m_Height; }
-  bool IsValid() const { return m_Framebuffer != 0; }
+  unsigned int GetColorTexture() const { return m_color_texture; }
+  int GetWidth() const { return m_width; }
+  int GetHeight() const { return m_height; }
+  bool IsValid() const { return m_framebuffer != 0; }
 
  private:
   void Destroy();
 
-  unsigned int m_Framebuffer{0};
-  unsigned int m_ColorTexture{0};
-  unsigned int m_DepthBuffer{0};
-  int m_Width{0};
-  int m_Height{0};
+  unsigned int m_framebuffer{0};
+  unsigned int m_color_texture{0};
+  unsigned int m_depth_buffer{0};
+  int m_width{0};
+  int m_height{0};
 };
 }  // namespace rse

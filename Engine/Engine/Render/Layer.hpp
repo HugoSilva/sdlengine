@@ -15,11 +15,11 @@ class Layer {
   virtual void Remove(Renderable2D* renderable);
   virtual void Render();
 
-  inline const std::vector<Renderable2D*>& GetRenderables() const { return m_Renderables; }
+  inline const std::vector<Renderable2D*>& GetRenderables() const { return m_renderables; }
 
  protected:
-  Renderer2D* m_Renderer;
-  std::vector<Renderable2D*> m_Renderables;
-  Shader* m_Shader;
+  Renderer2D* m_renderer;
+  std::vector<Renderable2D*> m_renderables;
+  Shader* m_shader;
 };
 }  // namespace rse

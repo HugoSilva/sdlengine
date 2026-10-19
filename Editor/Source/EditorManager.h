@@ -37,7 +37,7 @@ class EditorManager {
   // section 3.4), so the outline and the gizmos iterate
   // getSelectedEntities() rather than the single entity, and "the set has
   // more than one element" becomes the only thing that changes.
-  static void SetSelection(uint32_t entity) { m_SelectedEntity = entity; }
+  static void SetSelection(uint32_t entity) { m_selected_entity = entity; }
 
   // Ctrl-click is its caller. Added now so that epic changes one call site
   // instead of three gizmos and the outline.
@@ -46,14 +46,14 @@ class EditorManager {
       return;
     }
 
-    m_SelectedEntity = (m_SelectedEntity == entity) ? INVALID_ENTITY_ID : entity;
+    m_selected_entity = (m_selected_entity == entity) ? INVALID_ENTITY_ID : entity;
   }
 
-  static void ClearSelection() { m_SelectedEntity = INVALID_ENTITY_ID; }
+  static void ClearSelection() { m_selected_entity = INVALID_ENTITY_ID; }
 
   // The *active* entity: the one the inspector edits and the hierarchy
   // highlights, and the anchor a gizmo drag is measured from.
-  static uint32_t GetSelectedEntity() { return m_SelectedEntity; }
+  static uint32_t GetSelectedEntity() { return m_selected_entity; }
 
   // The selection set. One element while multi-select is out of scope.
   static std::span<const uint32_t> GetSelectedEntities();
@@ -61,36 +61,36 @@ class EditorManager {
   // The scene is rendered into the viewport panel's framebuffer rather than
   // the window. The viewport claims this while it draws; Core::run() picks it
   // up for the scene pass, and nullptr means "draw straight to the window".
-  static void SetSceneTarget(rse::Framebuffer* target) { m_SceneTarget = target; }
-  static rse::Framebuffer* GetSceneTarget() { return m_SceneTarget; }
+  static void SetSceneTarget(rse::Framebuffer* target) { m_scene_target = target; }
+  static rse::Framebuffer* GetSceneTarget() { return m_scene_target; }
 
   // View settings. The View menu toggles them, the systems that draw with them
   // read them, and M7 persists them -- so they need a home the menu, the panels
   // and the systems can all reach, which is this one.
-  static EditorSettings& Settings() { return m_Settings; }
+  static EditorSettings& Settings() { return m_settings; }
 
   // A one-shot request for the viewport to frame what is selected. The
   // hierarchy's double-click asks for it and the viewport answers it, so it
   // belongs with the rest of the state the two panels share rather than in
   // either one of them.
-  static void RequestFrameSelection() { m_FrameRequested = true; }
+  static void RequestFrameSelection() { m_frame_requested = true; }
   static bool ConsumeFrameRequest() {
-    const bool requested = m_FrameRequested;
-    m_FrameRequested = false;
+    const bool requested = m_frame_requested;
+    m_frame_requested = false;
     return requested;
   }
 
   template <typename Component>
   static bool ShowComponentWidget() {
-    if (m_SelectedEntity != INVALID_ENTITY_ID) {
-      return rse::ECSManager::HasComponent<Component>(m_SelectedEntity);
+    if (m_selected_entity != INVALID_ENTITY_ID) {
+      return rse::ECSManager::HasComponent<Component>(m_selected_entity);
     }
     return false;
   }
 
   template <typename Component>
   static Component& GetComponent() {
-    return rse::ECSManager::GetComponent<Component>(m_SelectedEntity);
+    return rse::ECSManager::GetComponent<Component>(m_selected_entity);
   }
 
   static void HandleCreateEntityEvent(const CreateEntity& event);
@@ -100,8 +100,8 @@ class EditorManager {
   static void HandleRemoveComponentEvent(const RemoveComponent& event);
 
  private:
-  static uint32_t m_SelectedEntity;
-  static rse::Framebuffer* m_SceneTarget;
-  static EditorSettings m_Settings;
-  static bool m_FrameRequested;
+  static uint32_t m_selected_entity;
+  static rse::Framebuffer* m_scene_target;
+  static EditorSettings m_settings;
+  static bool m_frame_requested;
 };

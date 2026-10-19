@@ -5,20 +5,20 @@
 #include "Mouse.hpp"
 
 namespace rse {
-bool InputManager::s_AvailableKeyboard;
-bool InputManager::s_AvailableMouse;
-bool InputManager::s_AvailableController;
-bool InputManager::s_Locked;
-bool InputManager::s_QuitRequested;
+bool InputManager::s_available_keyboard;
+bool InputManager::s_available_mouse;
+bool InputManager::s_available_controller;
+bool InputManager::s_locked;
+bool InputManager::s_quit_requested;
 
 void InputManager::Init() {
   // TODO: check available input devices
-  s_AvailableKeyboard = true;
-  s_AvailableMouse = true;
-  s_AvailableController = false;
+  s_available_keyboard = true;
+  s_available_mouse = true;
+  s_available_controller = false;
 
-  s_Locked = false;
-  s_QuitRequested = false;
+  s_locked = false;
+  s_quit_requested = false;
 }
 
 void InputManager::Update() {
@@ -47,7 +47,7 @@ void InputManager::Update() {
         HandleControllerAxis(event.gaxis);
         break;
       case SDL_EVENT_QUIT:
-        s_QuitRequested = true;
+        s_quit_requested = true;
         break;
       case SDL_EVENT_MOUSE_WHEEL:
         // event.wheel.x; // Amount scrolled horizontally
@@ -63,21 +63,21 @@ void InputManager::Update() {
   }
 }
 
-void InputManager::HandleKeyboard(SDL_KeyboardEvent keyEvent) {
-  if (s_AvailableKeyboard) {
-    Keyboard::KeyCallback(keyEvent);
+void InputManager::HandleKeyboard(SDL_KeyboardEvent key_event) {
+  if (s_available_keyboard) {
+    Keyboard::KeyCallback(key_event);
   }
 }
 
-void InputManager::HandleMouseButton(SDL_MouseButtonEvent mouseEvent) {
-  if (s_AvailableMouse) {
-    Mouse::MouseButtonCallback(mouseEvent);
+void InputManager::HandleMouseButton(SDL_MouseButtonEvent mouse_event) {
+  if (s_available_mouse) {
+    Mouse::MouseButtonCallback(mouse_event);
   }
 }
 
-void InputManager::HandleMouseMotion(SDL_MouseMotionEvent mouseEvent) {
-  if (s_AvailableMouse) {
-    Mouse::MousePosCallback(mouseEvent);
+void InputManager::HandleMouseMotion(SDL_MouseMotionEvent mouse_event) {
+  if (s_available_mouse) {
+    Mouse::MousePosCallback(mouse_event);
   }
 }
 
@@ -90,7 +90,7 @@ void InputManager::HandleControllerAxis(SDL_GamepadAxisEvent event) {
 }
 
 const bool InputManager::IsKeyDown(int key) {
-  if (s_Locked) {
+  if (s_locked) {
     return false;
   }
 
@@ -98,7 +98,7 @@ const bool InputManager::IsKeyDown(int key) {
 }
 
 const bool InputManager::IsKeyUp(int key) {
-  if (s_Locked) {
+  if (s_locked) {
     return false;
   }
 
@@ -106,7 +106,7 @@ const bool InputManager::IsKeyUp(int key) {
 }
 
 const bool InputManager::IsKeyPressed(SDL_Scancode key) {
-  if (s_Locked) {
+  if (s_locked) {
     return false;
   }
 

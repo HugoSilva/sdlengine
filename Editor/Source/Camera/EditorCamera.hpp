@@ -35,17 +35,17 @@ class EditorCamera {
   EditorCamera();
 
   // Published by the viewport panel every frame.
-  void SetViewportSize(glm::vec2 devicePixels, float dpiScale);
+  void SetViewportSize(glm::vec2 device_pixels, float dpi_scale);
 
-  const rse::OrthoView& GetView() const { return m_View; }
-  const glm::mat4& GetProjection() const { return m_Projection; }
+  const rse::OrthoView& GetView() const { return m_view; }
+  const glm::mat4& GetProjection() const { return m_projection; }
 
   // Uploads the frame's uniforms: identity view (the ortho rectangle already
   // carries the camera position) plus the projection.
   void Apply(rse::Shader* shader) const;
 
-  glm::vec2 GetCenter() const { return m_Center; }
-  float GetZoom() const { return m_Zoom; }
+  glm::vec2 GetCenter() const { return m_center; }
+  float GetZoom() const { return m_zoom; }
 
   // World units per *device* pixel, so a grid line can be exactly one pixel
   // thick at any zoom.
@@ -58,18 +58,18 @@ class EditorCamera {
   glm::vec2 ScreenToWorld(glm::vec2 pixel) const;
   glm::vec2 WorldToScreen(glm::vec2 world) const;
 
-  void Pan(glm::vec2 pixelDelta);
-  void ZoomAt(float wheelSteps, glm::vec2 pixelAnchor);
-  void FocusOn(glm::vec2 worldCenter, glm::vec2 worldSize);
+  void Pan(glm::vec2 pixel_delta);
+  void ZoomAt(float wheel_steps, glm::vec2 pixel_anchor);
+  void FocusOn(glm::vec2 world_center, glm::vec2 world_size);
 
  private:
   void Rebuild();
 
-  rse::OrthoView m_View;
-  glm::mat4 m_Projection{1.0f};
+  rse::OrthoView m_view;
+  glm::mat4 m_projection{1.0f};
 
-  glm::vec2 m_Center{640.0f, 360.0f};
-  glm::vec2 m_ViewportSize{kReferenceSize};  // device pixels
-  float m_DpiScale{1.0f};
-  float m_Zoom{1.0f};
+  glm::vec2 m_center{640.0f, 360.0f};
+  glm::vec2 m_viewport_size{kReferenceSize};  // device pixels
+  float m_dpi_scale{1.0f};
+  float m_zoom{1.0f};
 };

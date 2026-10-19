@@ -15,6 +15,6 @@ class TextureManager {
 
  private:
   TextureManager();
-  static std::vector<Texture*> s_Textures;
+  static std::vector<Texture*> s_textures;
 };
 }  // namespace rse

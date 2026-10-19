@@ -36,24 +36,24 @@ class ConsolePanel : public EditorPanel {
  private:
   void RefreshEntries() {
     const uint64_t revision = Logger::GetRevision();
-    if (revision == m_Revision) {
+    if (revision == m_revision) {
       return;
     }
 
-    m_Revision = revision;
-    m_Entries = Logger::GetEntries();
-    m_ScrollToBottom = m_Follow;
+    m_revision = revision;
+    m_entries = Logger::GetEntries();
+    m_scroll_to_bottom = m_follow;
   }
 
   void DrawToolbar() {
     ImGui::SetNextItemWidth(80.0f);
-    ImGui::Checkbox("Log", &m_ShowLog);
+    ImGui::Checkbox("Log", &m_show_log);
     ImGui::SameLine();
-    ImGui::Checkbox("Warning", &m_ShowWarning);
+    ImGui::Checkbox("Warning", &m_show_warning);
     ImGui::SameLine();
-    ImGui::Checkbox("Error", &m_ShowError);
+    ImGui::Checkbox("Error", &m_show_error);
     ImGui::SameLine();
-    ImGui::Checkbox("Follow", &m_Follow);
+    ImGui::Checkbox("Follow", &m_follow);
     ImGui::SameLine();
 
     if (ImGui::Button("Clear")) {
@@ -61,7 +61,7 @@ class ConsolePanel : public EditorPanel {
     }
 
     ImGui::SameLine();
-    ImGui::TextDisabled("(%zu)", m_Entries.size());
+    ImGui::TextDisabled("(%zu)", m_entries.size());
   }
 
   void DrawEntries() {
@@ -70,7 +70,7 @@ class ConsolePanel : public EditorPanel {
     ImGui::BeginChild("##console_entries", ImVec2(0.0f, 0.0f), ImGuiChildFlags_None,
                       ImGuiWindowFlags_HorizontalScrollbar);
 
-    for (const Logger::Entry& entry : m_Entries) {
+    for (const Logger::Entry& entry : m_entries) {
       if (!IsVisible(entry.level)) {
         continue;
       }
@@ -80,9 +80,9 @@ class ConsolePanel : public EditorPanel {
       ImGui::PopStyleColor();
     }
 
-    if (m_ScrollToBottom) {
+    if (m_scroll_to_bottom) {
       ImGui::SetScrollHereY(1.0f);
-      m_ScrollToBottom = false;
+      m_scroll_to_bottom = false;
     }
 
     ImGui::EndChild();
@@ -91,11 +91,11 @@ class ConsolePanel : public EditorPanel {
   bool IsVisible(Logger::Level level) const {
     switch (level) {
       case Logger::Level::Warning:
-        return m_ShowWarning;
+        return m_show_warning;
       case Logger::Level::Error:
-        return m_ShowError;
+        return m_show_error;
       default:
-        return m_ShowLog;
+        return m_show_log;
     }
   }
 
@@ -110,12 +110,12 @@ class ConsolePanel : public EditorPanel {
     }
   }
 
-  std::vector<Logger::Entry> m_Entries;
-  uint64_t m_Revision{0};
-  bool m_ScrollToBottom{false};
+  std::vector<Logger::Entry> m_entries;
+  uint64_t m_revision{0};
+  bool m_scroll_to_bottom{false};
 
-  bool m_ShowLog{true};
-  bool m_ShowWarning{true};
-  bool m_ShowError{true};
-  bool m_Follow{true};
+  bool m_show_log{true};
+  bool m_show_warning{true};
+  bool m_show_error{true};
+  bool m_follow{true};
 };

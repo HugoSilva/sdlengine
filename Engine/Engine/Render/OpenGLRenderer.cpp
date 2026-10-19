@@ -5,12 +5,12 @@
 #include <glm/mat4x4.hpp>                // glm::mat4
 
 namespace rse {
-OpenGLRenderer::OpenGLRenderer(SDL_Window* win, Shader* shader) : m_Window(win), m_Shader(shader) {
-  glGenVertexArrays(1, &m_VAO);
-  glGenBuffers(1, &m_VBO);
+OpenGLRenderer::OpenGLRenderer(SDL_Window* win, Shader* shader) : m_window(win), m_shader(shader) {
+  glGenVertexArrays(1, &m_vao);
+  glGenBuffers(1, &m_vbo);
 
-  glBindVertexArray(m_VAO);
-  glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+  glBindVertexArray(m_vao);
+  glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
   glBufferData(GL_ARRAY_BUFFER, RENDERER_BUFFER_SIZE, NULL, GL_DYNAMIC_DRAW);
 
   glEnableVertexAttribArray(SHADER_VERTEX_INDEX);
@@ -43,34 +43,34 @@ OpenGLRenderer::OpenGLRenderer(SDL_Window* win, Shader* shader) : m_Window(win),
     offset += 4;
   }
 
-  m_IBO = new IndexBuffer(indices, RENDERER_INDICES_SIZE);
+  m_ibo = new IndexBuffer(indices, RENDERER_INDICES_SIZE);
 
   glBindVertexArray(0);
 
-  clearColor = new test::TestClearColor();
+  m_clear_color = new test::TestClearColor();
 #ifdef EMSCRIPTEN
   m_BufferBase = new VertexData[RENDERER_MAX_SPRITES * 4];
 #endif  // EMSCRIPTEN
 }
 
 OpenGLRenderer::~OpenGLRenderer() {
-  delete m_IBO;
-  glDeleteBuffers(1, &m_VBO);
-  glDeleteVertexArrays(1, &m_VAO);
+  delete m_ibo;
+  glDeleteBuffers(1, &m_vbo);
+  glDeleteVertexArrays(1, &m_vao);
 }
 
 void OpenGLRenderer::Begin() {
-  glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+  glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 #ifdef EMSCRIPTEN
   m_Buffer = m_BufferBase;
 #else
-  m_Buffer = (VertexData*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+  m_buffer = (VertexData*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 #endif  // EMSCRIPTEN
 
-  clearColor->OnRender();
+  m_clear_color->OnRender();
 }
 
-float* OpenGLRenderer::GetClearColor() { return clearColor->GetClearColor(); }
+float* OpenGLRenderer::GetClearColor() { return m_clear_color->GetClearColor(); }
 
 void OpenGLRenderer::Submit(TransformComponent& transform, const Renderable2D* renderable) {
   // const glm::vec3& position = renderable->getPosition();
@@ -82,8 +82,8 @@ void OpenGLRenderer::Submit(TransformComponent& transform, const Renderable2D* r
   float ts = 0.0f;
   if (tid > 0) {
     bool found = false;
-    for (unsigned int i = 0; i < m_TextureSlots.size(); i++) {
-      if (m_TextureSlots[i] == tid) {
+    for (unsigned int i = 0; i < m_texture_slots.size(); i++) {
+      if (m_texture_slots[i] == tid) {
         ts = (float)(i + 1);
         found = true;
         break;
@@ -91,97 +91,97 @@ void OpenGLRenderer::Submit(TransformComponent& transform, const Renderable2D* r
     }
 
     if (!found) {
-      if (m_TextureSlots.size() >= RENDERER_MAX_TEXTURES) {
+      if (m_texture_slots.size() >= RENDERER_MAX_TEXTURES) {
         End();
         Flush();
         Begin();
       }
-      m_TextureSlots.push_back(tid);
-      ts = (float)(m_TextureSlots.size());
+      m_texture_slots.push_back(tid);
+      ts = (float)(m_texture_slots.size());
     }
   }
 
   // TODO Create a proper anchor concept for the sprites this hard codes center points
-  glm::vec3 upRight = glm::vec3(1.f * size.x, 1.f * size.y, 0.f);
-  glm::vec3 upLeft = glm::vec3(-1.f * size.x, 1.f * size.y, 0.f);
-  glm::vec3 downRight = glm::vec3(1.f * size.x, -1.f * size.y, 0.f);
-  glm::vec3 downLeft = glm::vec3(-1.f * size.x, -1.f * size.y, 0.f);
+  glm::vec3 up_right = glm::vec3(1.f * size.x, 1.f * size.y, 0.f);
+  glm::vec3 up_left = glm::vec3(-1.f * size.x, 1.f * size.y, 0.f);
+  glm::vec3 down_right = glm::vec3(1.f * size.x, -1.f * size.y, 0.f);
+  glm::vec3 down_left = glm::vec3(-1.f * size.x, -1.f * size.y, 0.f);
 
   // TODO Move the vertex calculation outside of the renderer for better performance
-  glm::mat4 Model = glm::translate(glm::mat4(1.f), transform.position);
-  Model = glm::rotate(Model, glm::radians(transform.rotation.x), glm::vec3(1.f, 0.f, 0.f));
-  Model = glm::rotate(Model, glm::radians(transform.rotation.y), glm::vec3(0.f, 1.f, 0.f));
-  Model = glm::rotate(Model, glm::radians(transform.rotation.z), glm::vec3(0.f, 0.f, 1.f));
-  Model = glm::scale(Model, transform.scale);
+  glm::mat4 model = glm::translate(glm::mat4(1.f), transform.position);
+  model = glm::rotate(model, glm::radians(transform.rotation.x), glm::vec3(1.f, 0.f, 0.f));
+  model = glm::rotate(model, glm::radians(transform.rotation.y), glm::vec3(0.f, 1.f, 0.f));
+  model = glm::rotate(model, glm::radians(transform.rotation.z), glm::vec3(0.f, 0.f, 1.f));
+  model = glm::scale(model, transform.scale);
 
-  m_Buffer->vertex = Model * glm::vec4(downLeft, 1.f);
-  m_Buffer->uv = uv[0];
-  m_Buffer->tid = ts;
-  m_Buffer->color = color;
-  m_Buffer++;
+  m_buffer->vertex = model * glm::vec4(down_left, 1.f);
+  m_buffer->uv = uv[0];
+  m_buffer->tid = ts;
+  m_buffer->color = color;
+  m_buffer++;
 
-  m_Buffer->vertex = Model * glm::vec4(upLeft, 1.f);
-  m_Buffer->uv = uv[1];
-  m_Buffer->tid = ts;
-  m_Buffer->color = color;
-  m_Buffer++;
+  m_buffer->vertex = model * glm::vec4(up_left, 1.f);
+  m_buffer->uv = uv[1];
+  m_buffer->tid = ts;
+  m_buffer->color = color;
+  m_buffer++;
 
-  m_Buffer->vertex = Model * glm::vec4(upRight, 1.f);
-  m_Buffer->uv = uv[2];
-  m_Buffer->tid = ts;
-  m_Buffer->color = color;
-  m_Buffer++;
+  m_buffer->vertex = model * glm::vec4(up_right, 1.f);
+  m_buffer->uv = uv[2];
+  m_buffer->tid = ts;
+  m_buffer->color = color;
+  m_buffer++;
 
-  m_Buffer->vertex = Model * glm::vec4(downRight, 1.f);
-  m_Buffer->uv = uv[3];
-  m_Buffer->tid = ts;
-  m_Buffer->color = color;
-  m_Buffer++;
+  m_buffer->vertex = model * glm::vec4(down_right, 1.f);
+  m_buffer->uv = uv[3];
+  m_buffer->tid = ts;
+  m_buffer->color = color;
+  m_buffer++;
 
-  m_IndexCount += 6;
+  m_index_count += 6;
 }
 
-void OpenGLRenderer::SubmitQuad(TransformComponent& transform, glm::vec2 halfExtent, unsigned int color) {
+void OpenGLRenderer::SubmitQuad(TransformComponent& transform, glm::vec2 half_extent, unsigned int color) {
   // Same transform and corner order as submit(), so the index buffer's
   // winding applies unchanged; the difference is that tid stays 0, which is
   // what makes Default.frag fall through to fs_in.color instead of sampling
   // a texture. That is why a grid line needs no shader change.
-  glm::mat4 Model = glm::translate(glm::mat4(1.f), transform.position);
-  Model = glm::rotate(Model, glm::radians(transform.rotation.x), glm::vec3(1.f, 0.f, 0.f));
-  Model = glm::rotate(Model, glm::radians(transform.rotation.y), glm::vec3(0.f, 1.f, 0.f));
-  Model = glm::rotate(Model, glm::radians(transform.rotation.z), glm::vec3(0.f, 0.f, 1.f));
-  Model = glm::scale(Model, transform.scale);
+  glm::mat4 model = glm::translate(glm::mat4(1.f), transform.position);
+  model = glm::rotate(model, glm::radians(transform.rotation.x), glm::vec3(1.f, 0.f, 0.f));
+  model = glm::rotate(model, glm::radians(transform.rotation.y), glm::vec3(0.f, 1.f, 0.f));
+  model = glm::rotate(model, glm::radians(transform.rotation.z), glm::vec3(0.f, 0.f, 1.f));
+  model = glm::scale(model, transform.scale);
 
-  const glm::vec3 downLeft = glm::vec3(-1.f * halfExtent.x, -1.f * halfExtent.y, 0.f);
-  const glm::vec3 upLeft = glm::vec3(-1.f * halfExtent.x, 1.f * halfExtent.y, 0.f);
-  const glm::vec3 upRight = glm::vec3(1.f * halfExtent.x, 1.f * halfExtent.y, 0.f);
-  const glm::vec3 downRight = glm::vec3(1.f * halfExtent.x, -1.f * halfExtent.y, 0.f);
+  const glm::vec3 down_left = glm::vec3(-1.f * half_extent.x, -1.f * half_extent.y, 0.f);
+  const glm::vec3 up_left = glm::vec3(-1.f * half_extent.x, 1.f * half_extent.y, 0.f);
+  const glm::vec3 up_right = glm::vec3(1.f * half_extent.x, 1.f * half_extent.y, 0.f);
+  const glm::vec3 down_right = glm::vec3(1.f * half_extent.x, -1.f * half_extent.y, 0.f);
 
-  m_Buffer->vertex = Model * glm::vec4(downLeft, 1.f);
-  m_Buffer->uv = glm::vec2(0.f, 1.f);
-  m_Buffer->tid = 0.0f;
-  m_Buffer->color = color;
-  m_Buffer++;
+  m_buffer->vertex = model * glm::vec4(down_left, 1.f);
+  m_buffer->uv = glm::vec2(0.f, 1.f);
+  m_buffer->tid = 0.0f;
+  m_buffer->color = color;
+  m_buffer++;
 
-  m_Buffer->vertex = Model * glm::vec4(upLeft, 1.f);
-  m_Buffer->uv = glm::vec2(0.f, 0.f);
-  m_Buffer->tid = 0.0f;
-  m_Buffer->color = color;
-  m_Buffer++;
+  m_buffer->vertex = model * glm::vec4(up_left, 1.f);
+  m_buffer->uv = glm::vec2(0.f, 0.f);
+  m_buffer->tid = 0.0f;
+  m_buffer->color = color;
+  m_buffer++;
 
-  m_Buffer->vertex = Model * glm::vec4(upRight, 1.f);
-  m_Buffer->uv = glm::vec2(1.f, 0.f);
-  m_Buffer->tid = 0.0f;
-  m_Buffer->color = color;
-  m_Buffer++;
+  m_buffer->vertex = model * glm::vec4(up_right, 1.f);
+  m_buffer->uv = glm::vec2(1.f, 0.f);
+  m_buffer->tid = 0.0f;
+  m_buffer->color = color;
+  m_buffer++;
 
-  m_Buffer->vertex = Model * glm::vec4(downRight, 1.f);
-  m_Buffer->uv = glm::vec2(1.f, 1.f);
-  m_Buffer->tid = 0.0f;
-  m_Buffer->color = color;
-  m_Buffer++;
+  m_buffer->vertex = model * glm::vec4(down_right, 1.f);
+  m_buffer->uv = glm::vec2(1.f, 1.f);
+  m_buffer->tid = 0.0f;
+  m_buffer->color = color;
+  m_buffer++;
 
-  m_IndexCount += 6;
+  m_index_count += 6;
 }
 
 void OpenGLRenderer::End() {
@@ -197,20 +197,20 @@ void OpenGLRenderer::End() {
 }
 
 void OpenGLRenderer::Flush() {
-  for (unsigned int i = 0; i < m_TextureSlots.size(); i++) {
+  for (unsigned int i = 0; i < m_texture_slots.size(); i++) {
     glActiveTexture(GL_TEXTURE0 + i);
-    glBindTexture(GL_TEXTURE_2D, m_TextureSlots[i]);
+    glBindTexture(GL_TEXTURE_2D, m_texture_slots[i]);
   }
 
-  glBindVertexArray(m_VAO);
-  m_IBO->Bind();
+  glBindVertexArray(m_vao);
+  m_ibo->Bind();
 
-  glDrawElements(GL_TRIANGLES, m_IndexCount, GL_UNSIGNED_INT, NULL);
+  glDrawElements(GL_TRIANGLES, m_index_count, GL_UNSIGNED_INT, NULL);
 
-  m_IBO->Unbind();
+  m_ibo->Unbind();
   glBindVertexArray(0);
 
-  m_IndexCount = 0;
-  m_TextureSlots.clear();
+  m_index_count = 0;
+  m_texture_slots.clear();
 }
 }  // namespace rse

@@ -28,7 +28,7 @@ inline constexpr unsigned int MakeColor(unsigned int r, unsigned int g, unsigned
 class Renderable2D {
  public:
   Renderable2D(glm::vec3 position, glm::vec2 size, unsigned int color)
-      : m_Position(position), m_Size(size), m_Color(color) {
+      : m_position(position), m_size(size), m_color(color) {
     SetUvDefaults();
   }
 
@@ -38,37 +38,37 @@ class Renderable2D {
     // renderer->submit(this);
   }
 
-  inline const glm::vec3& GetPosition() const { return m_Position; }
-  inline const glm::vec2& GetSize() const { return m_Size; }
-  inline void SetColor(unsigned int color) { m_Color = color; }
-  inline const unsigned int& GetColor() const { return m_Color; }
-  inline const std::vector<glm::vec2>& GetUv() const { return m_UV; }
-  inline const unsigned int GetTId() const { return m_Texture.get() == nullptr ? 0 : m_Texture.get()->GetId(); }
+  inline const glm::vec3& GetPosition() const { return m_position; }
+  inline const glm::vec2& GetSize() const { return m_size; }
+  inline void SetColor(unsigned int color) { m_color = color; }
+  inline const unsigned int& GetColor() const { return m_color; }
+  inline const std::vector<glm::vec2>& GetUv() const { return m_uv; }
+  inline const unsigned int GetTId() const { return m_texture.get() == nullptr ? 0 : m_texture.get()->GetId(); }
   inline const std::string GetTextureName() const {
-    return m_Texture.get() == nullptr ? "" : m_Texture.get()->GetName();
+    return m_texture.get() == nullptr ? "" : m_texture.get()->GetName();
   }
 
   template <typename Archive>
   void serialize(Archive& archive) {
-    archive(cereal::make_nvp("Size", m_Size), cereal::make_nvp("Color", m_Color),
-            cereal::make_nvp("Texture", m_Texture));
+    archive(cereal::make_nvp("Size", m_size), cereal::make_nvp("Color", m_color),
+            cereal::make_nvp("Texture", m_texture));
   }
 
  private:
   void SetUvDefaults() {
-    m_UV.push_back(glm::vec2(0, 1));
-    m_UV.push_back(glm::vec2(0, 0));
-    m_UV.push_back(glm::vec2(1, 0));
-    m_UV.push_back(glm::vec2(1, 1));
+    m_uv.push_back(glm::vec2(0, 1));
+    m_uv.push_back(glm::vec2(0, 0));
+    m_uv.push_back(glm::vec2(1, 0));
+    m_uv.push_back(glm::vec2(1, 1));
   }
 
  protected:
   Renderable2D() { SetUvDefaults(); }
 
-  glm::vec3 m_Position;
-  glm::vec2 m_Size;
-  unsigned int m_Color{0x00};
-  std::vector<glm::vec2> m_UV;
-  std::shared_ptr<Texture> m_Texture{nullptr};
+  glm::vec3 m_position;
+  glm::vec2 m_size;
+  unsigned int m_color{0x00};
+  std::vector<glm::vec2> m_uv;
+  std::shared_ptr<Texture> m_texture{nullptr};
 };
 }  // namespace rse

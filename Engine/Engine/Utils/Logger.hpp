@@ -35,10 +35,10 @@ class Logger {
   static void Clear();
 
  private:
-  static std::string s_ErrorPrefix;
-  static std::string s_WarningPrefix;
+  static std::string s_error_prefix;
+  static std::string s_warning_prefix;
 
   static void Append(Level level, const std::string& message);
 
-  static constexpr size_t s_MaxEntries{512};
+  static constexpr size_t kMaxEntries{512};
 };

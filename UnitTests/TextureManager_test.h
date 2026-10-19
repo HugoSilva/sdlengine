@@ -16,19 +16,19 @@ using namespace rse;
 
 TEST(TextureManager, AddTexture) {
   TextureManager::Add(new Texture("test", "test.png"));
-  Texture* testTexture = TextureManager::Get("test");
-  EXPECT_NE(nullptr, testTexture);
+  Texture* test_texture = TextureManager::Get("test");
+  EXPECT_NE(nullptr, test_texture);
 }
 
 TEST(TextureManager, AddTexturePNGFormat) {
   TextureManager::Add(new Texture("test", "test.png"));
-  Texture* testTexture = TextureManager::Get("test");
-  EXPECT_NE(nullptr, testTexture);
+  Texture* test_texture = TextureManager::Get("test");
+  EXPECT_NE(nullptr, test_texture);
 }
 
 TEST(TextureManager, AddTextureJPEGFormat) {
   TextureManager::Add(new Texture("test", "test.jpeg"));
-  Texture* testTexture = TextureManager::Get("test");
-  EXPECT_NE(nullptr, testTexture);
+  Texture* test_texture = TextureManager::Get("test");
+  EXPECT_NE(nullptr, test_texture);
 }
 }  // namespace

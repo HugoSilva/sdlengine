@@ -27,12 +27,12 @@
 namespace rse {
 struct OrthoView {
   glm::vec2 center{0.0f, 0.0f};
-  glm::vec2 halfExtent{1.0f, 1.0f};
+  glm::vec2 half_extent{1.0f, 1.0f};
 
-  glm::vec2 Min() const { return center - halfExtent; }
-  glm::vec2 Max() const { return center + halfExtent; }
-  glm::vec2 Size() const { return halfExtent * 2.0f; }
-  float Aspect() const { return halfExtent.y > 0.0f ? halfExtent.x / halfExtent.y : 1.0f; }
+  glm::vec2 Min() const { return center - half_extent; }
+  glm::vec2 Max() const { return center + half_extent; }
+  glm::vec2 Size() const { return half_extent * 2.0f; }
+  float Aspect() const { return half_extent.y > 0.0f ? half_extent.x / half_extent.y : 1.0f; }
 };
 
 struct Bounds2D {
@@ -50,15 +50,15 @@ inline constexpr float kOrthoMaxZoom = 20.0f;
 // The view rectangle for a given zoom, shaped like targetSize. referenceSize
 // is what a zoom of 1 shows vertically -- it is what the renderer has always
 // framed, so at a 16:9 target this is bit for bit the old behaviour.
-inline OrthoView MakeOrthoView(glm::vec2 center, float zoom, glm::vec2 targetSize, glm::vec2 referenceSize) {
-  const float safeZoom = std::clamp(zoom, kOrthoMinZoom, kOrthoMaxZoom);
-  const float height = referenceSize.y / safeZoom;
-  const float targetAspect = targetSize.y > 0.0f ? targetSize.x / targetSize.y : 1.0f;
-  const float width = height * targetAspect;
+inline OrthoView MakeOrthoView(glm::vec2 center, float zoom, glm::vec2 target_size, glm::vec2 reference_size) {
+  const float safe_zoom = std::clamp(zoom, kOrthoMinZoom, kOrthoMaxZoom);
+  const float height = reference_size.y / safe_zoom;
+  const float target_aspect = target_size.y > 0.0f ? target_size.x / target_size.y : 1.0f;
+  const float width = height * target_aspect;
 
   OrthoView view;
   view.center = center;
-  view.halfExtent = glm::vec2(width * 0.5f, height * 0.5f);
+  view.half_extent = glm::vec2(width * 0.5f, height * 0.5f);
   return view;
 }
 
@@ -71,33 +71,33 @@ inline glm::mat4 MakeOrthoProjection(const OrthoView& view) {
 
 // Device pixels, y down from the top-left of the target: the convention both
 // ImGui draw lists and mouse input use.
-inline glm::vec2 WorldToViewport(const OrthoView& view, glm::vec2 world, glm::vec2 deviceSize) {
+inline glm::vec2 WorldToViewport(const OrthoView& view, glm::vec2 world, glm::vec2 device_size) {
   const glm::vec2 size = view.Size();
   const glm::vec2 min = view.Min();
 
   const float u = size.x > 0.0f ? (world.x - min.x) / size.x : 0.5f;
   const float v = size.y > 0.0f ? (world.y - min.y) / size.y : 0.5f;
 
-  return glm::vec2(u * deviceSize.x, (1.0f - v) * deviceSize.y);
+  return glm::vec2(u * device_size.x, (1.0f - v) * device_size.y);
 }
 
-inline glm::vec2 ViewportToWorld(const OrthoView& view, glm::vec2 pixel, glm::vec2 deviceSize) {
+inline glm::vec2 ViewportToWorld(const OrthoView& view, glm::vec2 pixel, glm::vec2 device_size) {
   const glm::vec2 size = view.Size();
   const glm::vec2 min = view.Min();
 
-  const float u = deviceSize.x > 0.0f ? pixel.x / deviceSize.x : 0.5f;
-  const float v = deviceSize.y > 0.0f ? 1.0f - (pixel.y / deviceSize.y) : 0.5f;
+  const float u = device_size.x > 0.0f ? pixel.x / device_size.x : 0.5f;
+  const float v = device_size.y > 0.0f ? 1.0f - (pixel.y / device_size.y) : 0.5f;
 
   return glm::vec2(min.x + u * size.x, min.y + v * size.y);
 }
 
 // Centres the view on the bounds and grows it until they fit, keeping the
 // target's aspect ratio. padding is a fraction of the fitted half extent.
-inline OrthoView FitToBounds(const OrthoView& view, const Bounds2D& worldBounds, float padding) {
+inline OrthoView FitToBounds(const OrthoView& view, const Bounds2D& world_bounds, float padding) {
   // A point (or an empty selection) would otherwise give a zero-sized view
   // and an infinite zoom. The caller clamps the zoom; this only has to
   // avoid the division.
-  glm::vec2 half = glm::max(worldBounds.Size() * 0.5f, glm::vec2(1e-4f));
+  glm::vec2 half = glm::max(world_bounds.Size() * 0.5f, glm::vec2(1e-4f));
 
   const float aspect = view.Aspect();
   if (half.x > half.y * aspect) {
@@ -107,23 +107,23 @@ inline OrthoView FitToBounds(const OrthoView& view, const Bounds2D& worldBounds,
   }
 
   OrthoView fitted = view;
-  fitted.center = worldBounds.Center();
-  fitted.halfExtent = half * (1.0f + std::max(padding, 0.0f));
+  fitted.center = world_bounds.Center();
+  fitted.half_extent = half * (1.0f + std::max(padding, 0.0f));
   return fitted;
 }
 
 // The smallest "nice" step -- 1, 2, 5, 10, 20, 50, ... -- that still leaves
 // at least minPixels between grid lines. Monotonic in worldPerPixel, so
 // zooming out never makes the grid finer.
-inline float NiceStep(float worldPerPixel, float minPixels) {
-  const float minWorld = worldPerPixel * minPixels;
-  if (!(minWorld > 0.0f)) {
+inline float NiceStep(float world_per_pixel, float min_pixels) {
+  const float min_world = world_per_pixel * min_pixels;
+  if (!(min_world > 0.0f)) {
     return 1.0f;
   }
 
-  const float exponent = std::floor(std::log10(minWorld));
+  const float exponent = std::floor(std::log10(min_world));
   const float base = std::pow(10.0f, exponent);
-  const float mantissa = minWorld / base;
+  const float mantissa = min_world / base;
 
   float nice = 10.0f;
   if (mantissa <= 1.0f) {
@@ -146,9 +146,9 @@ inline constexpr float kMaxGridStep = 1.0e7f;
 // leaves at least minPixels between lines. Doubling rather than jumping to a
 // nice number keeps every line on a multiple of base -- the lattice snapping
 // uses. A grid you can see and a grid you snap to have to be the same grid.
-inline float GridStep(float base, float worldPerPixel, float minPixels) {
+inline float GridStep(float base, float world_per_pixel, float min_pixels) {
   float step = base > 0.0f ? base : 1.0f;
-  const float minimum = NiceStep(worldPerPixel, minPixels);
+  const float minimum = NiceStep(world_per_pixel, min_pixels);
 
   while (step < minimum && step < kMaxGridStep) {
     step *= 2.0f;
@@ -161,28 +161,29 @@ inline float GridStep(float base, float worldPerPixel, float minPixels) {
 // applied to the (+-halfExtent, 0) corners, so a box that matches what is on
 // screen is a rotated, non-uniformly scaled rectangle -- never an
 // axis-aligned one.
-inline std::array<glm::vec2, 4> OrientedBoxCorners(glm::vec2 center, float rotationDegrees, glm::vec2 halfExtent) {
-  const float radians = glm::radians(rotationDegrees);
+inline std::array<glm::vec2, 4> OrientedBoxCorners(glm::vec2 center, float rotation_degrees, glm::vec2 half_extent) {
+  const float radians = glm::radians(rotation_degrees);
   const float c = std::cos(radians);
   const float s = std::sin(radians);
 
-  const glm::vec2 alongX{c * halfExtent.x, s * halfExtent.x};
-  const glm::vec2 alongY{-s * halfExtent.y, c * halfExtent.y};
+  const glm::vec2 along_x{c * half_extent.x, s * half_extent.x};
+  const glm::vec2 along_y{-s * half_extent.y, c * half_extent.y};
 
-  return {center - alongX - alongY, center + alongX - alongY, center + alongX + alongY, center - alongX + alongY};
+  return {center - along_x - along_y, center + along_x - along_y, center + along_x + along_y,
+          center - along_x + along_y};
 }
 
-inline bool PointInOrientedBox(glm::vec2 point, glm::vec2 center, float rotationDegrees, glm::vec2 halfExtent) {
+inline bool PointInOrientedBox(glm::vec2 point, glm::vec2 center, float rotation_degrees, glm::vec2 half_extent) {
   const glm::vec2 delta = point - center;
 
   // Rotate the point into the box's own frame rather than rotating the
   // box: same test, four fewer sin/cos.
-  const float radians = glm::radians(-rotationDegrees);
+  const float radians = glm::radians(-rotation_degrees);
   const float c = std::cos(radians);
   const float s = std::sin(radians);
   const glm::vec2 local{delta.x * c - delta.y * s, delta.x * s + delta.y * c};
 
-  return std::abs(local.x) <= halfExtent.x && std::abs(local.y) <= halfExtent.y;
+  return std::abs(local.x) <= half_extent.x && std::abs(local.y) <= half_extent.y;
 }
 
 // The axis-aligned box around four corners. A rotated entity draws as a

@@ -14,7 +14,7 @@ class Rigidbody {
 
   inline float* GetDensity() { return &m_density; }
   inline float* GetFriction() { return &m_friction; }
-  inline b2BodyType* GetBodyType() { return &m_bodyType; }
+  inline b2BodyType* GetBodyType() { return &m_body_type; }
 
  private:
   b2Body* m_body;
@@ -23,5 +23,5 @@ class Rigidbody {
   glm::vec2 m_position{0.f, 0.f};
   glm::vec2 m_size{0.f, 0.f};
 
-  b2BodyType m_bodyType{b2_staticBody};
+  b2BodyType m_body_type{b2_staticBody};
 };

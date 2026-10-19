@@ -1,3 +1,3 @@
 #include "EventManager.hpp"
 
-entt::Dispatcher EventManager::eventDispatcher;
+entt::Dispatcher EventManager::event_dispatcher;

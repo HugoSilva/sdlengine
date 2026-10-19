@@ -25,10 +25,10 @@ class DebugPanel : public EditorPanel {
     }
 
     rse::Renderer2D* renderer = Core::GetRenderer();
-    float* clearColor = renderer != nullptr ? renderer->GetClearColor() : nullptr;
+    float* clear_color = renderer != nullptr ? renderer->GetClearColor() : nullptr;
 
-    if (clearColor != nullptr) {
-      ImGui::ColorEdit4("Clear Color", clearColor);
+    if (clear_color != nullptr) {
+      ImGui::ColorEdit4("Clear Color", clear_color);
     } else {
       ImGui::TextDisabled("The active renderer exposes no clear colour.");
     }

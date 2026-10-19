@@ -24,26 +24,26 @@ using namespace rse;
 class ECSManagerProjectIo : public ::testing::Test {
  protected:
   void SetUp() override {
-    m_PreviousDirectory = std::filesystem::current_path();
-    m_Directory = std::filesystem::temp_directory_path() / "rse_project_io_test";
+    m_previous_directory = std::filesystem::current_path();
+    m_directory = std::filesystem::temp_directory_path() / "rse_project_io_test";
 
-    std::filesystem::remove_all(m_Directory);
-    std::filesystem::create_directories(m_Directory);
-    std::filesystem::current_path(m_Directory);
+    std::filesystem::remove_all(m_directory);
+    std::filesystem::create_directories(m_directory);
+    std::filesystem::current_path(m_directory);
   }
 
   void TearDown() override {
-    std::filesystem::current_path(m_PreviousDirectory);
-    std::filesystem::remove_all(m_Directory);
+    std::filesystem::current_path(m_previous_directory);
+    std::filesystem::remove_all(m_directory);
   }
 
   void WriteProjectFile(const std::string& contents) const {
-    std::ofstream projectFile{"project.xml"};
-    projectFile << contents;
+    std::ofstream project_file{"project.xml"};
+    project_file << contents;
   }
 
-  std::filesystem::path m_PreviousDirectory;
-  std::filesystem::path m_Directory;
+  std::filesystem::path m_previous_directory;
+  std::filesystem::path m_directory;
 };
 
 TEST_F(ECSManagerProjectIo, LoadWithoutAProjectFileReportsFailure) {

@@ -26,17 +26,17 @@ class ContentBrowserPanel : public EditorPanel {
  public:
   ContentBrowserPanel() {
     std::error_code error;
-    m_Root = std::filesystem::current_path(error);
+    m_root = std::filesystem::current_path(error);
     if (error) {
-      m_Root = std::filesystem::path{"."};
+      m_root = std::filesystem::path{"."};
     }
 
     // Assets are where you usually want to start, so open there when it
     // exists and fall back to the root.
-    m_Directory = m_Root;
-    const std::filesystem::path resources = m_Root / "Resources";
+    m_directory = m_root;
+    const std::filesystem::path resources = m_root / "Resources";
     if (std::filesystem::is_directory(resources, error)) {
-      m_Directory = resources;
+      m_directory = resources;
     }
 
     Refresh();
@@ -61,29 +61,29 @@ class ContentBrowserPanel : public EditorPanel {
 
  private:
   void Refresh() {
-    m_Entries.clear();
-    m_Selected = -1;
+    m_entries.clear();
+    m_selected = -1;
 
     std::error_code error;
-    std::filesystem::directory_iterator iterator{m_Directory, error};
+    std::filesystem::directory_iterator iterator{m_directory, error};
     if (error) {
-      Logger::Error("Cannot list " + m_Directory.string() + ": " + error.message());
+      Logger::Error("Cannot list " + m_directory.string() + ": " + error.message());
       return;
     }
 
     for (const std::filesystem::directory_entry& entry : iterator) {
-      m_Entries.push_back(entry.path());
+      m_entries.push_back(entry.path());
     }
 
     // Folders first, then names, case-insensitively: what a file browser is
     // expected to look like.
-    std::sort(m_Entries.begin(), m_Entries.end(), [](const std::filesystem::path& a, const std::filesystem::path& b) {
-      std::error_code aError, bError;
-      const bool aIsDirectory = std::filesystem::is_directory(a, aError);
-      const bool bIsDirectory = std::filesystem::is_directory(b, bError);
+    std::sort(m_entries.begin(), m_entries.end(), [](const std::filesystem::path& a, const std::filesystem::path& b) {
+      std::error_code a_error, b_error;
+      const bool a_is_directory = std::filesystem::is_directory(a, a_error);
+      const bool b_is_directory = std::filesystem::is_directory(b, b_error);
 
-      if (aIsDirectory != bIsDirectory) {
-        return aIsDirectory;
+      if (a_is_directory != b_is_directory) {
+        return a_is_directory;
       }
 
       return ToLower(a.filename().string()) < ToLower(b.filename().string());
@@ -96,16 +96,16 @@ class ContentBrowserPanel : public EditorPanel {
       return;
     }
 
-    m_Directory = directory;
+    m_directory = directory;
     Refresh();
   }
 
   void DrawToolbar() {
-    const bool atRoot = m_Directory == m_Root;
+    const bool at_root = m_directory == m_root;
 
-    ImGui::BeginDisabled(atRoot);
+    ImGui::BeginDisabled(at_root);
     if (ImGui::Button("Up")) {
-      Navigate(m_Directory.parent_path());
+      Navigate(m_directory.parent_path());
     }
     ImGui::EndDisabled();
 
@@ -117,45 +117,45 @@ class ContentBrowserPanel : public EditorPanel {
     // Relative to the root, so the line stays short enough to read in a
     // narrow column. The root itself has no name to show.
     std::error_code error;
-    const std::filesystem::path relative = std::filesystem::relative(m_Directory, m_Root, error);
-    const std::string relativeName = relative.generic_string();
+    const std::filesystem::path relative = std::filesystem::relative(m_directory, m_root, error);
+    const std::string relative_name = relative.generic_string();
     const std::string label =
-        error || relativeName.empty() || relativeName == "." ? std::string("/") : "/" + relativeName;
+        error || relative_name.empty() || relative_name == "." ? std::string("/") : "/" + relative_name;
     ImGui::TextDisabled("%s", label.c_str());
   }
 
   void DrawEntryList() {
     // The listing takes most of the column; the rest is for the preview.
-    const float listHeight = ImGui::GetContentRegionAvail().y * 0.62f;
+    const float list_height = ImGui::GetContentRegionAvail().y * 0.62f;
 
-    if (!ImGui::BeginChild("##content_entries", ImVec2(0.0f, listHeight), ImGuiChildFlags_Borders,
+    if (!ImGui::BeginChild("##content_entries", ImVec2(0.0f, list_height), ImGuiChildFlags_Borders,
                            ImGuiWindowFlags_HorizontalScrollbar)) {
       ImGui::EndChild();
       return;
     }
 
-    for (int index = 0; index < static_cast<int>(m_Entries.size()); ++index) {
-      const std::filesystem::path& path = m_Entries[index];
+    for (int index = 0; index < static_cast<int>(m_entries.size()); ++index) {
+      const std::filesystem::path& path = m_entries[index];
 
       std::error_code error;
-      const bool isDirectory = std::filesystem::is_directory(path, error);
+      const bool is_directory = std::filesystem::is_directory(path, error);
       const std::string name = path.filename().string();
-      const std::string label = isDirectory ? name + "/" : name;
+      const std::string label = is_directory ? name + "/" : name;
 
-      if (isDirectory) {
+      if (is_directory) {
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.62f, 0.80f, 0.98f, 1.0f));
       }
 
-      const bool clicked = ImGui::Selectable(label.c_str(), index == m_Selected, ImGuiSelectableFlags_AllowDoubleClick);
+      const bool clicked = ImGui::Selectable(label.c_str(), index == m_selected, ImGuiSelectableFlags_AllowDoubleClick);
 
-      if (isDirectory) {
+      if (is_directory) {
         ImGui::PopStyleColor();
       }
 
       if (clicked) {
-        m_Selected = index;
+        m_selected = index;
 
-        if (isDirectory && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+        if (is_directory && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
           // Copied because navigate() refreshes the listing this
           // element lives in.
           const std::filesystem::path target = path;
@@ -166,7 +166,7 @@ class ContentBrowserPanel : public EditorPanel {
       }
     }
 
-    if (m_Entries.empty()) {
+    if (m_entries.empty()) {
       ImGui::TextDisabled("(empty)");
     }
 
@@ -176,19 +176,19 @@ class ContentBrowserPanel : public EditorPanel {
   void DrawDetails() {
     ImGui::Separator();
 
-    if (m_Selected < 0 || m_Selected >= static_cast<int>(m_Entries.size())) {
+    if (m_selected < 0 || m_selected >= static_cast<int>(m_entries.size())) {
       ImGui::TextDisabled("Select a file to preview it.");
       return;
     }
 
-    const std::filesystem::path& path = m_Entries[m_Selected];
+    const std::filesystem::path& path = m_entries[m_selected];
 
     std::error_code error;
-    const bool isDirectory = std::filesystem::is_directory(path, error);
+    const bool is_directory = std::filesystem::is_directory(path, error);
 
     ImGui::TextUnformatted(path.filename().string().c_str());
 
-    if (isDirectory) {
+    if (is_directory) {
       ImGui::TextDisabled("folder");
       return;
     }
@@ -227,14 +227,14 @@ class ContentBrowserPanel : public EditorPanel {
   rse::Texture* PreviewFor(const std::filesystem::path& path) {
     const std::string key = path.string();
 
-    const std::map<std::string, std::unique_ptr<rse::Texture>>::iterator found = m_Previews.find(key);
-    if (found != m_Previews.end()) {
+    const std::map<std::string, std::unique_ptr<rse::Texture>>::iterator found = m_previews.find(key);
+    if (found != m_previews.end()) {
       return found->second.get();
     }
 
     std::unique_ptr<rse::Texture> preview = std::make_unique<rse::Texture>(key, key);
     rse::Texture* raw = preview.get();
-    m_Previews.emplace(key, std::move(preview));
+    m_previews.emplace(key, std::move(preview));
 
     if (raw->GetWidth() == 0 || raw->GetHeight() == 0) {
       Logger::Warning("Could not preview " + key);
@@ -276,9 +276,9 @@ class ContentBrowserPanel : public EditorPanel {
     return value;
   }
 
-  std::filesystem::path m_Root;
-  std::filesystem::path m_Directory;
-  std::vector<std::filesystem::path> m_Entries;
-  std::map<std::string, std::unique_ptr<rse::Texture>> m_Previews;
-  int m_Selected{-1};
+  std::filesystem::path m_root;
+  std::filesystem::path m_directory;
+  std::vector<std::filesystem::path> m_entries;
+  std::map<std::string, std::unique_ptr<rse::Texture>> m_previews;
+  int m_selected{-1};
 };

@@ -30,12 +30,12 @@ class GridRenderer {
   struct Colors {
     unsigned int minor{rse::MakeColor(150, 150, 150, 40)};
     unsigned int major{rse::MakeColor(160, 160, 160, 90)};
-    unsigned int axisX{rse::MakeColor(200, 60, 60, 190)};  // the line y = 0
-    unsigned int axisY{rse::MakeColor(80, 200, 80, 190)};  // the line x = 0
+    unsigned int axis_x{rse::MakeColor(200, 60, 60, 190)};  // the line y = 0
+    unsigned int axis_y{rse::MakeColor(80, 200, 80, 190)};  // the line x = 0
   };
 
-  const Colors& GetColors() const { return m_Colors; }
-  Colors& GetColors() { return m_Colors; }
+  const Colors& GetColors() const { return m_colors; }
+  Colors& GetColors() { return m_colors; }
 
   // The minimum spacing the *drawn* step is allowed to fall to, in device
   // pixels. Below this the grid reads as a solid sheet.
@@ -51,45 +51,45 @@ class GridRenderer {
     }
 
     const rse::OrthoView& view = camera.GetView();
-    const float worldPerPixel = camera.GetWorldPerDevicePixel();
+    const float world_per_pixel = camera.GetWorldPerDevicePixel();
 
-    if (!(worldPerPixel > 0.0f)) {
+    if (!(world_per_pixel > 0.0f)) {
       return;
     }
 
-    const float step = rse::GridStep(settings.base, worldPerPixel, kMinLineSpacing);
-    const float half = worldPerPixel * 0.5f;
+    const float step = rse::GridStep(settings.base, world_per_pixel, kMinLineSpacing);
+    const float half = world_per_pixel * 0.5f;
 
     // Every column before every row: the two sets overlap at the
     // intersections and blending the same alpha twice there is visible, so it
     // is better that it happens uniformly.
-    const int firstX = static_cast<int>(std::floor(view.Min().x / step));
-    const int lastX = static_cast<int>(std::ceil(view.Max().x / step));
-    if (lastX - firstX <= kMaxLines) {
-      for (int i = firstX; i <= lastX; ++i) {
+    const int first_x = static_cast<int>(std::floor(view.Min().x / step));
+    const int last_x = static_cast<int>(std::ceil(view.Max().x / step));
+    if (last_x - first_x <= kMaxLines) {
+      for (int i = first_x; i <= last_x; ++i) {
         if (i == 0) {
           continue;  // the axis goes on top, below
         }
-        SubmitVertical(renderer, view, static_cast<float>(i) * step, half, worldPerPixel,
-                       (i % kMajorEvery == 0) ? m_Colors.major : m_Colors.minor);
+        SubmitVertical(renderer, view, static_cast<float>(i) * step, half, world_per_pixel,
+                       (i % kMajorEvery == 0) ? m_colors.major : m_colors.minor);
       }
     }
 
-    const int firstY = static_cast<int>(std::floor(view.Min().y / step));
-    const int lastY = static_cast<int>(std::ceil(view.Max().y / step));
-    if (lastY - firstY <= kMaxLines) {
-      for (int i = firstY; i <= lastY; ++i) {
+    const int first_y = static_cast<int>(std::floor(view.Min().y / step));
+    const int last_y = static_cast<int>(std::ceil(view.Max().y / step));
+    if (last_y - first_y <= kMaxLines) {
+      for (int i = first_y; i <= last_y; ++i) {
         if (i == 0) {
           continue;
         }
-        SubmitHorizontal(renderer, view, static_cast<float>(i) * step, half, worldPerPixel,
-                         (i % kMajorEvery == 0) ? m_Colors.major : m_Colors.minor);
+        SubmitHorizontal(renderer, view, static_cast<float>(i) * step, half, world_per_pixel,
+                         (i % kMajorEvery == 0) ? m_colors.major : m_colors.minor);
       }
     }
 
     // The world axes, last so they sit on top of the rest of the grid.
-    SubmitVertical(renderer, view, 0.0f, half, worldPerPixel, m_Colors.axisY);
-    SubmitHorizontal(renderer, view, 0.0f, half, worldPerPixel, m_Colors.axisX);
+    SubmitVertical(renderer, view, 0.0f, half, world_per_pixel, m_colors.axis_y);
+    SubmitHorizontal(renderer, view, 0.0f, half, world_per_pixel, m_colors.axis_x);
   }
 
  private:
@@ -99,25 +99,25 @@ class GridRenderer {
 
   // Snaps a world coordinate to the nearest whole device pixel, so a one pixel
   // wide quad covers exactly one pixel instead of straddling two.
-  static float AlignToPixel(float world, float viewMin, float worldPerPixel) {
-    return viewMin + std::round((world - viewMin) / worldPerPixel) * worldPerPixel;
+  static float AlignToPixel(float world, float view_min, float world_per_pixel) {
+    return view_min + std::round((world - view_min) / world_per_pixel) * world_per_pixel;
   }
 
-  static void SubmitVertical(rse::Renderer2D* renderer, const rse::OrthoView& view, float worldX, float half,
-                             float worldPerPixel, unsigned int color) {
+  static void SubmitVertical(rse::Renderer2D* renderer, const rse::OrthoView& view, float world_x, float half,
+                             float world_per_pixel, unsigned int color) {
     TransformComponent transform;
-    transform.position = glm::vec3(AlignToPixel(worldX, view.Min().x, worldPerPixel), view.center.y, 0.0f);
+    transform.position = glm::vec3(AlignToPixel(world_x, view.Min().x, world_per_pixel), view.center.y, 0.0f);
 
-    renderer->SubmitQuad(transform, glm::vec2(half, view.halfExtent.y), color);
+    renderer->SubmitQuad(transform, glm::vec2(half, view.half_extent.y), color);
   }
 
-  static void SubmitHorizontal(rse::Renderer2D* renderer, const rse::OrthoView& view, float worldY, float half,
-                               float worldPerPixel, unsigned int color) {
+  static void SubmitHorizontal(rse::Renderer2D* renderer, const rse::OrthoView& view, float world_y, float half,
+                               float world_per_pixel, unsigned int color) {
     TransformComponent transform;
-    transform.position = glm::vec3(view.center.x, AlignToPixel(worldY, view.Min().y, worldPerPixel), 0.0f);
+    transform.position = glm::vec3(view.center.x, AlignToPixel(world_y, view.Min().y, world_per_pixel), 0.0f);
 
-    renderer->SubmitQuad(transform, glm::vec2(view.halfExtent.x, half), color);
+    renderer->SubmitQuad(transform, glm::vec2(view.half_extent.x, half), color);
   }
 
-  Colors m_Colors;
+  Colors m_colors;
 };

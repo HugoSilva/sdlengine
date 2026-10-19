@@ -12,8 +12,8 @@ class Window {
 
   bool Init();
   bool GetRunning();
-  SDL_Window* GetWindow() { return m_Window; };
-  SDL_GLContext GetContext() { return m_Context; };
+  SDL_Window* GetWindow() { return m_window; };
+  SDL_GLContext GetContext() { return m_context; };
 
   // Makes the window's back buffer the render target again and resets the
   // GL viewport to the current pixel size (the window may have been
@@ -21,11 +21,11 @@ class Window {
   void BindDefaultFramebuffer();
 
  private:
-  SDL_Event m_WindowEvent;
-  SDL_Window* m_Window;
-  SDL_GLContext m_Context;
+  SDL_Event m_window_event;
+  SDL_Window* m_window;
+  SDL_GLContext m_context;
 
-  const char* m_Title;
-  int m_Width, m_Height;
+  const char* m_title;
+  int m_width, m_height;
 };
 }  // namespace rse

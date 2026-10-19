@@ -8,17 +8,17 @@
 struct BasicComponent {
   BasicComponent() {};
 
-  BasicComponent(const char* name, bool isStatic, int tag, int layer)
-      : m_Name(name), m_IsStatic(isStatic), m_Tag(tag), m_Layer(layer) {};
+  BasicComponent(const char* name, bool is_static, int tag, int layer)
+      : m_name(name), m_is_static(is_static), m_tag(tag), m_layer(layer) {};
 
-  std::string m_Name{"New Entity"};
-  bool m_IsStatic{false};
-  int m_Tag{0};
-  int m_Layer{0};
+  std::string m_name{"New Entity"};
+  bool m_is_static{false};
+  int m_tag{0};
+  int m_layer{0};
 
   template <typename Archive>
   void serialize(Archive& archive) {
-    archive(cereal::make_nvp("Name", m_Name), cereal::make_nvp("Static", m_IsStatic), cereal::make_nvp("Tag", m_Tag),
-            cereal::make_nvp("Layer", m_Layer));
+    archive(cereal::make_nvp("Name", m_name), cereal::make_nvp("Static", m_is_static), cereal::make_nvp("Tag", m_tag),
+            cereal::make_nvp("Layer", m_layer));
   }
 };

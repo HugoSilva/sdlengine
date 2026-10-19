@@ -12,7 +12,7 @@ class Keyboard {
 
  private:
   static bool s_keys[];
-  static bool s_keysDown[];
-  static bool s_keysUp[];
+  static bool s_keys_down[];
+  static bool s_keys_up[];
 };
 }  // namespace rse

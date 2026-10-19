@@ -26,7 +26,7 @@ TEST(OrthoView, FixedRectangleDistortsASquareTarget) {
   // 1.35x taller than it is wide -- the distortion to keep caught.
   OrthoView legacy;
   legacy.center = kReference * 0.5f;
-  legacy.halfExtent = kReference * 0.5f;
+  legacy.half_extent = kReference * 0.5f;
 
   const glm::vec2 min = WorldToViewport(legacy, glm::vec2(-50.0f, -50.0f), kDockedTarget);
   const glm::vec2 max = WorldToViewport(legacy, glm::vec2(50.0f, 50.0f), kDockedTarget);
@@ -102,13 +102,13 @@ TEST(OrthoView, ScreenAndWorldRoundTrip) {
 TEST(OrthoView, ViewportCoordinatesAreYDownFromTheTopLeft) {
   const OrthoView view = MakeOrthoView(glm::vec2(0.0f), 1.0f, kDockedTarget, kReference);
 
-  const glm::vec2 bottomLeft = WorldToViewport(view, view.Min(), kDockedTarget);
-  const glm::vec2 topRight = WorldToViewport(view, view.Max(), kDockedTarget);
+  const glm::vec2 bottom_left = WorldToViewport(view, view.Min(), kDockedTarget);
+  const glm::vec2 top_right = WorldToViewport(view, view.Max(), kDockedTarget);
 
-  EXPECT_NEAR(bottomLeft.x, 0.0f, 0.0001f);
-  EXPECT_NEAR(bottomLeft.y, kDockedTarget.y, 0.0001f);
-  EXPECT_NEAR(topRight.x, kDockedTarget.x, 0.0001f);
-  EXPECT_NEAR(topRight.y, 0.0f, 0.0001f);
+  EXPECT_NEAR(bottom_left.x, 0.0f, 0.0001f);
+  EXPECT_NEAR(bottom_left.y, kDockedTarget.y, 0.0001f);
+  EXPECT_NEAR(top_right.x, kDockedTarget.x, 0.0001f);
+  EXPECT_NEAR(top_right.y, 0.0f, 0.0001f);
 }
 
 TEST(OrthoView, FitToBoundsCentresAndLeavesPadding) {
@@ -124,9 +124,9 @@ TEST(OrthoView, FitToBoundsCentresAndLeavesPadding) {
   EXPECT_FLOAT_EQ(fitted.center.y, 50.0f);
 
   // The bounds are 80 tall, so 40 half extent plus half again as padding.
-  EXPECT_NEAR(fitted.halfExtent.y, 60.0f, 0.0001f);
+  EXPECT_NEAR(fitted.half_extent.y, 60.0f, 0.0001f);
   EXPECT_NEAR(fitted.Aspect(), view.Aspect(), 0.0001f);
-  EXPECT_GE(fitted.halfExtent.x, 40.0f);
+  EXPECT_GE(fitted.half_extent.x, 40.0f);
 }
 
 TEST(OrthoView, FitToBoundsSurvivesADegenerateSelection) {
@@ -138,9 +138,9 @@ TEST(OrthoView, FitToBoundsSurvivesADegenerateSelection) {
 
   const OrthoView fitted = FitToBounds(view, point, 0.1f);
 
-  EXPECT_TRUE(std::isfinite(fitted.halfExtent.x));
-  EXPECT_TRUE(std::isfinite(fitted.halfExtent.y));
-  EXPECT_GT(fitted.halfExtent.x, 0.0f);
+  EXPECT_TRUE(std::isfinite(fitted.half_extent.x));
+  EXPECT_TRUE(std::isfinite(fitted.half_extent.y));
+  EXPECT_GT(fitted.half_extent.x, 0.0f);
   EXPECT_FLOAT_EQ(fitted.center.x, 7.0f);
   EXPECT_FLOAT_EQ(fitted.center.y, -3.0f);
 }
@@ -148,15 +148,15 @@ TEST(OrthoView, FitToBoundsSurvivesADegenerateSelection) {
 TEST(OrthoView, NiceStepKeepsTheSpacingAboveTheMinimum) {
   float previous = 0.0f;
 
-  for (float worldPerPixel = 0.01f; worldPerPixel < 100.0f; worldPerPixel *= 1.1f) {
-    const float step = NiceStep(worldPerPixel, 12.0f);
+  for (float world_per_pixel = 0.01f; world_per_pixel < 100.0f; world_per_pixel *= 1.1f) {
+    const float step = NiceStep(world_per_pixel, 12.0f);
 
-    EXPECT_GE(step / worldPerPixel, 12.0f);
+    EXPECT_GE(step / world_per_pixel, 12.0f);
     EXPECT_GE(step, previous);
     previous = step;
 
     // Never more than 10x coarser than it had to be.
-    EXPECT_LE(step / worldPerPixel, 120.0f);
+    EXPECT_LE(step / world_per_pixel, 120.0f);
   }
 }
 
@@ -169,8 +169,8 @@ TEST(OrthoView, NiceStepUsesOneTwoFiveDecades) {
 TEST(OrthoView, GridStepStaysOnTheBaseLattice) {
   const float base = 32.0f;
 
-  for (float worldPerPixel = 0.01f; worldPerPixel < 100.0f; worldPerPixel *= 1.37f) {
-    const float step = GridStep(base, worldPerPixel, 12.0f);
+  for (float world_per_pixel = 0.01f; world_per_pixel < 100.0f; world_per_pixel *= 1.37f) {
+    const float step = GridStep(base, world_per_pixel, 12.0f);
     const float doublings = std::log2(step / base);
 
     // Never finer than one grid square, never anything but a whole
@@ -178,7 +178,7 @@ TEST(OrthoView, GridStepStaysOnTheBaseLattice) {
     // spacing between lines.
     EXPECT_GE(step, base);
     EXPECT_NEAR(doublings, std::round(doublings), 1e-4f);
-    EXPECT_GE(step / worldPerPixel, 12.0f - 1e-3f);
+    EXPECT_GE(step / world_per_pixel, 12.0f - 1e-3f);
   }
 }
 

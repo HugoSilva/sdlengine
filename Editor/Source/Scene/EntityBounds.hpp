@@ -29,8 +29,8 @@
 
 struct EntityBounds {
   glm::vec2 center{0.0f, 0.0f};
-  glm::vec2 halfExtent{0.0f, 0.0f};  // already scaled
-  float rotationDegrees{0.0f};       // transform.rotation.z
+  glm::vec2 half_extent{0.0f, 0.0f};  // already scaled
+  float rotation_degrees{0.0f};       // transform.rotation.z
 };
 
 namespace editor_bounds {
@@ -52,14 +52,14 @@ inline std::optional<EntityBounds> OfEntity(uint32_t entity) {
   TransformComponent& transform = rse::ECSManager::GetComponent<TransformComponent>(entity);
   SpriteComponent& sprite = rse::ECSManager::GetComponent<SpriteComponent>(entity);
 
-  if (sprite.m_Sprite == nullptr) {
+  if (sprite.m_sprite == nullptr) {
     return std::nullopt;
   }
 
   EntityBounds bounds;
   bounds.center = glm::vec2(transform.position.x, transform.position.y);
-  bounds.rotationDegrees = transform.rotation.z;
-  bounds.halfExtent = sprite.m_Sprite->GetSize() * glm::vec2(transform.scale.x, transform.scale.y);
+  bounds.rotation_degrees = transform.rotation.z;
+  bounds.half_extent = sprite.m_sprite->GetSize() * glm::vec2(transform.scale.x, transform.scale.y);
   return bounds;
 }
 
@@ -81,7 +81,7 @@ inline std::optional<glm::vec2> PositionOf(uint32_t entity) {
 
 // The four corners of a bounds, in the order the outline draws them.
 inline std::array<glm::vec2, 4> Corners(const EntityBounds& bounds) {
-  return rse::OrientedBoxCorners(bounds.center, bounds.rotationDegrees, bounds.halfExtent);
+  return rse::OrientedBoxCorners(bounds.center, bounds.rotation_degrees, bounds.half_extent);
 }
 
 // The box around the rotated rectangle: what to frame, not what to draw.

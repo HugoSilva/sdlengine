@@ -20,12 +20,12 @@ class SoundManager {
 
   // SDL3_mixer has no global mixer: the engine owns one and shares it with
   // every Sound/Music instance.
-  static MIX_Mixer* GetMixer() { return s_Mixer; }
+  static MIX_Mixer* GetMixer() { return s_mixer; }
 
  private:
   SoundManager() {}
-  static std::vector<Sound*> s_Sounds;
-  static std::vector<Music*> s_Music;
-  static MIX_Mixer* s_Mixer;
+  static std::vector<Sound*> s_sounds;
+  static std::vector<Music*> s_music;
+  static MIX_Mixer* s_mixer;
 };
 }  // namespace rse

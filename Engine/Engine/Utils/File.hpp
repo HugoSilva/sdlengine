@@ -9,23 +9,23 @@
 class File {
  public:
   static std::string Read(const char* filepath) {
-    std::ifstream inputStream;
+    std::ifstream input_stream;
 
-    inputStream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    input_stream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
     try {
-      inputStream.open(filepath);
+      input_stream.open(filepath);
 
-      std::stringstream fileStream;
+      std::stringstream file_stream;
 
-      fileStream << inputStream.rdbuf();
+      file_stream << input_stream.rdbuf();
 
-      inputStream.close();
+      input_stream.close();
 
-      return fileStream.str();
+      return file_stream.str();
     } catch (std::ifstream::failure e) {
-      std::string failedFile(filepath);
-      Logger::Error("Failed to read file: " + failedFile);
+      std::string failed_file(filepath);
+      Logger::Error("Failed to read file: " + failed_file);
       return "";
     }
   }

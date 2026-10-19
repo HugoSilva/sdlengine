@@ -7,8 +7,8 @@
 
 #if _WIN32
 extern "C" {
-_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
-__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+_declspec(dllexport) DWORD nv_optimus_enablement = 0x00000001;
+__declspec(dllexport) int amd_power_xpress_request_high_performance = 1;
 }
 #endif
 
@@ -19,7 +19,7 @@ class Game : public Core {
   ~Game() {}
 
   void Init() override {
-    m_Window = createWindow("RockSlide Engine", 1280, 720);
+    m_window = createWindow("RockSlide Engine", 1280, 720);
 
     SceneManager::Add(new SetupView("Setup", Core::GetWindow()->GetWindow()));
 
@@ -37,7 +37,7 @@ class Game : public Core {
   rse::Framebuffer* GetSceneTarget() override { return EditorManager::GetSceneTarget(); }
 
  private:
-  rse::Window* m_Window;
+  rse::Window* m_window;
 };
 
 int main(int argc, char** argv) {

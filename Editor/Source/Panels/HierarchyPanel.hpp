@@ -39,7 +39,7 @@ class HierarchyPanel : public EditorPanel {
     }
 
     ImGui::SameLine();
-    m_Filter.Draw("##hierarchy_filter", -1.0f);
+    m_filter.Draw("##hierarchy_filter", -1.0f);
   }
 
   void DrawEntityList() {
@@ -54,35 +54,35 @@ class HierarchyPanel : public EditorPanel {
     const uint32_t selected = EditorManager::GetSelectedEntity();
 
     uint32_t clicked = INVALID_ENTITY_ID;
-    uint32_t toDestroy = INVALID_ENTITY_ID;
+    uint32_t to_destroy = INVALID_ENTITY_ID;
 
     // Counted up front so the toolbar can report it without a second pass.
-    uint32_t visibleCount = 0;
+    uint32_t visible_count = 0;
 
     rse::ECSManager::GetView<BasicComponent>().each([&](auto entity, BasicComponent& basic) {
-      const uint32_t entityId = static_cast<uint32_t>(entity);
+      const uint32_t entity_id = static_cast<uint32_t>(entity);
 
-      if (!m_Filter.PassFilter(basic.m_Name.c_str())) {
+      if (!m_filter.PassFilter(basic.m_name.c_str())) {
         return;
       }
 
-      ++visibleCount;
+      ++visible_count;
 
-      ImGui::PushID(static_cast<int>(entityId));
+      ImGui::PushID(static_cast<int>(entity_id));
 
       ImGuiTreeNodeFlags flags =
           ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanAvailWidth;
 
-      if (entityId == selected) {
+      if (entity_id == selected) {
         flags |= ImGuiTreeNodeFlags_Selected;
       }
 
       // The id is shown next to the name because it is the only way to tell
       // two same-named entities apart while debugging.
-      ImGui::TreeNodeEx("##entity", flags, "%s  (%u)", basic.m_Name.c_str(), entityId);
+      ImGui::TreeNodeEx("##entity", flags, "%s  (%u)", basic.m_name.c_str(), entity_id);
 
       if (ImGui::IsItemClicked()) {
-        clicked = entityId;
+        clicked = entity_id;
       }
 
       // Double-click frames it, the same thing F does in the viewport.
@@ -92,7 +92,7 @@ class HierarchyPanel : public EditorPanel {
 
       if (ImGui::BeginPopupContextItem("##entity_context")) {
         if (ImGui::MenuItem("Delete", "Del")) {
-          toDestroy = entityId;
+          to_destroy = entity_id;
         }
         ImGui::EndPopup();
       }
@@ -104,7 +104,7 @@ class HierarchyPanel : public EditorPanel {
     const ImGuiIO& io = ImGui::GetIO();
     if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && !io.WantTextInput &&
         ImGui::IsKeyPressed(ImGuiKey_Delete)) {
-      toDestroy = selected;
+      to_destroy = selected;
     }
 
     // Enter a context menu target into the selection so the inspector follows
@@ -113,16 +113,16 @@ class HierarchyPanel : public EditorPanel {
       EventManager::GetEventDispatcher()->trigger<EditorManager::SelectEntity>(clicked);
     }
 
-    if (toDestroy != INVALID_ENTITY_ID) {
-      EventManager::GetEventDispatcher()->trigger<EditorManager::DestroyEntity>(toDestroy);
+    if (to_destroy != INVALID_ENTITY_ID) {
+      EventManager::GetEventDispatcher()->trigger<EditorManager::DestroyEntity>(to_destroy);
     }
 
-    if (visibleCount == 0) {
-      ImGui::TextDisabled("%s", m_Filter.IsActive() ? "No entity matches the filter." : "Scene is empty.");
+    if (visible_count == 0) {
+      ImGui::TextDisabled("%s", m_filter.IsActive() ? "No entity matches the filter." : "Scene is empty.");
     }
 
     ImGui::EndChild();
   }
 
-  ImGuiTextFilter m_Filter;
+  ImGuiTextFilter m_filter;
 };

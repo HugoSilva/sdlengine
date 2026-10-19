@@ -2,25 +2,25 @@
 
 #include "Resource.hpp"
 
-std::vector<Resource*> ResourceManager::s_Resources;
+std::vector<Resource*> ResourceManager::s_resources;
 
 void ResourceManager::Init() {}
 
 void ResourceManager::Add(Resource* resource) {
-  for (std::vector<Resource*>::iterator it = s_Resources.begin(); it != s_Resources.end(); ++it) {
+  for (std::vector<Resource*>::iterator it = s_resources.begin(); it != s_resources.end(); ++it) {
     Resource* res = *it;
     if (res->GetFileName().compare(resource->GetFileName()) == 0) return;
   }
 
-  s_Resources.push_back(resource);
+  s_resources.push_back(resource);
 }
 
 Resource* ResourceManager::Get(const std::string& name) {
-  for (std::vector<Resource*>::iterator it = s_Resources.begin(); it != s_Resources.end(); ++it) {
+  for (std::vector<Resource*>::iterator it = s_resources.begin(); it != s_resources.end(); ++it) {
     Resource* res = *it;
     if (res->GetFileName().compare(name) == 0) return res;
   }
   return nullptr;
 }
 
-void ResourceManager::Clean() { s_Resources.clear(); }
+void ResourceManager::Clean() { s_resources.clear(); }

@@ -17,15 +17,15 @@ class Texture {
   void Bind() const;
   void Unbind() const;
 
-  inline const unsigned int GetId() const { return m_Id; }
-  inline const std::string& GetName() const { return m_Name; }
-  inline const unsigned int GetWidth() const { return m_Width; }
-  inline const unsigned int GetHeight() const { return m_Height; }
+  inline const unsigned int GetId() const { return m_id; }
+  inline const std::string& GetName() const { return m_name; }
+  inline const unsigned int GetWidth() const { return m_width; }
+  inline const unsigned int GetHeight() const { return m_height; }
 
   template <typename Archive>
   void serialize(Archive& archive) {
-    archive(cereal::make_nvp("Id", m_Id), cereal::make_nvp("Name", m_Name), cereal::make_nvp("Filename", m_Filename),
-            cereal::make_nvp("Width", m_Width), cereal::make_nvp("Height", m_Height));
+    archive(cereal::make_nvp("Id", m_id), cereal::make_nvp("Name", m_name), cereal::make_nvp("Filename", m_filename),
+            cereal::make_nvp("Width", m_width), cereal::make_nvp("Height", m_height));
   };
 
   template <typename Archive>
@@ -40,9 +40,9 @@ class Texture {
   };
 
  private:
-  unsigned int m_Id;
-  std::string m_Name;
-  std::string m_Filename;
-  int m_Width = 0, m_Height = 0;
+  unsigned int m_id;
+  std::string m_name;
+  std::string m_filename;
+  int m_width = 0, m_height = 0;
 };
 }  // namespace rse

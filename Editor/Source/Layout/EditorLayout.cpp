@@ -15,7 +15,7 @@ constexpr const char* kDockSpaceId = "RSE_DockSpace";
 constexpr const char* kDockSpaceHost = "###RSE_DockSpaceHost";
 }  // namespace
 
-void EditorLayout::AddPanel(std::unique_ptr<EditorPanel> panel) { m_Panels.push_back(std::move(panel)); }
+void EditorLayout::AddPanel(std::unique_ptr<EditorPanel> panel) { m_panels.push_back(std::move(panel)); }
 
 void EditorLayout::Draw() {
   // The scene target is deliberately *not* reset here. The viewport panel owns
@@ -29,7 +29,7 @@ void EditorLayout::Draw() {
   DrawMenuBar();
   DrawDockSpace();
 
-  for (const std::unique_ptr<EditorPanel>& panel : m_Panels) {
+  for (const std::unique_ptr<EditorPanel>& panel : m_panels) {
     if (panel->visible) {
       panel->Draw();
     }
@@ -76,7 +76,7 @@ void EditorLayout::DrawMenuBar() {
   }
 
   if (ImGui::BeginMenu("View")) {
-    for (const std::unique_ptr<EditorPanel>& panel : m_Panels) {
+    for (const std::unique_ptr<EditorPanel>& panel : m_panels) {
       ImGui::MenuItem(panel->Id(), nullptr, &panel->visible);
     }
     ImGui::Separator();
@@ -120,41 +120,41 @@ void EditorLayout::DrawDockSpace() {
   ImGui::Begin(kDockSpaceHost, nullptr, flags);
   ImGui::PopStyleVar(3);
 
-  const ImGuiID dockspaceId = ImGui::GetID(kDockSpaceId);
+  const ImGuiID dockspace_id = ImGui::GetID(kDockSpaceId);
 
   // An existing dock node means imgui.ini supplied one, so the user's layout
   // is left alone. Only build the default when there is nothing to restore,
   // or when a reset was requested.
-  const bool hasSavedLayout = ImGui::DockBuilderGetNode(dockspaceId) != nullptr;
-  if (m_ResetLayout || (!m_LayoutBuilt && !hasSavedLayout)) {
-    BuildDefaultLayout(dockspaceId);
-    m_ResetLayout = false;
+  const bool has_saved_layout = ImGui::DockBuilderGetNode(dockspace_id) != nullptr;
+  if (m_reset_layout || (!m_layout_built && !has_saved_layout)) {
+    BuildDefaultLayout(dockspace_id);
+    m_reset_layout = false;
   }
-  m_LayoutBuilt = true;
+  m_layout_built = true;
 
-  ImGui::DockSpace(dockspaceId, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+  ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
 
   ImGui::End();
 }
 
-void EditorLayout::BuildDefaultLayout(ImGuiID dockspaceId) {
+void EditorLayout::BuildDefaultLayout(ImGuiID dockspace_id) {
   // Viewport fills the centre, the console spans the bottom, the hierarchy
   // column sits on the left and the inspector hugs the right edge. Which panel
   // asks for which slot is up to the panel (EditorPanel::slot()).
-  bool needsLeft = false;
-  bool needsRight = false;
-  bool needsBottom = false;
+  bool needs_left = false;
+  bool needs_right = false;
+  bool needs_bottom = false;
 
-  for (const std::unique_ptr<EditorPanel>& panel : m_Panels) {
+  for (const std::unique_ptr<EditorPanel>& panel : m_panels) {
     switch (panel->Slot()) {
       case DockSlot::Left:
-        needsLeft = true;
+        needs_left = true;
         break;
       case DockSlot::Right:
-        needsRight = true;
+        needs_right = true;
         break;
       case DockSlot::Bottom:
-        needsBottom = true;
+        needs_bottom = true;
         break;
       case DockSlot::Center:
         break;
@@ -163,28 +163,28 @@ void EditorLayout::BuildDefaultLayout(ImGuiID dockspaceId) {
 
   const ImGuiViewport* viewport = ImGui::GetMainViewport();
 
-  ImGui::DockBuilderRemoveNode(dockspaceId);
-  ImGui::DockBuilderAddNode(dockspaceId, ImGuiDockNodeFlags_DockSpace);
-  ImGui::DockBuilderSetNodeSize(dockspaceId, viewport->WorkSize);
+  ImGui::DockBuilderRemoveNode(dockspace_id);
+  ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
+  ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->WorkSize);
 
-  ImGuiID center = dockspaceId;
+  ImGuiID center = dockspace_id;
   ImGuiID left = 0;
   ImGuiID right = 0;
   ImGuiID bottom = 0;
 
   // The bottom strip is split off first so it spans the full width rather than
   // being boxed into one of the columns.
-  if (needsBottom) {
+  if (needs_bottom) {
     bottom = ImGui::DockBuilderSplitNode(center, ImGuiDir_Down, 0.25f, nullptr, &center);
   }
-  if (needsLeft) {
+  if (needs_left) {
     left = ImGui::DockBuilderSplitNode(center, ImGuiDir_Left, 0.22f, nullptr, &center);
   }
-  if (needsRight) {
+  if (needs_right) {
     right = ImGui::DockBuilderSplitNode(center, ImGuiDir_Right, 0.32f, nullptr, &center);
   }
 
-  for (const std::unique_ptr<EditorPanel>& panel : m_Panels) {
+  for (const std::unique_ptr<EditorPanel>& panel : m_panels) {
     ImGuiID target = center;
 
     switch (panel->Slot()) {
@@ -207,5 +207,5 @@ void EditorLayout::BuildDefaultLayout(ImGuiID dockspaceId) {
     }
   }
 
-  ImGui::DockBuilderFinish(dockspaceId);
+  ImGui::DockBuilderFinish(dockspace_id);
 }

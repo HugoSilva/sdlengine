@@ -11,7 +11,7 @@ class SpriteRenderSystem : public BaseSystem {
   void Update(const float alpha) {
     rse::ECSManager::GetView<TransformComponent, SpriteComponent>().each(
         [&, this](auto entity, TransformComponent& transform, SpriteComponent& sprite) {
-          m_renderer->Submit(transform, sprite.m_Sprite.get());
+          m_renderer->Submit(transform, sprite.m_sprite.get());
         });
   }
 

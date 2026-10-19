@@ -13,11 +13,11 @@ class SceneManager {
   static bool Change(const std::string& name);
   static void Clean();
 
-  static void Update(float deltaTime);
+  static void Update(float delta_time);
   static void Render();
 
  private:
   SceneManager() {}
-  static std::vector<Scene*> m_Scenes;
-  static unsigned int m_ActiveScene;
+  static std::vector<Scene*> m_scenes;
+  static unsigned int m_active_scene;
 };

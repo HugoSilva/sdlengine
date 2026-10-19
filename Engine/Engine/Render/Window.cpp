@@ -10,11 +10,11 @@
 #endif  // EMSCRIPTEN
 
 namespace rse {
-Window::Window(const char* title, int width, int height) : m_Title(title), m_Width(width), m_Height(height) {}
+Window::Window(const char* title, int width, int height) : m_title(title), m_width(width), m_height(height) {}
 
 Window::~Window() {
   // ImGui is owned by rse::ImGuiLayer now (see ImGuiLayer::shutdown()).
-  SDL_DestroyWindow(m_Window);
+  SDL_DestroyWindow(m_window);
   SDL_Quit();
 }
 
@@ -36,15 +36,15 @@ bool Window::Init() {
 
   // SDL3 dropped the x/y window position arguments (SDL_WINDOWPOS_CENTERED);
   // SDL now places the window, or you can SDL_SetWindowPosition() later.
-  m_Window = SDL_CreateWindow(m_Title, m_Width, m_Height,
+  m_window = SDL_CreateWindow(m_title, m_width, m_height,
                               SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
-  if (m_Window == nullptr) {
+  if (m_window == nullptr) {
     Logger::Error(std::string("Failed to create SDL Window: ") + SDL_GetError());
     SDL_Quit();
     return false;
   }
 
-  m_Context = SDL_GL_CreateContext(m_Window);
+  m_context = SDL_GL_CreateContext(m_window);
 
 #ifndef EMSCRIPTEN
   glewExperimental = GL_TRUE;
@@ -60,7 +60,7 @@ bool Window::Init() {
   // TODO Fix this, I had to Disabled VSync to test performance in release mode
   SDL_GL_SetSwapInterval(0);
 
-  glViewport(0, 0, m_Width, m_Height);
+  glViewport(0, 0, m_width, m_height);
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LEQUAL);
 
@@ -89,7 +89,7 @@ bool Window::GetRunning() {
 void Window::BindDefaultFramebuffer() {
   int width = 0;
   int height = 0;
-  SDL_GetWindowSizeInPixels(m_Window, &width, &height);
+  SDL_GetWindowSizeInPixels(m_window, &width, &height);
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glViewport(0, 0, width, height);

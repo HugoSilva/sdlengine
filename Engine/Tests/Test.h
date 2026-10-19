@@ -6,7 +6,7 @@ class Test {
   Test() {}
   virtual ~Test() {}
 
-  virtual void OnUpdate(float deltaTime) {}
+  virtual void OnUpdate(float delta_time) {}
   virtual void OnRender() {}
   virtual void OnImguiRender() {}
 };

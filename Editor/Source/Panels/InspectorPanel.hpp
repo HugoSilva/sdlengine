@@ -71,11 +71,11 @@ class InspectorPanel : public EditorPanel {
     BasicComponent& basic = EditorManager::GetComponent<BasicComponent>();
 
     char name[128] = "";
-    basic.m_Name.copy(name, IM_ARRAYSIZE(name) - 1);
+    basic.m_name.copy(name, IM_ARRAYSIZE(name) - 1);
 
     ImGui::SetNextItemWidth(-1.0f);
     if (ImGui::InputText("##entityName", name, IM_ARRAYSIZE(name))) {
-      basic.m_Name = name;
+      basic.m_name = name;
     }
 
     ImGui::Separator();
@@ -89,9 +89,9 @@ class InspectorPanel : public EditorPanel {
     if (ImGui::CollapsingHeader("Basic", ImGuiTreeNodeFlags_DefaultOpen)) {
       BasicComponent& basic = EditorManager::GetComponent<BasicComponent>();
 
-      bool isStatic = basic.m_IsStatic;
-      if (ImGui::Checkbox("Static", &isStatic)) {
-        basic.m_IsStatic = isStatic;
+      bool is_static = basic.m_is_static;
+      if (ImGui::Checkbox("Static", &is_static)) {
+        basic.m_is_static = is_static;
       }
     }
   }
@@ -117,7 +117,7 @@ class InspectorPanel : public EditorPanel {
 
     if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen)) {
       SpriteComponent& component = EditorManager::GetComponent<SpriteComponent>();
-      rse::Sprite* sprite = component.m_Sprite.get();
+      rse::Sprite* sprite = component.m_sprite.get();
 
       if (sprite == nullptr) {
         ImGui::TextDisabled("No sprite assigned.");
@@ -140,8 +140,8 @@ class InspectorPanel : public EditorPanel {
                            (static_cast<unsigned int>(rgba[3] * 255.0f) << 24));
         }
 
-        const std::string textureName = sprite->GetTextureName();
-        ImGui::LabelText("Texture", "%s", textureName.empty() ? "(none)" : textureName.c_str());
+        const std::string texture_name = sprite->GetTextureName();
+        ImGui::LabelText("Texture", "%s", texture_name.empty() ? "(none)" : texture_name.c_str());
       }
 
       DrawRemoveComponentButton(Components::Sprite, "Remove Sprite");
@@ -155,13 +155,13 @@ class InspectorPanel : public EditorPanel {
 
     if (ImGui::CollapsingHeader("Audio", ImGuiTreeNodeFlags_DefaultOpen)) {
       AudioComponent& component = EditorManager::GetComponent<AudioComponent>();
-      rse::Sound* sound = component.m_Sound.get();
+      rse::Sound* sound = component.m_sound.get();
 
       if (sound == nullptr) {
         ImGui::TextDisabled("No sound assigned.");
       } else {
-        const std::string fileName = sound->GetFileName();
-        ImGui::LabelText("File", "%s", fileName.empty() ? "(none)" : fileName.c_str());
+        const std::string file_name = sound->GetFileName();
+        ImGui::LabelText("File", "%s", file_name.empty() ? "(none)" : file_name.c_str());
 
         ImGui::Checkbox("Mute", sound->GetMute());
         ImGui::Checkbox("Play on play", sound->GetPlayTrigger());
@@ -179,7 +179,7 @@ class InspectorPanel : public EditorPanel {
 
     if (ImGui::CollapsingHeader("Rigidbody", ImGuiTreeNodeFlags_DefaultOpen)) {
       RigidBodyComponent& component = EditorManager::GetComponent<RigidBodyComponent>();
-      Rigidbody* rigidbody = component.m_Rigidbody.get();
+      Rigidbody* rigidbody = component.m_rigidbody.get();
 
       if (rigidbody == nullptr) {
         ImGui::TextDisabled("No rigidbody assigned.");
@@ -190,11 +190,11 @@ class InspectorPanel : public EditorPanel {
         // Combo wants an int, so convert instead of aliasing the enum
         // pointer as an int pointer.
         static const char* items[] = {"b2_staticBody", "b2_kinematicBody", "b2_dynamicBody"};
-        b2BodyType* bodyType = rigidbody->GetBodyType();
-        int type = static_cast<int>(*bodyType);
+        b2BodyType* body_type = rigidbody->GetBodyType();
+        int type = static_cast<int>(*body_type);
 
         if (ImGui::Combo("Body Type", &type, items, IM_ARRAYSIZE(items))) {
-          *bodyType = static_cast<b2BodyType>(type);
+          *body_type = static_cast<b2BodyType>(type);
         }
       }
 

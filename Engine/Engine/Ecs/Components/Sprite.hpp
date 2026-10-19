@@ -8,12 +8,12 @@
 struct SpriteComponent {
   SpriteComponent() {};
 
-  SpriteComponent(rse::Sprite* sprite) : m_Sprite(sprite) {};
+  SpriteComponent(rse::Sprite* sprite) : m_sprite(sprite) {};
 
-  std::shared_ptr<rse::Sprite> m_Sprite;
+  std::shared_ptr<rse::Sprite> m_sprite;
 
   template <typename Archive>
   void serialize(Archive& archive) {
-    archive(cereal::make_nvp("Sprite", m_Sprite));
+    archive(cereal::make_nvp("Sprite", m_sprite));
   }
 };

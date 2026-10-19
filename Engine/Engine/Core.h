@@ -47,9 +47,9 @@
 class Core {
  public:
   void Start();
-  static bool GetRunning() { return m_Running; }
-  static rse::Renderer2D* GetRenderer() { return m_Renderer; }
-  static rse::Window* GetWindow() { return m_Window; }
+  static bool GetRunning() { return m_running; }
+  static rse::Renderer2D* GetRenderer() { return m_renderer; }
+  static rse::Window* GetWindow() { return m_window; }
 
   // Render target the scene pass should draw into, or nullptr to draw into the
   // window's back buffer. The editor overrides this so the scene lands in its
@@ -67,18 +67,18 @@ class Core {
   virtual void Update() {}
   virtual void Render() = 0;
 
-  const unsigned int GetFps() const { return m_FramesPerSecond; }
+  const unsigned int GetFps() const { return m_frames_per_second; }
 
  private:
   void Run();
 
   // SDL3's SDL_GetTicks() returns Uint64 (milliseconds).
-  uint64_t now = 0, last = 0;
-  float deltaTime = 0.0;
-  float deltaAccumulator = 0.0f;
-  int frames = 0;
-  unsigned int m_FramesPerSecond;
-  static bool m_Running;
-  static rse::Renderer2D* m_Renderer;
-  static rse::Window* m_Window;
+  uint64_t m_now = 0, m_last = 0;
+  float m_delta_time = 0.0;
+  float m_delta_accumulator = 0.0f;
+  int m_frames = 0;
+  unsigned int m_frames_per_second;
+  static bool m_running;
+  static rse::Renderer2D* m_renderer;
+  static rse::Window* m_window;
 };

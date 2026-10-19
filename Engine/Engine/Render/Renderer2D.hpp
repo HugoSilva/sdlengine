@@ -23,7 +23,7 @@ class Renderer2D {
   // convention as submit(), but with no texture bound, so the shader falls
   // through to the vertex colour and `color` is used as-is. The editor's
   // grid and gizmos are built out of these.
-  virtual void SubmitQuad(TransformComponent& transform, glm::vec2 halfExtent, unsigned int color) {}
+  virtual void SubmitQuad(TransformComponent& transform, glm::vec2 half_extent, unsigned int color) {}
 
   virtual void End() {}
 

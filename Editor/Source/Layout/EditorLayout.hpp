@@ -22,14 +22,14 @@ class EditorLayout {
   // then every visible panel.
   void Draw();
 
-  void RequestResetLayout() { m_ResetLayout = true; }
+  void RequestResetLayout() { m_reset_layout = true; }
 
  private:
   void DrawMenuBar();
   void DrawDockSpace();
-  void BuildDefaultLayout(ImGuiID dockspaceId);
+  void BuildDefaultLayout(ImGuiID dockspace_id);
 
-  std::vector<std::unique_ptr<EditorPanel>> m_Panels;
-  bool m_LayoutBuilt{false};
-  bool m_ResetLayout{false};
+  std::vector<std::unique_ptr<EditorPanel>> m_panels;
+  bool m_layout_built{false};
+  bool m_reset_layout{false};
 };

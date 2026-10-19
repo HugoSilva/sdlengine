@@ -5,8 +5,8 @@
 #include "Renderer2D.hpp"
 
 namespace rse {
-Layer::Layer(Renderer2D* renderer, Shader* shader) : m_Renderer(renderer), m_Shader(shader) {
-  m_Shader->Enable();
+Layer::Layer(Renderer2D* renderer, Shader* shader) : m_renderer(renderer), m_shader(shader) {
+  m_shader->Enable();
 
 #ifdef EMSCRIPTEN
   m_Shader->setUniform1i("texture_0", 0);
@@ -18,38 +18,38 @@ Layer::Layer(Renderer2D* renderer, Shader* shader) : m_Renderer(renderer), m_Sha
   m_Shader->setUniform1i("texture_6", 6);
   m_Shader->setUniform1i("texture_7", 7);
 #else
-  int texIDs[] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
-                  16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
+  int tex_i_ds[] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
+                    16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
 
-  m_Shader->SetUniform1iv("textures", texIDs, 32);
+  m_shader->SetUniform1iv("textures", tex_i_ds, 32);
 #endif
-  m_Shader->Disable();
+  m_shader->Disable();
 }
 
 Layer::~Layer() {
-  delete m_Shader;
-  delete m_Renderer;
+  delete m_shader;
+  delete m_renderer;
 
-  for (unsigned int i = 0; i < m_Renderables.size(); i++) delete m_Renderables[i];
+  for (unsigned int i = 0; i < m_renderables.size(); i++) delete m_renderables[i];
 }
 
-void Layer::Add(Renderable2D* renderable) { m_Renderables.push_back(renderable); }
+void Layer::Add(Renderable2D* renderable) { m_renderables.push_back(renderable); }
 
 void Layer::Remove(Renderable2D* renderable) {
-  for (std::vector<Renderable2D*>::iterator it = m_Renderables.begin(); it != m_Renderables.end(); ++it) {
+  for (std::vector<Renderable2D*>::iterator it = m_renderables.begin(); it != m_renderables.end(); ++it) {
     if (*it == renderable) {
-      m_Renderables.erase(it);
+      m_renderables.erase(it);
     }
   }
 }
 
 void Layer::Render() {
-  m_Shader->Enable();
-  m_Renderer->Begin();
+  m_shader->Enable();
+  m_renderer->Begin();
 
-  for (const Renderable2D* renderable : m_Renderables) renderable->Submit(m_Renderer);
+  for (const Renderable2D* renderable : m_renderables) renderable->Submit(m_renderer);
 
-  m_Renderer->End();
-  m_Renderer->Flush();
+  m_renderer->End();
+  m_renderer->Flush();
 }
 }  // namespace rse

@@ -14,5 +14,5 @@ class ResourceManager {
 
  private:
   ResourceManager() {}
-  static std::vector<Resource*> s_Resources;
+  static std::vector<Resource*> s_resources;
 };

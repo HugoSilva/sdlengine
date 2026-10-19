@@ -11,15 +11,15 @@ class SpriteTest : public Scene {
   SpriteTest(SDL_Window* win);
   ~SpriteTest();
 
-  void Update(float deltaTime);
+  void Update(float delta_time);
   void Render();
 
  private:
-  Layer* m_Layer;
+  Layer* m_layer;
   // Label* m_Fps;
-  Sprite* m_GroundSprite;
-  Sprite* m_PlayerSprite;
-  Shader* m_Shader;
+  Sprite* m_ground_sprite;
+  Sprite* m_player_sprite;
+  Shader* m_shader;
 
-  Camera* m_Camera;
+  Camera* m_camera;
 };

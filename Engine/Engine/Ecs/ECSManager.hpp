@@ -60,7 +60,7 @@ class ECSManager {
 
  private:
   static entt::DefaultRegistry registry;
-  static std::vector<BaseSystem*> m_systemsList;
-  static std::vector<BaseSystem*> m_preSceneSystems;
+  static std::vector<BaseSystem*> m_systems_list;
+  static std::vector<BaseSystem*> m_pre_scene_systems;
 };
 }  // namespace rse

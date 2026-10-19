@@ -17,6 +17,6 @@ class FontManager {
 
  private:
   FontManager() {}
-  static std::vector<Font*> m_Fonts;
+  static std::vector<Font*> m_fonts;
 };
 }  // namespace rse

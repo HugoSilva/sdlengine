@@ -5,12 +5,12 @@ double Mouse::s_x = 0;
 double Mouse::s_y = 0;
 // TODO: fix the initialization of the buttons
 bool Mouse::s_buttons[MAX_BUTTON_SIZE] = {0};
-bool Mouse::s_buttonsDown[MAX_BUTTON_SIZE] = {0};
-bool Mouse::s_buttonsUp[MAX_BUTTON_SIZE] = {0};
+bool Mouse::s_buttons_down[MAX_BUTTON_SIZE] = {0};
+bool Mouse::s_buttons_up[MAX_BUTTON_SIZE] = {0};
 
-double Mouse::s_lastX{0}, Mouse::s_lastY{0};
-double Mouse::s_xOffset, Mouse::s_yOffset;
-bool Mouse::s_firstMouse{true};
+double Mouse::s_last_x{0}, Mouse::s_last_y{0};
+double Mouse::s_x_offset, Mouse::s_y_offset;
+bool Mouse::s_first_mouse{true};
 
 void Mouse::MousePosCallback(SDL_MouseMotionEvent event) {
   int width, height;
@@ -19,17 +19,17 @@ void Mouse::MousePosCallback(SDL_MouseMotionEvent event) {
   s_x = event.x;
   s_y = event.y;
 
-  if (s_firstMouse) {
-    s_lastX = s_x;
-    s_lastY = s_y;
-    s_firstMouse = false;
+  if (s_first_mouse) {
+    s_last_x = s_x;
+    s_last_y = s_y;
+    s_first_mouse = false;
   }
 
-  s_xOffset = s_x - s_lastX;
-  s_yOffset = s_lastY - s_y;  // Reversed since y-coordinates go from bottom to left
+  s_x_offset = s_x - s_last_x;
+  s_y_offset = s_last_y - s_y;  // Reversed since y-coordinates go from bottom to left
 
-  s_lastX = s_x;
-  s_lastY = s_y;
+  s_last_x = s_x;
+  s_last_y = s_y;
 }
 
 void Mouse::MouseButtonCallback(SDL_MouseButtonEvent event) {
@@ -37,13 +37,13 @@ void Mouse::MouseButtonCallback(SDL_MouseButtonEvent event) {
   if (button < 0) return;
 
   if (event.down && s_buttons[button] == false) {
-    s_buttonsDown[button] = true;
-    s_buttonsUp[button] = false;
+    s_buttons_down[button] = true;
+    s_buttons_up[button] = false;
   }
 
   if (!event.down && s_buttons[button] == true) {
-    s_buttonsDown[button] = false;
-    s_buttonsUp[button] = true;
+    s_buttons_down[button] = false;
+    s_buttons_up[button] = true;
   }
 
   s_buttons[button] = event.down;
@@ -53,14 +53,14 @@ const bool Mouse::IsButtonDown(int button) {
   if (button < 0 || button >= MAX_BUTTON_SIZE) {
     return false;
   }
-  return s_buttonsDown[button];
+  return s_buttons_down[button];
 }
 
 const bool Mouse::IsButtonUp(int button) {
   if (button < 0 || button >= MAX_BUTTON_SIZE) {
     return false;
   }
-  return s_buttonsUp[button];
+  return s_buttons_up[button];
 }
 
 const bool Mouse::IsButtonPressed(int button) {

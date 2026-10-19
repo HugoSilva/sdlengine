@@ -11,11 +11,11 @@ class SetupView : public Scene {
  public:
   SetupView(std::string name, SDL_Window* win);
 
-  void Update(float deltaTime);
+  void Update(float delta_time);
   void Render();
 
  private:
-  EditorLayout* m_Layout{nullptr};
-  EditorCamera* m_Camera{nullptr};
+  EditorLayout* m_layout{nullptr};
+  EditorCamera* m_camera{nullptr};
   RenderSystem* m_render;
 };

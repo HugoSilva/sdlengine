@@ -3,8 +3,8 @@
 namespace rse {
 class Shader {
  public:
-  Shader(const char* vertexPath, const char* fragmentPath);
-  Shader(const char* name, const char* vertexSource, const char* fragmentSource);
+  Shader(const char* vertex_path, const char* fragment_path);
+  Shader(const char* name, const char* vertex_source, const char* fragment_source);
   ~Shader();
 
   void Enable() const;
@@ -15,20 +15,20 @@ class Shader {
   void SetUniform1iv(const char* name, int* value, int count);
   void SetUniformMat4(const char* name, const float* matrix);
 
-  static Shader* FromFile(const char* vertexPath, const char* fragmentPath);
-  static Shader* FromSource(const char* vertexSource, const char* fragmentSource);
-  static Shader* FromSource(const char* name, const char* vertexSource, const char* fragmentSource);
+  static Shader* FromFile(const char* vertex_path, const char* fragment_path);
+  static Shader* FromSource(const char* vertex_source, const char* fragment_source);
+  static Shader* FromSource(const char* name, const char* vertex_source, const char* fragment_source);
 
-  unsigned int GetShaderId() const { return m_ShaderID; };
+  unsigned int GetShaderId() const { return m_shader_id; };
 
  private:
-  unsigned int Load(const char* vertexSource, const char* fragmentSource);
+  unsigned int Load(const char* vertex_source, const char* fragment_source);
 
-  unsigned int m_ShaderID;
-  const char* m_Name;
-  const char* m_VertPath;
-  const char* m_FragPath;
-  const char* m_VertSource;
-  const char* m_FragSource;
+  unsigned int m_shader_id;
+  const char* m_name;
+  const char* m_vert_path;
+  const char* m_frag_path;
+  const char* m_vert_source;
+  const char* m_frag_source;
 };
 }  // namespace rse
