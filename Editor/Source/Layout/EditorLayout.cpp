@@ -147,16 +147,16 @@ void EditorLayout::BuildDefaultLayout(ImGuiID dockspace_id) {
 
   for (const std::unique_ptr<EditorPanel>& panel : m_panels) {
     switch (panel->Slot()) {
-      case DockSlot::Left:
+      case DockSlot::kLeft:
         needs_left = true;
         break;
-      case DockSlot::Right:
+      case DockSlot::kRight:
         needs_right = true;
         break;
-      case DockSlot::Bottom:
+      case DockSlot::kBottom:
         needs_bottom = true;
         break;
-      case DockSlot::Center:
+      case DockSlot::kCenter:
         break;
     }
   }
@@ -188,16 +188,16 @@ void EditorLayout::BuildDefaultLayout(ImGuiID dockspace_id) {
     ImGuiID target = center;
 
     switch (panel->Slot()) {
-      case DockSlot::Left:
+      case DockSlot::kLeft:
         target = left;
         break;
-      case DockSlot::Right:
+      case DockSlot::kRight:
         target = right;
         break;
-      case DockSlot::Bottom:
+      case DockSlot::kBottom:
         target = bottom;
         break;
-      case DockSlot::Center:
+      case DockSlot::kCenter:
         target = center;
         break;
     }

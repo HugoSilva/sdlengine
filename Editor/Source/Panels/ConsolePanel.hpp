@@ -17,7 +17,7 @@
 class ConsolePanel : public EditorPanel {
  public:
   const char* Id() const override { return "Console"; }
-  DockSlot Slot() const override { return DockSlot::Bottom; }
+  DockSlot Slot() const override { return DockSlot::kBottom; }
 
   void Draw() override {
     if (!ImGui::Begin(Id(), &visible)) {
@@ -90,9 +90,9 @@ class ConsolePanel : public EditorPanel {
 
   bool IsVisible(Logger::Level level) const {
     switch (level) {
-      case Logger::Level::Warning:
+      case Logger::Level::kWarning:
         return m_show_warning;
-      case Logger::Level::Error:
+      case Logger::Level::kError:
         return m_show_error;
       default:
         return m_show_log;
@@ -101,9 +101,9 @@ class ConsolePanel : public EditorPanel {
 
   static ImVec4 ColorFor(Logger::Level level) {
     switch (level) {
-      case Logger::Level::Warning:
+      case Logger::Level::kWarning:
         return ImVec4(0.95f, 0.78f, 0.28f, 1.0f);
-      case Logger::Level::Error:
+      case Logger::Level::kError:
         return ImVec4(0.94f, 0.40f, 0.40f, 1.0f);
       default:
         return ImGui::GetStyleColorVec4(ImGuiCol_Text);

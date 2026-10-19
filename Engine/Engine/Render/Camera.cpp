@@ -51,19 +51,19 @@ void Camera::Update(float delta_time) {
   using namespace rse;
 
   if (Keyboard::IsKeyPressed(SDL_SCANCODE_UP)) {
-    this->ProcessKeyboard(FORWARD, delta_time);
+    this->ProcessKeyboard(kForward, delta_time);
   }
 
   if (Keyboard::IsKeyPressed(SDL_SCANCODE_DOWN)) {
-    this->ProcessKeyboard(BACKWARD, delta_time);
+    this->ProcessKeyboard(kBackward, delta_time);
   }
 
   if (Keyboard::IsKeyPressed(SDL_SCANCODE_LEFT)) {
-    this->ProcessKeyboard(LEFT, delta_time);
+    this->ProcessKeyboard(kLeft, delta_time);
   }
 
   if (Keyboard::IsKeyPressed(SDL_SCANCODE_RIGHT)) {
-    this->ProcessKeyboard(RIGHT, delta_time);
+    this->ProcessKeyboard(kRight, delta_time);
   }
 
   double x_pos = Mouse::GetMouseX();
@@ -112,19 +112,19 @@ glm::mat4 Camera::GetViewMatrix() {
 void Camera::ProcessKeyboard(CameraMovement direction, float delta_time) {
   float velocity = m_movement_speed * delta_time;
 
-  if (direction == FORWARD) {
+  if (direction == kForward) {
     m_position += m_front * velocity;
   }
 
-  if (direction == BACKWARD) {
+  if (direction == kBackward) {
     m_position -= m_front * velocity;
   }
 
-  if (direction == LEFT) {
+  if (direction == kLeft) {
     m_position -= m_right * velocity;
   }
 
-  if (direction == RIGHT) {
+  if (direction == kRight) {
     m_position += m_right * velocity;
   }
 }

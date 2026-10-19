@@ -12,10 +12,10 @@
 // View > Reset Layout. Once the user rearranges anything, imgui.ini takes over
 // and this is ignored.
 enum class DockSlot {
-  Left,
-  Right,
-  Bottom,
-  Center,
+  kLeft,
+  kRight,
+  kBottom,
+  kCenter,
 };
 
 class EditorPanel {
@@ -25,7 +25,7 @@ class EditorPanel {
   virtual const char* Id() const = 0;
   virtual void Draw() = 0;
 
-  virtual DockSlot Slot() const { return DockSlot::Center; }
+  virtual DockSlot Slot() const { return DockSlot::kCenter; }
 
   // Toggled from the View menu and by the panel's own close button.
   bool visible{true};

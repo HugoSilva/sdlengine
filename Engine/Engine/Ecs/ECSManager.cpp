@@ -40,7 +40,7 @@ void ECSManager::Init() {
 }
 
 void ECSManager::AddSystem(BaseSystem* system, SystemPhase phase) {
-  if (phase == SystemPhase::PreScene) {
+  if (phase == SystemPhase::kPreScene) {
     m_pre_scene_systems.push_back(system);
     return;
   }

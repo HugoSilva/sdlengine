@@ -56,14 +56,14 @@ void EditorManager::HandleDestroyEntityEvent(const DestroyEntity& event) {
 
 void EditorManager::HandleAddComponentEvent(const AddComponent& event) {
   switch (event.component) {
-    case Components::Audio:
+    case Components::kAudio:
       if (rse::ECSManager::HasComponent<AudioComponent>(m_selected_entity)) {
         Logger::Error("Already existing audio component");
       } else {
         rse::ECSManager::AddComponent<AudioComponent>(m_selected_entity, rse::SoundManager::GetSound("eff"));
       }
       break;
-    case Components::Rigidbody:
+    case Components::kRigidbody:
       if (rse::ECSManager::HasComponent<RigidBodyComponent>(m_selected_entity)) {
         Logger::Error("Already existing rigidbody component");
       } else {
@@ -78,7 +78,7 @@ void EditorManager::HandleAddComponentEvent(const AddComponent& event) {
         rse::ECSManager::AddComponent<RigidBodyComponent>(m_selected_entity, new Rigidbody(position, size));
       }
       break;
-    case Components::Sprite:
+    case Components::kSprite:
       if (rse::ECSManager::HasComponent<SpriteComponent>(m_selected_entity)) {
         Logger::Error("Already existing sprite component");
       } else {
@@ -98,7 +98,7 @@ void EditorManager::HandleRemoveComponentEvent(const RemoveComponent& event) {
   // Only the optional components can go: the hierarchy lists entities by their
   // BasicComponent and the renderer needs a transform, so those two stay.
   switch (event.component) {
-    case Components::Audio:
+    case Components::kAudio:
       if (!rse::ECSManager::HasComponent<AudioComponent>(m_selected_entity)) {
         Logger::Error("Missing audio component");
         break;
@@ -107,14 +107,14 @@ void EditorManager::HandleRemoveComponentEvent(const RemoveComponent& event) {
       // releases it properly.
       rse::ECSManager::RemoveComponent<AudioComponent>(m_selected_entity);
       break;
-    case Components::Rigidbody:
+    case Components::kRigidbody:
       if (!rse::ECSManager::HasComponent<RigidBodyComponent>(m_selected_entity)) {
         Logger::Error("Missing rigidbody component");
         break;
       }
       rse::ECSManager::RemoveComponent<RigidBodyComponent>(m_selected_entity);
       break;
-    case Components::Sprite:
+    case Components::kSprite:
       if (!rse::ECSManager::HasComponent<SpriteComponent>(m_selected_entity)) {
         Logger::Error("Missing sprite component");
         break;

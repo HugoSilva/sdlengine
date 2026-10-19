@@ -16,7 +16,7 @@
 class DebugPanel : public EditorPanel {
  public:
   const char* Id() const override { return "Debug"; }
-  DockSlot Slot() const override { return DockSlot::Left; }
+  DockSlot Slot() const override { return DockSlot::kLeft; }
 
   void Draw() override {
     if (!ImGui::Begin(Id(), &visible)) {

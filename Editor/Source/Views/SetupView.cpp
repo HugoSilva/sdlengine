@@ -43,7 +43,7 @@ SetupView::SetupView(std::string name, SDL_Window* win) {
 
   // The grid is submitted into the scene pass before the sprites are, which is
   // what puts it underneath them.
-  rse::ECSManager::AddSystem(new GridRenderSystem(Core::GetRenderer(), m_camera), rse::SystemPhase::PreScene);
+  rse::ECSManager::AddSystem(new GridRenderSystem(Core::GetRenderer(), m_camera), rse::SystemPhase::kPreScene);
 
   // New Entities code
   // for (int i = 0; i < 5000; i++)

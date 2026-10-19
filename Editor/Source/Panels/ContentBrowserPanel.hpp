@@ -43,7 +43,7 @@ class ContentBrowserPanel : public EditorPanel {
   }
 
   const char* Id() const override { return "Content Browser"; }
-  DockSlot Slot() const override { return DockSlot::Left; }
+  DockSlot Slot() const override { return DockSlot::kLeft; }
 
   void Draw() override {
     if (!ImGui::Begin(Id(), &visible)) {

@@ -270,11 +270,11 @@ class ViewportPanel : public EditorPanel {
       const EditorSettings::GizmoMode previous = settings.gizmo.mode;
 
       if (ImGui::IsKeyPressed(ImGuiKey_W)) {
-        settings.gizmo.mode = EditorSettings::GizmoMode::Translate;
+        settings.gizmo.mode = EditorSettings::GizmoMode::kTranslate;
       } else if (ImGui::IsKeyPressed(ImGuiKey_E)) {
-        settings.gizmo.mode = EditorSettings::GizmoMode::Rotate;
+        settings.gizmo.mode = EditorSettings::GizmoMode::kRotate;
       } else if (ImGui::IsKeyPressed(ImGuiKey_R)) {
-        settings.gizmo.mode = EditorSettings::GizmoMode::Scale;
+        settings.gizmo.mode = EditorSettings::GizmoMode::kScale;
       }
 
       // Only on a real change: holding a key down would otherwise rewrite

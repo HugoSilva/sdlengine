@@ -33,10 +33,10 @@ struct EditorSettings {
 
   // Which gizmo the viewport draws. The viewport HUD reports it and the W/E/R
   // keys set it.
-  enum class GizmoMode { Translate, Rotate, Scale };
+  enum class GizmoMode { kTranslate, kRotate, kScale };
 
   struct Gizmo {
-    GizmoMode mode{GizmoMode::Translate};
+    GizmoMode mode{GizmoMode::kTranslate};
   };
 
   Grid grid;
@@ -59,11 +59,11 @@ struct EditorSettings {
 
 inline const char* GizmoModeName(EditorSettings::GizmoMode mode) {
   switch (mode) {
-    case EditorSettings::GizmoMode::Rotate:
+    case EditorSettings::GizmoMode::kRotate:
       return "rotate";
-    case EditorSettings::GizmoMode::Scale:
+    case EditorSettings::GizmoMode::kScale:
       return "scale";
-    case EditorSettings::GizmoMode::Translate:
+    case EditorSettings::GizmoMode::kTranslate:
       break;
   }
 
@@ -130,7 +130,7 @@ inline void EditorSettings::Load() {
     } else if (key == "gizmo.mode") {
       // The names come from the one place they are written, so a mode
       // cannot be spelled one way in the file and another in the HUD.
-      for (const GizmoMode candidate : {GizmoMode::Translate, GizmoMode::Rotate, GizmoMode::Scale}) {
+      for (const GizmoMode candidate : {GizmoMode::kTranslate, GizmoMode::kRotate, GizmoMode::kScale}) {
         if (value == GizmoModeName(candidate)) {
           gizmo.mode = candidate;
         }

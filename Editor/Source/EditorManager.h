@@ -6,7 +6,7 @@
 #include "EditorSettings.hpp"
 #define INVALID_ENTITY_ID entt::null
 
-enum class Components { Audio, Rigidbody, Sprite };
+enum class Components { kAudio, kRigidbody, kSprite };
 
 class EditorManager {
  public:

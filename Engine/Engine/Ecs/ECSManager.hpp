@@ -12,7 +12,7 @@ namespace rse {
 // There is no depth to lean on in the 2D scene pass -- every sprite sits at
 // the same depth -- so anything that has to end up *under* the sprites, the
 // editor's grid, has to be submitted before the systems that draw them.
-enum class SystemPhase { PreScene, Scene };
+enum class SystemPhase { kPreScene, kScene };
 
 class ECSManager {
  public:
@@ -49,7 +49,7 @@ class ECSManager {
     return registry.view<Components...>();
   }
 
-  static void AddSystem(BaseSystem* system, SystemPhase phase = SystemPhase::Scene);
+  static void AddSystem(BaseSystem* system, SystemPhase phase = SystemPhase::kScene);
 
   static void Update(float delta);
   static void UpdateUi();

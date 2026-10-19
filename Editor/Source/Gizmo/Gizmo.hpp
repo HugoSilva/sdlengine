@@ -56,7 +56,7 @@ class Gizmo {
  public:
   // Which handle a drag is attached to: an axis arrow or box, the centre
   // square, or the rotation ring.
-  enum class Axis { None, X, Y, Both, Ring };
+  enum class Axis { kNone, kX, kY, kBoth, kRing };
 
   // Reads the mouse for this frame and returns true when a handle owns the
   // press, so the viewport knows the click was not aimed at the scene.
@@ -139,8 +139,8 @@ class Gizmo {
   static void Head(ImDrawList* draw_list, const ImVec2& tip, const ImVec2& left, const ImVec2& right, ImU32 colour);
   static void Box(ImDrawList* draw_list, const ImVec2& centre, float half, ImU32 colour);
 
-  Axis m_active{Axis::None};
-  Axis m_hovered{Axis::None};
+  Axis m_active{Axis::kNone};
+  Axis m_hovered{Axis::kNone};
 
   // The cursor where the drag started, in ImGui pixels, and the pivot it was
   // measured against. The offset applied is always measured from here.
@@ -182,10 +182,10 @@ inline TransformComponent* Gizmo::ActiveTransform() const {
 
 inline Gizmo::Axis Gizmo::HitTest(glm::vec2 mouse, const ImVec2& origin) const {
   switch (EditorManager::Settings().gizmo.mode) {
-    case EditorSettings::GizmoMode::Rotate:
+    case EditorSettings::GizmoMode::kRotate:
       return HitTestRing(mouse, origin);
-    case EditorSettings::GizmoMode::Scale:
-    case EditorSettings::GizmoMode::Translate:
+    case EditorSettings::GizmoMode::kScale:
+    case EditorSettings::GizmoMode::kTranslate:
     default:
       return HitTestAxes(mouse, origin);
   }
@@ -197,22 +197,22 @@ inline Gizmo::Axis Gizmo::HitTestAxes(glm::vec2 mouse, const ImVec2& origin) con
   // The centre square is tested first: it sits on top of both axes where they
   // meet, and it is the handle most likely to be aimed at.
   if (rse::PointInBox(mouse, at - glm::vec2(kCentreSize), at + glm::vec2(kCentreSize))) {
-    return Axis::Both;
+    return Axis::kBoth;
   }
 
   // The bands run the length of the arms, including the heads, so the whole
   // thing is grabbable and not just the shaft.
   const glm::vec2 x_end(at.x + kArmLength + kArrowLength, at.y);
   if (rse::PointInBox(mouse, glm::vec2(at.x, at.y - kGrabWidth), glm::vec2(x_end.x, at.y + kGrabWidth))) {
-    return Axis::X;
+    return Axis::kX;
   }
 
   const glm::vec2 y_end(at.x, at.y - kArmLength - kArrowLength);
   if (rse::PointInBox(mouse, glm::vec2(at.x - kGrabWidth, y_end.y), glm::vec2(at.x + kGrabWidth, at.y))) {
-    return Axis::Y;
+    return Axis::kY;
   }
 
-  return Axis::None;
+  return Axis::kNone;
 }
 
 inline Gizmo::Axis Gizmo::HitTestRing(glm::vec2 mouse, const ImVec2& origin) const {
@@ -220,7 +220,7 @@ inline Gizmo::Axis Gizmo::HitTestRing(glm::vec2 mouse, const ImVec2& origin) con
 
   // A band around the circle, not a filled disc: the middle of the ring is
   // where the entity is, and dragging there should be dragging the scene.
-  return std::abs(distance - kRingRadius) <= kRingGrabWidth ? Axis::Ring : Axis::None;
+  return std::abs(distance - kRingRadius) <= kRingGrabWidth ? Axis::kRing : Axis::kNone;
 }
 
 inline void Gizmo::BeginDrag(glm::vec2 mouse, Axis axis) {
@@ -240,8 +240,8 @@ inline void Gizmo::BeginDrag(glm::vec2 mouse, Axis axis) {
 }
 
 inline void Gizmo::ApplyTranslate(glm::vec2 travel, float world_per_pixel) {
-  const bool drag_x = m_active == Axis::X || m_active == Axis::Both;
-  const bool drag_y = m_active == Axis::Y || m_active == Axis::Both;
+  const bool drag_x = m_active == Axis::kX || m_active == Axis::kBoth;
+  const bool drag_y = m_active == Axis::kY || m_active == Axis::kBoth;
 
   // Screen y grows downwards and world y grows upwards, so a drag upwards is a
   // positive move; an axis that is not being dragged contributes nothing,
@@ -309,15 +309,15 @@ inline void Gizmo::ApplyRotate(glm::vec2 mouse) {
 }
 
 inline void Gizmo::ApplyScale(glm::vec2 travel) {
-  const bool drag_x = m_active == Axis::X || m_active == Axis::Both;
-  const bool drag_y = m_active == Axis::Y || m_active == Axis::Both;
+  const bool drag_x = m_active == Axis::kX || m_active == Axis::kBoth;
+  const bool drag_y = m_active == Axis::kY || m_active == Axis::kBoth;
 
   // One arm's length of travel is one unit of scale: dragging a handle from
   // the pivot out to the end of its axis doubles what was there. The centre
   // square reads both axes at once -- right or up grows, left or down shrinks
   // -- because a uniform scale has no single axis to be measured along.
   const float ratio =
-      m_active == Axis::Both ? (travel.x - travel.y) / kArmLength : (drag_x ? travel.x : -travel.y) / kArmLength;
+      m_active == Axis::kBoth ? (travel.x - travel.y) / kArmLength : (drag_x ? travel.x : -travel.y) / kArmLength;
 
   const float factor = 1.0f + ratio;
   const bool snapping = ImGui::GetIO().KeyShift;
@@ -335,7 +335,7 @@ inline void Gizmo::ApplyScale(glm::vec2 travel) {
       scaled.y = grabbed.scale.y * factor;
     }
 
-    if (m_active == Axis::Both) {
+    if (m_active == Axis::kBoth) {
       // Uniform means all three, so the sprite gains or loses depth too
       // rather than turning into a flat card.
       scaled.z = grabbed.scale.z * factor;
@@ -348,7 +348,7 @@ inline void Gizmo::ApplyScale(glm::vec2 travel) {
       if (drag_y) {
         scaled.y = rse::SnapToStep(scaled.y, kScaleSnap);
       }
-      if (m_active == Axis::Both) {
+      if (m_active == Axis::kBoth) {
         scaled.z = rse::SnapToStep(scaled.z, kScaleSnap);
       }
     }
@@ -367,13 +367,13 @@ inline void Gizmo::ApplyDrag(const EditorCamera& camera) {
   const glm::vec2 travel = mouse - m_grab_screen;
 
   switch (EditorManager::Settings().gizmo.mode) {
-    case EditorSettings::GizmoMode::Rotate:
+    case EditorSettings::GizmoMode::kRotate:
       ApplyRotate(mouse);
       break;
-    case EditorSettings::GizmoMode::Scale:
+    case EditorSettings::GizmoMode::kScale:
       ApplyScale(travel);
       break;
-    case EditorSettings::GizmoMode::Translate:
+    case EditorSettings::GizmoMode::kTranslate:
     default:
       ApplyTranslate(travel, camera.GetWorldPerPixel());
       break;
@@ -386,20 +386,20 @@ inline bool Gizmo::HandleInput(const EditorCamera& camera, const ImVec2& image_p
   if (!Anchor(camera, image_pos, origin)) {
     // Nothing to move. Any drag in flight is dropped rather than carried on:
     // the entity it was moving may be the one that just went away.
-    m_active = Axis::None;
-    m_hovered = Axis::None;
+    m_active = Axis::kNone;
+    m_hovered = Axis::kNone;
     m_grabbed.clear();
     return false;
   }
 
   const ImGuiIO& io = ImGui::GetIO();
 
-  if (m_active != Axis::None) {
+  if (m_active != Axis::kNone) {
     if (!ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
       // Released. One last apply, in case the cursor moved and let go
       // between frames, and then the drag is over.
       ApplyDrag(camera);
-      m_active = Axis::None;
+      m_active = Axis::kNone;
       m_grabbed.clear();
       return false;
     }
@@ -410,9 +410,9 @@ inline bool Gizmo::HandleInput(const EditorCamera& camera, const ImVec2& image_p
 
   // Hovering is only meaningful while the cursor is over the image: the
   // handles are drawn there, and off the panel they are not on screen.
-  m_hovered = hovered ? HitTest(glm::vec2(io.MousePos.x, io.MousePos.y), origin) : Axis::None;
+  m_hovered = hovered ? HitTest(glm::vec2(io.MousePos.x, io.MousePos.y), origin) : Axis::kNone;
 
-  if (m_hovered != Axis::None && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+  if (m_hovered != Axis::kNone && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
     const glm::vec2 mouse(io.MousePos.x, io.MousePos.y);
 
     // The pivot is recorded here rather than looked up per frame: a rotate
@@ -450,9 +450,9 @@ inline void Gizmo::Box(ImDrawList* draw_list, const ImVec2& centre, float half, 
 }
 
 inline void Gizmo::DrawAxes(ImDrawList* draw_list, const ImVec2& origin, Axis lit, bool boxes) const {
-  const ImU32 x_colour = lit == Axis::X || lit == Axis::Both ? kXLit : kXDim;
-  const ImU32 y_colour = lit == Axis::Y || lit == Axis::Both ? kYLit : kYDim;
-  const ImU32 plane_colour = lit == Axis::Both ? kPlaneLit : kPlaneDim;
+  const ImU32 x_colour = lit == Axis::kX || lit == Axis::kBoth ? kXLit : kXDim;
+  const ImU32 y_colour = lit == Axis::kY || lit == Axis::kBoth ? kYLit : kYDim;
+  const ImU32 plane_colour = lit == Axis::kBoth ? kPlaneLit : kPlaneDim;
 
   const ImVec2 x_tip(origin.x + kArmLength, origin.y);
   const ImVec2 y_tip(origin.x, origin.y - kArmLength);
@@ -488,7 +488,7 @@ inline void Gizmo::DrawAxes(ImDrawList* draw_list, const ImVec2& origin, Axis li
 }
 
 inline void Gizmo::DrawRing(ImDrawList* draw_list, const ImVec2& origin, Axis lit) const {
-  const ImU32 colour = lit == Axis::Ring ? kRingLit : kRingDim;
+  const ImU32 colour = lit == Axis::kRing ? kRingLit : kRingDim;
 
   draw_list->AddCircle(origin, kRingRadius, kHalo, 0, 5.0f);
   draw_list->AddCircle(origin, kRingRadius, colour, 0, 2.5f);
@@ -516,16 +516,16 @@ inline void Gizmo::Draw(const EditorCamera& camera, const ImVec2& image_pos) con
 
   // Being dragged beats being hovered: once the pointer is latched it can be
   // anywhere, and the handle being moved is the one that should be lit.
-  const Axis lit = m_active != Axis::None ? m_active : m_hovered;
+  const Axis lit = m_active != Axis::kNone ? m_active : m_hovered;
 
   switch (EditorManager::Settings().gizmo.mode) {
-    case EditorSettings::GizmoMode::Rotate:
+    case EditorSettings::GizmoMode::kRotate:
       DrawRing(draw_list, origin, lit);
       break;
-    case EditorSettings::GizmoMode::Scale:
+    case EditorSettings::GizmoMode::kScale:
       DrawAxes(draw_list, origin, lit, true);
       break;
-    case EditorSettings::GizmoMode::Translate:
+    case EditorSettings::GizmoMode::kTranslate:
     default:
       DrawAxes(draw_list, origin, lit, false);
       break;

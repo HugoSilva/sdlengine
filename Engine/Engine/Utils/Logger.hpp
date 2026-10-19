@@ -10,9 +10,9 @@
 class Logger {
  public:
   enum class Level {
-    Log,
-    Warning,
-    Error,
+    kLog,
+    kWarning,
+    kError,
   };
 
   struct Entry {

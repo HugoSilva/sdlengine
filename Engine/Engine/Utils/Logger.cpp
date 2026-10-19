@@ -27,17 +27,17 @@ void Logger::Append(Level level, const std::string& message) {
 
 void Logger::Log(std::string msg) {
   std::cout << msg << std::endl;
-  Append(Level::Log, msg);
+  Append(Level::kLog, msg);
 }
 
 void Logger::Warning(std::string msg) {
   std::cerr << s_warning_prefix << msg << std::endl;
-  Append(Level::Warning, msg);
+  Append(Level::kWarning, msg);
 }
 
 void Logger::Error(std::string msg) {
   std::cerr << s_error_prefix << msg << std::endl;
-  Append(Level::Error, msg);
+  Append(Level::kError, msg);
 }
 
 std::vector<Logger::Entry> Logger::GetEntries() {
