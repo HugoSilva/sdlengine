@@ -144,7 +144,7 @@ class InspectorPanel : public EditorPanel {
         ImGui::LabelText("Texture", "%s", textureName.empty() ? "(none)" : textureName.c_str());
       }
 
-      drawRemoveComponentButton(eComponents::Sprite, "Remove Sprite");
+      drawRemoveComponentButton(Components::Sprite, "Remove Sprite");
     }
   }
 
@@ -168,7 +168,7 @@ class InspectorPanel : public EditorPanel {
         ImGui::Checkbox("Loop", sound->getLoop());
       }
 
-      drawRemoveComponentButton(eComponents::Audio, "Remove Audio");
+      drawRemoveComponentButton(Components::Audio, "Remove Audio");
     }
   }
 
@@ -198,11 +198,11 @@ class InspectorPanel : public EditorPanel {
         }
       }
 
-      drawRemoveComponentButton(eComponents::Rigidbody, "Remove Rigidbody");
+      drawRemoveComponentButton(Components::Rigidbody, "Remove Rigidbody");
     }
   }
 
-  void drawRemoveComponentButton(eComponents component, const char* label) {
+  void drawRemoveComponentButton(Components component, const char* label) {
     ImGui::Spacing();
     if (ImGui::SmallButton(label)) {
       EventManager::getEventDispatcher()->trigger<EditorManager::RemoveComponent>(component);
@@ -216,13 +216,13 @@ class InspectorPanel : public EditorPanel {
 
     if (ImGui::BeginPopup("add_component")) {
       if (ImGui::MenuItem("Audio")) {
-        EventManager::getEventDispatcher()->trigger<EditorManager::AddComponent>(eComponents::Audio);
+        EventManager::getEventDispatcher()->trigger<EditorManager::AddComponent>(Components::Audio);
       }
       if (ImGui::MenuItem("Ridigbody")) {
-        EventManager::getEventDispatcher()->trigger<EditorManager::AddComponent>(eComponents::Rigidbody);
+        EventManager::getEventDispatcher()->trigger<EditorManager::AddComponent>(Components::Rigidbody);
       }
       if (ImGui::MenuItem("Sprite")) {
-        EventManager::getEventDispatcher()->trigger<EditorManager::AddComponent>(eComponents::Sprite);
+        EventManager::getEventDispatcher()->trigger<EditorManager::AddComponent>(Components::Sprite);
       }
       ImGui::EndPopup();
     }

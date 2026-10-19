@@ -2,7 +2,7 @@
 
 #include "Shader.hpp"
 
-namespace ShaderFactory {
+namespace shader_factory {
 rse::Shader* DefaultShader();
 rse::Shader* BasicLightShader();
-};  // namespace ShaderFactory
+};  // namespace shader_factory

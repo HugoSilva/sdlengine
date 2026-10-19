@@ -183,7 +183,7 @@ class ViewportPanel : public EditorPanel {
 
     rse::ECSManager::getView<TransformComponent, SpriteComponent>().each(
         [&hit, &world](uint32_t entity, TransformComponent&, SpriteComponent&) {
-          const std::optional<EntityBounds> bounds = EditorBounds::ofEntity(entity);
+          const std::optional<EntityBounds> bounds = editor_bounds::ofEntity(entity);
 
           if (bounds && rse::pointInOrientedBox(world, bounds->center, bounds->rotationDegrees, bounds->halfExtent)) {
             hit = entity;
@@ -210,10 +210,10 @@ class ViewportPanel : public EditorPanel {
       // tell the rest of the set from the entity the inspector edits.
       const ImU32 colour = entity == EditorManager::getSelectedEntity() ? kActiveOutline : kOutline;
 
-      const std::optional<EntityBounds> bounds = EditorBounds::ofEntity(entity);
+      const std::optional<EntityBounds> bounds = editor_bounds::ofEntity(entity);
 
       if (!bounds) {
-        const std::optional<glm::vec2> position = EditorBounds::positionOf(entity);
+        const std::optional<glm::vec2> position = editor_bounds::positionOf(entity);
 
         if (position) {
           const glm::vec2 screen = m_Camera->worldToScreen(*position);
@@ -228,7 +228,7 @@ class ViewportPanel : public EditorPanel {
         continue;
       }
 
-      const std::array<glm::vec2, 4> corners = EditorBounds::corners(*bounds);
+      const std::array<glm::vec2, 4> corners = editor_bounds::corners(*bounds);
       ImVec2 points[4];
 
       for (int i = 0; i < 4; i++) {
@@ -300,15 +300,15 @@ class ViewportPanel : public EditorPanel {
     // maximum on the origin.
     std::optional<rse::Bounds2D> bounds;
 
-    const std::optional<EntityBounds> selection = EditorBounds::ofEntity(EditorManager::getSelectedEntity());
+    const std::optional<EntityBounds> selection = editor_bounds::ofEntity(EditorManager::getSelectedEntity());
     if (selection) {
       // The box that frames it, which is not the box that gets drawn: a
       // rotated entity needs its corners boxed first.
-      bounds = EditorBounds::aabb(*selection);
+      bounds = editor_bounds::aabb(*selection);
     }
 
     if (!bounds) {
-      bounds = EditorBounds::ofScene();
+      bounds = editor_bounds::ofScene();
     }
 
     if (!bounds) {

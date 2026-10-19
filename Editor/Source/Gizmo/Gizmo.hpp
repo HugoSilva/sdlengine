@@ -159,7 +159,7 @@ class Gizmo {
 inline bool Gizmo::anchor(const EditorCamera& camera, const ImVec2& imagePos, ImVec2& out) const {
   // The active entity anchors the drag; with one entity selected that is the
   // only one there is.
-  const std::optional<glm::vec2> position = EditorBounds::positionOf(EditorManager::getSelectedEntity());
+  const std::optional<glm::vec2> position = editor_bounds::positionOf(EditorManager::getSelectedEntity());
 
   if (!position) {
     return false;

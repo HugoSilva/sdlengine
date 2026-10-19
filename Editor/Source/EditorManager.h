@@ -6,7 +6,7 @@
 #include "EditorSettings.hpp"
 #define INVALID_ENTITY_ID entt::null
 
-enum class eComponents { Audio, Rigidbody, Sprite };
+enum class Components { Audio, Rigidbody, Sprite };
 
 class EditorManager {
  public:
@@ -18,10 +18,10 @@ class EditorManager {
     uint32_t value;
   };
   struct AddComponent {
-    eComponents component;
+    Components component;
   };
   struct RemoveComponent {
-    eComponents component;
+    Components component;
   };
 
   EditorManager() {}

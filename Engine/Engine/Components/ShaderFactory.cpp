@@ -1,6 +1,6 @@
 #include "ShaderFactory.hpp"
 
-namespace ShaderFactory {
+namespace shader_factory {
 #ifdef EMSCRIPTEN
 const char* default_shader_vert = "";
 
@@ -75,4 +75,4 @@ rse::Shader* DefaultShader() {
 rse::Shader* BasicLightShader() {
   return rse::Shader::fromSource("Basic Light Shader", basic_light_shader_vert, basic_light_shader_frag);
 }
-}  // namespace ShaderFactory
+}  // namespace shader_factory

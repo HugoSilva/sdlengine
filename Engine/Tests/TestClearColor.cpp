@@ -4,7 +4,7 @@
 
 #include <GL/glew.h>
 
-namespace Test {
+namespace test {
 TestClearColor::TestClearColor() : m_clearColor{1.0f, 0.0f, 1.0f, 1.0f} {}
 
 TestClearColor::~TestClearColor() {}
@@ -17,4 +17,4 @@ void TestClearColor::OnRender() {
 }
 
 void TestClearColor::OnImguiRender() { ImGui::ColorEdit4("Clear Color", m_clearColor); }
-}  // namespace Test
+}  // namespace test

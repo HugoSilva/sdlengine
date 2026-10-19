@@ -33,7 +33,7 @@ struct EntityBounds {
   float rotationDegrees{0.0f};       // transform.rotation.z
 };
 
-namespace EditorBounds {
+namespace editor_bounds {
 // The entity's on-screen rectangle. Nothing when it has no sprite to
 // measure, which is the same condition the renderer uses to skip it.
 inline std::optional<EntityBounds> ofEntity(uint32_t entity) {
@@ -106,4 +106,4 @@ inline std::optional<rse::Bounds2D> ofScene() {
 
   return total;
 }
-}  // namespace EditorBounds
+}  // namespace editor_bounds

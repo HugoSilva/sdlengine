@@ -9,7 +9,7 @@ file(GLOB_RECURSE ENGINE_FILES CONFIGURE_DEPENDS
   "${CMAKE_CURRENT_SOURCE_DIR}/Engine/*.hpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/Engine/*.h")
 
-# Engine/Tests holds a runtime debug helper (Test::TestClearColor) that
+# Engine/Tests holds a runtime debug helper (test::TestClearColor) that
 # OpenGLRenderer depends on -- it is NOT a unit-test folder. Include it
 # explicitly rather than pulling in an unrelated Tests/ tree by accident.
 file(GLOB_RECURSE ENGINE_DEBUG_FILES CONFIGURE_DEPENDS

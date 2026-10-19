@@ -2,7 +2,7 @@
 
 #include "Test.h"
 
-namespace Test {
+namespace test {
 class TestClearColor : public Test {
  public:
   TestClearColor();
@@ -18,4 +18,4 @@ class TestClearColor : public Test {
  private:
   float m_clearColor[4];
 };
-}  // namespace Test
+}  // namespace test

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Test {
+namespace test {
 class Test {
  public:
   Test() {}
@@ -10,4 +10,4 @@ class Test {
   virtual void OnRender() {}
   virtual void OnImguiRender() {}
 };
-}  // namespace Test
+}  // namespace test

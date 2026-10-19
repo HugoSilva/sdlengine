@@ -9,7 +9,7 @@ class Shader;  // forward declaration for Shader
 
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific
 // input methods
-enum Camera_Movement { FORWARD, BACKWARD, LEFT, RIGHT };
+enum CameraMovement { FORWARD, BACKWARD, LEFT, RIGHT };
 
 // An abstract camera class that processes input and calculates the corresponding Eular Angles, Vectors and Matrices for
 // use in OpenGL
@@ -23,7 +23,7 @@ class Camera {
   void Update(float deltaTime);
   void Render(Shader* shader);
   glm::mat4 GetViewMatrix();
-  void ProcessKeyboard(Camera_Movement direction, float deltaTime);
+  void ProcessKeyboard(CameraMovement direction, float deltaTime);
   void ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch = true);
   void ProcessMouseScroll(float yOffset);
 

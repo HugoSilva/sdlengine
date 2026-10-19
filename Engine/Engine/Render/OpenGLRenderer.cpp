@@ -47,7 +47,7 @@ OpenGLRenderer::OpenGLRenderer(SDL_Window* win, Shader* shader) : m_Window(win),
 
   glBindVertexArray(0);
 
-  clearColor = new Test::TestClearColor();
+  clearColor = new test::TestClearColor();
 #ifdef EMSCRIPTEN
   m_BufferBase = new VertexData[RENDERER_MAX_SPRITES * 4];
 #endif  // EMSCRIPTEN
