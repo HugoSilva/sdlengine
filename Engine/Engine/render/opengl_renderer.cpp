@@ -11,7 +11,7 @@ OpenGLRenderer::OpenGLRenderer(SDL_Window* win, Shader* shader) : m_window(win),
 
   glBindVertexArray(m_vao);
   glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-  glBufferData(GL_ARRAY_BUFFER, RENDERER_BUFFER_SIZE, NULL, GL_DYNAMIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, RENDERER_BUFFER_SIZE, nullptr, GL_DYNAMIC_DRAW);
 
   glEnableVertexAttribArray(SHADER_VERTEX_INDEX);
   glEnableVertexAttribArray(SHADER_UV_INDEX);
@@ -205,7 +205,7 @@ void OpenGLRenderer::Flush() {
   glBindVertexArray(m_vao);
   m_ibo->Bind();
 
-  glDrawElements(GL_TRIANGLES, m_index_count, GL_UNSIGNED_INT, NULL);
+  glDrawElements(GL_TRIANGLES, m_index_count, GL_UNSIGNED_INT, nullptr);
 
   m_ibo->Unbind();
   glBindVertexArray(0);

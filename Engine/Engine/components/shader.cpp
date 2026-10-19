@@ -66,23 +66,23 @@ unsigned int Shader::Load(const char* vertex_source, const char* fragment_source
   int success;
   char info_log[512];
 
-  glShaderSource(vertex, 1, &vertex_source, NULL);
+  glShaderSource(vertex, 1, &vertex_source, nullptr);
   glCompileShader(vertex);
 
   glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
   if (!success) {
-    glGetShaderInfoLog(vertex, 512, NULL, info_log);
+    glGetShaderInfoLog(vertex, 512, nullptr, info_log);
     Logger::Error("Shader error vertex compilation failed");
     std::string log(info_log);
     Logger::Warning(log);
   }
 
-  glShaderSource(fragment, 1, &fragment_source, NULL);
+  glShaderSource(fragment, 1, &fragment_source, nullptr);
   glCompileShader(fragment);
 
   glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
   if (!success) {
-    glGetShaderInfoLog(fragment, 512, NULL, info_log);
+    glGetShaderInfoLog(fragment, 512, nullptr, info_log);
     Logger::Error("Shader error fragment compilation failed");
     std::string log(info_log);
     Logger::Warning(log);
@@ -95,7 +95,7 @@ unsigned int Shader::Load(const char* vertex_source, const char* fragment_source
 
   glGetProgramiv(program, GL_LINK_STATUS, &success);
   if (!success) {
-    glGetProgramInfoLog(program, 512, NULL, info_log);
+    glGetProgramInfoLog(program, 512, nullptr, info_log);
     Logger::Error("Shader error linking failed");
     std::string log(info_log);
     Logger::Warning(log);

@@ -43,7 +43,7 @@ SDL_Surface* Image::LoadFont(TTF_Font* font, const char* text, SDL_Color text_co
   // SDL3_ttf takes an explicit length (0 == NUL-terminated) and the colour by value.
   SDL_Surface* surface = TTF_RenderText_Blended(font, text, std::strlen(text), text_color);
 
-  if (surface == NULL) {
+  if (surface == nullptr) {
     Logger::Error("Cannot create font text: " + std::string(text));
     return nullptr;
   }
@@ -54,7 +54,7 @@ SDL_Surface* Image::LoadFont(TTF_Font* font, const char* text, SDL_Color text_co
 SDL_Surface* Image::LoadImage(const char* filename) {
   SDL_Surface* surface = IMG_Load(filename);
 
-  if (surface == NULL) {
+  if (surface == nullptr) {
     Logger::Error("Cannot load texture from file: " + std::string(filename));
     return nullptr;
   }

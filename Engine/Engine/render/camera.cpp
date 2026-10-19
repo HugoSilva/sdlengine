@@ -30,10 +30,10 @@ Camera::Camera(float pos_x, float pos_y, float pos_z, float up_x, float up_y, fl
 
 void Camera::Setup() {
   // TODO Need to fix the hard coded values for the camera
-  this->m_front = glm::normalize(m_front);
-  this->m_right = glm::normalize(glm::cross(this->m_front, this->m_world_up));
-  this->m_up = glm::normalize(glm::cross(this->m_right, this->m_front));
-  // this->updateCameraVectors();
+  m_front = glm::normalize(m_front);
+  m_right = glm::normalize(glm::cross(m_front, m_world_up));
+  m_up = glm::normalize(glm::cross(m_right, m_front));
+  // updateCameraVectors();
 
   // TODO Implement perspective support
   // TODO Add support for multiple resolutions
@@ -51,19 +51,19 @@ void Camera::Update(float delta_time) {
   using namespace rse;
 
   if (Keyboard::IsKeyPressed(SDL_SCANCODE_UP)) {
-    this->ProcessKeyboard(kForward, delta_time);
+    ProcessKeyboard(kForward, delta_time);
   }
 
   if (Keyboard::IsKeyPressed(SDL_SCANCODE_DOWN)) {
-    this->ProcessKeyboard(kBackward, delta_time);
+    ProcessKeyboard(kBackward, delta_time);
   }
 
   if (Keyboard::IsKeyPressed(SDL_SCANCODE_LEFT)) {
-    this->ProcessKeyboard(kLeft, delta_time);
+    ProcessKeyboard(kLeft, delta_time);
   }
 
   if (Keyboard::IsKeyPressed(SDL_SCANCODE_RIGHT)) {
-    this->ProcessKeyboard(kRight, delta_time);
+    ProcessKeyboard(kRight, delta_time);
   }
 
   double x_pos = Mouse::GetMouseX();
@@ -82,7 +82,7 @@ void Camera::Update(float delta_time) {
   // lastX = xPos;
   // lastY = yPos;
 
-  this->ProcessMouseMovement(static_cast<float>(x_pos), static_cast<float>(y_pos));
+  ProcessMouseMovement(static_cast<float>(x_pos), static_cast<float>(y_pos));
 }
 
 void Camera::Render(Shader* shader) {
@@ -105,9 +105,7 @@ void Camera::Render(Shader* shader) {
   shader->SetUniformMat4("projection", glm::value_ptr(m_projection));
 }
 
-glm::mat4 Camera::GetViewMatrix() {
-  return glm::lookAt(this->m_position, this->m_position + this->m_front, this->m_up);
-}
+glm::mat4 Camera::GetViewMatrix() { return glm::lookAt(m_position, m_position + m_front, m_up); }
 
 void Camera::ProcessKeyboard(CameraMovement direction, float delta_time) {
   float velocity = m_movement_speed * delta_time;
@@ -130,23 +128,23 @@ void Camera::ProcessKeyboard(CameraMovement direction, float delta_time) {
 }
 
 void Camera::ProcessMouseMovement(float x_offset, float y_offset, bool constrain_pitch) {
-  x_offset *= this->m_mouse_sensitivity;
-  y_offset *= this->m_mouse_sensitivity;
+  x_offset *= m_mouse_sensitivity;
+  y_offset *= m_mouse_sensitivity;
 
-  this->m_yaw += x_offset;
-  this->m_pitch += y_offset;
+  m_yaw += x_offset;
+  m_pitch += y_offset;
 
   if (constrain_pitch) {
-    if (this->m_pitch > 89.0f) {
-      this->m_pitch = 89.0f;
+    if (m_pitch > 89.0f) {
+      m_pitch = 89.0f;
     }
 
-    if (this->m_pitch < -89.0f) {
-      this->m_pitch = -89.0f;
+    if (m_pitch < -89.0f) {
+      m_pitch = -89.0f;
     }
   }
 
-  // this->updateCameraVectors();
+  // updateCameraVectors();
 }
 
 void Camera::ProcessMouseScroll(float y_offset) {}
@@ -154,14 +152,14 @@ void Camera::ProcessMouseScroll(float y_offset) {}
 void Camera::UpdateCameraVectors() {
   // Calculate the new Front vector
   glm::vec3 front;
-  front.x = cos(glm::radians(this->m_yaw)) * cos(glm::radians(this->m_pitch));
-  front.y = sin(glm::radians(this->m_pitch));
-  front.z = sin(glm::radians(this->m_yaw)) * cos(glm::radians(this->m_pitch));
-  this->m_front = glm::normalize(front);
+  front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+  front.y = sin(glm::radians(m_pitch));
+  front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+  m_front = glm::normalize(front);
   // Also re-calculate the Right and Up vector
-  this->m_right = glm::normalize(
-      glm::cross(this->m_front, this->m_world_up));  // Normalize the vectors, because their length gets closer to 0 the
-                                                     // more you look up or down which results in slower movement.
-  this->m_up = glm::normalize(glm::cross(this->m_right, this->m_front));
+  m_right = glm::normalize(
+      glm::cross(m_front, m_world_up));  // Normalize the vectors, because their length gets closer to 0 the
+                                         // more you look up or down which results in slower movement.
+  m_up = glm::normalize(glm::cross(m_right, m_front));
 }
 }  // namespace rse
