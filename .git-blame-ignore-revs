@@ -1,0 +1,32 @@
+# Commits that applied the coding standard mechanically: reformatting, renames,
+# de-scoping. They are listed here so that `git blame` looks past them -- the
+# line you are reading was moved or re-spelled in one of these, and the commit
+# worth reading is the one before it.
+#
+# See docs/CodingStandards.md section 7 for the reasoning. GitHub reads this
+# file automatically. To use it locally, once per clone:
+#
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# Newest last, and only commits that are purely mechanical belong here.
+
+# style: adopt clang-format and reflow the tree
+7a5c1c3abf4959d954e63803f83b84bb285c5f18
+
+# refactor(names): types and namespaces
+438e80c029bb5b6207d417c4c2d30a1584f44ae2
+
+# refactor(names): functions and methods
+2ccc24bbed475703b1bc8a30819edd2bb0b3a484
+
+# refactor(names): variables, members, parameters and constants
+88dac6dbfb46c5b59a27ee240981f3e2cd4f55e5
+
+# refactor(names): enumerators
+d410813eea11f6e386fd72ea4731e3d74f288cfd
+
+# refactor(names): files and directories
+0ae08ecfc247b500cfc23cdd709a1f7fc5ac4b1d
+
+# refactor(style): nullptr and no redundant this->
+97a5f1b54f1321037045f4cc8cb7f1ea980b5b7e

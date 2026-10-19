@@ -2,8 +2,9 @@
 rem Fail if any translation unit in this repository has a naming violation.
 rem The rules are in .clang-tidy; see docs/CodingStandards.md.
 rem
-rem Needs a configured build, because clang-tidy reads the compile commands:
-rem   cmake --preset x64-debug
+rem Needs a built tree, because clang-tidy reads the compile commands -- and those
+rem carry MSVC .obj.modmap response files that only exist after a compile:
+rem   cmake --preset x64-debug && cmake --build --preset x64-debug
 rem Usage: check-naming.bat [preset]     (default x64-debug)
 setlocal EnableDelayedExpansion
 call "%~dp0_llvm.bat" || exit /b 1
@@ -13,7 +14,7 @@ set "PRESET=%~1"
 if "%PRESET%"=="" set "PRESET=x64-debug"
 if not exist "out\%PRESET%\compile_commands.json" (
   echo [check-naming] out\%PRESET%\compile_commands.json is missing.
-  echo [check-naming] Configure the build first: cmake --preset %PRESET%
+  echo [check-naming] Configure and build first: cmake --preset %PRESET% ^&^& cmake --build --preset %PRESET%
   popd
   exit /b 1
 )

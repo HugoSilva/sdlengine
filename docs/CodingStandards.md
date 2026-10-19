@@ -151,8 +151,10 @@ tools\check-format.bat           :: fail if any file is not clang-format clean
 tools\check-naming.bat x64-debug :: fail if any translation unit has a naming violation
 ```
 
-`check-naming.bat` needs a configured build (`cmake --preset x64-debug`), because `clang-tidy`
-reads `out/<preset>/compile_commands.json`. The other two do not.
+`check-naming.bat` needs a **built** tree — configure it and then build it — because `clang-tidy`
+reads `out/<preset>/compile_commands.json`, and the compile commands MSVC generates carry
+`.obj.modmap` response files that only exist once something has actually been compiled. The other two
+scripts need nothing at all.
 
 Both checks are complete-or-nothing by design: a rename that is 95% done looks like a convention,
 which is worse than one not started. That is also why the gates are **verified against deliberately
@@ -160,8 +162,14 @@ broken input** — an instrument that cannot fail proves nothing.
 
 ### 6.1 A note on versions
 
-`clang-format` output changes between major versions, so CI installs the same version used locally.
-If they ever drift, every file in the tree will appear to need reformatting at once.
+`clang-format` output changes between major versions, so CI installs the same release line we build with
+locally, LLVM 19.1.x. If they ever drift, every file in the tree will appear to need reformatting at once.
+
+`clang-tidy` cannot be pinned that way. A hosted runner ships a newer MSVC than a developer machine,
+and the MSVC STL refuses to be parsed by an old Clang at all (`STL1000: expected Clang 20 or newer`),
+so CI runs the newest LLVM that can read the runner's toolchain. The naming **rules** are what must
+agree — and they are shared, since `.clang-tidy` and the scripts are. This is the one place where
+"passes locally" and "passes in CI" are only approximately the same statement.
 
 ---
 
