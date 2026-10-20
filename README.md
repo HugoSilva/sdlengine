@@ -37,9 +37,20 @@ Other presets: `x64-release`, `x86-debug`, `x86-release`.
 | `Game`      | executable      | Sample project.                                  |
 | `UnitTests` | executable      | GoogleTest tests (built from source via FetchContent).|
 
-Each executable gets its runtime DLLs and its `Resources/` folder copied next to it automatically.
+Each executable gets its runtime DLLs, its `Resources/` folder and the `SampleProject/` directory copied next to it automatically.
 
 Toggle targets off with `-DRSE_BUILD_EDITOR=OFF`, `-DRSE_BUILD_GAME=OFF`, `-DRSE_BUILD_TESTS=OFF`.
+
+### Projects
+
+A game is a project: a directory with a `project.xml` manifest (window, asset root, startup scene, scene list) and one file per scene. Both binaries take the manifest's path as their first argument and fall back to `./project.xml`:
+
+```bat
+cd bin\x64-debug
+Game.exe SampleProject\project.xml
+```
+
+`SampleProject/` is checked in and deployed next to the binaries, so the command above works out of the box. [`docs/ProjectFormat.md`](docs/ProjectFormat.md) documents the manifest, the scene files, and what they do and do not store.
 
 ### Tests
 
