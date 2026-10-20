@@ -67,6 +67,12 @@ class Core {
   // so a manifest never names a scene that is not on disk.
   static bool SaveProject(std::string* error);
 
+  // A resource by name: the open project's asset root first, then the engine's
+  // own Resources/ next to the binary. This is what lets a project directory be
+  // opened from anywhere, and the bridge until textures are loaded by name
+  // rather than by value (see docs/ProjectFormat.md).
+  static std::string ResolveResource(const std::string& name);
+
   // Render target the scene pass should draw into, or nullptr to draw into the
   // window's back buffer. The editor overrides this so the scene lands in its
   // viewport panel instead of the whole window.

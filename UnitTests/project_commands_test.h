@@ -7,6 +7,7 @@
 
 #include <core.h>
 #include <filesystem>
+#include <fstream>
 #include <project_commands.h>
 #include <string>
 
@@ -157,6 +158,28 @@ TEST_F(ProjectCommandsTest, OpeningAMissingProjectChangesNothing) {
   EXPECT_FALSE(Core::OpenProject(m_root / "Missing" / "project.xml", &error));
   EXPECT_FALSE(error.empty());
   EXPECT_EQ(Core::GetProject().File(), before);
+}
+
+TEST_F(ProjectCommandsTest, ResolveResourcePrefersTheProjectAssetRoot) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+
+  const std::filesystem::path asset = directory / "assets" / "probe.png";
+  std::ofstream file(asset, std::ios::binary);
+  file << "probe";
+  file.close();
+
+  EXPECT_EQ(std::filesystem::path{Core::ResolveResource("probe.png")}, asset);
+}
+
+TEST_F(ProjectCommandsTest, ResolveResourceFallsBackToTheEngineResources) {
+  const std::string engine_copy = (std::filesystem::path("Resources") / "tex3.png").string();
+
+  EXPECT_EQ(Core::ResolveResource("tex3.png"), engine_copy);
+
+  // A project that does not ship the file still gets the engine's copy.
+  NewProjectAt(m_root / "MyGame");
+  EXPECT_EQ(Core::ResolveResource("tex3.png"), engine_copy);
 }
 }  // namespace
 

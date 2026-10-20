@@ -19,21 +19,9 @@ rse::Window* Core::m_window;
 rse::Project Core::m_project;
 
 namespace {
-// The default shader the renderer starts with. A project may ship its own under
-// its asset root; the engine's copy next to the binary is the fallback, and it
-// is what keeps a run without a project working.
-std::string DefaultShaderPath(const char* file_name) {
-  const rse::Project& project = Core::GetProject();
-
-  if (project.IsAttached()) {
-    const std::filesystem::path candidate = project.Resolve(project.asset_root + "/" + file_name);
-
-    if (std::filesystem::exists(candidate)) {
-      return candidate.string();
-    }
-  }
-
-  return std::string("Resources/") + file_name;
+// The engine's own copy of a resource, next to the binary.
+std::string EngineResourcePath(const std::string& file_name) {
+  return (std::filesystem::path("Resources") / file_name).string();
 }
 }  // namespace
 
@@ -57,8 +45,8 @@ Core::Core(const std::filesystem::path& project_file) : m_frames_per_second(0) {
   rse::InputManager::Init();
   PhysicsManager::Init();
 
-  const std::string vertex_shader = DefaultShaderPath("Default.vert");
-  const std::string fragment_shader = DefaultShaderPath("Default.frag");
+  const std::string vertex_shader = ResolveResource("Default.vert");
+  const std::string fragment_shader = ResolveResource("Default.frag");
   rse::Shader* default_shader = new rse::Shader(vertex_shader.c_str(), fragment_shader.c_str());
   m_renderer = new rse::OpenGLRenderer(m_window->GetWindow(), default_shader);
 
@@ -131,6 +119,18 @@ bool Core::SaveProject(std::string* error) {
   }
 
   return m_project.Save(error);
+}
+
+std::string Core::ResolveResource(const std::string& name) {
+  if (m_project.IsAttached()) {
+    const std::filesystem::path candidate = m_project.Resolve(m_project.asset_root + "/" + name);
+
+    if (std::filesystem::exists(candidate)) {
+      return candidate.string();
+    }
+  }
+
+  return EngineResourcePath(name);
 }
 
 Core::~Core() {

@@ -19,12 +19,12 @@ EditorApp::EditorApp(const std::filesystem::path& project_file) : Core(project_f
 void EditorApp::Init() {
   using namespace rse;
 
-  m_shader = new Shader("Resources/Default.vert", "Resources/Default.frag");
+  const std::string vertex_shader = Core::ResolveResource("Default.vert");
+  const std::string fragment_shader = Core::ResolveResource("Default.frag");
+  m_shader = new Shader(vertex_shader.c_str(), fragment_shader.c_str());
 
-  // TODO: load the project's own resources. The manifest's asset root is not
-  // consulted yet; see the project format document's follow-ups.
-  TextureManager::Add(new Texture("test00", "Resources/tex3.png"));
-  SoundManager::Add(new Sound("eff", "Resources/effect.wav"));
+  TextureManager::Add(new Texture("test00", Core::ResolveResource("tex3.png")));
+  SoundManager::Add(new Sound("eff", Core::ResolveResource("effect.wav")));
 
   // The viewport gets the editor's own camera, not the engine's game camera:
   // the engine camera keeps its WASD/mouse-look path and the editor camera

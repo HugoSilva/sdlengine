@@ -19,14 +19,18 @@ class Game : public Core {
 
   void Init() override {
 #ifdef EMSCRIPTEN
-    m_shader = new rse::Shader("Resources/ES3.vert", "Resources/ES3.frag");
+    const std::string vertex_shader = Core::ResolveResource("ES3.vert");
+    const std::string fragment_shader = Core::ResolveResource("ES3.frag");
 #else
-    m_shader = new rse::Shader("Resources/Default.vert", "Resources/Default.frag");
+    const std::string vertex_shader = Core::ResolveResource("Default.vert");
+    const std::string fragment_shader = Core::ResolveResource("Default.frag");
 #endif  // EMSCRIPTEN
+
+    m_shader = new rse::Shader(vertex_shader.c_str(), fragment_shader.c_str());
 
     m_camera = new rse::Camera(glm::vec3(0.f, 0.f, 0.f));
 
-    rse::FontManager::Add(new rse::Font("Arial", "Resources/arial.ttf", 24));
+    rse::FontManager::Add(new rse::Font("Arial", Core::ResolveResource("arial.ttf"), 24));
 
 #ifdef EMSCRIPTEN
 #else
