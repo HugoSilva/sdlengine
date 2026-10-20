@@ -68,11 +68,19 @@ bool Project::Load(const std::filesystem::path& file, Project& project, std::str
     }
   }
 
-  if (format_version < kFirstFormatVersion) {
-    // Version 0 and below were never manifests: a file that claims one is not
-    // a project file, whatever it contains.
+  // Version 0 and below were never manifests: a file that claims one is not a
+  // project file, whatever it contains. A version between that and the first
+  // one this build reads is one of ours, just too old to read.
+  if (format_version < 1) {
     SetError(error, "not a project file: format version " + std::to_string(format_version) +
                         " is not a project version: " + file.string());
+    return false;
+  }
+
+  if (format_version < kFirstFormatVersion) {
+    SetError(error, "project format version " + std::to_string(format_version) +
+                        " is older than this build supports (" + std::to_string(kFirstFormatVersion) +
+                        "): " + file.string());
     return false;
   }
 

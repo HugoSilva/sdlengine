@@ -42,11 +42,10 @@ struct LoadEntities {
     loader.entities(archive);
     loader.component<BasicComponent, TransformComponent, SpriteComponent>(archive);
 
-    // Groups added after version 1 are chained here, in the order SaveEntities
-    // writes them, each read only from the version that introduced it so a
-    // file that predates the group keeps the default:
+    // Groups added after version 2 are chained here, in the order SaveEntities
+    // writes them, each read only from the version that introduced it:
     //
-    //   if (format_version >= 2) loader.component<AudioComponent>(archive);
+    //   if (format_version >= 3) loader.component<AudioComponent>(archive);
   }
 };
 
@@ -174,9 +173,19 @@ bool SceneIO::Load(const std::filesystem::path& file, std::string* error) {
 
     archive(cereal::make_nvp("formatVersion", format_version));
 
-    if (format_version < kFirstFormatVersion) {
+    // Three cases, three messages: below 1 is not a scene at all, below the
+    // first version this build reads is one of ours that is too old to read,
+    // and above the current one is newer than this build.
+    if (format_version < 1) {
       SetError(error, "not a scene file: format version " + std::to_string(format_version) +
                           " is not a scene version: " + file.string());
+      return false;
+    }
+
+    if (format_version < kFirstFormatVersion) {
+      SetError(error, "scene format version " + std::to_string(format_version) +
+                          " is older than this build supports (" + std::to_string(kFirstFormatVersion) +
+                          "): " + file.string());
       return false;
     }
 

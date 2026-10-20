@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <cereal>
-	<formatVersion>1</formatVersion>
+	<formatVersion>2</formatVersion>
 	<entities>
 		<value0>12</value0>
 		<value1>11</value1>
@@ -331,11 +331,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4278255360</Color>
-							<Texture>
-								<ptr_wrapper>
-									<id>0</id>
-								</ptr_wrapper>
-							</Texture>
+							<Texture>tex3.png</Texture>
 						</value0>
 						<Position>
 							<x>240</x>
@@ -359,11 +355,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4278190335</Color>
-							<Texture>
-								<ptr_wrapper>
-									<id>0</id>
-								</ptr_wrapper>
-							</Texture>
+							<Texture>tex3.png</Texture>
 						</value0>
 						<Position>
 							<x>400</x>
@@ -387,11 +379,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4278255615</Color>
-							<Texture>
-								<ptr_wrapper>
-									<id>0</id>
-								</ptr_wrapper>
-							</Texture>
+							<Texture>tex3.png</Texture>
 						</value0>
 						<Position>
 							<x>560</x>
@@ -415,11 +403,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4294901760</Color>
-							<Texture>
-								<ptr_wrapper>
-									<id>0</id>
-								</ptr_wrapper>
-							</Texture>
+							<Texture>tex3.png</Texture>
 						</value0>
 						<Position>
 							<x>720</x>
@@ -443,11 +427,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4294902015</Color>
-							<Texture>
-								<ptr_wrapper>
-									<id>0</id>
-								</ptr_wrapper>
-							</Texture>
+							<Texture>tex3.png</Texture>
 						</value0>
 						<Position>
 							<x>240</x>
@@ -471,11 +451,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4278223103</Color>
-							<Texture>
-								<ptr_wrapper>
-									<id>0</id>
-								</ptr_wrapper>
-							</Texture>
+							<Texture>tex3.png</Texture>
 						</value0>
 						<Position>
 							<x>400</x>
@@ -499,11 +475,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4282158300</Color>
-							<Texture>
-								<ptr_wrapper>
-									<id>0</id>
-								</ptr_wrapper>
-							</Texture>
+							<Texture>tex3.png</Texture>
 						</value0>
 						<Position>
 							<x>560</x>
@@ -527,11 +499,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4280328224</Color>
-							<Texture>
-								<ptr_wrapper>
-									<id>0</id>
-								</ptr_wrapper>
-							</Texture>
+							<Texture>tex3.png</Texture>
 						</value0>
 						<Position>
 							<x>720</x>
@@ -555,11 +523,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4282400960</Color>
-							<Texture>
-								<ptr_wrapper>
-									<id>0</id>
-								</ptr_wrapper>
-							</Texture>
+							<Texture>tex3.png</Texture>
 						</value0>
 						<Position>
 							<x>240</x>
@@ -583,11 +547,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4288716832</Color>
-							<Texture>
-								<ptr_wrapper>
-									<id>0</id>
-								</ptr_wrapper>
-							</Texture>
+							<Texture>tex3.png</Texture>
 						</value0>
 						<Position>
 							<x>400</x>
@@ -611,11 +571,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4280328352</Color>
-							<Texture>
-								<ptr_wrapper>
-									<id>0</id>
-								</ptr_wrapper>
-							</Texture>
+							<Texture>tex3.png</Texture>
 						</value0>
 						<Position>
 							<x>560</x>
@@ -639,11 +595,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4286611584</Color>
-							<Texture>
-								<ptr_wrapper>
-									<id>0</id>
-								</ptr_wrapper>
-							</Texture>
+							<Texture>tex3.png</Texture>
 						</value0>
 						<Position>
 							<x>720</x>

@@ -38,8 +38,10 @@ Every file a project is made of carries its own `formatVersion`, and the version
 are independent: a manifest, a scene, a prefab and the asset registry move on
 their own schedule. A build reads a file when its version is between the oldest
 one it still understands and the newest one it writes. A file **newer** than the
-build is refused, because the build cannot know what its fields mean; a file older
-than the oldest supported version is not that kind of file at all.
+build is refused, because the build cannot know what its fields mean. A file
+**older** than the oldest version the build reads is refused too, with its own
+message: below version 1 it is not that kind of file at all, and between 1 and the
+oldest supported version it is one of ours that is too old to read.
 
 Two kinds of change exist, and they are not equal:
 
@@ -49,8 +51,10 @@ Two kinds of change exist, and they are not equal:
   This is the default, and the only free kind of change.
 * **Breaking** -- a field changes shape, or what a reference points at changes.
   This needs a migration that rewrites the data on load (`Project::Migrate`, and
-  the equivalent in `SceneIO`), or a refusal. Best-effort parsing is not an
-  option: a file read as the wrong shape is worse than one that will not open.
+  the equivalent in `SceneIO`), or a refusal: the oldest supported version moves
+  up to the new one and older files are refused as too old. Best-effort parsing
+  is not an option: a file read as the wrong shape is worse than one that will
+  not open. Scene version 2 is the first breaking change; see [Scene files](#scene-files).
 
 Two rules keep the additive case honest:
 
@@ -63,7 +67,7 @@ Two rules keep the additive case honest:
 
 | Milestone | Manifest | Scene | Prefab | Assets |
 |---|---|---|---|---|
-| today | 1 | 1 | -- | -- |
+| today | 1 | 2 | -- | -- |
 | #54 | 1 | 1 | -- | -- |
 | #47 | 1 | **2** | -- | -- |
 | #48 | 1 | **3** | -- | -- |
@@ -75,8 +79,8 @@ Two rules keep the additive case honest:
 | #46c | **3** | 6 | 1 | 1 |
 
 Only the rows up to today are shipped behaviour; the rest is the order the
-increments land in, one issue at a time. The first two milestone rows are the
-migration policy itself and the first use of it.
+increments land in, one issue at a time. The first three rows are shipped: the
+migration policy itself, and the first breaking change made under it.
 
 ## The manifest
 
@@ -105,7 +109,7 @@ migration policy itself and the first use of it.
 
 | Element | Meaning |
 |---|---|
-| `formatVersion` | Version of the manifest format. Checked before anything else is read: older versions are migrated forward, newer ones are refused. |
+| `formatVersion` | Version of the manifest format. Checked before anything else is read: versions older than this build supports are migrated forward or refused, newer ones are refused. |
 | `name` | The project's name. The editor shows it in the title bar. |
 | `engineVersion` | The engine version that wrote the file. Informational: only `formatVersion` decides whether the file can be read. `Save` stamps this build's version, so it names the last thing that wrote the file. |
 | `assetRoot` | Directory, relative to the manifest, where the project's assets live. The renderer looks here for its default shader before falling back to the engine's own copy. |
@@ -140,7 +144,7 @@ A scene file is the entity list: an `entt` snapshot of the registry, wrapped in 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <cereal>
-	<formatVersion>1</formatVersion>
+	<formatVersion>2</formatVersion>
 	<entities>
 		<value0>12</value0>
 		<value1>11</value1>
@@ -174,11 +178,7 @@ A scene file is the entity list: an `entt` snapshot of the registry, wrapped in 
 								<y>80</y>
 							</Size>
 							<Color>4278255360</Color>
-							<Texture>
-								<ptr_wrapper>
-									<id>0</id>
-								</ptr_wrapper>
-							</Texture>
+							<Texture>tex3.png</Texture>
 						</value0>
 						<Position>
 							<x>240</x>
@@ -209,7 +209,7 @@ have the same path.
 |---|---|
 | `BasicComponent` (name, static flag, tag, layer) | `AudioComponent` |
 | `TransformComponent` (position, rotation, scale) | `RigidBodyComponent` |
-| `SpriteComponent` (size, colour, texture) | |
+| `SpriteComponent` (size, colour, texture name) | |
 
 Audio and rigid bodies have cereal hooks of their own, but they are not
 round-trip safe yet, so they are deliberately left out. An entity that carries one
@@ -220,10 +220,19 @@ The three groups above are written in that order and read in that order. Anythin
 added later is appended as a fourth group, read only from the version that
 introduced it; see [Versions](#versions).
 
-Textures are stored by value inside the sprite (a texture id and its dimensions,
-plus cereal's polymorphic wrapper), not by name. A texture that is not loaded when
-the scene is loaded cannot be resolved, which is why the sample scene uses
-coloured sprites and no texture references.
+A sprite stores its texture by **name**, not by value: `<Texture>tex3.png</Texture>`
+is a path relative to `assetRoot`. The name is resolved through `TextureManager`
+the first time a scene that uses it is loaded, and the manager keeps one texture
+per name, so twelve sprites naming one image share one upload and one copy in
+memory. A name that cannot be loaded does not fail the load: the texture keeps its
+name, ends at id 0 and the sprite draws white, and the engine logs one warning per
+missing name. An empty `<Texture></Texture>` is a sprite with no texture at all.
+
+Version 1 stored the texture itself, with cereal's polymorphic wrapper. Version 2
+changed the field's shape, so a version 1 scene is **refused** as too old rather
+than half-read -- there is no migration. `SceneIO::kFirstFormatVersion` moved to 2
+with it, and `UnitTests/fixtures/scene_v1.xml` is kept as the file the refusal is
+tested against.
 
 ## The editor's project commands
 
@@ -258,24 +267,27 @@ SampleProject/
     Default.frag
     tex3.png
   scenes/
-    start.xml         12 coloured sprites in a 4x3 grid
+    start.xml         12 sprites in a 4x3 grid, all using tex3.png
 ```
+
+The sprites keep their twelve colours and share one image, so the scene is also
+the worked example of the texture rule: one asset, one texture, twelve sprites.
 
 The unit tests open it: the sample is the one project that has to keep loading when
 the format moves.
 
 ## Limits and follow-ups
 
-- Textures are stored by value; the next step is storing them by name and loading
-  them from `assetRoot` through `TextureManager`.
 - `AudioComponent` and `RigidBodyComponent` are not persisted (see above).
 - There are no prefabs, no asset ids and no input bindings in the manifest.
 - Camera and background are per-run, not per-scene.
 - The editor's session state (open panels, last scene, selection) is not part of
   the project; it still lives in `imgui.ini` and `default.cfg`.
-- There is no recent-projects list. Version 1 is the only published version of
-  each file, so there is no migration to exercise yet -- the range check and the
-  `Migrate` hook are in place for the first one that needs it.
+- There is no recent-projects list.
+- Manifests are still on version 1, the only version published, so
+  `Project::Migrate` has no blocks yet -- the range check and the hook are in place
+  for the first manifest change that needs one. Scenes have had their first
+  breaking change and refuse version 1 outright; see above.
 - The renderer's default shader is chosen when the window is created, so opening a
   different project at runtime reloads scenes and window settings but keeps the
   shader it started with.
