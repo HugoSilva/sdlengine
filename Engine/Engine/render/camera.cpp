@@ -41,10 +41,23 @@ void Camera::Setup() {
 }
 
 void Camera::UpdateOrthoProjection() {
-  // Centred on the reference rectangle's middle, so the default framing is
-  // exactly what it always was: (0,0)-(1280,720) at zoom 1.
-  const OrthoView view = MakeOrthoView(m_reference_size * 0.5f, 1.0f, m_target_size, m_reference_size);
+  // The view matrix puts m_position at the origin of view space, so the ortho
+  // rectangle is centred on (0,0) and "where the camera is" becomes the world
+  // point in the middle of the frame. The default position, (640,360), is the
+  // middle of the reference rectangle -- bit for bit the framing this camera
+  // has always had.
+  const OrthoView view = MakeOrthoView(glm::vec2(0.0f, 0.0f), m_zoom, m_target_size, m_reference_size);
   m_projection = MakeOrthoProjection(view);
+}
+
+void Camera::SetPosition(const glm::vec3& position) {
+  m_position = position;
+  UpdateOrthoProjection();
+}
+
+void Camera::SetZoom(float zoom) {
+  m_zoom = zoom;
+  UpdateOrthoProjection();
 }
 
 void Camera::Update(float delta_time) {

@@ -3,15 +3,17 @@
 #include <core.h>
 #include <imgui.h>
 
+#include <core/scene_manager.h>
+#include <ecs/scene_io.h>
 #include <layout/editor_panel.h>
 
 // ---------------------------------------------------------------------------
 // Home for the engine's debug gizmos.
 //
-// OpenGLRenderer used to submit its clear-colour ImGui widget itself, which
-// landed in ImGui's implicit "Debug" window: a floating window on top of the
-// dock space with no panel to put it in. The renderer now just exposes the
-// colour and this panel draws it.
+// The scene owns its background now, so this panel edits the value the scene
+// stores rather than a renderer-global clear colour: the colour shown here is
+// what the next saved scene will carry, and what the renderer clears to every
+// frame.
 // ---------------------------------------------------------------------------
 class DebugPanel : public EditorPanel {
  public:
@@ -24,14 +26,16 @@ class DebugPanel : public EditorPanel {
       return;
     }
 
-    rse::Renderer2D* renderer = Core::GetRenderer();
-    float* clear_color = renderer != nullptr ? renderer->GetClearColor() : nullptr;
+    rse::SceneIO::SceneCamera& camera = rse::SceneIO::GetCamera();
+    float background[3] = {camera.background.r, camera.background.g, camera.background.b};
 
-    if (clear_color != nullptr) {
-      ImGui::ColorEdit4("Clear Color", clear_color);
-    } else {
-      ImGui::TextDisabled("The active renderer exposes no clear colour.");
+    if (ImGui::ColorEdit3("Background", background)) {
+      camera.background = glm::vec3(background[0], background[1], background[2]);
+      SceneManager::MarkDirty();
     }
+
+    ImGui::SameLine();
+    ImGui::TextDisabled("(the open scene)");
 
     ImGui::End();
   }

@@ -21,8 +21,11 @@ void EditorManager::HandleCreateEntityEvent(const CreateEntity& event) {
   m_selected_entity = rse::ECSManager::CreateEntity();
   rse::ECSManager::AddComponent<BasicComponent>(m_selected_entity);
   rse::ECSManager::AddComponent<TransformComponent>(m_selected_entity);
-  rse::ECSManager::AddComponent<SpriteComponent>(
-      m_selected_entity, new rse::Sprite(glm::vec3(0, 0, 0), glm::vec2(40, 40), rse::TextureManager::Get("test00")));
+  // Untextured: the editor used to hand every new entity a sample project's
+  // image by name, which meant new entities in any other project pointed at a
+  // texture that project did not have.
+  rse::ECSManager::AddComponent<SpriteComponent>(m_selected_entity,
+                                                 new rse::Sprite(glm::vec3(0, 0, 0), glm::vec2(40, 40), 0xffffffffu));
 
   SceneManager::MarkDirty();
 }

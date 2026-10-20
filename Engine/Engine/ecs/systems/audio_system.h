@@ -1,17 +1,41 @@
 #pragma once
 
+#include <algorithm>
+
 #include "base_system.h"
+#include <ecs/components/audio.h>
 #include <ecs/ecs_manager.h>
 
+// Applies each entity's playback settings to the sound it borrowed, and starts
+// the ones that ask to autoplay. The settings live on the component so they
+// survive a save and load; a Sound is shared, so the mixer track behind it is
+// one track -- playing the same file from two entities at once shares it.
 class AudioSystem : public BaseSystem {
  public:
   AudioSystem() : BaseSystem() {}
 
   void Update(const float alpha) {
-    rse::ECSManager::GetView<TransformComponent, AudioComponent>().each(
-        [&, this](auto entity, TransformComponent& transform, AudioComponent& audio) {
-          // TODO Remove the logic from the old Audio object and do it here
-          // transform, audio
-        });
+    rse::ECSManager::GetView<AudioComponent>().each([](auto entity, AudioComponent& audio) {
+      rse::Sound* sound = audio.m_sound.get();
+
+      if (sound == nullptr) {
+        return;
+      }
+
+      sound->SetVolume(audio.mute ? 0 : std::clamp(audio.volume, 0, 128));
+
+      if (audio.autoplay && !audio.m_autoplay_started) {
+        audio.m_autoplay_started = true;
+
+        if (audio.loop) {
+          sound->Loop();
+        } else {
+          sound->Play();
+        }
+      } else if (!audio.autoplay) {
+        // Arming it again from the inspector has to play it again.
+        audio.m_autoplay_started = false;
+      }
+    });
   }
 };

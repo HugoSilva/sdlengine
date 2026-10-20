@@ -40,7 +40,10 @@ class Texture {
   };
 
  private:
-  unsigned int m_id;
+  // Zero until a GL context uploads it. A texture loaded without one (a unit
+  // test, a tool) keeps its name and size and stays at zero, which is what
+  // draws white.
+  unsigned int m_id{0};
   std::string m_name;
   std::string m_filename;
   int m_width = 0, m_height = 0;

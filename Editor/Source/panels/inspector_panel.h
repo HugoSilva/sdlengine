@@ -170,18 +170,22 @@ class InspectorPanel : public EditorPanel {
 
     if (ImGui::CollapsingHeader("Audio", ImGuiTreeNodeFlags_DefaultOpen)) {
       AudioComponent& component = EditorManager::GetComponent<AudioComponent>();
-      rse::Sound* sound = component.m_sound.get();
 
-      if (sound == nullptr) {
+      if (component.m_sound == nullptr) {
         ImGui::TextDisabled("No sound assigned.");
       } else {
-        const std::string file_name = sound->GetFileName();
+        const std::string file_name = component.m_sound->GetFileName();
         ImGui::LabelText("File", "%s", file_name.empty() ? "(none)" : file_name.c_str());
-
-        ImGui::Checkbox("Mute", sound->GetMute());
-        ImGui::Checkbox("Play on play", sound->GetPlayTrigger());
-        ImGui::Checkbox("Loop", sound->GetLoop());
       }
+
+      ImGui::SliderInt("Volume", &component.volume, 0, 128);
+      MarkDirtyIfEdited();
+      ImGui::Checkbox("Mute", &component.mute);
+      MarkDirtyIfEdited();
+      ImGui::Checkbox("Loop", &component.loop);
+      MarkDirtyIfEdited();
+      ImGui::Checkbox("Autoplay", &component.autoplay);
+      MarkDirtyIfEdited();
 
       DrawRemoveComponentButton(Components::kAudio, "Remove Audio");
     }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <gtest/gtest.h>
 
 #include <audio/music.h>
@@ -7,34 +9,85 @@
 #include <audio/sound_manager.h>
 
 /*
-TODO I need to change the default behavior for constructing and calling Sound/Music objects currently
-it never fails but I should but a proper logic that would crash if something is missing, this is going
-to be done after the new ECS comes into place
+Sounds are loaded once per name and owned by the manager; a component only
+borrows one. No mixer is created here, so every Sound is valid but silent --
+which is the same state a missing file leaves behind in an app that does have
+a mixer.
 */
 namespace {
 using namespace rse;
 
-TEST(SoundManagerTest, AddSound) {
-  SoundManager::Add(new Sound("test", "test.ogg"));
-  Sound* test_sound = SoundManager::GetSound("test");
-  EXPECT_NE(nullptr, test_sound);
+class SoundManagerTest : public ::testing::Test {
+ protected:
+  void TearDown() override { SoundManager::Clean(); }
+};
+
+TEST_F(SoundManagerTest, AddSound) {
+  SoundManager::Add(std::make_unique<Sound>("test", "test.ogg"));
+
+  EXPECT_NE(nullptr, SoundManager::GetSound("test"));
+  EXPECT_EQ(1u, SoundManager::Count());
 }
 
-TEST(SoundManagerTest, AddMusic) {
-  SoundManager::Add(new Music("test", "test.ogg"));
-  Music* test_music = SoundManager::GetMusic("test");
-  EXPECT_NE(nullptr, test_music);
+TEST_F(SoundManagerTest, AddSoundWaveFormat) {
+  SoundManager::Add(std::make_unique<Sound>("wave", "test.wav"));
+  SoundManager::Add(std::make_unique<Sound>("ogg", "test.ogg"));
+
+  EXPECT_NE(nullptr, SoundManager::GetSound("wave"));
+  EXPECT_NE(nullptr, SoundManager::GetSound("ogg"));
+  EXPECT_EQ(2u, SoundManager::Count());
 }
 
-TEST(SoundManagerTest, AddSoundWaveFormat) {
-  SoundManager::Add(new Music("test", "test.wav"));
-  Sound* test_sound = SoundManager::GetSound("test");
-  EXPECT_NE(nullptr, test_sound);
+TEST_F(SoundManagerTest, AddMusic) {
+  SoundManager::Add(std::make_unique<Music>("test", "test.ogg"));
+
+  EXPECT_NE(nullptr, SoundManager::GetMusic("test"));
+  // Music is not a sound: the component side only ever looks sounds up.
+  EXPECT_EQ(nullptr, SoundManager::GetSound("test"));
 }
 
-TEST(SoundManagerTest, AddSoundOggFormat) {
-  SoundManager::Add(new Music("test", "test.ogg"));
-  Sound* test_sound = SoundManager::GetSound("test");
-  EXPECT_NE(nullptr, test_sound);
+TEST_F(SoundManagerTest, GetOfAnUnknownNameIsNull) {
+  EXPECT_EQ(nullptr, SoundManager::GetSound("nothing_was_registered"));
+  EXPECT_EQ(nullptr, SoundManager::GetMusic("nothing_was_registered"));
+}
+
+TEST_F(SoundManagerTest, GetOrLoadLoadsANameOnce) {
+  Sound* first = SoundManager::GetOrLoad("shared.wav");
+  Sound* second = SoundManager::GetOrLoad("shared.wav");
+
+  ASSERT_NE(nullptr, first);
+  EXPECT_EQ(first, second);
+  EXPECT_EQ(first, SoundManager::GetSound("shared.wav"));
+  EXPECT_EQ(1u, SoundManager::Count());
+}
+
+TEST_F(SoundManagerTest, GetOrLoadKeepsOneSoundPerName) {
+  Sound* effect = SoundManager::GetOrLoad("shared.wav");
+  Sound* music = SoundManager::GetOrLoad("other.wav");
+
+  EXPECT_NE(effect, music);
+  EXPECT_EQ(2u, SoundManager::Count());
+}
+
+TEST_F(SoundManagerTest, AMissingFileKeepsTheName) {
+  Sound* sound = SoundManager::GetOrLoad("this_file_does_not_exist.wav");
+
+  ASSERT_NE(nullptr, sound);
+  EXPECT_EQ("this_file_does_not_exist.wav", sound->GetName());
+  EXPECT_FALSE(sound->IsPlaying());
+}
+
+TEST_F(SoundManagerTest, AnEmptyNameMeansNoSound) { EXPECT_EQ(nullptr, SoundManager::GetOrLoad("")); }
+
+TEST_F(SoundManagerTest, CleanTwiceIsSafe) {
+  SoundManager::GetOrLoad("shared.wav");
+  SoundManager::Add(std::make_unique<Music>("theme", "theme.ogg"));
+
+  SoundManager::Clean();
+  EXPECT_EQ(0u, SoundManager::Count());
+  EXPECT_EQ(nullptr, SoundManager::GetSound("shared.wav"));
+
+  SoundManager::Clean();
+  EXPECT_EQ(0u, SoundManager::Count());
 }
 }  // namespace

@@ -157,25 +157,75 @@ TEST_F(ProjectIOTest, LoadOfAMalformedFileReportsFailure) {
 }
 
 TEST_F(ProjectIOTest, ANewerFormatVersionIsRefused) {
-  WriteManifest("<cereal><project><formatVersion>2</formatVersion></project></cereal>");
+  WriteManifest("<cereal><project><formatVersion>99</formatVersion></project></cereal>");
 
-  Project project;
+  Project project = MakeProject();
   std::string error;
 
   EXPECT_FALSE(Project::Load(m_file, project, &error));
+  EXPECT_NE(error.find("99"), std::string::npos);
   EXPECT_NE(error.find("newer"), std::string::npos);
-  EXPECT_FALSE(project.IsAttached());
+
+  // A refused file leaves the caller's project exactly as it was.
+  EXPECT_TRUE(project.IsAttached());
+  EXPECT_EQ(project.name, "Sandbox");
 }
 
-TEST_F(ProjectIOTest, AnOlderFormatVersionIsRefused) {
+TEST_F(ProjectIOTest, AVersionZeroManifestIsNotAProjectFile) {
   WriteManifest("<cereal><project><formatVersion>0</formatVersion></project></cereal>");
 
   Project project;
   std::string error;
 
   EXPECT_FALSE(Project::Load(m_file, project, &error));
-  EXPECT_NE(error.find("older"), std::string::npos);
+  EXPECT_NE(error.find("not a project file"), std::string::npos);
   EXPECT_FALSE(project.IsAttached());
+
+  // A negative version is the same kind of nonsense, not an "older" manifest.
+  WriteManifest("<cereal><project><formatVersion>-1</formatVersion></project></cereal>");
+  EXPECT_FALSE(Project::Load(m_file, project, &error));
+  EXPECT_NE(error.find("not a project file"), std::string::npos);
+}
+
+// The first published manifest stays loadable. The fixture is never rewritten,
+// so a change that stops reading it fails here instead of in a user's project.
+TEST_F(ProjectIOTest, AV1ManifestLoadsFromTheFixture) {
+  const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "project_v1.xml";
+
+  Project project;
+  std::string error;
+
+  ASSERT_TRUE(Project::Load(fixture, project, &error)) << error;
+
+  EXPECT_EQ(project.format_version, 1);
+  EXPECT_EQ(project.name, "Fixture");
+  EXPECT_EQ(project.engine_version, "0.13");
+  EXPECT_EQ(project.asset_root, "assets");
+  EXPECT_EQ(project.window.title, "Fixture Project");
+  EXPECT_EQ(project.window.width, 1024);
+  EXPECT_EQ(project.window.height, 576);
+  EXPECT_EQ(project.startup_scene, "scenes/start.xml");
+  ASSERT_EQ(project.scenes.size(), 1u);
+  EXPECT_EQ(project.scenes.front(), "scenes/start.xml");
+  EXPECT_EQ(project.File(), std::filesystem::absolute(fixture));
+}
+
+TEST_F(ProjectIOTest, SaveWritesTheCurrentFormatVersionNotTheLoadedOne) {
+  Project project = MakeProject();
+  project.format_version = 0;  // as if it had been read from an older file
+  project.engine_version = "0.1";
+
+  std::string error;
+  ASSERT_TRUE(project.Save(&error)) << error;
+
+  const std::string contents = ReadFile(m_file);
+
+  EXPECT_NE(contents.find("<formatVersion>1</formatVersion>"), std::string::npos);
+  EXPECT_EQ(contents.find("<formatVersion>0</formatVersion>"), std::string::npos);
+
+  // The engine version is informational, but it would otherwise keep naming the
+  // build that wrote the file first.
+  EXPECT_NE(contents.find(std::string{"<engineVersion>"} + kEngineVersion + "</engineVersion>"), std::string::npos);
 }
 
 TEST_F(ProjectIOTest, AFailedLoadLeavesTheGivenProjectAlone) {

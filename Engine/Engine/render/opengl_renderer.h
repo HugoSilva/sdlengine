@@ -52,7 +52,9 @@ class OpenGLRenderer : public Renderer2D {
   void End();
   void Flush();
 
-  float* GetClearColor() override;
+  // Writes the scene's background into the clear colour TestClearColor owns
+  // and Begin() applies, so the clear stays in one place.
+  void SetClearColor(const glm::vec3& color) override;
 
  private:
   unsigned int m_vao, m_vbo;

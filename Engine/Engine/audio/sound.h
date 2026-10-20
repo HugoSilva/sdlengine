@@ -23,10 +23,6 @@ class Sound {
   inline const std::string& GetName() const { return m_name; }
   inline const std::string& GetFileName() const { return m_filename; }
 
-  inline bool* GetMute() { return &m_mute; }
-  inline bool* GetPlayTrigger() { return &m_play_trigger; }
-  inline bool* GetLoop() { return &m_loop; }
-
  private:
   std::string m_name;
   std::string m_filename;
@@ -34,8 +30,5 @@ class Sound {
   MIX_Audio* m_sound = nullptr;
   MIX_Track* m_track = nullptr;
   int m_volume = 128;
-  bool m_mute{false};
-  bool m_play_trigger{true};
-  bool m_loop{false};
 };
 }  // namespace rse

@@ -70,7 +70,12 @@ void OpenGLRenderer::Begin() {
   m_clear_color->OnRender();
 }
 
-float* OpenGLRenderer::GetClearColor() { return m_clear_color->GetClearColor(); }
+void OpenGLRenderer::SetClearColor(const glm::vec3& color) {
+  float* clear_color = m_clear_color->GetClearColor();
+  clear_color[0] = color.r;
+  clear_color[1] = color.g;
+  clear_color[2] = color.b;
+}
 
 void OpenGLRenderer::Submit(TransformComponent& transform, const Renderable2D* renderable) {
   // const glm::vec3& position = renderable->getPosition();

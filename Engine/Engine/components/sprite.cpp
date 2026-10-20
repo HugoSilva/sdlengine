@@ -8,6 +8,8 @@ Sprite::Sprite(glm::vec3 position, glm::vec2 size, unsigned int color)
 
 Sprite::Sprite(glm::vec3 position, glm::vec2 size, Texture* texture)
     : Renderable2D(position, size, 0xffffffff), position(m_position) {
-  m_texture.reset(texture);
+  // Borrowed, not owned: the texture belongs to TextureManager and outlives
+  // this sprite (see BorrowTexture).
+  m_texture = BorrowTexture(texture);
 }
 }  // namespace rse

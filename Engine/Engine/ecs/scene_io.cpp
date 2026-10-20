@@ -8,33 +8,52 @@
 
 #include <ecs/components/include_list.h>
 #include <ecs/ecs_manager.h>
-#include <utils/logger.h>
 
 namespace rse {
 namespace {
-// What a scene file stores is spelled out once per direction below. Audio and
-// rigid-body components have cereal hooks of their own but are not round-trip
-// safe yet, so they are deliberately absent and warned about on save.
+// What a scene file stores is spelled out once per direction below: every
+// component a scene can carry has a cereal hook that writes data, never a
+// pointer, so nothing is dropped on save.
 //
 // entt writes its snapshot as unnamed nodes, which cereal names value0,
 // value1, ... at the archive root. Wrapping it in a named node keeps a scene
-// file readable: <formatVersion> and <entities> are siblings, and everything
-// entt writes stays inside the second one.
+// file readable: <formatVersion>, <camera> and <entities> are siblings, and
+// everything entt writes stays inside the last one.
 struct SaveEntities {
   entt::DefaultRegistry& registry;
 
   template <typename Archive>
   void serialize(Archive& archive) {
-    registry.snapshot().entities(archive).component<BasicComponent, TransformComponent, SpriteComponent>(archive);
+    registry.snapshot()
+        .entities(archive)
+        .component<BasicComponent, TransformComponent, SpriteComponent, AudioComponent, RigidBodyComponent>(archive);
   }
 };
 
 struct LoadEntities {
   entt::DefaultRegistry& registry;
+  int format_version{0};
 
   template <typename Archive>
   void serialize(Archive& archive) {
-    registry.restore().entities(archive).component<BasicComponent, TransformComponent, SpriteComponent>(archive);
+    // One loader for the whole file: restore() asserts the registry is empty,
+    // so a second one would fire that assert on every load.
+    auto loader = registry.restore();
+
+    loader.entities(archive);
+    loader.component<BasicComponent, TransformComponent, SpriteComponent>(archive);
+
+    // Groups added after version 2 are chained here, in the order SaveEntities
+    // writes them, each read only from the version that introduced it:
+    //
+    //   if (format_version >= 6) loader.component<...>(archive);
+    if (format_version >= 3) {
+      loader.component<AudioComponent>(archive);
+    }
+
+    if (format_version >= 4) {
+      loader.component<RigidBodyComponent>(archive);
+    }
   }
 };
 
@@ -43,25 +62,9 @@ void SetError(std::string* error, const std::string& message) {
     *error = message;
   }
 }
-
-// Audio and rigid-body components are not part of the saved set yet, so an
-// entity that carries one loses it on the next load. Say so once per save
-// instead of dropping it silently.
-void WarnAboutComponentsThatAreNotSaved(entt::DefaultRegistry& registry) {
-  int entities = 0;
-
-  registry.each([&entities, &registry](const auto entity) {
-    if (registry.has<AudioComponent>(entity) || registry.has<RigidBodyComponent>(entity)) {
-      ++entities;
-    }
-  });
-
-  if (entities > 0) {
-    Logger::Warning(std::to_string(entities) +
-                    " entities carry components that are not saved (AudioComponent, RigidBodyComponent)");
-  }
-}
 }  // namespace
+
+SceneIO::SceneCamera SceneIO::m_camera;
 
 bool SceneIO::Save(const std::filesystem::path& file, std::string* error) {
   std::filesystem::path scratch{file};
@@ -82,6 +85,9 @@ bool SceneIO::Save(const std::filesystem::path& file, std::string* error) {
 
     const int format_version{kFormatVersion};
     archive(cereal::make_nvp("formatVersion", format_version));
+
+    // The camera is scene-root data, written before the entities it frames.
+    archive(cereal::make_nvp("camera", m_camera));
 
     SaveEntities entities{ECSManager::registry};
     archive(cereal::make_nvp("entities", entities));
@@ -111,7 +117,6 @@ bool SceneIO::Save(const std::filesystem::path& file, std::string* error) {
     return false;
   }
 
-  WarnAboutComponentsThatAreNotSaved(ECSManager::registry);
   return true;
 }
 
@@ -131,9 +136,26 @@ bool SceneIO::Load(const std::filesystem::path& file, std::string* error) {
 
     archive(cereal::make_nvp("formatVersion", format_version));
 
-    if (format_version != kFormatVersion) {
-      SetError(error, "unsupported scene format version " + std::to_string(format_version) + " (expected " +
-                          std::to_string(kFormatVersion) + "): " + file.string());
+    // Three cases, three messages: below 1 is not a scene at all, below the
+    // first version this build reads is one of ours that is too old to read,
+    // and above the current one is newer than this build.
+    if (format_version < 1) {
+      SetError(error, "not a scene file: format version " + std::to_string(format_version) +
+                          " is not a scene version: " + file.string());
+      return false;
+    }
+
+    if (format_version < kFirstFormatVersion) {
+      SetError(error, "scene format version " + std::to_string(format_version) +
+                          " is older than this build supports (" + std::to_string(kFirstFormatVersion) +
+                          "): " + file.string());
+      return false;
+    }
+
+    if (format_version > kFormatVersion) {
+      SetError(error, "scene format version " + std::to_string(format_version) +
+                          " is newer than this build supports (" + std::to_string(kFormatVersion) +
+                          "): " + file.string());
       return false;
     }
 
@@ -142,7 +164,13 @@ bool SceneIO::Load(const std::filesystem::path& file, std::string* error) {
     Clear();
     cleared = true;
 
-    LoadEntities entities{ECSManager::registry};
+    // Version 5 added the camera node. An older scene has none, so the value
+    // Clear() left is the default framing, which is what it was drawn with.
+    if (format_version >= 5) {
+      archive(cereal::make_nvp("camera", m_camera));
+    }
+
+    LoadEntities entities{ECSManager::registry, format_version};
     archive(cereal::make_nvp("entities", entities));
   } catch (const std::exception& exception) {
     if (cleared) {
@@ -163,5 +191,8 @@ bool SceneIO::Load(const std::filesystem::path& file, std::string* error) {
   return true;
 }
 
-void SceneIO::Clear() { ECSManager::registry.reset(); }
+void SceneIO::Clear() {
+  ECSManager::registry.reset();
+  m_camera = SceneCamera{};
+}
 }  // namespace rse

@@ -29,8 +29,8 @@ class Renderer2D {
 
   virtual void Flush() = 0;
 
-  // The colour the renderer clears the target with, for debug UIs that want
-  // to expose it. Null when the backend has no such notion.
-  virtual float* GetClearColor() { return nullptr; }
+  // The colour every frame is cleared to. The open scene owns the background,
+  // so core sets this once per frame; a backend that never clears ignores it.
+  virtual void SetClearColor(const glm::vec3& color) {}
 };
 }  // namespace rse
