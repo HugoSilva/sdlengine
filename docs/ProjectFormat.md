@@ -30,8 +30,53 @@ Running with no argument and no `project.xml` next to the binary is supported: t
 engine logs `No project at project.xml; running without one.` and starts with an
 empty scene and the default window. A project file that exists but cannot be read
 is an error (`Failed to open the project: ...`), and the same thing happens --
-nothing is written over it. `formatVersion` 1 has no migration path, so manifests
-from older builds simply do not load.
+nothing is written over it.
+
+## Versions
+
+Every file a project is made of carries its own `formatVersion`, and the versions
+are independent: a manifest, a scene, a prefab and the asset registry move on
+their own schedule. A build reads a file when its version is between the oldest
+one it still understands and the newest one it writes. A file **newer** than the
+build is refused, because the build cannot know what its fields mean; a file older
+than the oldest supported version is not that kind of file at all.
+
+Two kinds of change exist, and they are not equal:
+
+* **Additive** -- a new trailing field, or a new trailing component group. Bump
+  the version, read the new field only when the file says it is at least that
+  version, and leave the default in place otherwise. Older files keep opening.
+  This is the default, and the only free kind of change.
+* **Breaking** -- a field changes shape, or what a reference points at changes.
+  This needs a migration that rewrites the data on load (`Project::Migrate`, and
+  the equivalent in `SceneIO`), or a refusal. Best-effort parsing is not an
+  option: a file read as the wrong shape is worse than one that will not open.
+
+Two rules keep the additive case honest:
+
+1. **Component groups are appended, never reordered or removed.** The reader walks
+   them in the order the writer emitted them, so a reorder would silently misread
+   every older file instead of failing.
+2. **Versions are never renumbered after a release.** Before a version ships, its
+   number is free to change; once it is out, the number is what makes the file
+   readable.
+
+| Milestone | Manifest | Scene | Prefab | Assets |
+|---|---|---|---|---|
+| today | 1 | 1 | -- | -- |
+| #54 | 1 | 1 | -- | -- |
+| #47 | 1 | **2** | -- | -- |
+| #48 | 1 | **3** | -- | -- |
+| #49 | 1 | **4** | -- | -- |
+| #52 | 1 | **5** | -- | -- |
+| #50 | 1 | 5 | **1** | -- |
+| #51 | 1 | **6** | 1 | **1** |
+| #46b | **2** | 6 | 1 | 1 |
+| #46c | **3** | 6 | 1 | 1 |
+
+Only the rows up to today are shipped behaviour; the rest is the order the
+increments land in, one issue at a time. The first two milestone rows are the
+migration policy itself and the first use of it.
 
 ## The manifest
 
@@ -60,9 +105,9 @@ from older builds simply do not load.
 
 | Element | Meaning |
 |---|---|
-| `formatVersion` | Version of the manifest format. Checked before anything else is read. |
+| `formatVersion` | Version of the manifest format. Checked before anything else is read: older versions are migrated forward, newer ones are refused. |
 | `name` | The project's name. The editor shows it in the title bar. |
-| `engineVersion` | The engine version that wrote the file. Informational: only `formatVersion` decides whether the file can be read. |
+| `engineVersion` | The engine version that wrote the file. Informational: only `formatVersion` decides whether the file can be read. `Save` stamps this build's version, so it names the last thing that wrote the file. |
 | `assetRoot` | Directory, relative to the manifest, where the project's assets live. The renderer looks here for its default shader before falling back to the engine's own copy. |
 | `window/title`, `window/width`, `window/height` | The window the project opens with. |
 | `startupScene` | The scene opened at startup. It has to be one of `scene`. |
@@ -171,6 +216,10 @@ round-trip safe yet, so they are deliberately left out. An entity that carries o
 still saves; the engine logs one warning per save counting the entities whose
 extra components were dropped, instead of losing them silently.
 
+The three groups above are written in that order and read in that order. Anything
+added later is appended as a fourth group, read only from the version that
+introduced it; see [Versions](#versions).
+
 Textures are stored by value inside the sprite (a texture id and its dimensions,
 plus cereal's polymorphic wrapper), not by name. A texture that is not loaded when
 the scene is loaded cannot be resolved, which is why the sample scene uses
@@ -224,8 +273,9 @@ the format moves.
 - Camera and background are per-run, not per-scene.
 - The editor's session state (open panels, last scene, selection) is not part of
   the project; it still lives in `imgui.ini` and `default.cfg`.
-- There is no recent-projects list and no `formatVersion` migration: version 1 is
-  the first and only version.
+- There is no recent-projects list. Version 1 is the only published version of
+  each file, so there is no migration to exercise yet -- the range check and the
+  `Migrate` hook are in place for the first one that needs it.
 - The renderer's default shader is chosen when the window is created, so opening a
   different project at runtime reloads scenes and window settings but keeps the
   shader it started with.
