@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <string>
 
 #include <SDL3/SDL.h>
 
@@ -15,6 +16,10 @@ class Window {
   SDL_Window* GetWindow() { return m_window; };
   SDL_GLContext GetContext() { return m_context; };
 
+  // Changes the title after the window exists. The editor uses it to name the
+  // open project and to mark unsaved work.
+  void SetTitle(const std::string& title);
+
   // Makes the window's back buffer the render target again and resets the
   // GL viewport to the current pixel size (the window may have been
   // resized since the last frame).
@@ -25,7 +30,7 @@ class Window {
   SDL_Window* m_window;
   SDL_GLContext m_context;
 
-  const char* m_title;
+  std::string m_title;
   int m_width, m_height;
 };
 }  // namespace rse

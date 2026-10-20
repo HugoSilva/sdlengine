@@ -1,8 +1,7 @@
 #include <core.h>
+#include <filesystem>
 
 #include <glm/glm.hpp>
-
-#include "scene_01.h"
 
 #if _WIN32
 extern "C" {
@@ -11,15 +10,28 @@ __declspec(dllexport) int amd_power_xpress_request_high_performance = 1;
 }
 #endif
 
+// The game: a window, the camera the player moves, and whatever scene the
+// project has open. What the scene is made of lives in the ECS, and what it
+// does lives in the engine's systems.
 class Game : public Core {
  public:
-  Game() {}
-
-  ~Game() {}
+  explicit Game(const std::filesystem::path& project_file) : Core(project_file) {}
 
   void Init() override {
-    // m_Window = createWindow("RockSlide Engine", 1280, 720);
-    SceneManager::Add(new SpriteTest(Core::GetWindow()->GetWindow()));
+#ifdef EMSCRIPTEN
+    const std::string vertex_shader = Core::ResolveResource("ES3.vert");
+    const std::string fragment_shader = Core::ResolveResource("ES3.frag");
+#else
+    const std::string vertex_shader = Core::ResolveResource("Default.vert");
+    const std::string fragment_shader = Core::ResolveResource("Default.frag");
+#endif  // EMSCRIPTEN
+
+    m_shader = new rse::Shader(vertex_shader.c_str(), fragment_shader.c_str());
+
+    m_camera = new rse::Camera(glm::vec3(0.f, 0.f, 0.f));
+
+    rse::FontManager::Add(new rse::Font("Arial", Core::ResolveResource("arial.ttf"), 24));
+
 #ifdef EMSCRIPTEN
 #else
     ThreadManager::Init();
@@ -27,14 +39,22 @@ class Game : public Core {
 #endif
   }
 
-  void Render() override {}
+  void Update(float delta_time) override { m_camera->Update(delta_time); }
+
+  void Render() override {
+    m_shader->Enable();
+    m_camera->Render(m_shader);
+  }
 
  private:
-  rse::Window* m_window;
+  rse::Shader* m_shader{nullptr};
+  rse::Camera* m_camera{nullptr};
 };
 
 int main(int argc, char** argv) {
-  Game game;
+  const std::filesystem::path project_file = argc > 1 ? std::filesystem::path{argv[1]} : "project.xml";
+
+  Game game(project_file);
   game.Start();
   return EXIT_SUCCESS;
 }

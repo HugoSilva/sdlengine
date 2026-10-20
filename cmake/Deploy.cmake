@@ -24,6 +24,14 @@ foreach(_rse_res_dir ${RSE_RESOURCE_DIRS})
   endif()
 endforeach()
 
+# The sample project is deployed as a project directory of its own, not merged
+# into Resources/, so it can be opened with
+#   Game.exe SampleProject/project.xml
+if(EXISTS "${CMAKE_SOURCE_DIR}/SampleProject")
+  list(APPEND _rse_deploy_cmds
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/SampleProject" "${_rse_deploy_dest}/SampleProject")
+endif()
+
 if(WIN32 AND RSE_RUNTIME_DLLS)
   list(APPEND _rse_deploy_cmds
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different ${RSE_RUNTIME_DLLS} "${_rse_deploy_dest}")

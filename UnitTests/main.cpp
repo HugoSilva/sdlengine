@@ -2,8 +2,11 @@
 
 #include <gtest/gtest.h>
 
-#include "ecs_manager_project_io_test.h"
 #include "ortho_view_test.h"
+#include "project_commands_test.h"
+#include "project_io_test.h"
+#include "sample_project_test.h"
+#include "scene_io_test.h"
 #include "sound_manager_test.h"
 #include "texture_manager_test.h"
 

@@ -10,6 +10,8 @@
 #endif
 
 #include <cstdint>
+#include <filesystem>
+#include <string>
 #include <vector>
 
 #include <glm/glm.hpp>
@@ -22,7 +24,7 @@
 #include <audio/sound_manager.h>
 #include <components/sprite.h>
 #include <core/event_manager.h>
-#include <core/scene.h>
+#include <core/project.h>
 #include <core/scene_manager.h>
 #include <core/texture_manager.h>
 #include <core/thread_manager.h>
@@ -51,26 +53,55 @@ class Core {
   static rse::Renderer2D* GetRenderer() { return m_renderer; }
   static rse::Window* GetWindow() { return m_window; }
 
+  // The open project, or a default-constructed (unattached) one when this run
+  // has none. Mutable because the editor edits the scene list through it.
+  static rse::Project& GetProject() { return m_project; }
+
+  // Opens a project at runtime: loads the manifest, retitles and resizes the
+  // window, points SceneManager at the project directory and opens the startup
+  // scene. A manifest that cannot be read changes nothing; a startup scene that
+  // cannot be read leaves the new project with an empty scene.
+  static bool OpenProject(const std::filesystem::path& project_file, std::string* error);
+
+  // Saves the open scene, then the manifest that lists it. The scene goes first
+  // so a manifest never names a scene that is not on disk.
+  static bool SaveProject(std::string* error);
+
+  // A resource by name: the open project's asset root first, then the engine's
+  // own Resources/ next to the binary. This is what lets a project directory be
+  // opened from anywhere, and the bridge until textures are loaded by name
+  // rather than by value (see docs/ProjectFormat.md).
+  static std::string ResolveResource(const std::string& name);
+
   // Render target the scene pass should draw into, or nullptr to draw into the
   // window's back buffer. The editor overrides this so the scene lands in its
   // viewport panel instead of the whole window.
   virtual rse::Framebuffer* GetSceneTarget() { return nullptr; }
 
  protected:
-  Core();
+  // Opens the project manifest before anything else exists: the manifest says
+  // what the window is and which scene to start with. A project that cannot be
+  // read is logged, and the application runs without one, so the binaries
+  // still start when given no argument.
+  explicit Core(const std::filesystem::path& project_file);
   virtual ~Core();
-
-  rse::Window* createWindow(const char* name, int width, int height);
 
   virtual void Init() = 0;
   virtual void Tick() {}
-  virtual void Update() {}
+
+  // Runs once a frame, before the UI and the scene pass. Per-frame behaviour
+  // belongs here (or in an ECS system): a scene is data, not a class.
+  virtual void Update(float delta_time) {}
+
+  // Runs after the render target is bound and the UI phase is over, so a
+  // shader can upload the uniforms the camera ended up with this frame.
   virtual void Render() = 0;
 
   const unsigned int GetFps() const { return m_frames_per_second; }
 
  private:
   void Run();
+  void LoadProject(const std::filesystem::path& project_file);
 
   // SDL3's SDL_GetTicks() returns Uint64 (milliseconds).
   uint64_t m_now = 0, m_last = 0;
@@ -81,4 +112,5 @@ class Core {
   static bool m_running;
   static rse::Renderer2D* m_renderer;
   static rse::Window* m_window;
+  static rse::Project m_project;
 };
