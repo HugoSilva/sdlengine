@@ -3,7 +3,7 @@
 #include <core.h>
 #include <editor_manager.h>
 #include <imgui_internal.h>  // DockBuilder*
-#include <scene_commands.h>
+#include <project_commands.h>
 
 #include <SDL3/SDL.h>
 
@@ -34,6 +34,8 @@ void EditorLayout::Draw() {
       panel->Draw();
     }
   }
+
+  DrawProjectCommands();
 }
 
 void EditorLayout::DrawMenuBar() {
@@ -42,13 +44,20 @@ void EditorLayout::DrawMenuBar() {
   }
 
   if (ImGui::BeginMenu("File")) {
-    if (ImGui::MenuItem("New")) {
+    if (ImGui::MenuItem("New Project...")) {
+      NewProject();
+    }
+    if (ImGui::MenuItem("Open Project...")) {
+      OpenProject();
     }
     ImGui::Separator();
-    if (ImGui::MenuItem("Save", "F1")) {
-      SaveScene();
+    if (ImGui::MenuItem("Save", "Ctrl+S")) {
+      SaveProject();
     }
-    if (ImGui::MenuItem("Load", "F2")) {
+    if (ImGui::MenuItem("Save Scene As...")) {
+      SaveSceneAs();
+    }
+    if (ImGui::MenuItem("Reload Scene", "F2")) {
       ReloadScene();
     }
     ImGui::Separator();

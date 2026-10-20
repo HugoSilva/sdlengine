@@ -57,6 +57,15 @@ class InspectorPanel : public EditorPanel {
   }
 
  private:
+  // Widget edits write straight into the open scene, so the title bar has to
+  // start saying there is work to lose. Called right after the widget that may
+  // have edited something.
+  static void MarkDirtyIfEdited() {
+    if (ImGui::IsItemEdited()) {
+      SceneManager::MarkDirty();
+    }
+  }
+
   void DrawEntityHeader() {
     ImGui::AlignTextToFramePadding();
     ImGui::Text("Entity");
@@ -77,6 +86,7 @@ class InspectorPanel : public EditorPanel {
     if (ImGui::InputText("##entityName", name, IM_ARRAYSIZE(name))) {
       basic.m_name = name;
     }
+    MarkDirtyIfEdited();
 
     ImGui::Separator();
   }
@@ -93,6 +103,7 @@ class InspectorPanel : public EditorPanel {
       if (ImGui::Checkbox("Static", &is_static)) {
         basic.m_is_static = is_static;
       }
+      MarkDirtyIfEdited();
     }
   }
 
@@ -105,8 +116,11 @@ class InspectorPanel : public EditorPanel {
       TransformComponent& transform = EditorManager::GetComponent<TransformComponent>();
 
       ImGui::InputFloat3("Position", glm::value_ptr(transform.position), "%.2f");
+      MarkDirtyIfEdited();
       ImGui::InputFloat3("Rotation", glm::value_ptr(transform.rotation), "%.2f");
+      MarkDirtyIfEdited();
       ImGui::InputFloat3("Scale", glm::value_ptr(transform.scale), "%.2f");
+      MarkDirtyIfEdited();
     }
   }
 
@@ -139,6 +153,7 @@ class InspectorPanel : public EditorPanel {
                            (static_cast<unsigned int>(rgba[2] * 255.0f) << 16) |
                            (static_cast<unsigned int>(rgba[3] * 255.0f) << 24));
         }
+        MarkDirtyIfEdited();
 
         const std::string texture_name = sprite->GetTextureName();
         ImGui::LabelText("Texture", "%s", texture_name.empty() ? "(none)" : texture_name.c_str());
@@ -185,7 +200,9 @@ class InspectorPanel : public EditorPanel {
         ImGui::TextDisabled("No rigidbody assigned.");
       } else {
         ImGui::InputFloat("Density", rigidbody->GetDensity());
+        MarkDirtyIfEdited();
         ImGui::InputFloat("Friction", rigidbody->GetFriction());
+        MarkDirtyIfEdited();
 
         // Combo wants an int, so convert instead of aliasing the enum
         // pointer as an int pointer.
@@ -196,6 +213,7 @@ class InspectorPanel : public EditorPanel {
         if (ImGui::Combo("Body Type", &type, items, IM_ARRAYSIZE(items))) {
           *body_type = static_cast<b2BodyType>(type);
         }
+        MarkDirtyIfEdited();
       }
 
       DrawRemoveComponentButton(Components::kRigidbody, "Remove Rigidbody");

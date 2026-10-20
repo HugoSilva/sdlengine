@@ -11,6 +11,7 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <string>
 #include <vector>
 
 #include <glm/glm.hpp>
@@ -52,9 +53,19 @@ class Core {
   static rse::Renderer2D* GetRenderer() { return m_renderer; }
   static rse::Window* GetWindow() { return m_window; }
 
-  // The project this run opened, or a default-constructed (unattached) one
-  // when there was nothing to open.
-  static const rse::Project& GetProject() { return m_project; }
+  // The open project, or a default-constructed (unattached) one when this run
+  // has none. Mutable because the editor edits the scene list through it.
+  static rse::Project& GetProject() { return m_project; }
+
+  // Opens a project at runtime: loads the manifest, retitles and resizes the
+  // window, points SceneManager at the project directory and opens the startup
+  // scene. A manifest that cannot be read changes nothing; a startup scene that
+  // cannot be read leaves the new project with an empty scene.
+  static bool OpenProject(const std::filesystem::path& project_file, std::string* error);
+
+  // Saves the open scene, then the manifest that lists it. The scene goes first
+  // so a manifest never names a scene that is not on disk.
+  static bool SaveProject(std::string* error);
 
   // Render target the scene pass should draw into, or nullptr to draw into the
   // window's back buffer. The editor overrides this so the scene lands in its

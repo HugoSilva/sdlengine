@@ -21,6 +21,15 @@ rse_configure_target(UnitTests)
 # GTest::gtest only (not GTest::gtest_main) -- Main.cpp provides the entry point.
 target_link_libraries(UnitTests PRIVATE Engine GTest::gtest)
 
+# The editor's project commands are file operations, so they are tested here
+# even though they live next to the editor. Only the command translation unit is
+# compiled in; the dialogs it can open never run headless.
+if(RSE_BUILD_EDITOR AND EXISTS "${CMAKE_SOURCE_DIR}/Editor/Source/project_commands.cpp")
+  target_sources(UnitTests PRIVATE "${CMAKE_SOURCE_DIR}/Editor/Source/project_commands.cpp")
+  target_include_directories(UnitTests PRIVATE "${CMAKE_SOURCE_DIR}/Editor/Source")
+  target_compile_definitions(UnitTests PRIVATE RSE_EDITOR_COMMANDS)
+endif()
+
 # The sample project is tested from the source tree, not from the deployed copy,
 # so the tests fail when the checked-in project falls behind the format.
 target_compile_definitions(UnitTests PRIVATE RSE_SAMPLE_PROJECT_DIR="${CMAKE_SOURCE_DIR}/SampleProject")

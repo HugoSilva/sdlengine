@@ -23,6 +23,8 @@ void EditorManager::HandleCreateEntityEvent(const CreateEntity& event) {
   rse::ECSManager::AddComponent<TransformComponent>(m_selected_entity);
   rse::ECSManager::AddComponent<SpriteComponent>(
       m_selected_entity, new rse::Sprite(glm::vec3(0, 0, 0), glm::vec2(40, 40), rse::TextureManager::Get("test00")));
+
+  SceneManager::MarkDirty();
 }
 
 void EditorManager::HandleSelectEntityEvent(const SelectEntity& event) { SetSelection(event.value); }
@@ -52,6 +54,7 @@ void EditorManager::HandleDestroyEntityEvent(const DestroyEntity& event) {
   }
 
   rse::ECSManager::DestroyEntity(event.value);
+  SceneManager::MarkDirty();
 }
 
 void EditorManager::HandleAddComponentEvent(const AddComponent& event) {
@@ -61,6 +64,7 @@ void EditorManager::HandleAddComponentEvent(const AddComponent& event) {
         Logger::Error("Already existing audio component");
       } else {
         rse::ECSManager::AddComponent<AudioComponent>(m_selected_entity, rse::SoundManager::GetSound("eff"));
+        SceneManager::MarkDirty();
       }
       break;
     case Components::kRigidbody:
@@ -76,6 +80,7 @@ void EditorManager::HandleAddComponentEvent(const AddComponent& event) {
           size = rse::ECSManager::GetComponent<SpriteComponent>(m_selected_entity).m_sprite->GetSize();
         }
         rse::ECSManager::AddComponent<RigidBodyComponent>(m_selected_entity, new Rigidbody(position, size));
+        SceneManager::MarkDirty();
       }
       break;
     case Components::kSprite:
@@ -83,6 +88,7 @@ void EditorManager::HandleAddComponentEvent(const AddComponent& event) {
         Logger::Error("Already existing sprite component");
       } else {
         rse::ECSManager::AddComponent<SpriteComponent>(m_selected_entity);
+        SceneManager::MarkDirty();
       }
       break;
     default:
@@ -106,6 +112,7 @@ void EditorManager::HandleRemoveComponentEvent(const RemoveComponent& event) {
       // Components hold their payload in a shared_ptr, so removing one
       // releases it properly.
       rse::ECSManager::RemoveComponent<AudioComponent>(m_selected_entity);
+      SceneManager::MarkDirty();
       break;
     case Components::kRigidbody:
       if (!rse::ECSManager::HasComponent<RigidBodyComponent>(m_selected_entity)) {
@@ -113,6 +120,7 @@ void EditorManager::HandleRemoveComponentEvent(const RemoveComponent& event) {
         break;
       }
       rse::ECSManager::RemoveComponent<RigidBodyComponent>(m_selected_entity);
+      SceneManager::MarkDirty();
       break;
     case Components::kSprite:
       if (!rse::ECSManager::HasComponent<SpriteComponent>(m_selected_entity)) {
@@ -120,6 +128,7 @@ void EditorManager::HandleRemoveComponentEvent(const RemoveComponent& event) {
         break;
       }
       rse::ECSManager::RemoveComponent<SpriteComponent>(m_selected_entity);
+      SceneManager::MarkDirty();
       break;
     default:
       break;

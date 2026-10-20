@@ -131,7 +131,15 @@ class ViewportPanel : public EditorPanel {
       return false;
     }
 
-    return m_gizmo.HandleInput(*m_camera, image_pos, ImGui::IsItemHovered());
+    const bool dragging = m_gizmo.HandleInput(*m_camera, image_pos, ImGui::IsItemHovered());
+
+    // A drag writes straight into the selected transforms, so the scene has
+    // work to lose from the moment a handle is grabbed.
+    if (dragging) {
+      SceneManager::MarkDirty();
+    }
+
+    return dragging;
   }
 
   void DrawGizmo(const ImVec2& image_pos) {

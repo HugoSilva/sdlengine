@@ -25,8 +25,11 @@ class EditorApp : public Core {
   rse::Framebuffer* GetSceneTarget() override;
 
  private:
+  void UpdateTitle();
+
   EditorLayout* m_layout{nullptr};
   EditorCamera* m_camera{nullptr};
   RenderSystem* m_render{nullptr};
   rse::Shader* m_shader{nullptr};
+  std::string m_title;
 };

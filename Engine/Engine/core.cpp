@@ -95,6 +95,44 @@ void Core::LoadProject(const std::filesystem::path& project_file) {
   Logger::Log("Opened project " + m_project.name + " (" + m_project.File().string() + ")");
 }
 
+bool Core::OpenProject(const std::filesystem::path& project_file, std::string* error) {
+  rse::Project project;
+
+  if (!rse::Project::Load(project_file, project, error)) {
+    return false;
+  }
+
+  m_project = project;
+  SceneManager::Init(m_project.Directory());
+
+  if (m_window != nullptr) {
+    m_window->SetTitle(m_project.window.title);
+    SDL_SetWindowSize(m_window->GetWindow(), m_project.window.width, m_project.window.height);
+  }
+
+  if (!SceneManager::Open(m_project.startup_scene, error)) {
+    return false;
+  }
+
+  Logger::Log("Opened project " + m_project.name + " (" + m_project.File().string() + ")");
+  return true;
+}
+
+bool Core::SaveProject(std::string* error) {
+  if (!m_project.IsAttached()) {
+    if (error != nullptr) {
+      *error = "no project is open";
+    }
+    return false;
+  }
+
+  if (!SceneManager::Save(error)) {
+    return false;
+  }
+
+  return m_project.Save(error);
+}
+
 Core::~Core() {
   SceneManager::Clean();
 

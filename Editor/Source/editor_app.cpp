@@ -1,9 +1,9 @@
 #include "editor_app.h"
 
 #include <editor_manager.h>
-#include <scene_commands.h>
+#include <imgui.h>
+#include <project_commands.h>
 
-#include <ecs/scene_io.h>
 #include <layout/editor_layout.h>
 #include <panels/console_panel.h>
 #include <panels/content_browser_panel.h>
@@ -56,12 +56,51 @@ void EditorApp::Init() {
 }
 
 void EditorApp::Update(float delta_time) {
-  if (rse::InputManager::IsKeyPressed(SDL_SCANCODE_F1)) {
-    SaveScene();
+  // Shortcuts stay out of the way of text fields: "S" is a letter before it is
+  // a shortcut, and typing a path must not save over anything.
+  if (!ImGui::GetIO().WantTextInput) {
+    const bool control =
+        rse::InputManager::IsKeyPressed(SDL_SCANCODE_LCTRL) || rse::InputManager::IsKeyPressed(SDL_SCANCODE_RCTRL);
+
+    if (rse::InputManager::IsKeyPressed(SDL_SCANCODE_F1) ||
+        (control && rse::InputManager::IsKeyPressed(SDL_SCANCODE_S))) {
+      ::SaveProject();
+    }
+
+    if (rse::InputManager::IsKeyPressed(SDL_SCANCODE_F2)) {
+      ::ReloadScene();
+    }
   }
-  if (rse::InputManager::IsKeyPressed(SDL_SCANCODE_F2)) {
-    ReloadScene();
+
+  UpdateTitle();
+}
+
+void EditorApp::UpdateTitle() {
+  const std::string scene = SceneManager::GetActiveSceneName();
+  const rse::Project& project = Core::GetProject();
+
+  std::string title;
+
+  if (SceneManager::IsDirty()) {
+    title += "* ";
   }
+
+  if (!scene.empty()) {
+    title += scene + " - ";
+  }
+
+  if (project.IsAttached()) {
+    title += project.name + " - ";
+  }
+
+  title += "RockSlide Engine";
+
+  if (title == m_title) {
+    return;
+  }
+
+  m_title = title;
+  Core::GetWindow()->SetTitle(m_title);
 }
 
 void EditorApp::Render() {
