@@ -20,6 +20,11 @@ class Rigidbody {
   Rigidbody(const Rigidbody&) = delete;
   Rigidbody& operator=(const Rigidbody&) = delete;
 
+  // A second body with the same inputs, still uninitialised: a prefab placed
+  // twice has to own two bodies, and a b2Body belongs to a world and cannot be
+  // copied. The caller owns the result.
+  Rigidbody* Clone() const;
+
   void Init(b2World* world);
   void Update(glm::vec3& position);
   // TODO lazy public variable need to fix this in the future

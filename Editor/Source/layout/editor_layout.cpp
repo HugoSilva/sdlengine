@@ -84,6 +84,20 @@ void EditorLayout::DrawMenuBar() {
     ImGui::EndMenu();
   }
 
+  if (ImGui::BeginMenu("Assets")) {
+    const uint32_t selected = EditorManager::GetSelectedEntity();
+
+    // Saving a prefab needs an entity; instantiating one needs nothing but a
+    // file, so the item stays enabled even in an empty scene.
+    if (ImGui::MenuItem("Create Prefab from Selection...", nullptr, false, selected != INVALID_ENTITY_ID)) {
+      CreatePrefab(selected);
+    }
+    if (ImGui::MenuItem("Instantiate Prefab...")) {
+      InstantiatePrefab();
+    }
+    ImGui::EndMenu();
+  }
+
   if (ImGui::BeginMenu("View")) {
     for (const std::unique_ptr<EditorPanel>& panel : m_panels) {
       ImGui::MenuItem(panel->Id(), nullptr, &panel->visible);
