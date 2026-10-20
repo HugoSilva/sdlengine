@@ -212,6 +212,11 @@ void Core::Run() {
   // every pan and zoom lag the scene by exactly one frame.
   Render();
 
+  // The open scene owns the background colour, so it is applied to the frame
+  // that is about to be drawn rather than once at load: a scene opened at
+  // runtime changes it on the very next frame.
+  m_renderer->SetClearColor(rse::SceneIO::GetCamera().background);
+
   m_renderer->Begin();
   // TODO need to split this up for normal systems and render systems
   rse::ECSManager::Update(m_delta_time);

@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 
+#include "camera_test.h"
 #include "ortho_view_test.h"
 #include "physics_system_test.h"
 #include "project_commands_test.h"

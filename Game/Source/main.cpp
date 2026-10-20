@@ -3,6 +3,8 @@
 
 #include <glm/glm.hpp>
 
+#include <ecs/scene_io.h>
+
 #if _WIN32
 extern "C" {
 _declspec(dllexport) DWORD nv_optimus_enablement = 0x00000001;
@@ -28,7 +30,11 @@ class Game : public Core {
 
     m_shader = new rse::Shader(vertex_shader.c_str(), fragment_shader.c_str());
 
-    m_camera = new rse::Camera(glm::vec3(0.f, 0.f, 0.f));
+    // The scene says where its camera looks, and the game applies that once,
+    // when it starts: the arrow keys still move the camera afterwards.
+    const rse::SceneIO::SceneCamera& scene_camera = rse::SceneIO::GetCamera();
+    m_camera = new rse::Camera(glm::vec3(scene_camera.position, 0.0f));
+    m_camera->SetZoom(scene_camera.zoom);
 
     rse::FontManager::Add(new rse::Font("Arial", Core::ResolveResource("arial.ttf"), 24));
 

@@ -109,7 +109,8 @@ TEST_F(SceneIOTest, SavingWritesTheSceneFile) {
   EXPECT_FALSE(std::filesystem::exists(m_scratch));
 
   const std::string contents = ReadFile(m_file);
-  EXPECT_NE(contents.find("<formatVersion>4</formatVersion>"), std::string::npos);
+  EXPECT_NE(contents.find("<formatVersion>5</formatVersion>"), std::string::npos);
+  EXPECT_NE(contents.find("<camera>"), std::string::npos);
   EXPECT_NE(contents.find("<entities>"), std::string::npos);
 }
 
@@ -410,6 +411,47 @@ TEST_F(SceneIOTest, ARigidBodyComponentRoundTrips) {
   EXPECT_EQ(bodies, 2);
 }
 
+// The camera is scene-root data: each scene stores its own, and loading one
+// replaces the other.
+TEST_F(SceneIOTest, ASceneCameraRoundTrips) {
+  const std::filesystem::path second_file = m_directory / "second.xml";
+
+  SceneIO::GetCamera().position = glm::vec2(320.f, 180.f);
+  SceneIO::GetCamera().zoom = 2.f;
+  SceneIO::GetCamera().background = glm::vec3(0.2f, 0.4f, 0.8f);
+
+  CreateSprite("hero", glm::vec3(320.f, 180.f, 0.f));
+
+  std::string error;
+  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+
+  // A different scene, with a different camera.
+  SceneIO::GetCamera().position = glm::vec2(1000.f, 100.f);
+  SceneIO::GetCamera().zoom = 0.5f;
+  SceneIO::GetCamera().background = glm::vec3(0.f, 0.f, 0.f);
+
+  ASSERT_TRUE(SceneIO::Save(second_file, &error)) << error;
+
+  SceneIO::Clear();
+  ASSERT_TRUE(SceneIO::Load(m_file, &error)) << error;
+
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().position.x, 320.f);
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().position.y, 180.f);
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().zoom, 2.f);
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.r, 0.2f);
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.g, 0.4f);
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.b, 0.8f);
+
+  ASSERT_TRUE(SceneIO::Load(second_file, &error)) << error;
+
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().position.x, 1000.f);
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().position.y, 100.f);
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().zoom, 0.5f);
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.r, 0.f);
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.g, 0.f);
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.b, 0.f);
+}
+
 // Version 2 changed what a sprite stores for its texture: a name instead of
 // the texture itself. A version 1 file cannot be read as a version 2 one -- the
 // field changed shape rather than gaining a tail -- so it is refused as too
@@ -542,6 +584,40 @@ TEST_F(SceneIOTest, AV4SceneLoadsFromTheFixture) {
       });
 
   EXPECT_EQ(bodies, 2);
+}
+
+// A version 4 scene has no camera node, so it keeps the defaults -- which are
+// exactly the framing it was drawn with.
+TEST_F(SceneIOTest, AVersion4SceneKeepsTheDefaultCamera) {
+  const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "scene_v4.xml";
+
+  std::string error;
+  ASSERT_TRUE(SceneIO::Load(fixture, &error)) << error;
+
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().position.x, 640.f);
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().position.y, 360.f);
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().zoom, 1.f);
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.r, 1.f);
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.g, 0.f);
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.b, 1.f);
+}
+
+// The version 5 fixture is the first file with a camera node, and the shape a
+// later change has to keep reading.
+TEST_F(SceneIOTest, AV5SceneLoadsFromTheFixture) {
+  const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "scene_v5.xml";
+
+  std::string error;
+  ASSERT_TRUE(SceneIO::Load(fixture, &error)) << error;
+
+  ASSERT_EQ(CountEntities(), 1u);
+
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().position.x, 320.f);
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().position.y, 180.f);
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().zoom, 2.f);
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.r, 0.2f);
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.g, 0.4f);
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.b, 0.8f);
 }
 
 TEST_F(SceneIOTest, AVersionZeroSceneIsNotASceneFile) {

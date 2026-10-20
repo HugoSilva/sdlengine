@@ -17,8 +17,8 @@ namespace {
 //
 // entt writes its snapshot as unnamed nodes, which cereal names value0,
 // value1, ... at the archive root. Wrapping it in a named node keeps a scene
-// file readable: <formatVersion> and <entities> are siblings, and everything
-// entt writes stays inside the second one.
+// file readable: <formatVersion>, <camera> and <entities> are siblings, and
+// everything entt writes stays inside the last one.
 struct SaveEntities {
   entt::DefaultRegistry& registry;
 
@@ -46,7 +46,7 @@ struct LoadEntities {
     // Groups added after version 2 are chained here, in the order SaveEntities
     // writes them, each read only from the version that introduced it:
     //
-    //   if (format_version >= 5) loader.component<...>(archive);
+    //   if (format_version >= 6) loader.component<...>(archive);
     if (format_version >= 3) {
       loader.component<AudioComponent>(archive);
     }
@@ -63,6 +63,8 @@ void SetError(std::string* error, const std::string& message) {
   }
 }
 }  // namespace
+
+SceneIO::SceneCamera SceneIO::m_camera;
 
 bool SceneIO::Save(const std::filesystem::path& file, std::string* error) {
   std::filesystem::path scratch{file};
@@ -83,6 +85,9 @@ bool SceneIO::Save(const std::filesystem::path& file, std::string* error) {
 
     const int format_version{kFormatVersion};
     archive(cereal::make_nvp("formatVersion", format_version));
+
+    // The camera is scene-root data, written before the entities it frames.
+    archive(cereal::make_nvp("camera", m_camera));
 
     SaveEntities entities{ECSManager::registry};
     archive(cereal::make_nvp("entities", entities));
@@ -159,6 +164,12 @@ bool SceneIO::Load(const std::filesystem::path& file, std::string* error) {
     Clear();
     cleared = true;
 
+    // Version 5 added the camera node. An older scene has none, so the value
+    // Clear() left is the default framing, which is what it was drawn with.
+    if (format_version >= 5) {
+      archive(cereal::make_nvp("camera", m_camera));
+    }
+
     LoadEntities entities{ECSManager::registry, format_version};
     archive(cereal::make_nvp("entities", entities));
   } catch (const std::exception& exception) {
@@ -180,5 +191,8 @@ bool SceneIO::Load(const std::filesystem::path& file, std::string* error) {
   return true;
 }
 
-void SceneIO::Clear() { ECSManager::registry.reset(); }
+void SceneIO::Clear() {
+  ECSManager::registry.reset();
+  m_camera = SceneCamera{};
+}
 }  // namespace rse

@@ -27,9 +27,17 @@ class Camera {
   void ProcessMouseMovement(float x_offset, float y_offset, bool constrain_pitch = true);
   void ProcessMouseScroll(float y_offset);
 
+  // Where the 2D view looks, and how far in it is zoomed. `position` is the
+  // world point that lands in the middle of the frame; a zoom of 1 shows the
+  // reference rectangle. Both re-run the ortho projection, so a scene can apply
+  // its camera in two calls. The arrow keys still move the position afterwards.
+  void SetPosition(const glm::vec3& position);
+  void SetZoom(float zoom);
+
   inline const float GetZoom() const { return m_zoom; }
   inline const glm::vec3 GetPosition() const { return m_position; }
   inline const glm::vec3 GetFront() const { return m_front; }
+  inline const glm::mat4& GetProjection() const { return m_projection; }
 
  private:
   void UpdateCameraVectors();
@@ -42,7 +50,7 @@ class Camera {
   glm::vec3 m_right;
   glm::mat4 m_projection;
   float m_yaw{-90.f}, m_pitch{0.f};
-  float m_movement_speed{10.f}, m_mouse_sensitivity{0.25f}, m_zoom{45.f};
+  float m_movement_speed{10.f}, m_mouse_sensitivity{0.25f}, m_zoom{1.f};
 
   // 2D ortho framing. referenceSize is what a zoom of 1 shows on a 16:9
   // target and is what the renderer has always framed; targetSize is

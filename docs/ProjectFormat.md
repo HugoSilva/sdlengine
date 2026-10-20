@@ -67,7 +67,7 @@ Two rules keep the additive case honest:
 
 | Milestone | Manifest | Scene | Prefab | Assets |
 |---|---|---|---|---|
-| today | 1 | 4 | -- | -- |
+| today | 1 | 5 | -- | -- |
 | #54 | 1 | 1 | -- | -- |
 | #47 | 1 | **2** | -- | -- |
 | #48 | 1 | **3** | -- | -- |
@@ -79,8 +79,8 @@ Two rules keep the additive case honest:
 | #46c | **3** | 6 | 1 | 1 |
 
 Only the rows up to today are shipped behaviour; the rest is the order the
-increments land in, one issue at a time. The first five rows are shipped: the
-migration policy itself, the first breaking change made under it, and the three
+increments land in, one issue at a time. The first six rows are shipped: the
+migration policy itself, the first breaking change made under it, and the four
 additive changes made after it.
 
 ## The manifest
@@ -103,6 +103,7 @@ additive changes made after it.
 		<startupScene>scenes/start.xml</startupScene>
 		<scene size="dynamic">
 			<value0>scenes/start.xml</value0>
+			<value1>scenes/physics.xml</value1>
 		</scene>
 	</project>
 </cereal>
@@ -139,8 +140,8 @@ without one can open a scene but cannot save a project.
 
 ## Scene files
 
-A scene file is the entity list: an `entt` snapshot of the registry, wrapped in a
-`formatVersion` header and an `<entities>` block.
+A scene file is an `entt` snapshot of the registry -- an `<entities>` block --
+wrapped in a `formatVersion` header and the scene's own `<camera>`.
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -197,7 +198,8 @@ A scene file is the entity list: an `entt` snapshot of the registry, wrapped in 
 The `valueN` element names are entt's: it writes entities and components as
 unnamed nodes, and cereal numbers unnamed nodes. The components inside them keep
 their own names (`Name`, `Position`, `Size`, `Color`, ...), which is what makes the
-file readable at all. **Scene files are machine-written**: the editor and the
+file readable at all. `formatVersion`, `camera` and `entities` are the three named
+siblings at the root. **Scene files are machine-written**: the editor and the
 engine's own save are the intended ways to produce them.
 
 A scene's name is its file stem: `scenes/start.xml` is "start" everywhere in the UI,
@@ -215,9 +217,37 @@ that writes data, never a pointer, so saving and loading is a round trip:
 - `AudioComponent` -- sound name, volume, mute, loop, autoplay.
 - `RigidBodyComponent` -- position, size, density, friction, body type.
 
-The five groups above are written in that order and read in that order. Anything
-added later is appended as a sixth group, read only from the version that
-introduced it; see [Versions](#versions).
+The five component groups above are written in that order and read in that
+order, after the scene's camera. Anything added later is appended as a sixth
+group, read only from the version that introduced it; see [Versions](#versions).
+
+A scene also stores its **camera**, which is scene-root data rather than a
+component: there is one per scene, and it sits beside `<entities>` so a reader
+meets it before the entities it frames. It says where the 2D view looks, how far
+in it is zoomed and what colour the frame is cleared to:
+
+```xml
+	<camera>
+		<Position>
+			<x>640</x>
+			<y>360</y>
+		</Position>
+		<Zoom>1</Zoom>
+		<Background>
+			<x>1</x>
+			<y>0</y>
+			<z>1</z>
+		</Background>
+	</camera>
+```
+
+`Position` is the world point that lands in the middle of the frame, `Zoom` is
+how much of the 1280x720 reference rectangle is shown (1 shows all of it), and
+`Background` is the colour the renderer clears to every frame. Those three values
+are what the engine framed and cleared to before a scene could say, so a scene
+that does not set them looks exactly as it did. The game applies the camera once
+when it starts and then leaves the arrow keys alone; the editor viewport keeps
+its own editor camera and only uses the background.
 
 A sprite stores its texture by **name**, not by value: `<Texture>tex3.png</Texture>`
 is a path relative to `assetRoot`. The name is resolved through `TextureManager`
@@ -245,10 +275,13 @@ name and stays silent.
 
 Version 3 appended the audio group, so a version 2 scene still opens -- the group
 is read only when the file says version 3 or newer. Version 4 appended the rigid
-bodies for the same reason. The example above is a version 2 file, which is why
-it ends at the sprite group; a current file appends the audio and rigid-body
-groups after it. `UnitTests/fixtures/scene_v3.xml` and `scene_v4.xml` are the
-files that pin this, and `scene_v2.xml` is the one that has to keep opening.
+bodies for the same reason. Version 5 added the camera node, which is root data
+rather than a component group: a version 4 scene has none, so it opens with the
+defaults, which are the framing it was drawn with. The example above is a version
+2 file, which is why it has neither the camera nor the audio and rigid-body
+groups; a current file has all three. `UnitTests/fixtures/scene_v3.xml`,
+`scene_v4.xml` and `scene_v5.xml` are the files that pin this, and `scene_v2.xml`
+is the one that has to keep opening.
 
 A rigid body is stored as its **inputs**, by value: position, size, density,
 friction and the body type by name (`static`, `kinematic`, `dynamic`). A
@@ -308,8 +341,11 @@ of the rigid-body rule: the floor is a static body, the crate a dynamic one. Bot
 store their inputs; neither stores a `b2Body`, so the crate starts falling as
 soon as the scene is open and stepping.
 
-The unit tests open it: the sample is the one project that has to keep loading when
-the format moves.
+Both sample scenes carry the default camera and background, so the sample looks
+the way it always did; editing the background in the editor's Debug panel changes
+the open scene's value, and saving the scene stores it. The unit tests open both
+scenes: the sample is the one project that has to keep loading when the format
+moves.
 
 ## Limits and follow-ups
 
@@ -319,7 +355,9 @@ the format moves.
 - Physics is one world with fixed gravity and a fixed time step, owned by
   `PhysicsSystem`; there is no way to change either from a scene yet.
 - There are no prefabs, no asset ids and no input bindings in the manifest.
-- Camera and background are per-run, not per-scene.
+- The game applies the scene camera when it starts; the game has no runtime scene
+  switch yet, and the editor viewport deliberately keeps its own editor camera, so
+  it does not preview the scene's camera.
 - The editor's session state (open panels, last scene, selection) is not part of
   the project; it still lives in `imgui.ini` and `default.cfg`.
 - There is no recent-projects list.

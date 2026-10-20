@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <cereal>
-	<formatVersion>3</formatVersion>
+	<formatVersion>5</formatVersion>
+	<camera>
+		<Position>
+			<x>640</x>
+			<y>360</y>
+		</Position>
+		<Zoom>1</Zoom>
+		<Background>
+			<x>1</x>
+			<y>0</y>
+			<z>1</z>
+		</Background>
+	</camera>
 	<entities>
 		<value0>12</value0>
 		<value1>11</value1>
@@ -615,6 +627,7 @@
 			<Loop>false</Loop>
 			<Autoplay>false</Autoplay>
 		</value90>
+		<value91>0</value91>
 	</entities>
 </cereal>
 
