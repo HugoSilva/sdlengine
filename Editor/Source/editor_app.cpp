@@ -1,4 +1,4 @@
-#include "setup_view.h"
+#include "editor_app.h"
 
 #include <editor_manager.h>
 
@@ -11,19 +11,16 @@
 #include <panels/inspector_panel.h>
 #include <panels/viewport_panel.h>
 #include <render/grid_render_system.h>
+#include <systems/render_system.h>
+#include <utils/logger.h>
 
-SetupView::SetupView(std::string name, SDL_Window* win) {
-  if (File::Exists("default.cfg")) {
-    File::Read("default.cfg");
-  } else {
-    File::Write("default.cfg", "definitions should be passed here");
-  }
-
+void EditorApp::Init() {
   using namespace rse;
 
   m_shader = new Shader("Resources/Default.vert", "Resources/Default.frag");
 
-  // TODO I need to add a function to load resources in the project
+  // TODO: load the project's own resources. The manifest's asset root is not
+  // consulted yet; see the project format document's follow-ups.
   TextureManager::Add(new Texture("test00", "Resources/tex3.png"));
   SoundManager::Add(new Sound("eff", "Resources/effect.wav"));
 
@@ -41,37 +38,25 @@ SetupView::SetupView(std::string name, SDL_Window* win) {
   m_layout->AddPanel(std::make_unique<ConsolePanel>());
 
   m_render = new RenderSystem(m_layout);
-  rse::ECSManager::AddSystem(m_render);
+  ECSManager::AddSystem(m_render);
 
   // The grid is submitted into the scene pass before the sprites are, which is
   // what puts it underneath them.
-  rse::ECSManager::AddSystem(new GridRenderSystem(Core::GetRenderer(), m_camera), rse::SystemPhase::kPreScene);
-
-  // New Entities code
-  // for (int i = 0; i < 5000; i++)
-  //{
-  //	rse::PositionComponent position;
-  //	position.x = rand() % (1200 - 40 + 1) + 10;
-  //	position.y = rand() % (720 - 40 + 1) + 10;
-  //	position.z = 0.f;
-
-  //	rse::SpriteComponent sprite;
-  //	//sprite.Sprite = new );
-
-  //	uint32_t entity3 = rse::ECSManager::createEntity();
-  //	rse::ECSManager::addComponent<TransformComponent>(entity3, glm::vec3(position.x, position.y, position.z),
-  // glm::vec3(0.f, 0.f, 0.f), glm::vec3(1.f, 1.f, 1.f)); 	rse::ECSManager::addComponent<SpriteComponent>(entity3,
-  // new Sprite(glm::vec3(position.x, position.y, position.z), glm::vec2(40, 40), TextureManager::get("test00")));
-  //}
-
-  m_name = name;
+  ECSManager::AddSystem(new GridRenderSystem(Core::GetRenderer(), m_camera), rse::SystemPhase::kPreScene);
 
   EditorManager::Init();
+
+#ifdef EMSCRIPTEN
+#else
+  ThreadManager::Init();
+  ThreadManager::Start();
+#endif
 }
 
-void SetupView::Update(float delta_time) {
-  // SceneManager::change("SelectProject");
-
+void EditorApp::Update(float delta_time) {
+  // Temporary: scenes have no project yet, so the keys still read and write
+  // the old fixed file. The project work replaces both with the scene the
+  // project has open.
   if (rse::InputManager::IsKeyPressed(SDL_SCANCODE_F1)) {
     std::string error;
     if (!rse::SceneIO::Save("project.xml", &error)) {
@@ -86,7 +71,9 @@ void SetupView::Update(float delta_time) {
   }
 }
 
-void SetupView::Render() {
+void EditorApp::Render() {
   m_shader->Enable();
   m_camera->Apply(m_shader);
 }
+
+rse::Framebuffer* EditorApp::GetSceneTarget() { return EditorManager::GetSceneTarget(); }

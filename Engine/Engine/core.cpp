@@ -1,5 +1,6 @@
 #include "core.h"
 
+#include <filesystem>
 #include <functional>
 #include <imgui.h>
 
@@ -20,6 +21,10 @@ Core::Core() : m_frames_per_second(0) {
   m_window = new rse::Window("RockSlide Engine", 1280, 720);
   m_window->Init();
 
+  // Relative scene paths resolve against the working directory until a project
+  // says otherwise.
+  SceneManager::Init(std::filesystem::current_path());
+
   rse::SoundManager::Init();
   rse::FontManager::Init();
   rse::TextureManager::Init();
@@ -35,6 +40,8 @@ Core::Core() : m_frames_per_second(0) {
 }
 
 Core::~Core() {
+  SceneManager::Clean();
+
   rse::SoundManager::Clean();
   rse::FontManager::Clean();
   rse::TextureManager::Clean();
@@ -88,7 +95,7 @@ void Core::Run() {
   rse::ImGuiLayer::BeginFrame();
 
   // TODO review scene manager logic now that we are using ECS
-  SceneManager::Update(m_delta_time);
+  Update(m_delta_time);
 
   // The UI is built before the scene is drawn: panels may need to know their
   // own size in order to size a render target (the viewport does this).
@@ -108,7 +115,7 @@ void Core::Run() {
   // the viewport the camera sizes its projection to, and the UI is where the
   // viewport panel pans and zooms. Uploading them any earlier is what made
   // every pan and zoom lag the scene by exactly one frame.
-  SceneManager::Render();  // Only for shader
+  Render();
 
   m_renderer->Begin();
   // TODO need to split this up for normal systems and render systems

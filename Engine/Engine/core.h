@@ -22,7 +22,6 @@
 #include <audio/sound_manager.h>
 #include <components/sprite.h>
 #include <core/event_manager.h>
-#include <core/scene.h>
 #include <core/scene_manager.h>
 #include <core/texture_manager.h>
 #include <core/thread_manager.h>
@@ -64,7 +63,13 @@ class Core {
 
   virtual void Init() = 0;
   virtual void Tick() {}
-  virtual void Update() {}
+
+  // Runs once a frame, before the UI and the scene pass. Per-frame behaviour
+  // belongs here (or in an ECS system): a scene is data, not a class.
+  virtual void Update(float delta_time) {}
+
+  // Runs after the render target is bound and the UI phase is over, so a
+  // shader can upload the uniforms the camera ended up with this frame.
   virtual void Render() = 0;
 
   const unsigned int GetFps() const { return m_frames_per_second; }
