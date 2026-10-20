@@ -175,9 +175,56 @@ TEST_F(SceneIOTest, AnUnknownFormatVersionIsRefusedWithoutTouchingTheScene) {
 
   EXPECT_FALSE(SceneIO::Load(m_file, &error));
   EXPECT_NE(error.find("99"), std::string::npos);
+  EXPECT_NE(error.find("newer"), std::string::npos);
 
   // Refusing a file must not cost the author the scene that is already open.
   EXPECT_EQ(CountEntities(), 1u);
+}
+
+// A scene saved by the first published format stays loadable. This is the
+// regression the version policy exists for: the fixture is never rewritten,
+// so a later change that stops reading it is caught here rather than by a user
+// opening an old project.
+TEST_F(SceneIOTest, AV1SceneLoadsFromTheFixture) {
+  const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "scene_v1.xml";
+
+  std::string error;
+  ASSERT_TRUE(SceneIO::Load(fixture, &error)) << error;
+
+  ASSERT_EQ(CountEntities(), 2u);
+
+  int sprites = 0;
+
+  ECSManager::GetView<BasicComponent, TransformComponent, SpriteComponent>().each(
+      [&sprites](auto, BasicComponent& basic, TransformComponent& transform, SpriteComponent& sprite) {
+        ++sprites;
+
+        if (basic.m_name == "crate") {
+          EXPECT_FALSE(basic.m_is_static);
+          EXPECT_FLOAT_EQ(transform.position.x, 320.f);
+          EXPECT_FLOAT_EQ(transform.position.y, 240.f);
+          EXPECT_FLOAT_EQ(transform.scale.x, 1.f);
+          ASSERT_NE(sprite.m_sprite, nullptr);
+          EXPECT_FLOAT_EQ(sprite.m_sprite->GetSize().x, 64.f);
+          EXPECT_EQ(sprite.m_sprite->GetColor(), 0xff00ff00u);
+        } else if (basic.m_name == "floor") {
+          EXPECT_TRUE(basic.m_is_static);
+          EXPECT_FLOAT_EQ(transform.position.y, 80.f);
+        } else {
+          ADD_FAILURE() << "unexpected entity " << basic.m_name;
+        }
+      });
+
+  EXPECT_EQ(sprites, 2);
+}
+
+TEST_F(SceneIOTest, AVersionZeroSceneIsNotASceneFile) {
+  WriteFile("<cereal><formatVersion>0</formatVersion><entities><value0>0</value0></entities></cereal>");
+
+  std::string error;
+
+  EXPECT_FALSE(SceneIO::Load(m_file, &error));
+  EXPECT_NE(error.find("not a scene file"), std::string::npos);
 }
 
 TEST_F(SceneIOTest, AnUnwritablePathReportsFailureWithoutLeavingAScratchFile) {

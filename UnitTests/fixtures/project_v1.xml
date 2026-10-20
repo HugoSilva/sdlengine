@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cereal>
+	<project>
+		<formatVersion>1</formatVersion>
+		<name>Fixture</name>
+		<engineVersion>0.13</engineVersion>
+		<assetRoot>assets</assetRoot>
+		<window>
+			<title>Fixture Project</title>
+			<width>1024</width>
+			<height>576</height>
+		</window>
+		<startupScene>scenes/start.xml</startupScene>
+		<scene size="dynamic">
+			<value0>scenes/start.xml</value0>
+		</scene>
+	</project>
+</cereal>

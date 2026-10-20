@@ -34,6 +34,10 @@ endif()
 # so the tests fail when the checked-in project falls behind the format.
 target_compile_definitions(UnitTests PRIVATE RSE_SAMPLE_PROJECT_DIR="${CMAKE_SOURCE_DIR}/SampleProject")
 
+# Checked-in format fixtures: one file per published version. The tests read
+# them, never write them, so a format change has to keep old files loading.
+target_compile_definitions(UnitTests PRIVATE RSE_FIXTURES_DIR="${CMAKE_CURRENT_SOURCE_DIR}/fixtures")
+
 rse_deploy(UnitTests)
 
 add_test(NAME UnitTests COMMAND UnitTests)
