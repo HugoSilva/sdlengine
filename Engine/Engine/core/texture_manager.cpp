@@ -1,26 +1,53 @@
 #include "texture_manager.h"
 
+#include <core.h>
+#include <utility>
+
 #include <components/texture.h>
 #include <utils/logger.h>
 
 namespace rse {
-std::vector<Texture*> TextureManager::s_textures;
+std::vector<std::unique_ptr<Texture>> TextureManager::s_textures;
 
 void TextureManager::Init() {
   // SDL3_image no longer needs IMG_Init()/IMG_Quit(); formats boot
   // themselves on first use, so there is nothing to set up here.
 }
 
-void TextureManager::Add(Texture* texture) { s_textures.push_back(texture); }
+void TextureManager::Add(std::unique_ptr<Texture> texture) { s_textures.push_back(std::move(texture)); }
 
 Texture* TextureManager::Get(const std::string& name) {
-  for (Texture* texture : s_textures) {
-    if (texture->GetName() == name) return texture;
+  for (const std::unique_ptr<Texture>& texture : s_textures) {
+    if (texture->GetName() == name) return texture.get();
   }
   return nullptr;
 }
 
-void TextureManager::Clean() {
-  for (unsigned int i = 0; i < s_textures.size(); i++) delete s_textures[i];
+Texture* TextureManager::GetOrLoad(const std::string& name) {
+  // An empty name is "no texture", not a texture called nothing.
+  if (name.empty()) {
+    return nullptr;
+  }
+
+  if (Texture* existing = Get(name)) {
+    return existing;
+  }
+
+  auto texture = std::make_unique<Texture>(name, Core::ResolveResource(name));
+
+  // One warning per name, because this only runs the first time a name is
+  // asked for. The texture stays in the manager at id 0, so the sprites that
+  // refer to it draw white instead of failing the load.
+  if (texture->GetId() == 0) {
+    Logger::Warning("texture '" + name + "' could not be loaded; sprites using it draw white");
+  }
+
+  Texture* created = texture.get();
+  s_textures.push_back(std::move(texture));
+  return created;
 }
+
+std::size_t TextureManager::Count() { return s_textures.size(); }
+
+void TextureManager::Clean() { s_textures.clear(); }
 }  // namespace rse

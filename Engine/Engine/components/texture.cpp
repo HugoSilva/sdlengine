@@ -6,6 +6,8 @@
 #include <GL/glew.h>
 #endif  // EMSCRIPTEN
 
+#include <SDL3/SDL.h>
+
 #include <render/font.h>
 #include <utils/image.h>
 
@@ -18,6 +20,15 @@ Texture::Texture(const std::string& name, const std::string& filename) : m_name(
     Image::CheckImageMode(&mode, surface);
     m_width = surface->w;
     m_height = surface->h;
+  }
+
+  // Nothing to upload to without a current context: keep what was read (the
+  // size, the name) and leave the id at zero, which is the same state a file
+  // that is missing ends in. Headless loads -- the unit tests -- go through
+  // this path instead of calling GL entry points with no context bound.
+  if (SDL_GL_GetCurrentContext() == nullptr) {
+    if (surface != nullptr) SDL_DestroySurface(surface);
+    return;
   }
 
   unsigned int result;
@@ -48,6 +59,11 @@ Texture::Texture(const std::string& name, Font* font, const std::string text, un
     m_height = surface->h;
   }
 
+  if (SDL_GL_GetCurrentContext() == nullptr) {
+    if (surface != nullptr) SDL_DestroySurface(surface);
+    return;
+  }
+
   unsigned int result;
   glGenTextures(1, &result);
   glBindTexture(GL_TEXTURE_2D, result);
@@ -65,7 +81,13 @@ Texture::Texture(const std::string& name, Font* font, const std::string text, un
   m_id = result;
 }
 
-Texture::~Texture() { glDeleteTextures(1, &m_id); }
+Texture::~Texture() {
+  // Zero means "never uploaded" -- there is no name to delete, and touching GL
+  // at that point would be a call into a context that may not exist.
+  if (m_id != 0) {
+    glDeleteTextures(1, &m_id);
+  }
+}
 
 void Texture::Bind() const { glBindTexture(GL_TEXTURE_2D, m_id); }
 

@@ -23,7 +23,6 @@ void EditorApp::Init() {
   const std::string fragment_shader = Core::ResolveResource("Default.frag");
   m_shader = new Shader(vertex_shader.c_str(), fragment_shader.c_str());
 
-  TextureManager::Add(new Texture("test00", Core::ResolveResource("tex3.png")));
   SoundManager::Add(new Sound("eff", Core::ResolveResource("effect.wav")));
 
   // The viewport gets the editor's own camera, not the engine's game camera:

@@ -4,6 +4,7 @@
 #include <functional>
 #include <imgui.h>
 
+#include <ecs/scene_io.h>
 #include <render/imgui_layer.h>
 
 #ifdef EMSCRIPTEN
@@ -136,11 +137,18 @@ std::string Core::ResolveResource(const std::string& name) {
 Core::~Core() {
   SceneManager::Clean();
 
+  // Components borrow what the managers own -- a sprite its texture, an audio
+  // component its sound -- so the registry is emptied while both are still
+  // alive. Destroying an entity after its manager would leave it holding a
+  // pointer to something already deleted, and destroying it before the window
+  // goes means the textures still have a context to be freed in.
+  rse::SceneIO::Clear();
+  rse::ECSManager::Clean();
+
   rse::SoundManager::Clean();
   rse::FontManager::Clean();
   rse::TextureManager::Clean();
   PhysicsManager::Clean();
-  rse::ECSManager::Clean();
 
   // Must happen while the GL context and the SDL window are still alive.
   rse::ImGuiLayer::Shutdown();
