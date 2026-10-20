@@ -10,6 +10,7 @@
 #endif
 
 #include <cstdint>
+#include <filesystem>
 #include <vector>
 
 #include <glm/glm.hpp>
@@ -22,6 +23,7 @@
 #include <audio/sound_manager.h>
 #include <components/sprite.h>
 #include <core/event_manager.h>
+#include <core/project.h>
 #include <core/scene_manager.h>
 #include <core/texture_manager.h>
 #include <core/thread_manager.h>
@@ -50,16 +52,22 @@ class Core {
   static rse::Renderer2D* GetRenderer() { return m_renderer; }
   static rse::Window* GetWindow() { return m_window; }
 
+  // The project this run opened, or a default-constructed (unattached) one
+  // when there was nothing to open.
+  static const rse::Project& GetProject() { return m_project; }
+
   // Render target the scene pass should draw into, or nullptr to draw into the
   // window's back buffer. The editor overrides this so the scene lands in its
   // viewport panel instead of the whole window.
   virtual rse::Framebuffer* GetSceneTarget() { return nullptr; }
 
  protected:
-  Core();
+  // Opens the project manifest before anything else exists: the manifest says
+  // what the window is and which scene to start with. A project that cannot be
+  // read is logged, and the application runs without one, so the binaries
+  // still start when given no argument.
+  explicit Core(const std::filesystem::path& project_file);
   virtual ~Core();
-
-  rse::Window* createWindow(const char* name, int width, int height);
 
   virtual void Init() = 0;
   virtual void Tick() {}
@@ -76,6 +84,7 @@ class Core {
 
  private:
   void Run();
+  void LoadProject(const std::filesystem::path& project_file);
 
   // SDL3's SDL_GetTicks() returns Uint64 (milliseconds).
   uint64_t m_now = 0, m_last = 0;
@@ -86,4 +95,5 @@ class Core {
   static bool m_running;
   static rse::Renderer2D* m_renderer;
   static rse::Window* m_window;
+  static rse::Project m_project;
 };

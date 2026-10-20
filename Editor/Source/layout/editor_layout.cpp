@@ -3,11 +3,9 @@
 #include <core.h>
 #include <editor_manager.h>
 #include <imgui_internal.h>  // DockBuilder*
+#include <scene_commands.h>
 
 #include <SDL3/SDL.h>
-
-#include <ecs/scene_io.h>
-#include <utils/logger.h>
 
 namespace {
 constexpr const char* kDockSpaceId = "RSE_DockSpace";
@@ -48,16 +46,10 @@ void EditorLayout::DrawMenuBar() {
     }
     ImGui::Separator();
     if (ImGui::MenuItem("Save", "F1")) {
-      std::string error;
-      if (!rse::SceneIO::Save("project.xml", &error)) {
-        Logger::Error("Failed to save the scene: " + error);
-      }
+      SaveScene();
     }
     if (ImGui::MenuItem("Load", "F2")) {
-      std::string error;
-      if (!rse::SceneIO::Load("project.xml", &error)) {
-        Logger::Error("Failed to load the scene: " + error);
-      }
+      ReloadScene();
     }
     ImGui::Separator();
     if (ImGui::MenuItem("Quit", "Alt+F4")) {

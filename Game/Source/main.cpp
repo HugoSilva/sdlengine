@@ -1,4 +1,5 @@
 #include <core.h>
+#include <filesystem>
 
 #include <glm/glm.hpp>
 
@@ -14,6 +15,8 @@ __declspec(dllexport) int amd_power_xpress_request_high_performance = 1;
 // does lives in the engine's systems.
 class Game : public Core {
  public:
+  explicit Game(const std::filesystem::path& project_file) : Core(project_file) {}
+
   void Init() override {
 #ifdef EMSCRIPTEN
     m_shader = new rse::Shader("Resources/ES3.vert", "Resources/ES3.frag");
@@ -45,7 +48,9 @@ class Game : public Core {
 };
 
 int main(int argc, char** argv) {
-  Game game;
+  const std::filesystem::path project_file = argc > 1 ? std::filesystem::path{argv[1]} : "project.xml";
+
+  Game game(project_file);
   game.Start();
   return EXIT_SUCCESS;
 }

@@ -1,6 +1,7 @@
 #include "editor_app.h"
 
 #include <editor_manager.h>
+#include <scene_commands.h>
 
 #include <ecs/scene_io.h>
 #include <layout/editor_layout.h>
@@ -12,7 +13,8 @@
 #include <panels/viewport_panel.h>
 #include <render/grid_render_system.h>
 #include <systems/render_system.h>
-#include <utils/logger.h>
+
+EditorApp::EditorApp(const std::filesystem::path& project_file) : Core(project_file) {}
 
 void EditorApp::Init() {
   using namespace rse;
@@ -54,20 +56,11 @@ void EditorApp::Init() {
 }
 
 void EditorApp::Update(float delta_time) {
-  // Temporary: scenes have no project yet, so the keys still read and write
-  // the old fixed file. The project work replaces both with the scene the
-  // project has open.
   if (rse::InputManager::IsKeyPressed(SDL_SCANCODE_F1)) {
-    std::string error;
-    if (!rse::SceneIO::Save("project.xml", &error)) {
-      Logger::Error("Failed to save the scene: " + error);
-    }
+    SaveScene();
   }
   if (rse::InputManager::IsKeyPressed(SDL_SCANCODE_F2)) {
-    std::string error;
-    if (!rse::SceneIO::Load("project.xml", &error)) {
-      Logger::Error("Failed to load the scene: " + error);
-    }
+    ReloadScene();
   }
 }
 

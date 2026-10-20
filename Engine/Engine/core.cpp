@@ -16,14 +16,40 @@ static void DispatchLoop(void* fp) {
 bool Core::m_running = true;
 rse::Renderer2D* Core::m_renderer;
 rse::Window* Core::m_window;
+rse::Project Core::m_project;
 
-Core::Core() : m_frames_per_second(0) {
-  m_window = new rse::Window("RockSlide Engine", 1280, 720);
+namespace {
+// The default shader the renderer starts with. A project may ship its own under
+// its asset root; the engine's copy next to the binary is the fallback, and it
+// is what keeps a run without a project working.
+std::string DefaultShaderPath(const char* file_name) {
+  const rse::Project& project = Core::GetProject();
+
+  if (project.IsAttached()) {
+    const std::filesystem::path candidate = project.Resolve(project.asset_root + "/" + file_name);
+
+    if (std::filesystem::exists(candidate)) {
+      return candidate.string();
+    }
+  }
+
+  return std::string("Resources/") + file_name;
+}
+}  // namespace
+
+Core::Core(const std::filesystem::path& project_file) : m_frames_per_second(0) {
+  LoadProject(project_file);
+
+  const bool project_loaded = m_project.IsAttached();
+
+  m_window =
+      new rse::Window(project_loaded ? m_project.window.title.c_str() : "RockSlide Engine",
+                      project_loaded ? m_project.window.width : 1280, project_loaded ? m_project.window.height : 720);
   m_window->Init();
 
-  // Relative scene paths resolve against the working directory until a project
-  // says otherwise.
-  SceneManager::Init(std::filesystem::current_path());
+  // Scene paths resolve against the project directory; without a project they
+  // resolve against the working directory, as they always did.
+  SceneManager::Init(project_loaded ? m_project.Directory() : std::filesystem::current_path());
 
   rse::SoundManager::Init();
   rse::FontManager::Init();
@@ -31,12 +57,42 @@ Core::Core() : m_frames_per_second(0) {
   rse::InputManager::Init();
   PhysicsManager::Init();
 
-  rse::Shader* default_shader = new rse::Shader("Resources/Default.vert", "Resources/Default.frag");
+  const std::string vertex_shader = DefaultShaderPath("Default.vert");
+  const std::string fragment_shader = DefaultShaderPath("Default.frag");
+  rse::Shader* default_shader = new rse::Shader(vertex_shader.c_str(), fragment_shader.c_str());
   m_renderer = new rse::OpenGLRenderer(m_window->GetWindow(), default_shader);
 
   rse::ImGuiLayer::Init(m_window->GetWindow(), m_window->GetContext());
 
   rse::ECSManager::Init();
+
+  if (project_loaded) {
+    std::string error;
+
+    if (!SceneManager::Open(m_project.startup_scene, &error)) {
+      Logger::Error("Failed to open the startup scene: " + error);
+    }
+  }
+}
+
+void Core::LoadProject(const std::filesystem::path& project_file) {
+  rse::Project project;
+  std::string error;
+
+  if (!rse::Project::Load(project_file, project, &error)) {
+    // Running with no project at all is a supported way to start the binaries;
+    // a project that exists but cannot be read is not the same thing.
+    if (std::filesystem::exists(project_file)) {
+      Logger::Error("Failed to open the project: " + error);
+      Logger::Log("Running without a project.");
+    } else {
+      Logger::Log("No project at " + project_file.string() + "; running without one.");
+    }
+    return;
+  }
+
+  m_project = project;
+  Logger::Log("Opened project " + m_project.name + " (" + m_project.File().string() + ")");
 }
 
 Core::~Core() {
@@ -52,13 +108,6 @@ Core::~Core() {
   rse::ImGuiLayer::Shutdown();
 
   delete m_window;
-}
-
-rse::Window* Core::createWindow(const char* name, int width, int height) {
-  // m_Window = new graphics::Window(name, width, height);
-  // m_Window->Init();
-  // return m_Window;
-  return nullptr;
 }
 
 void Core::Start() {

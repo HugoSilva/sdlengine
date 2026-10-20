@@ -36,7 +36,7 @@ bool Window::Init() {
 
   // SDL3 dropped the x/y window position arguments (SDL_WINDOWPOS_CENTERED);
   // SDL now places the window, or you can SDL_SetWindowPosition() later.
-  m_window = SDL_CreateWindow(m_title, m_width, m_height,
+  m_window = SDL_CreateWindow(m_title.c_str(), m_width, m_height,
                               SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
   if (m_window == nullptr) {
     Logger::Error(std::string("Failed to create SDL Window: ") + SDL_GetError());
@@ -84,6 +84,11 @@ bool Window::Init() {
 bool Window::GetRunning() {
   // TODO I need to rethink the quit logic for the window
   return !InputManager::IsQuitRequested();
+}
+
+void Window::SetTitle(const std::string& title) {
+  m_title = title;
+  SDL_SetWindowTitle(m_window, m_title.c_str());
 }
 
 void Window::BindDefaultFramebuffer() {
