@@ -67,7 +67,7 @@ Two rules keep the additive case honest:
 
 | Milestone | Manifest | Scene | Prefab | Assets |
 |---|---|---|---|---|
-| today | 1 | 2 | -- | -- |
+| today | 1 | 3 | -- | -- |
 | #54 | 1 | 1 | -- | -- |
 | #47 | 1 | **2** | -- | -- |
 | #48 | 1 | **3** | -- | -- |
@@ -79,8 +79,9 @@ Two rules keep the additive case honest:
 | #46c | **3** | 6 | 1 | 1 |
 
 Only the rows up to today are shipped behaviour; the rest is the order the
-increments land in, one issue at a time. The first three rows are shipped: the
-migration policy itself, and the first breaking change made under it.
+increments land in, one issue at a time. The first four rows are shipped: the
+migration policy itself, the first breaking change made under it, and the first
+additive change made after it.
 
 ## The manifest
 
@@ -207,17 +208,18 @@ have the same path.
 
 | Stored | Not stored (yet) |
 |---|---|
-| `BasicComponent` (name, static flag, tag, layer) | `AudioComponent` |
-| `TransformComponent` (position, rotation, scale) | `RigidBodyComponent` |
+| `BasicComponent` (name, static flag, tag, layer) | `RigidBodyComponent` |
+| `TransformComponent` (position, rotation, scale) | |
 | `SpriteComponent` (size, colour, texture name) | |
+| `AudioComponent` (sound name, volume, mute, loop, autoplay) | |
 
-Audio and rigid bodies have cereal hooks of their own, but they are not
-round-trip safe yet, so they are deliberately left out. An entity that carries one
-still saves; the engine logs one warning per save counting the entities whose
-extra components were dropped, instead of losing them silently.
+Rigid bodies have a cereal hook of their own, but they are not round-trip safe yet,
+so they are deliberately left out. An entity that carries one still saves; the
+engine logs one warning per save counting the entities whose extra components were
+dropped, instead of losing them silently.
 
-The three groups above are written in that order and read in that order. Anything
-added later is appended as a fourth group, read only from the version that
+The four groups above are written in that order and read in that order. Anything
+added later is appended as a fifth group, read only from the version that
 introduced it; see [Versions](#versions).
 
 A sprite stores its texture by **name**, not by value: `<Texture>tex3.png</Texture>`
@@ -233,6 +235,22 @@ changed the field's shape, so a version 1 scene is **refused** as too old rather
 than half-read -- there is no migration. `SceneIO::kFirstFormatVersion` moved to 2
 with it, and `UnitTests/fixtures/scene_v1.xml` is kept as the file the refusal is
 tested against.
+
+A sound is stored by **name** in the same way: `<Sound>effect.wav</Sound>` is
+resolved through `SoundManager`, which keeps one `Sound` per name -- one decoded
+copy, however many entities play it. The playback settings belong to the entity,
+not to the shared sound: `Volume`, `Mute`, `Loop` and `Autoplay` sit beside the
+name, so two entities using one file can have different volumes, and one can loop
+while the other plays once. `AudioSystem` applies them, and starts a sound that
+asks to autoplay exactly once -- a one-shot is not restarted on the next frame.
+A file that cannot be loaded does not fail the load either: the entity keeps its
+name and stays silent.
+
+Version 3 appended the audio group, so a version 2 scene still opens -- the group
+is read only when the file says version 3 or newer. The example above is a
+version 2 file, which is why it ends at the sprite group; a version 3 file appends
+the audio group after it. `UnitTests/fixtures/scene_v3.xml` is the file that pins
+this, and `scene_v2.xml` is the one that has to keep opening.
 
 ## The editor's project commands
 
@@ -266,19 +284,27 @@ SampleProject/
     Default.vert
     Default.frag
     tex3.png
+    effect.wav
   scenes/
     start.xml         12 sprites in a 4x3 grid, all using tex3.png
 ```
 
 The sprites keep their twelve colours and share one image, so the scene is also
 the worked example of the texture rule: one asset, one texture, twelve sprites.
+`sprite_0` also carries an `AudioComponent` for `effect.wav`, with autoplay off:
+the scene is the worked example of the audio rule -- the file is named once and
+the playback settings live on the entity, so turning autoplay on in the inspector
+plays it.
 
 The unit tests open it: the sample is the one project that has to keep loading when
 the format moves.
 
 ## Limits and follow-ups
 
-- `AudioComponent` and `RigidBodyComponent` are not persisted (see above).
+- `RigidBodyComponent` is not persisted (see above).
+- Audio is 2D and one mixer track per sound: two entities that play the same file
+  at the same time share that track, so the gain applied is the last entity's.
+  The settings themselves are per entity and survive a save.
 - There are no prefabs, no asset ids and no input bindings in the manifest.
 - Camera and background are per-run, not per-scene.
 - The editor's session state (open panels, last scene, selection) is not part of

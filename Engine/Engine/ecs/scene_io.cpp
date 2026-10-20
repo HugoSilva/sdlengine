@@ -25,7 +25,9 @@ struct SaveEntities {
 
   template <typename Archive>
   void serialize(Archive& archive) {
-    registry.snapshot().entities(archive).component<BasicComponent, TransformComponent, SpriteComponent>(archive);
+    registry.snapshot()
+        .entities(archive)
+        .component<BasicComponent, TransformComponent, SpriteComponent, AudioComponent>(archive);
   }
 };
 
@@ -45,7 +47,10 @@ struct LoadEntities {
     // Groups added after version 2 are chained here, in the order SaveEntities
     // writes them, each read only from the version that introduced it:
     //
-    //   if (format_version >= 3) loader.component<AudioComponent>(archive);
+    //   if (format_version >= 4) loader.component<...>(archive);
+    if (format_version >= 3) {
+      loader.component<AudioComponent>(archive);
+    }
   }
 };
 
@@ -71,7 +76,6 @@ bool HasComponent(entt::DefaultRegistry& registry, entt::DefaultRegistry::entity
 }
 
 constexpr UnsavedComponent kUnsavedComponents[] = {
-    {"AudioComponent", &HasComponent<AudioComponent>},
     {"RigidBodyComponent", &HasComponent<RigidBodyComponent>},
 };
 

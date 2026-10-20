@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <cereal>
-	<formatVersion>2</formatVersion>
+	<formatVersion>3</formatVersion>
 	<entities>
 		<value0>12</value0>
 		<value1>11</value1>
@@ -606,6 +606,15 @@
 				</ptr_wrapper>
 			</Sprite>
 		</value87>
+		<value88>1</value88>
+		<value89>0</value89>
+		<value90>
+			<Sound>effect.wav</Sound>
+			<Volume>128</Volume>
+			<Mute>false</Mute>
+			<Loop>false</Loop>
+			<Autoplay>false</Autoplay>
+		</value90>
 	</entities>
 </cereal>
 

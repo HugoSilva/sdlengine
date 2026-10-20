@@ -6,6 +6,7 @@
 
 #include <gtest/gtest.h>
 
+#include <audio/sound_manager.h>
 #include <core/project.h>
 #include <core/texture_manager.h>
 #include <ecs/components/include_list.h>
@@ -34,6 +35,7 @@ class SampleProjectTest : public ::testing::Test {
   void TearDown() override {
     SceneIO::Clear();
     TextureManager::Clean();
+    SoundManager::Clean();
   }
 };
 

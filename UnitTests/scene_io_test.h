@@ -7,6 +7,7 @@
 
 #include <gtest/gtest.h>
 
+#include <audio/sound_manager.h>
 #include <core/texture_manager.h>
 #include <ecs/components/include_list.h>
 #include <ecs/ecs_manager.h>
@@ -39,6 +40,7 @@ class SceneIOTest : public ::testing::Test {
   void TearDown() override {
     SceneIO::Clear();
     TextureManager::Clean();
+    SoundManager::Clean();
     std::filesystem::remove_all(m_directory);
   }
 
@@ -80,6 +82,19 @@ class SceneIOTest : public ::testing::Test {
     return entity;
   }
 
+  // An entity with a sound, the way a loaded scene has one.
+  static uint32_t CreateAudioEntity(const char* name, const glm::vec3& position, const std::string& sound, int volume,
+                                    bool loop, bool autoplay) {
+    const uint32_t entity = CreateSprite(name, position);
+
+    AudioComponent audio{SoundManager::GetOrLoad(sound)};
+    audio.volume = volume;
+    audio.loop = loop;
+    audio.autoplay = autoplay;
+    ECSManager::AddComponent<AudioComponent>(entity, audio);
+    return entity;
+  }
+
   std::filesystem::path m_directory;
   std::filesystem::path m_file;
   std::filesystem::path m_scratch;
@@ -94,7 +109,7 @@ TEST_F(SceneIOTest, SavingWritesTheSceneFile) {
   EXPECT_FALSE(std::filesystem::exists(m_scratch));
 
   const std::string contents = ReadFile(m_file);
-  EXPECT_NE(contents.find("<formatVersion>2</formatVersion>"), std::string::npos);
+  EXPECT_NE(contents.find("<formatVersion>3</formatVersion>"), std::string::npos);
   EXPECT_NE(contents.find("<entities>"), std::string::npos);
 }
 
@@ -258,6 +273,96 @@ TEST_F(SceneIOTest, AnUntexturedSpriteComesBackWithoutATexture) {
   });
 }
 
+TEST_F(SceneIOTest, AnAudioComponentRoundTrips) {
+  CreateAudioEntity("speaker", glm::vec3(1.f, 2.f, 0.f), "effect.wav", 64, true, false);
+
+  std::string error;
+  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+
+  SceneIO::Clear();
+  TextureManager::Clean();
+  SoundManager::Clean();
+
+  ASSERT_TRUE(SceneIO::Load(m_file, &error)) << error;
+
+  EXPECT_EQ(CountEntities(), 1u);
+  EXPECT_EQ(SoundManager::Count(), 1u);
+
+  int speakers = 0;
+
+  ECSManager::GetView<AudioComponent>().each([&speakers](auto, AudioComponent& audio) {
+    ++speakers;
+    ASSERT_NE(audio.m_sound, nullptr);
+    EXPECT_EQ(audio.m_sound->GetName(), "effect.wav");
+    EXPECT_EQ(audio.volume, 64);
+    EXPECT_FALSE(audio.mute);
+    EXPECT_TRUE(audio.loop);
+    EXPECT_FALSE(audio.autoplay);
+
+    // Loading is silent: the entity asks for no autoplay, and nothing starts a
+    // sound before AudioSystem's first update anyway.
+    EXPECT_FALSE(audio.m_autoplay_started);
+    EXPECT_FALSE(audio.m_sound->IsPlaying());
+  });
+
+  EXPECT_EQ(speakers, 1);
+}
+
+TEST_F(SceneIOTest, EntitiesThatShareASoundShareOneSound) {
+  CreateAudioEntity("left", glm::vec3(0.f), "shared.wav", 64, false, false);
+  CreateAudioEntity("right", glm::vec3(16.f, 0.f, 0.f), "shared.wav", 32, false, false);
+
+  std::string error;
+  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+
+  SceneIO::Clear();
+  SoundManager::Clean();
+
+  ASSERT_TRUE(SceneIO::Load(m_file, &error)) << error;
+
+  // One decoded sound for two entities, and the volume each entity authored is
+  // still its own -- the reason the settings live on the component.
+  EXPECT_EQ(SoundManager::Count(), 1u);
+
+  int speakers = 0;
+
+  ECSManager::GetView<BasicComponent, AudioComponent>().each(
+      [&speakers](auto, BasicComponent& basic, AudioComponent& audio) {
+        ++speakers;
+        ASSERT_NE(audio.m_sound, nullptr);
+        EXPECT_EQ(audio.m_sound->GetName(), "shared.wav");
+
+        if (basic.m_name == "left") {
+          EXPECT_EQ(audio.volume, 64);
+        } else if (basic.m_name == "right") {
+          EXPECT_EQ(audio.volume, 32);
+        } else {
+          ADD_FAILURE() << "unexpected entity " << basic.m_name;
+        }
+      });
+
+  EXPECT_EQ(speakers, 2);
+}
+
+TEST_F(SceneIOTest, AMissingSoundKeepsItsName) {
+  CreateAudioEntity("speaker", glm::vec3(1.f, 2.f, 0.f), "this_file_does_not_exist.wav", 128, false, true);
+
+  std::string error;
+  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+
+  SceneIO::Clear();
+  SoundManager::Clean();
+
+  ASSERT_TRUE(SceneIO::Load(m_file, &error)) << error;
+
+  ECSManager::GetView<AudioComponent>().each([](auto, AudioComponent& audio) {
+    ASSERT_NE(audio.m_sound, nullptr);
+    EXPECT_EQ(audio.m_sound->GetName(), "this_file_does_not_exist.wav");
+    EXPECT_TRUE(audio.autoplay);
+    EXPECT_FALSE(audio.m_sound->IsPlaying());
+  });
+}
+
 // Version 2 changed what a sprite stores for its texture: a name instead of
 // the texture itself. A version 1 file cannot be read as a version 2 one -- the
 // field changed shape rather than gaining a tail -- so it is refused as too
@@ -290,6 +395,10 @@ TEST_F(SceneIOTest, AV2SceneLoadsFromTheFixture) {
   ASSERT_EQ(CountEntities(), 2u);
   EXPECT_EQ(TextureManager::Count(), 1u);
 
+  // Version 3 appended the audio group; a version 2 file simply has none, and
+  // reading it must not ask for a group that is not in the file.
+  EXPECT_EQ(SoundManager::Count(), 0u);
+
   int sprites = 0;
 
   ECSManager::GetView<BasicComponent, TransformComponent, SpriteComponent>().each(
@@ -316,6 +425,39 @@ TEST_F(SceneIOTest, AV2SceneLoadsFromTheFixture) {
       });
 
   EXPECT_EQ(sprites, 2);
+}
+
+// The version 3 fixture: the same floor and crate as version 2, plus a speaker
+// with no sprite whose sound and playback settings have to come back.
+TEST_F(SceneIOTest, AV3SceneLoadsFromTheFixture) {
+  const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "scene_v3.xml";
+
+  std::string error;
+  ASSERT_TRUE(SceneIO::Load(fixture, &error)) << error;
+
+  ASSERT_EQ(CountEntities(), 3u);
+  EXPECT_EQ(TextureManager::Count(), 1u);
+  EXPECT_EQ(SoundManager::Count(), 1u);
+
+  int speakers = 0;
+
+  ECSManager::GetView<BasicComponent, AudioComponent>().each(
+      [&speakers](auto, BasicComponent& basic, AudioComponent& audio) {
+        EXPECT_EQ(basic.m_name, "speaker");
+        ++speakers;
+
+        ASSERT_NE(audio.m_sound, nullptr);
+        EXPECT_EQ(audio.m_sound->GetName(), "effect.wav");
+        EXPECT_EQ(audio.volume, 64);
+        EXPECT_TRUE(audio.loop);
+        EXPECT_FALSE(audio.mute);
+        EXPECT_TRUE(audio.autoplay);
+      });
+
+  EXPECT_EQ(speakers, 1);
+
+  // An entity can carry audio without a sprite, and a sprite without audio.
+  EXPECT_EQ(ECSManager::GetView<SpriteComponent>().size(), 2u);
 }
 
 TEST_F(SceneIOTest, AVersionZeroSceneIsNotASceneFile) {
