@@ -109,7 +109,7 @@ TEST_F(SceneIOTest, SavingWritesTheSceneFile) {
   EXPECT_FALSE(std::filesystem::exists(m_scratch));
 
   const std::string contents = ReadFile(m_file);
-  EXPECT_NE(contents.find("<formatVersion>3</formatVersion>"), std::string::npos);
+  EXPECT_NE(contents.find("<formatVersion>4</formatVersion>"), std::string::npos);
   EXPECT_NE(contents.find("<entities>"), std::string::npos);
 }
 
@@ -363,6 +363,53 @@ TEST_F(SceneIOTest, AMissingSoundKeepsItsName) {
   });
 }
 
+TEST_F(SceneIOTest, ARigidBodyComponentRoundTrips) {
+  const uint32_t floor = CreateSprite("floor", glm::vec3(640.f, 80.f, 0.f));
+  Rigidbody* floor_body = new Rigidbody(glm::vec2(640.f, 80.f), glm::vec2(640.f, 16.f));
+  ECSManager::AddComponent<RigidBodyComponent>(floor, floor_body);
+
+  const uint32_t crate = CreateSprite("crate", glm::vec3(640.f, 400.f, 0.f));
+  Rigidbody* crate_body = new Rigidbody(glm::vec2(640.f, 400.f), glm::vec2(40.f, 40.f));
+  *crate_body->GetDensity() = 2.5f;
+  *crate_body->GetFriction() = 0.75f;
+  *crate_body->GetBodyType() = b2_dynamicBody;
+  ECSManager::AddComponent<RigidBodyComponent>(crate, crate_body);
+
+  std::string error;
+  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+
+  SceneIO::Clear();
+
+  ASSERT_TRUE(SceneIO::Load(m_file, &error)) << error;
+
+  EXPECT_EQ(CountEntities(), 2u);
+
+  int bodies = 0;
+
+  ECSManager::GetView<BasicComponent, RigidBodyComponent>().each(
+      [&bodies](auto, BasicComponent& basic, RigidBodyComponent& rigid) {
+        ++bodies;
+        ASSERT_NE(rigid.m_rigidbody, nullptr);
+
+        // Nothing was simulated while the scene was a file.
+        EXPECT_FALSE(rigid.m_rigidbody->m_init);
+
+        if (basic.m_name == "floor") {
+          EXPECT_EQ(*rigid.m_rigidbody->GetBodyType(), b2_staticBody);
+          EXPECT_FLOAT_EQ(*rigid.m_rigidbody->GetDensity(), 1.0f);
+          EXPECT_FLOAT_EQ(*rigid.m_rigidbody->GetFriction(), 0.3f);
+        } else if (basic.m_name == "crate") {
+          EXPECT_EQ(*rigid.m_rigidbody->GetBodyType(), b2_dynamicBody);
+          EXPECT_FLOAT_EQ(*rigid.m_rigidbody->GetDensity(), 2.5f);
+          EXPECT_FLOAT_EQ(*rigid.m_rigidbody->GetFriction(), 0.75f);
+        } else {
+          ADD_FAILURE() << "unexpected entity " << basic.m_name;
+        }
+      });
+
+  EXPECT_EQ(bodies, 2);
+}
+
 // Version 2 changed what a sprite stores for its texture: a name instead of
 // the texture itself. A version 1 file cannot be read as a version 2 one -- the
 // field changed shape rather than gaining a tail -- so it is refused as too
@@ -458,6 +505,43 @@ TEST_F(SceneIOTest, AV3SceneLoadsFromTheFixture) {
 
   // An entity can carry audio without a sprite, and a sprite without audio.
   EXPECT_EQ(ECSManager::GetView<SpriteComponent>().size(), 2u);
+
+  // Version 4 appended rigid bodies; a version 3 file simply has none.
+  EXPECT_EQ(ECSManager::GetView<RigidBodyComponent>().size(), 0u);
+}
+
+// The version 4 fixture carries every group the writer knows: the version 3
+// floor, crate and speaker, with a static body on the floor and a dynamic one
+// on the crate.
+TEST_F(SceneIOTest, AV4SceneLoadsFromTheFixture) {
+  const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "scene_v4.xml";
+
+  std::string error;
+  ASSERT_TRUE(SceneIO::Load(fixture, &error)) << error;
+
+  ASSERT_EQ(CountEntities(), 3u);
+  EXPECT_EQ(TextureManager::Count(), 1u);
+  EXPECT_EQ(SoundManager::Count(), 1u);
+  EXPECT_EQ(ECSManager::GetView<RigidBodyComponent>().size(), 2u);
+
+  int bodies = 0;
+
+  ECSManager::GetView<BasicComponent, RigidBodyComponent>().each(
+      [&bodies](auto, BasicComponent& basic, RigidBodyComponent& rigid) {
+        ++bodies;
+        ASSERT_NE(rigid.m_rigidbody, nullptr);
+        EXPECT_FALSE(rigid.m_rigidbody->m_init);
+
+        if (basic.m_name == "floor") {
+          EXPECT_EQ(*rigid.m_rigidbody->GetBodyType(), b2_staticBody);
+        } else if (basic.m_name == "crate") {
+          EXPECT_EQ(*rigid.m_rigidbody->GetBodyType(), b2_dynamicBody);
+        } else {
+          ADD_FAILURE() << "unexpected body " << basic.m_name;
+        }
+      });
+
+  EXPECT_EQ(bodies, 2);
 }
 
 TEST_F(SceneIOTest, AVersionZeroSceneIsNotASceneFile) {

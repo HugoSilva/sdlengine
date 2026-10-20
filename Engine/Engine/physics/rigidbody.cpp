@@ -1,10 +1,22 @@
 #include "rigidbody.h"
 
-#include "physics_manager.h"
-
 Rigidbody::Rigidbody(glm::vec2 position, glm::vec2 size) : m_position(position), m_size(size) {}
 
+Rigidbody::~Rigidbody() {
+  // A loaded body has none until its first update; the world is the one
+  // PhysicsSystem owns and it is still alive when the registry is emptied.
+  if (m_body != nullptr) {
+    m_world->DestroyBody(m_body);
+  }
+}
+
 void Rigidbody::Init(b2World* world) {
+  if (m_body != nullptr) {
+    return;
+  }
+
+  m_world = world;
+
   b2BodyDef body_definition;
 
   body_definition.position.Set(m_position.x, m_position.y);
@@ -32,4 +44,29 @@ void Rigidbody::Update(glm::vec3& position) {
   }
   b2Vec2 body_position = m_body->GetPosition();
   position = glm::vec3(body_position.x, body_position.y, 0.f);
+}
+
+std::string Rigidbody::BodyTypeName(b2BodyType type) {
+  switch (type) {
+    case b2_staticBody:
+      return "static";
+    case b2_kinematicBody:
+      return "kinematic";
+    case b2_dynamicBody:
+      return "dynamic";
+    default:
+      return "static";
+  }
+}
+
+b2BodyType Rigidbody::BodyTypeFromName(const std::string& name) {
+  if (name == "kinematic") {
+    return b2_kinematicBody;
+  }
+
+  if (name == "dynamic") {
+    return b2_dynamicBody;
+  }
+
+  return b2_staticBody;
 }

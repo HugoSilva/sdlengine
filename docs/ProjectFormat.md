@@ -67,7 +67,7 @@ Two rules keep the additive case honest:
 
 | Milestone | Manifest | Scene | Prefab | Assets |
 |---|---|---|---|---|
-| today | 1 | 3 | -- | -- |
+| today | 1 | 4 | -- | -- |
 | #54 | 1 | 1 | -- | -- |
 | #47 | 1 | **2** | -- | -- |
 | #48 | 1 | **3** | -- | -- |
@@ -79,9 +79,9 @@ Two rules keep the additive case honest:
 | #46c | **3** | 6 | 1 | 1 |
 
 Only the rows up to today are shipped behaviour; the rest is the order the
-increments land in, one issue at a time. The first four rows are shipped: the
-migration policy itself, the first breaking change made under it, and the first
-additive change made after it.
+increments land in, one issue at a time. The first five rows are shipped: the
+migration policy itself, the first breaking change made under it, and the three
+additive changes made after it.
 
 ## The manifest
 
@@ -206,20 +206,17 @@ have the same path.
 
 ### What a scene stores
 
-| Stored | Not stored (yet) |
-|---|---|
-| `BasicComponent` (name, static flag, tag, layer) | `RigidBodyComponent` |
-| `TransformComponent` (position, rotation, scale) | |
-| `SpriteComponent` (size, colour, texture name) | |
-| `AudioComponent` (sound name, volume, mute, loop, autoplay) | |
+A scene stores every component an entity can carry. Each one has a cereal hook
+that writes data, never a pointer, so saving and loading is a round trip:
 
-Rigid bodies have a cereal hook of their own, but they are not round-trip safe yet,
-so they are deliberately left out. An entity that carries one still saves; the
-engine logs one warning per save counting the entities whose extra components were
-dropped, instead of losing them silently.
+- `BasicComponent` -- name, static flag, tag, layer.
+- `TransformComponent` -- position, rotation, scale.
+- `SpriteComponent` -- size, colour, texture name.
+- `AudioComponent` -- sound name, volume, mute, loop, autoplay.
+- `RigidBodyComponent` -- position, size, density, friction, body type.
 
-The four groups above are written in that order and read in that order. Anything
-added later is appended as a fifth group, read only from the version that
+The five groups above are written in that order and read in that order. Anything
+added later is appended as a sixth group, read only from the version that
 introduced it; see [Versions](#versions).
 
 A sprite stores its texture by **name**, not by value: `<Texture>tex3.png</Texture>`
@@ -247,10 +244,19 @@ A file that cannot be loaded does not fail the load either: the entity keeps its
 name and stays silent.
 
 Version 3 appended the audio group, so a version 2 scene still opens -- the group
-is read only when the file says version 3 or newer. The example above is a
-version 2 file, which is why it ends at the sprite group; a version 3 file appends
-the audio group after it. `UnitTests/fixtures/scene_v3.xml` is the file that pins
-this, and `scene_v2.xml` is the one that has to keep opening.
+is read only when the file says version 3 or newer. Version 4 appended the rigid
+bodies for the same reason. The example above is a version 2 file, which is why
+it ends at the sprite group; a current file appends the audio and rigid-body
+groups after it. `UnitTests/fixtures/scene_v3.xml` and `scene_v4.xml` are the
+files that pin this, and `scene_v2.xml` is the one that has to keep opening.
+
+A rigid body is stored as its **inputs**, by value: position, size, density,
+friction and the body type by name (`static`, `kinematic`, `dynamic`). A
+`b2Body` is a simulation object that belongs to a world, not data, so it is not
+in the file at all: neither is "initialised". A loaded body therefore starts in
+the same state as one added in the editor, and `PhysicsSystem` creates the
+`b2Body` on its first update. A body is per entity, so there is no manager to
+resolve it against -- unlike a texture or a sound.
 
 ## The editor's project commands
 
@@ -287,6 +293,7 @@ SampleProject/
     effect.wav
   scenes/
     start.xml         12 sprites in a 4x3 grid, all using tex3.png
+    physics.xml       one static floor and one dynamic crate
 ```
 
 The sprites keep their twelve colours and share one image, so the scene is also
@@ -296,15 +303,21 @@ the scene is the worked example of the audio rule -- the file is named once and
 the playback settings live on the entity, so turning autoplay on in the inspector
 plays it.
 
+`physics.xml` is the second scene, listed in the manifest, and the worked example
+of the rigid-body rule: the floor is a static body, the crate a dynamic one. Both
+store their inputs; neither stores a `b2Body`, so the crate starts falling as
+soon as the scene is open and stepping.
+
 The unit tests open it: the sample is the one project that has to keep loading when
 the format moves.
 
 ## Limits and follow-ups
 
-- `RigidBodyComponent` is not persisted (see above).
 - Audio is 2D and one mixer track per sound: two entities that play the same file
   at the same time share that track, so the gain applied is the last entity's.
   The settings themselves are per entity and survive a save.
+- Physics is one world with fixed gravity and a fixed time step, owned by
+  `PhysicsSystem`; there is no way to change either from a scene yet.
 - There are no prefabs, no asset ids and no input bindings in the manifest.
 - Camera and background are per-run, not per-scene.
 - The editor's session state (open panels, last scene, selection) is not part of

@@ -113,4 +113,33 @@ TEST_F(SampleProjectTest, TheStartupSceneSharesOneTexture) {
 
   EXPECT_GT(sprites, 1);
 }
+// The sample's second scene is the physics worked example: one static floor and
+// one dynamic crate, both still uninitialised -- a loaded body starts like one
+// added in the editor, and PhysicsSystem builds it on the first update.
+TEST_F(SampleProjectTest, ThePhysicsSceneHasAFloorAndAFallingBody) {
+  Project project;
+  std::string error;
+
+  ASSERT_TRUE(Project::Load(kSampleProject / "project.xml", project, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(project.Resolve("scenes/physics.xml"), &error)) << error;
+
+  EXPECT_EQ(ECSManager::GetView<RigidBodyComponent>().size(), 2u);
+
+  int static_bodies = 0;
+  int dynamic_bodies = 0;
+
+  ECSManager::GetView<RigidBodyComponent>().each([&static_bodies, &dynamic_bodies](auto, RigidBodyComponent& rigid) {
+    ASSERT_NE(rigid.m_rigidbody, nullptr);
+    EXPECT_FALSE(rigid.m_rigidbody->m_init);
+
+    if (*rigid.m_rigidbody->GetBodyType() == b2_staticBody) {
+      ++static_bodies;
+    } else if (*rigid.m_rigidbody->GetBodyType() == b2_dynamicBody) {
+      ++dynamic_bodies;
+    }
+  });
+
+  EXPECT_EQ(static_bodies, 1);
+  EXPECT_EQ(dynamic_bodies, 1);
+}
 }  // namespace

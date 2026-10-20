@@ -13,6 +13,7 @@
 		<startupScene>scenes/start.xml</startupScene>
 		<scene size="dynamic">
 			<value0>scenes/start.xml</value0>
+			<value1>scenes/physics.xml</value1>
 		</scene>
 	</project>
 </cereal>

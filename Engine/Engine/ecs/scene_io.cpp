@@ -8,13 +8,12 @@
 
 #include <ecs/components/include_list.h>
 #include <ecs/ecs_manager.h>
-#include <utils/logger.h>
 
 namespace rse {
 namespace {
-// What a scene file stores is spelled out once per direction below. Audio and
-// rigid-body components have cereal hooks of their own but are not round-trip
-// safe yet, so they are deliberately absent and warned about on save.
+// What a scene file stores is spelled out once per direction below: every
+// component a scene can carry has a cereal hook that writes data, never a
+// pointer, so nothing is dropped on save.
 //
 // entt writes its snapshot as unnamed nodes, which cereal names value0,
 // value1, ... at the archive root. Wrapping it in a named node keeps a scene
@@ -27,7 +26,7 @@ struct SaveEntities {
   void serialize(Archive& archive) {
     registry.snapshot()
         .entities(archive)
-        .component<BasicComponent, TransformComponent, SpriteComponent, AudioComponent>(archive);
+        .component<BasicComponent, TransformComponent, SpriteComponent, AudioComponent, RigidBodyComponent>(archive);
   }
 };
 
@@ -47,9 +46,13 @@ struct LoadEntities {
     // Groups added after version 2 are chained here, in the order SaveEntities
     // writes them, each read only from the version that introduced it:
     //
-    //   if (format_version >= 4) loader.component<...>(archive);
+    //   if (format_version >= 5) loader.component<...>(archive);
     if (format_version >= 3) {
       loader.component<AudioComponent>(archive);
+    }
+
+    if (format_version >= 4) {
+      loader.component<RigidBodyComponent>(archive);
     }
   }
 };
@@ -58,54 +61,6 @@ void SetError(std::string* error, const std::string& message) {
   if (error != nullptr) {
     *error = message;
   }
-}
-
-// Components that have cereal hooks but are not in the saved set yet, so an
-// entity that carries one loses it on the next load. The check and the warning
-// both come from this list: deleting a row when the component starts
-// round-tripping updates both, and keeps the message from naming something the
-// save actually keeps.
-struct UnsavedComponent {
-  const char* name;
-  bool (*has)(entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
-};
-
-template <typename Component>
-bool HasComponent(entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity) {
-  return registry.has<Component>(entity);
-}
-
-constexpr UnsavedComponent kUnsavedComponents[] = {
-    {"RigidBodyComponent", &HasComponent<RigidBodyComponent>},
-};
-
-void WarnAboutComponentsThatAreNotSaved(entt::DefaultRegistry& registry) {
-  int entities = 0;
-
-  registry.each([&entities, &registry](const auto entity) {
-    for (const UnsavedComponent& component : kUnsavedComponents) {
-      if (component.has(registry, entity)) {
-        ++entities;
-        return;
-      }
-    }
-  });
-
-  if (entities == 0) {
-    return;
-  }
-
-  std::string names;
-
-  for (const UnsavedComponent& component : kUnsavedComponents) {
-    if (!names.empty()) {
-      names += ", ";
-    }
-
-    names += component.name;
-  }
-
-  Logger::Warning(std::to_string(entities) + " entities carry components that are not saved (" + names + ")");
 }
 }  // namespace
 
@@ -157,7 +112,6 @@ bool SceneIO::Save(const std::filesystem::path& file, std::string* error) {
     return false;
   }
 
-  WarnAboutComponentsThatAreNotSaved(ECSManager::registry);
   return true;
 }
 
