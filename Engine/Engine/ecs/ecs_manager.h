@@ -7,6 +7,8 @@
 class BaseSystem;  // forward declaration for BaseSystem
 
 namespace rse {
+class SceneIO;  // forward declaration for SceneIO
+
 // When a system runs relative to everything else.
 //
 // There is no depth to lean on in the 2D scene pass -- every sprite sits at
@@ -55,10 +57,11 @@ class ECSManager {
   static void UpdateUi();
   static void Clean();
 
-  static bool Save();
-  static bool Load();
-
  private:
+  // SceneIO reads and writes the registry as a whole; it is the only thing
+  // that should touch the buffer behind it directly.
+  friend class SceneIO;
+
   static entt::DefaultRegistry registry;
   static std::vector<BaseSystem*> m_systems_list;
   static std::vector<BaseSystem*> m_pre_scene_systems;

@@ -2,6 +2,7 @@
 
 #include <editor_manager.h>
 
+#include <ecs/scene_io.h>
 #include <layout/editor_layout.h>
 #include <panels/console_panel.h>
 #include <panels/content_browser_panel.h>
@@ -71,8 +72,18 @@ SetupView::SetupView(std::string name, SDL_Window* win) {
 void SetupView::Update(float delta_time) {
   // SceneManager::change("SelectProject");
 
-  if (rse::InputManager::IsKeyPressed(SDL_SCANCODE_F1)) rse::ECSManager::Save();
-  if (rse::InputManager::IsKeyPressed(SDL_SCANCODE_F2)) rse::ECSManager::Load();
+  if (rse::InputManager::IsKeyPressed(SDL_SCANCODE_F1)) {
+    std::string error;
+    if (!rse::SceneIO::Save("project.xml", &error)) {
+      Logger::Error("Failed to save the scene: " + error);
+    }
+  }
+  if (rse::InputManager::IsKeyPressed(SDL_SCANCODE_F2)) {
+    std::string error;
+    if (!rse::SceneIO::Load("project.xml", &error)) {
+      Logger::Error("Failed to load the scene: " + error);
+    }
+  }
 }
 
 void SetupView::Render() {

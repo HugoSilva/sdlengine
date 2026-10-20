@@ -1,12 +1,6 @@
 #include "ecs_manager.h"
 
 #include <core.h>
-#include <exception>
-#include <filesystem>
-#include <fstream>
-#include <string>
-
-#include <cereal/archives/xml.hpp>
 
 #include <ecs/components/include_list.h>
 #include <ecs/systems/audio_system.h>
@@ -14,16 +8,6 @@
 #include <ecs/systems/physics_system.h>
 #include <ecs/systems/sprite_render_system.h>
 #include <render/opengl_renderer.h>
-#include <utils/logger.h>
-
-namespace {
-constexpr const char* kProjectFile{"project.xml"};
-
-// The project is written to a scratch file and moved into place once the
-// archive has closed cleanly, so a failed save cannot destroy the previous
-// (loadable) project file.
-constexpr const char* kProjectFileScratch{"project.xml.tmp"};
-}  // namespace
 
 namespace rse {
 entt::DefaultRegistry ECSManager::registry;
@@ -69,72 +53,5 @@ void ECSManager::Clean() {
 
   for (unsigned int i = 0; i < m_systems_list.size(); i++) delete m_systems_list[i];
   m_systems_list.clear();
-}
-
-bool ECSManager::Save() {
-  std::ofstream os(kProjectFileScratch);
-
-  if (!os.is_open()) {
-    Logger::Error("Failed to save the project: project.xml could not be opened for writing.");
-    return false;
-  }
-
-  bool succeeded = true;
-
-  try {
-    cereal::XMLOutputArchive output{os};
-
-    registry.snapshot().entities(output).component<BasicComponent, TransformComponent, SpriteComponent>(output);
-  } catch (const std::exception& error) {
-    Logger::Error(std::string("Failed to save the project: ") + error.what());
-    succeeded = false;
-  } catch (...) {
-    Logger::Error("Failed to save the project: unknown error.");
-    succeeded = false;
-  }
-
-  os.close();
-
-  std::error_code error;
-
-  if (!succeeded) {
-    std::filesystem::remove(kProjectFileScratch, error);
-    return false;
-  }
-
-  std::filesystem::rename(kProjectFileScratch, kProjectFile, error);
-
-  if (error) {
-    Logger::Error(std::string("Failed to save the project: ") + error.message());
-    std::filesystem::remove(kProjectFileScratch, error);
-    return false;
-  }
-
-  Logger::Log("Project saved to project.xml");
-  return true;
-}
-
-bool ECSManager::Load() {
-  std::ifstream is(kProjectFile);
-
-  if (!is.is_open()) {
-    Logger::Error("Failed to load the project: project.xml was not found.");
-    return false;
-  }
-
-  try {
-    cereal::XMLInputArchive input{is};
-
-    registry.restore().entities(input).component<BasicComponent, TransformComponent, SpriteComponent>(input);
-  } catch (const std::exception& error) {
-    Logger::Error(std::string("Failed to load the project: ") + error.what());
-    return false;
-  } catch (...) {
-    Logger::Error("Failed to load the project: unknown error.");
-    return false;
-  }
-
-  Logger::Log("Project loaded from project.xml");
-  return true;
 }
 }  // namespace rse

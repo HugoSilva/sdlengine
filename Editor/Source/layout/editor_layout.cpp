@@ -6,6 +6,9 @@
 
 #include <SDL3/SDL.h>
 
+#include <ecs/scene_io.h>
+#include <utils/logger.h>
+
 namespace {
 constexpr const char* kDockSpaceId = "RSE_DockSpace";
 
@@ -45,10 +48,16 @@ void EditorLayout::DrawMenuBar() {
     }
     ImGui::Separator();
     if (ImGui::MenuItem("Save", "F1")) {
-      rse::ECSManager::Save();
+      std::string error;
+      if (!rse::SceneIO::Save("project.xml", &error)) {
+        Logger::Error("Failed to save the scene: " + error);
+      }
     }
     if (ImGui::MenuItem("Load", "F2")) {
-      rse::ECSManager::Load();
+      std::string error;
+      if (!rse::SceneIO::Load("project.xml", &error)) {
+        Logger::Error("Failed to load the scene: " + error);
+      }
     }
     ImGui::Separator();
     if (ImGui::MenuItem("Quit", "Alt+F4")) {

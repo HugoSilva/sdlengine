@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include <ecs/scene_io.h>
+
 SpriteTest::SpriteTest(SDL_Window* win) {
   FontManager::Add(new Font("Arial", "Resources/arial.ttf", 24));
 
@@ -74,8 +76,12 @@ void SpriteTest::Update(float delta_time) {
     m_player_sprite->position.x -= speed;
   else if (InputManager::IsKeyPressed(SDL_SCANCODE_RIGHT))
     m_player_sprite->position.x += speed;
-  else if (InputManager::IsKeyPressed(SDL_SCANCODE_F1))
-    rse::ECSManager::Save();
+  else if (InputManager::IsKeyPressed(SDL_SCANCODE_F1)) {
+    std::string error;
+    if (!rse::SceneIO::Save("project.xml", &error)) {
+      Logger::Error("Failed to save the scene: " + error);
+    }
+  }
 }
 
 void SpriteTest::Render() {
