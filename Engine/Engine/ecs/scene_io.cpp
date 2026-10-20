@@ -25,9 +25,7 @@ struct SaveEntities {
 
   template <typename Archive>
   void serialize(Archive& archive) {
-    registry.snapshot()
-        .entities(archive)
-        .component<BasicComponent, TransformComponent, SpriteComponent>(archive);
+    registry.snapshot().entities(archive).component<BasicComponent, TransformComponent, SpriteComponent>(archive);
   }
 };
 
@@ -36,9 +34,7 @@ struct LoadEntities {
 
   template <typename Archive>
   void serialize(Archive& archive) {
-    registry.restore()
-        .entities(archive)
-        .component<BasicComponent, TransformComponent, SpriteComponent>(archive);
+    registry.restore().entities(archive).component<BasicComponent, TransformComponent, SpriteComponent>(archive);
   }
 };
 
