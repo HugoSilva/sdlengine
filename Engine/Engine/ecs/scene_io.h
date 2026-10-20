@@ -11,9 +11,20 @@ namespace rse {
 // which scene is open, and where its file is, is SceneManager's business. The
 // functions return false and fill `error` rather than throwing or logging, so
 // the caller decides what a failure means to it.
+//
+// Component groups are written in a fixed order and **appended**, never
+// reordered or removed: the reader walks the groups in the same order, so a
+// reorder would silently misread every older file instead of failing. A group
+// added in version N is read only when the file says it is at least N.
 class SceneIO {
  public:
+  // The scene format this build writes, and the newest it can read. Files in
+  // [kFirstFormatVersion, kFormatVersion] are read -- older ones through the
+  // gates in LoadEntities -- and anything newer is refused.
   static constexpr int kFormatVersion{1};
+
+  // The oldest scene file this build still understands.
+  static constexpr int kFirstFormatVersion{1};
 
   // Writes the registry to `file`. The file is written to a scratch path and
   // renamed into place once the archive has closed, so a failed save cannot

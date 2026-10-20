@@ -31,10 +31,22 @@ struct SaveEntities {
 
 struct LoadEntities {
   entt::DefaultRegistry& registry;
+  int format_version{0};
 
   template <typename Archive>
   void serialize(Archive& archive) {
-    registry.restore().entities(archive).component<BasicComponent, TransformComponent, SpriteComponent>(archive);
+    // One loader for the whole file: restore() asserts the registry is empty,
+    // so a second one would fire that assert on every load.
+    auto loader = registry.restore();
+
+    loader.entities(archive);
+    loader.component<BasicComponent, TransformComponent, SpriteComponent>(archive);
+
+    // Groups added after version 1 are chained here, in the order SaveEntities
+    // writes them, each read only from the version that introduced it so a
+    // file that predates the group keeps the default:
+    //
+    //   if (format_version >= 2) loader.component<AudioComponent>(archive);
   }
 };
 
@@ -44,22 +56,53 @@ void SetError(std::string* error, const std::string& message) {
   }
 }
 
-// Audio and rigid-body components are not part of the saved set yet, so an
-// entity that carries one loses it on the next load. Say so once per save
-// instead of dropping it silently.
+// Components that have cereal hooks but are not in the saved set yet, so an
+// entity that carries one loses it on the next load. The check and the warning
+// both come from this list: deleting a row when the component starts
+// round-tripping updates both, and keeps the message from naming something the
+// save actually keeps.
+struct UnsavedComponent {
+  const char* name;
+  bool (*has)(entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity);
+};
+
+template <typename Component>
+bool HasComponent(entt::DefaultRegistry& registry, entt::DefaultRegistry::entity_type entity) {
+  return registry.has<Component>(entity);
+}
+
+constexpr UnsavedComponent kUnsavedComponents[] = {
+    {"AudioComponent", &HasComponent<AudioComponent>},
+    {"RigidBodyComponent", &HasComponent<RigidBodyComponent>},
+};
+
 void WarnAboutComponentsThatAreNotSaved(entt::DefaultRegistry& registry) {
   int entities = 0;
 
   registry.each([&entities, &registry](const auto entity) {
-    if (registry.has<AudioComponent>(entity) || registry.has<RigidBodyComponent>(entity)) {
-      ++entities;
+    for (const UnsavedComponent& component : kUnsavedComponents) {
+      if (component.has(registry, entity)) {
+        ++entities;
+        return;
+      }
     }
   });
 
-  if (entities > 0) {
-    Logger::Warning(std::to_string(entities) +
-                    " entities carry components that are not saved (AudioComponent, RigidBodyComponent)");
+  if (entities == 0) {
+    return;
   }
+
+  std::string names;
+
+  for (const UnsavedComponent& component : kUnsavedComponents) {
+    if (!names.empty()) {
+      names += ", ";
+    }
+
+    names += component.name;
+  }
+
+  Logger::Warning(std::to_string(entities) + " entities carry components that are not saved (" + names + ")");
 }
 }  // namespace
 
@@ -131,9 +174,16 @@ bool SceneIO::Load(const std::filesystem::path& file, std::string* error) {
 
     archive(cereal::make_nvp("formatVersion", format_version));
 
-    if (format_version != kFormatVersion) {
-      SetError(error, "unsupported scene format version " + std::to_string(format_version) + " (expected " +
-                          std::to_string(kFormatVersion) + "): " + file.string());
+    if (format_version < kFirstFormatVersion) {
+      SetError(error, "not a scene file: format version " + std::to_string(format_version) +
+                          " is not a scene version: " + file.string());
+      return false;
+    }
+
+    if (format_version > kFormatVersion) {
+      SetError(error, "scene format version " + std::to_string(format_version) +
+                          " is newer than this build supports (" + std::to_string(kFormatVersion) +
+                          "): " + file.string());
       return false;
     }
 
@@ -142,7 +192,7 @@ bool SceneIO::Load(const std::filesystem::path& file, std::string* error) {
     Clear();
     cleared = true;
 
-    LoadEntities entities{ECSManager::registry};
+    LoadEntities entities{ECSManager::registry, format_version};
     archive(cereal::make_nvp("entities", entities));
   } catch (const std::exception& exception) {
     if (cleared) {

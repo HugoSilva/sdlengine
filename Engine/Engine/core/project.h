@@ -22,7 +22,15 @@ inline constexpr const char* kEngineVersion{"0.13"};
 // copied or moved and still opens. The entities of a scene are *not* in here:
 // they live in the scene files this manifest lists.
 struct Project {
+  // The manifest format this build writes, and the newest it can read. A file
+  // is readable when its version is in [kFirstFormatVersion, kFormatVersion]:
+  // older files are migrated forward by Migrate(), newer ones are refused
+  // because this build cannot know what they mean.
   static constexpr int kFormatVersion{1};
+
+  // The oldest manifest this build still understands. It only moves when a
+  // migration stops being possible at all, not when a version is added.
+  static constexpr int kFirstFormatVersion{1};
 
   struct Window {
     std::string title{"RockSlide Engine"};
@@ -65,13 +73,28 @@ struct Project {
 
   template <typename Archive>
   void serialize(Archive& archive) {
-    archive(cereal::make_nvp("formatVersion", format_version), cereal::make_nvp("name", name),
-            cereal::make_nvp("engineVersion", engine_version), cereal::make_nvp("assetRoot", asset_root),
-            cereal::make_nvp("window", window), cereal::make_nvp("startupScene", startup_scene),
-            cereal::make_nvp("scene", scenes));
+    // The version is read before anything it governs: on the way in, cereal
+    // has assigned format_version by the time the next call runs, which is
+    // what lets the sections below be gated on it. On the way out the field
+    // is already kFormatVersion (Save() sets it), so the same gates hold.
+    archive(cereal::make_nvp("formatVersion", format_version));
+
+    // Everything version 1 knows about. A field added later is appended in a
+    // separate call guarded by the version that introduced it, so older files
+    // keep opening:
+    //
+    //   if (format_version >= 2) archive(cereal::make_nvp("audio", audio));
+    archive(cereal::make_nvp("name", name), cereal::make_nvp("engineVersion", engine_version),
+            cereal::make_nvp("assetRoot", asset_root), cereal::make_nvp("window", window),
+            cereal::make_nvp("startupScene", startup_scene), cereal::make_nvp("scene", scenes));
   }
 
  private:
+  // Brings a manifest read as `from_version` up to kFormatVersion's shape.
+  // Runs after the file has been read and before it is handed to the caller,
+  // so nothing outside this class ever sees an old version.
+  static void Migrate(Project& project, int from_version);
+
   // Stored paths use forward slashes whatever the platform; a backslash a
   // caller typed is turned into one on the way out.
   void NormalisePaths();

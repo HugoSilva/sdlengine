@@ -68,10 +68,18 @@ bool Project::Load(const std::filesystem::path& file, Project& project, std::str
     }
   }
 
-  if (format_version != kFormatVersion) {
-    const std::string direction = format_version < kFormatVersion ? "older" : "newer";
-    SetError(error, "project format version " + std::to_string(format_version) + " is " + direction +
-                        " than this build supports (" + std::to_string(kFormatVersion) + "): " + file.string());
+  if (format_version < kFirstFormatVersion) {
+    // Version 0 and below were never manifests: a file that claims one is not
+    // a project file, whatever it contains.
+    SetError(error, "not a project file: format version " + std::to_string(format_version) +
+                        " is not a project version: " + file.string());
+    return false;
+  }
+
+  if (format_version > kFormatVersion) {
+    SetError(error, "project format version " + std::to_string(format_version) +
+                        " is newer than this build supports (" + std::to_string(kFormatVersion) +
+                        "): " + file.string());
     return false;
   }
 
@@ -96,8 +104,23 @@ bool Project::Load(const std::filesystem::path& file, Project& project, std::str
   }
 
   loaded.m_file = std::filesystem::absolute(file);
+  Migrate(loaded, format_version);
   project = loaded;
   return true;
+}
+
+void Project::Migrate(Project& project, int from_version) {
+  // No published version has changed the meaning of existing data yet, so
+  // every version this build reads is already in the current shape. When one
+  // does, it gets one block per version, oldest first, each gated on the
+  // version it upgrades *from*:
+  //
+  //   if (from_version < 2) { project.audio = ...; }   // #46b
+  //
+  // Additive fields need no block: serialize() already skips them for an
+  // older file and the defaults stay in place.
+  (void)project;
+  (void)from_version;
 }
 
 bool Project::Save(std::string* error) const {
@@ -124,6 +147,15 @@ bool Project::Save(std::string* error) const {
 
     Project normalised{*this};
     normalised.NormalisePaths();
+
+    // The file is written in *this* build's shape, not in the shape it was
+    // read in: a manifest loaded as an older version and saved again must not
+    // keep claiming the old one. The engine version is informational, but it
+    // has the same problem -- it would otherwise keep naming the build that
+    // wrote the file first.
+    normalised.format_version = kFormatVersion;
+    normalised.engine_version = kEngineVersion;
+
     archive(cereal::make_nvp("project", normalised));
   } catch (const std::exception& exception) {
     message = exception.what();
