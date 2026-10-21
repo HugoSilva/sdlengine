@@ -30,6 +30,11 @@ class Game : public Core {
 
     m_shader = new rse::Shader(vertex_shader.c_str(), fragment_shader.c_str());
 
+    // The manifest's mix, applied once the project is open. The scene's sounds
+    // were loaded with the default volumes and are re-gained by SetVolumes.
+    const rse::Project& project = Core::GetProject();
+    rse::SoundManager::SetVolumes(project.audio.master, project.audio.music, project.audio.sfx);
+
     // The scene says where its camera looks, and the game applies that once,
     // when it starts: the arrow keys still move the camera afterwards.
     const rse::SceneIO::SceneCamera& scene_camera = rse::SceneIO::GetCamera();

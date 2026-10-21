@@ -1,5 +1,7 @@
 #include "sound.h"
 
+#include <algorithm>
+
 #include "sound_manager.h"
 #include <utils/logger.h>
 
@@ -24,7 +26,7 @@ Sound::Sound(const std::string& asset_id, const std::string& name, const std::st
   m_track = MIX_CreateTrack(mixer);
   if (m_track != nullptr) {
     MIX_SetTrackAudio(m_track, m_sound);
-    MIX_SetTrackGain(m_track, static_cast<float>(m_volume) / 128.0f);
+    MIX_SetTrackGain(m_track, SoundManager::SfxGain(m_volume));
   }
 }
 
@@ -36,6 +38,9 @@ Sound::~Sound() {
 void Sound::Play() {
   if (m_track == nullptr) return;
 
+  // The project's mix may have changed since this sound was created.
+  MIX_SetTrackGain(m_track, SoundManager::SfxGain(m_volume));
+
   MIX_StopTrack(m_track, 0);
   if (!MIX_PlayTrack(m_track, 0)) {
     Logger::Error("SDL_mixer could not play filename " + m_filename);
@@ -44,6 +49,9 @@ void Sound::Play() {
 
 void Sound::Loop() {
   if (m_track == nullptr) return;
+
+  // The project's mix may have changed since this sound was created.
+  MIX_SetTrackGain(m_track, SoundManager::SfxGain(m_volume));
 
   SDL_PropertiesID options = SDL_CreateProperties();
   SDL_SetNumberProperty(options, MIX_PROP_PLAY_LOOPS_NUMBER, -1);
@@ -69,7 +77,7 @@ void Sound::Stop() {
 }
 
 void Sound::SetVolume(int volume) {
-  m_volume = volume;
-  if (m_track != nullptr) MIX_SetTrackGain(m_track, static_cast<float>(m_volume) / 128.0f);
+  m_volume = std::clamp(volume, 0, SoundManager::kMaxVolume);
+  if (m_track != nullptr) MIX_SetTrackGain(m_track, SoundManager::SfxGain(m_volume));
 }
 }  // namespace rse

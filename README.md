@@ -54,6 +54,8 @@ Game.exe SampleProject\project.xml
 
 The editor keeps its own state in `editor.cfg` in the working directory, next to `imgui.ini`: the grid, the gizmo, which panels are visible, and the project and scene it had open last. Run it without a path and it reopens that project — a path that has since been moved only earns a warning and falls back to `./project.xml`, so a renamed folder cannot stop the editor from starting.
 
+`Edit > Project Settings` sets the project's master, music and sound-effect levels. They are stored in the manifest, so the game opens at the same mix the editor was tuned with.
+
 ### Tests
 
 ```sh

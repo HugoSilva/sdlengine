@@ -326,7 +326,12 @@ void OpenProjectAt(const std::filesystem::path& file) {
 
   if (!Core::OpenProject(file, &error)) {
     Logger::Error("Failed to open the project: " + error);
+    return;
   }
+
+  // The mix belongs to the project, so opening one means hearing it.
+  const rse::Project& project = Core::GetProject();
+  rse::SoundManager::SetVolumes(project.audio.master, project.audio.music, project.audio.sfx);
 }
 
 void SaveSceneAsAt(const std::filesystem::path& file) {
@@ -487,7 +492,83 @@ void DeleteAssetAt(const std::string& id) {
   Logger::Log("Removed asset " + name);
 }
 
+namespace {
+// Edit > Project Settings: whether a dialog was asked for this frame, and the
+// levels to put back if it is cancelled. Only Save writes the manifest.
+bool g_settings_requested{false};
+rse::Project::Audio g_settings_before;
+
+constexpr const char* kSettingsTitle = "Project Settings";
+}  // namespace
+
+void OpenProjectSettings() {
+  if (!Core::GetProject().IsAttached()) {
+    Logger::Warning("No project is open, so there are no project settings to edit.");
+    return;
+  }
+
+  g_settings_requested = true;
+}
+
+namespace {
+void DrawProjectSettings() {
+  if (g_settings_requested) {
+    g_settings_before = Core::GetProject().audio;
+    ImGui::OpenPopup(kSettingsTitle);
+    g_settings_requested = false;
+  }
+
+  ImGui::SetNextWindowSize(ImVec2(320.0f, 0.0f), ImGuiCond_Appearing);
+  if (!ImGui::BeginPopupModal(kSettingsTitle, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+    return;
+  }
+
+  rse::Project& project = Core::GetProject();
+  bool changed = false;
+
+  ImGui::TextUnformatted("Audio");
+  changed |= ImGui::SliderInt("Master", &project.audio.master, 0, rse::SoundManager::kMaxVolume);
+  changed |= ImGui::SliderInt("Music", &project.audio.music, 0, rse::SoundManager::kMaxVolume);
+  changed |= ImGui::SliderInt("Sound effects", &project.audio.sfx, 0, rse::SoundManager::kMaxVolume);
+
+  if (changed) {
+    // Heard while the slider moves, not after a restart: the dialog writes the
+    // manifest only on Save, but a level you cannot hear is a level you cannot
+    // set.
+    rse::SoundManager::SetVolumes(project.audio.master, project.audio.music, project.audio.sfx);
+  }
+
+  ImGui::Separator();
+
+  if (ImGui::Button("Save")) {
+    std::string error;
+
+    if (!project.Save(&error)) {
+      Logger::Error("Failed to save the project settings: " + error);
+    } else {
+      Logger::Log("Saved the project settings to " + project.File().string());
+    }
+
+    ImGui::CloseCurrentPopup();
+  }
+
+  ImGui::SameLine();
+
+  if (ImGui::Button("Cancel")) {
+    project.audio = g_settings_before;
+    rse::SoundManager::SetVolumes(project.audio.master, project.audio.music, project.audio.sfx);
+    ImGui::CloseCurrentPopup();
+  }
+
+  ImGui::EndPopup();
+}
+}  // namespace
+
 void DrawProjectCommands() {
+  // The settings dialog is independent of the path prompt, which is why it is
+  // drawn before the early return.
+  DrawProjectSettings();
+
   if (g_prompt.kind == PathPromptKind::kNone) {
     return;
   }
