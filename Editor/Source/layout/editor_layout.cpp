@@ -1,11 +1,16 @@
 #include "editor_layout.h"
 
 #include <core.h>
+#include <cstddef>
 #include <editor_manager.h>
+#include <filesystem>
 #include <imgui_internal.h>  // DockBuilder*
 #include <project_commands.h>
+#include <string>
 
 #include <SDL3/SDL.h>
+
+#include <utils/logger.h>
 
 namespace {
 constexpr const char* kDockSpaceId = "RSE_DockSpace";
@@ -13,6 +18,27 @@ constexpr const char* kDockSpaceId = "RSE_DockSpace";
 // The host window is never visible: it just carries the dock space, so it
 // has no title bar and no background of its own.
 constexpr const char* kDockSpaceHost = "###RSE_DockSpaceHost";
+
+// File > Open Recent. Load already pruned the paths that were gone when the
+// settings were read, so a missing entry here is a folder that vanished while
+// the editor was running: it is removed and said once rather than opened, and
+// removing it now is what keeps it from saying so every time.
+void OpenRecentProject(EditorSettings& settings, std::size_t index) {
+  if (index >= settings.recent_projects.size()) {
+    return;
+  }
+
+  const std::string path = settings.recent_projects.at(index);
+
+  if (!std::filesystem::exists(path)) {
+    Logger::Warning("The project " + path + " is gone; removing it from the recent list.");
+    settings.ForgetRecentProject(index);
+    settings.Save();
+    return;
+  }
+
+  OpenProjectAt(path);
+}
 }  // namespace
 
 void EditorLayout::AddPanel(std::unique_ptr<EditorPanel> panel) {
@@ -68,6 +94,28 @@ void EditorLayout::DrawMenuBar() {
     if (ImGui::MenuItem("Open Project...")) {
       OpenProject();
     }
+
+    // The list is per machine and Load has already pruned the paths that are
+    // gone; an entry that vanishes while the editor runs is dropped when it is
+    // chosen. A submenu even with one entry, so File does not grow a row per
+    // project.
+    const EditorSettings& settings = EditorManager::Settings();
+    if (ImGui::BeginMenu("Open Recent", !settings.recent_projects.empty())) {
+      for (std::size_t index = 0; index < settings.recent_projects.size(); ++index) {
+        // PushID keeps the items distinct by position; the path is the label
+        // because two projects called "project.xml" are the normal case.
+        ImGui::PushID(static_cast<int>(index));
+        const bool clicked = ImGui::MenuItem(settings.recent_projects.at(index).c_str());
+        ImGui::PopID();
+
+        if (clicked) {
+          OpenRecentProject(EditorManager::Settings(), index);
+          break;  // the click may have removed the entry this loop is reading
+        }
+      }
+      ImGui::EndMenu();
+    }
+
     ImGui::Separator();
     if (ImGui::MenuItem("Save", "Ctrl+S")) {
       SaveProject();

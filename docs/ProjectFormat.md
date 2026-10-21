@@ -620,12 +620,14 @@ keeping them in step.
 - The game applies the scene camera when it starts; the game has no runtime scene
   switch yet, and the editor viewport deliberately keeps its own editor camera, so
   it does not preview the scene's camera.
-- The editor's session state -- open panels, the last project and scene, the grid
-  and the gizmo -- is not part of the project: it lives in `editor.cfg` in the
-  working directory, and the dock layout in `imgui.ini`. Selection and undo
+- The editor's session state -- open panels, the five most recent projects, the
+  last scene, the grid and the gizmo -- is not part of the project: it lives in
+  `editor.cfg` in the working directory, and the dock layout in `imgui.ini`.
+  `File > Open Recent` lists the projects, most recent first; the editor drops
+  the ones whose folder has gone when it reads the file, so a moved project is a
+  one-time fallback rather than a menu item that fails. Selection and undo
   history are not persisted, because entity ids do not survive a load and there
   is no undo system yet.
-- There is no recent-projects list.
 - Manifests are on version 3: version 1 is read with the default audio levels and
   the compiled bindings, version 2 with the compiled bindings. `Project::Migrate`
   clamps the levels to 0-128. There is still no manifest change that rewrites

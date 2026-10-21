@@ -8,15 +8,18 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include <vector>
 
 #include <gtest/gtest.h>
 
+#include <utils/file.h>
 #include <utils/logger.h>
 
 /*
 editor.cfg is the one file the editor writes for itself. These tests pin what
 it round-trips, that a hand-edited file cannot turn a setting into something
-arbitrary, and which project a fresh run opens.
+arbitrary, and which project a fresh run opens: the most recent one that is
+still there.
 */
 namespace {
 
@@ -39,15 +42,32 @@ class EditorSettingsTest : public ::testing::Test {
     file << contents;
   }
 
+  // A path that exists, which Load keeps: a file inside the fixture's own
+  // directory, removed with the rest of it.
+  std::filesystem::path ExistingProject(const std::string& name) const {
+    const std::filesystem::path project = m_file.parent_path() / name / "project.xml";
+    std::filesystem::create_directories(project.parent_path());
+    std::ofstream(project) << "<cereal/>";
+    return project;
+  }
+
+  // What RememberRecentProject stores: the path is absolute, because the next
+  // run may not have the same working directory.
+  static std::string Absolute(const std::string& path) { return std::filesystem::absolute(path).string(); }
+
   std::filesystem::path m_file;
 };
 
 TEST_F(EditorSettingsTest, SaveAndLoadRoundTrip) {
+  const std::filesystem::path one = ExistingProject("one");
+  const std::filesystem::path two = ExistingProject("two");
+
   EditorSettings saved;
   saved.grid.visible = false;
   saved.grid.base = 16.0f;
   saved.gizmo.mode = EditorSettings::GizmoMode::kRotate;
-  saved.last_project = "C:/Projects/RSE/SampleProject/project.xml";
+  saved.RememberRecentProject(one.string());
+  saved.RememberRecentProject(two.string());
   saved.last_scene = "scenes/physics.xml";
   saved.panels["Hierarchy"] = false;
   saved.panels["Viewport"] = true;
@@ -59,7 +79,9 @@ TEST_F(EditorSettingsTest, SaveAndLoadRoundTrip) {
   EXPECT_FALSE(loaded.grid.visible);
   EXPECT_FLOAT_EQ(loaded.grid.base, 16.0f);
   EXPECT_EQ(loaded.gizmo.mode, EditorSettings::GizmoMode::kRotate);
-  EXPECT_EQ(loaded.last_project, saved.last_project);
+  ASSERT_EQ(loaded.recent_projects.size(), 2u);
+  EXPECT_EQ(loaded.recent_projects.at(0), Absolute(two.string()));
+  EXPECT_EQ(loaded.recent_projects.at(1), Absolute(one.string()));
   EXPECT_EQ(loaded.last_scene, saved.last_scene);
   ASSERT_EQ(loaded.panels.size(), 2u);
   EXPECT_FALSE(loaded.panels.at("Hierarchy"));
@@ -67,7 +89,9 @@ TEST_F(EditorSettingsTest, SaveAndLoadRoundTrip) {
 }
 
 TEST_F(EditorSettingsTest, ACorruptValueKeepsTheDefault) {
-  Write("grid.visible=maybe\ngrid.base=not-a-number\ngizmo.mode=spin\npanel.Viewport=perhaps\nlast.project=\n");
+  Write(
+      "grid.visible=maybe\ngrid.base=not-a-number\ngizmo.mode=spin\npanel.Viewport=perhaps\n"
+      "recent.x=somewhere/project.xml\nrecent.0=\nlast.project=\n");
 
   EditorSettings settings;
   settings.Load(m_file.string());
@@ -77,6 +101,7 @@ TEST_F(EditorSettingsTest, ACorruptValueKeepsTheDefault) {
   EXPECT_FLOAT_EQ(settings.grid.base, 32.0f);
   EXPECT_EQ(settings.gizmo.mode, EditorSettings::GizmoMode::kTranslate);
   EXPECT_TRUE(settings.panels.empty());
+  EXPECT_TRUE(settings.recent_projects.empty());
 }
 
 TEST_F(EditorSettingsTest, AMissingFileKeepsEveryDefault) {
@@ -86,7 +111,7 @@ TEST_F(EditorSettingsTest, AMissingFileKeepsEveryDefault) {
   EXPECT_TRUE(settings.grid.visible);
   EXPECT_FLOAT_EQ(settings.grid.base, 32.0f);
   EXPECT_EQ(settings.gizmo.mode, EditorSettings::GizmoMode::kTranslate);
-  EXPECT_TRUE(settings.last_project.empty());
+  EXPECT_TRUE(settings.recent_projects.empty());
   EXPECT_TRUE(settings.last_scene.empty());
   EXPECT_TRUE(settings.panels.empty());
 
@@ -96,31 +121,132 @@ TEST_F(EditorSettingsTest, AMissingFileKeepsEveryDefault) {
   }
 }
 
-TEST_F(EditorSettingsTest, ACommandLineProjectWinsOverTheLastOne) {
+TEST_F(EditorSettingsTest, TheRecentListIsMostRecentFirst) {
+  EditorSettings settings;
+  settings.RememberRecentProject("one/project.xml");
+  settings.RememberRecentProject("two/project.xml");
+  settings.RememberRecentProject("three/project.xml");
+
+  ASSERT_EQ(settings.recent_projects.size(), 3u);
+  EXPECT_EQ(settings.recent_projects.at(0), Absolute("three/project.xml"));
+  EXPECT_EQ(settings.recent_projects.at(1), Absolute("two/project.xml"));
+  EXPECT_EQ(settings.recent_projects.at(2), Absolute("one/project.xml"));
+}
+
+TEST_F(EditorSettingsTest, RememberingAProjectAgainMovesItToTheFront) {
+  EditorSettings settings;
+  settings.RememberRecentProject("one/project.xml");
+  settings.RememberRecentProject("two/project.xml");
+  settings.RememberRecentProject("one/project.xml");
+
+  // Opening the same project twice is one entry, not two, and the newest visit
+  // is what the next run reopens.
+  ASSERT_EQ(settings.recent_projects.size(), 2u);
+  EXPECT_EQ(settings.recent_projects.at(0), Absolute("one/project.xml"));
+  EXPECT_EQ(settings.recent_projects.at(1), Absolute("two/project.xml"));
+}
+
+TEST_F(EditorSettingsTest, TheRecentListKeepsFive) {
+  EditorSettings settings;
+
+  for (int index = 1; index <= 7; ++index) {
+    settings.RememberRecentProject("project" + std::to_string(index) + "/project.xml");
+  }
+
+  ASSERT_EQ(settings.recent_projects.size(), EditorSettings::kMaxRecentProjects);
+  EXPECT_EQ(settings.recent_projects.front(), Absolute("project7/project.xml"));
+  EXPECT_EQ(settings.recent_projects.back(), Absolute("project3/project.xml"));
+}
+
+TEST_F(EditorSettingsTest, LoadDropsRecentProjectsThatAreGone) {
+  const std::filesystem::path kept = ExistingProject("kept");
+  const std::filesystem::path gone = m_file.parent_path() / "gone" / "project.xml";
+
+  Write("recent.0=" + gone.string() + "\nrecent.1=" + kept.string() + "\n");
+
+  EditorSettings settings;
+  settings.Load(m_file.string());
+
+  // A deleted folder is not an entry: the next run would only fail on it.
+  ASSERT_EQ(settings.recent_projects.size(), 1u);
+  EXPECT_EQ(settings.recent_projects.front(), Absolute(kept.string()));
+}
+
+TEST_F(EditorSettingsTest, LoadOrdersByTheNumberNotTheLine) {
+  const std::filesystem::path one = ExistingProject("one");
+  const std::filesystem::path two = ExistingProject("two");
+
+  // Hand-edited files are not always in order; recent.0 is the newest whatever
+  // line it is on.
+  Write("recent.1=" + two.string() + "\nrecent.0=" + one.string() + "\n");
+
+  EditorSettings settings;
+  settings.Load(m_file.string());
+
+  ASSERT_EQ(settings.recent_projects.size(), 2u);
+  EXPECT_EQ(settings.recent_projects.at(0), Absolute(one.string()));
+  EXPECT_EQ(settings.recent_projects.at(1), Absolute(two.string()));
+}
+
+TEST_F(EditorSettingsTest, LoadKeepsOneEntryPerProject) {
+  const std::filesystem::path one = ExistingProject("one");
+  const std::filesystem::path two = ExistingProject("two");
+
+  Write("recent.0=" + one.string() + "\nrecent.1=" + two.string() + "\nrecent.2=" + one.string() + "\n");
+
+  EditorSettings settings;
+  settings.Load(m_file.string());
+
+  ASSERT_EQ(settings.recent_projects.size(), 2u);
+  EXPECT_EQ(settings.recent_projects.at(0), Absolute(one.string()));
+  EXPECT_EQ(settings.recent_projects.at(1), Absolute(two.string()));
+}
+
+TEST_F(EditorSettingsTest, LoadUsesTheOldLastProjectOnce) {
+  const std::filesystem::path old = ExistingProject("old");
+
+  // What the build before the list wrote: one project and no recent.N.
+  Write("last.project=" + old.string() + "\n");
+
+  EditorSettings settings;
+  settings.Load(m_file.string());
+
+  ASSERT_EQ(settings.recent_projects.size(), 1u);
+  EXPECT_EQ(settings.recent_projects.front(), Absolute(old.string()));
+
+  // Saving turns it into a list and drops the key: the fallback happens once.
+  settings.Save(m_file.string());
+  const std::string text = File::Read(m_file.string().c_str());
+
+  EXPECT_NE(text.find("recent.0="), std::string::npos);
+  EXPECT_EQ(text.find("last.project"), std::string::npos);
+}
+
+TEST_F(EditorSettingsTest, ACommandLineProjectWinsOverTheRecentList) {
   const std::filesystem::path remembered = m_file.parent_path() / "remembered" / "project.xml";
 
   EditorSettings settings;
-  settings.last_project = remembered.string();
+  settings.recent_projects = {remembered.string()};
 
   // Even when the remembered project exists, what was typed is what opens.
   EXPECT_EQ(StartupProject(settings, "typed/project.xml"), std::filesystem::path{"typed/project.xml"});
 }
 
-TEST_F(EditorSettingsTest, TheLastProjectIsReopenedWhenItIsStillThere) {
+TEST_F(EditorSettingsTest, TheMostRecentProjectIsReopenedWhenItIsStillThere) {
   const std::filesystem::path project = m_file.parent_path() / "project.xml";
   std::ofstream(project) << "<cereal/>";
 
   EditorSettings settings;
-  settings.last_project = project.string();
+  settings.recent_projects = {project.string()};
 
   EXPECT_EQ(StartupProject(settings, ""), project);
 }
 
-TEST_F(EditorSettingsTest, AMissingLastProjectIsAWarningAndTheDefault) {
+TEST_F(EditorSettingsTest, AMissingMostRecentProjectIsAWarningAndTheDefault) {
   const std::filesystem::path gone = m_file.parent_path() / "moved" / "project.xml";
 
   EditorSettings settings;
-  settings.last_project = gone.string();
+  settings.recent_projects = {gone.string()};
 
   EXPECT_EQ(StartupProject(settings, ""), std::filesystem::path{"project.xml"});
 
