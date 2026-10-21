@@ -95,6 +95,13 @@ void EditorLayout::DrawMenuBar() {
     if (ImGui::MenuItem("Instantiate Prefab...")) {
       InstantiatePrefab();
     }
+    ImGui::Separator();
+
+    // An asset id is project data, so registering a file needs a project. The
+    // content browser offers the same command for the file that is selected.
+    if (ImGui::MenuItem("Import Asset...", nullptr, false, Core::GetProject().IsAttached())) {
+      ImportAsset();
+    }
     ImGui::EndMenu();
   }
 

@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 
 #include <audio/sound_manager.h>
+#include <core/asset_registry.h>
 #include <core/project.h>
 #include <core/texture_manager.h>
 #include <ecs/components/include_list.h>
@@ -33,10 +34,15 @@ uint32_t CountEntities() {
 
 class SampleProjectTest : public ::testing::Test {
  protected:
+  // The sample ships an asset registry, so the tests open it the way a project
+  // does: before any scene, and cleaned up after.
+  void SetUp() override { AssetRegistry::Init(kSampleProject); }
+
   void TearDown() override {
     SceneIO::Clear();
     TextureManager::Clean();
     SoundManager::Clean();
+    AssetRegistry::Clean();
   }
 };
 

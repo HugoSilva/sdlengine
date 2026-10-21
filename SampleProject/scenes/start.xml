@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <cereal>
-	<formatVersion>5</formatVersion>
+	<formatVersion>6</formatVersion>
 	<camera>
 		<Position>
 			<x>640</x>
@@ -343,7 +343,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4278255360</Color>
-							<Texture>tex3.png</Texture>
+							<Texture>09378fbe1b6be4bc</Texture>
 						</value0>
 						<Position>
 							<x>240</x>
@@ -367,7 +367,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4278190335</Color>
-							<Texture>tex3.png</Texture>
+							<Texture>09378fbe1b6be4bc</Texture>
 						</value0>
 						<Position>
 							<x>400</x>
@@ -391,7 +391,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4278255615</Color>
-							<Texture>tex3.png</Texture>
+							<Texture>09378fbe1b6be4bc</Texture>
 						</value0>
 						<Position>
 							<x>560</x>
@@ -415,7 +415,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4294901760</Color>
-							<Texture>tex3.png</Texture>
+							<Texture>09378fbe1b6be4bc</Texture>
 						</value0>
 						<Position>
 							<x>720</x>
@@ -439,7 +439,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4294902015</Color>
-							<Texture>tex3.png</Texture>
+							<Texture>09378fbe1b6be4bc</Texture>
 						</value0>
 						<Position>
 							<x>240</x>
@@ -463,7 +463,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4278223103</Color>
-							<Texture>tex3.png</Texture>
+							<Texture>09378fbe1b6be4bc</Texture>
 						</value0>
 						<Position>
 							<x>400</x>
@@ -487,7 +487,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4282158300</Color>
-							<Texture>tex3.png</Texture>
+							<Texture>09378fbe1b6be4bc</Texture>
 						</value0>
 						<Position>
 							<x>560</x>
@@ -511,7 +511,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4280328224</Color>
-							<Texture>tex3.png</Texture>
+							<Texture>09378fbe1b6be4bc</Texture>
 						</value0>
 						<Position>
 							<x>720</x>
@@ -535,7 +535,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4282400960</Color>
-							<Texture>tex3.png</Texture>
+							<Texture>09378fbe1b6be4bc</Texture>
 						</value0>
 						<Position>
 							<x>240</x>
@@ -559,7 +559,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4288716832</Color>
-							<Texture>tex3.png</Texture>
+							<Texture>09378fbe1b6be4bc</Texture>
 						</value0>
 						<Position>
 							<x>400</x>
@@ -583,7 +583,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4280328352</Color>
-							<Texture>tex3.png</Texture>
+							<Texture>09378fbe1b6be4bc</Texture>
 						</value0>
 						<Position>
 							<x>560</x>
@@ -607,7 +607,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4286611584</Color>
-							<Texture>tex3.png</Texture>
+							<Texture>09378fbe1b6be4bc</Texture>
 						</value0>
 						<Position>
 							<x>720</x>
@@ -621,7 +621,7 @@
 		<value88>1</value88>
 		<value89>0</value89>
 		<value90>
-			<Sound>effect.wav</Sound>
+			<Sound>c47f914a7bba8c37</Sound>
 			<Volume>128</Volume>
 			<Mute>false</Mute>
 			<Loop>false</Loop>

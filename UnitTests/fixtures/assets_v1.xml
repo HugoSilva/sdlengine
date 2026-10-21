@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cereal>
+	<assets>
+		<formatVersion>1</formatVersion>
+		<asset size="dynamic">
+			<value0>
+				<id>0123456789abcdef</id>
+				<name>tex3.png</name>
+				<type>texture</type>
+				<path>assets/tex3.png</path>
+			</value0>
+			<value1>
+				<id>fedcba9876543210</id>
+				<name>effect.wav</name>
+				<type>sound</type>
+				<path>assets/effect.wav</path>
+			</value1>
+		</asset>
+	</assets>
+</cereal>

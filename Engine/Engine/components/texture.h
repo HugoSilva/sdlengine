@@ -11,6 +11,11 @@ class Font;  // forward declaration for Font
 class Texture {
  public:
   Texture(const std::string& name, const std::string& filename);
+
+  // A texture that knows its asset id: the id a scene stores, as opposed to the
+  // name the inspector shows. The two-argument constructor is the same thing
+  // with no id, which is what a texture loaded from a bare path has.
+  Texture(const std::string& asset_id, const std::string& name, const std::string& filename);
   Texture(const std::string& name, Font* font, const std::string text, unsigned int color);
   ~Texture();
 
@@ -18,6 +23,7 @@ class Texture {
   void Unbind() const;
 
   inline const unsigned int GetId() const { return m_id; }
+  inline const std::string& GetAssetId() const { return m_asset_id; }
   inline const std::string& GetName() const { return m_name; }
   inline const unsigned int GetWidth() const { return m_width; }
   inline const unsigned int GetHeight() const { return m_height; }
@@ -44,6 +50,8 @@ class Texture {
   // test, a tool) keeps its name and size and stays at zero, which is what
   // draws white.
   unsigned int m_id{0};
+  // Empty when the texture came from a bare path rather than a registry entry.
+  std::string m_asset_id;
   std::string m_name;
   std::string m_filename;
   int m_width = 0, m_height = 0;

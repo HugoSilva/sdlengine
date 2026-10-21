@@ -13,11 +13,14 @@
 
 #include <gtest/gtest.h>
 
+#include <core/asset_registry.h>
 #include <core/project.h>
 #include <core/scene_manager.h>
+#include <core/texture_manager.h>
 #include <ecs/components/include_list.h>
 #include <ecs/ecs_manager.h>
 #include <ecs/scene_io.h>
+#include <utils/logger.h>
 
 /*
 The project commands are the part of the editor that writes files: a new
@@ -38,12 +41,16 @@ class ProjectCommandsTest : public ::testing::Test {
     Core::GetProject() = Project{};
     SceneManager::Clean();
     SceneIO::Clear();
+    AssetRegistry::Clean();
   }
 
   void TearDown() override {
     Core::GetProject() = Project{};
     SceneManager::Clean();
     SceneIO::Clear();
+    AssetRegistry::Clean();
+    TextureManager::Clean();
+    SoundManager::Clean();
     std::filesystem::remove_all(m_root);
   }
 
@@ -71,6 +78,7 @@ TEST_F(ProjectCommandsTest, NewProjectWritesTheFolderStructure) {
 
   ASSERT_TRUE(std::filesystem::exists(directory / "project.xml"));
   ASSERT_TRUE(std::filesystem::exists(directory / "scenes" / "start.xml"));
+  ASSERT_TRUE(std::filesystem::exists(directory / "assets.xml"));
   ASSERT_TRUE(std::filesystem::is_directory(directory / "assets"));
   ASSERT_TRUE(std::filesystem::is_directory(directory / "prefabs"));
 
@@ -215,6 +223,139 @@ TEST_F(ProjectCommandsTest, ResolveResourceFallsBackToTheEngineResources) {
   // A project that does not ship the file still gets the engine's copy.
   NewProjectAt(m_root / "MyGame");
   EXPECT_EQ(Core::ResolveResource("tex3.png"), engine_copy);
+}
+
+TEST_F(ProjectCommandsTest, ImportAssetRegistersTheFile) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+
+  const std::filesystem::path asset = directory / "assets" / "tex3.png";
+  std::ofstream file(asset, std::ios::binary);
+  file << "probe";
+  file.close();
+
+  ImportAssetAt(asset);
+
+  ASSERT_EQ(AssetRegistry::All().size(), 1u);
+  const AssetRegistry::Asset& entry = AssetRegistry::All().front();
+  EXPECT_TRUE(AssetRegistry::IsId(entry.id));
+  EXPECT_EQ(entry.name, "tex3.png");
+  EXPECT_EQ(entry.type, "texture");
+  EXPECT_EQ(entry.path, "assets/tex3.png");
+
+  // The table is written, so the id survives the editor.
+  Project project;
+  std::string error;
+  ASSERT_TRUE(Project::Load(directory / "project.xml", project, &error)) << error;
+  EXPECT_TRUE(std::filesystem::exists(directory / "assets.xml"));
+
+  AssetRegistry::Clean();
+  AssetRegistry::Init(directory);
+  EXPECT_EQ(AssetRegistry::All().size(), 1u);
+}
+
+TEST_F(ProjectCommandsTest, ImportAssetOutsideTheProjectIsRefused) {
+  NewProjectAt(m_root / "MyGame");
+
+  const std::filesystem::path outside = m_root / "probe.png";
+  std::ofstream file(outside, std::ios::binary);
+  file << "probe";
+  file.close();
+
+  ImportAssetAt(outside);
+
+  EXPECT_TRUE(AssetRegistry::All().empty());
+}
+
+TEST_F(ProjectCommandsTest, ImportAssetOfAnUnknownTypeIsRefused) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+
+  const std::filesystem::path notes = directory / "assets" / "notes.txt";
+  std::ofstream file(notes, std::ios::binary);
+  file << "probe";
+  file.close();
+
+  ImportAssetAt(notes);
+
+  EXPECT_TRUE(AssetRegistry::All().empty());
+}
+
+TEST_F(ProjectCommandsTest, RenameAssetMovesTheFileAndKeepsTheId) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+
+  const std::filesystem::path asset = directory / "assets" / "crate.png";
+  std::ofstream file(asset, std::ios::binary);
+  file << "probe";
+  file.close();
+
+  ImportAssetAt(asset);
+  ASSERT_EQ(AssetRegistry::All().size(), 1u);
+  const std::string id = AssetRegistry::All().front().id;
+
+  RenameAssetAt(id, "box.png");
+
+  ASSERT_EQ(AssetRegistry::All().size(), 1u);
+  EXPECT_EQ(AssetRegistry::All().front().id, id);
+  EXPECT_EQ(AssetRegistry::All().front().name, "box.png");
+  EXPECT_TRUE(std::filesystem::exists(directory / "assets" / "box.png"));
+  EXPECT_FALSE(std::filesystem::exists(directory / "assets" / "crate.png"));
+}
+
+TEST_F(ProjectCommandsTest, DeleteAssetRemovesTheEntryAndKeepsTheFile) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+
+  const std::filesystem::path asset = directory / "assets" / "tex3.png";
+  std::ofstream file(asset, std::ios::binary);
+  file << "probe";
+  file.close();
+
+  ImportAssetAt(asset);
+  ASSERT_EQ(AssetRegistry::All().size(), 1u);
+
+  DeleteAssetAt(AssetRegistry::All().front().id);
+
+  EXPECT_TRUE(AssetRegistry::All().empty());
+  EXPECT_TRUE(std::filesystem::exists(asset));
+}
+
+// Deleting an asset the open scene still uses is allowed -- the file is not
+// deleted -- but it is not silent: the scene stores an id that will resolve to
+// nothing.
+TEST_F(ProjectCommandsTest, DeleteAssetWarnsWhenTheSceneReferencesIt) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+
+  const std::filesystem::path asset = directory / "assets" / "tex3.png";
+  std::ofstream file(asset, std::ios::binary);
+  file << "probe";
+  file.close();
+
+  ImportAssetAt(asset);
+  ASSERT_EQ(AssetRegistry::All().size(), 1u);
+  const std::string id = AssetRegistry::All().front().id;
+
+  const uint32_t entity = ECSManager::CreateEntity();
+  ECSManager::AddComponent<BasicComponent>(entity, "crate", false, 0, 0);
+  ECSManager::AddComponent<TransformComponent>(entity, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
+  ECSManager::AddComponent<SpriteComponent>(
+      entity, new Sprite(glm::vec3(0.0f), glm::vec2(8.0f), TextureManager::GetOrLoad(id)));
+
+  Logger::Clear();
+  DeleteAssetAt(id);
+
+  bool warned = false;
+
+  for (const Logger::Entry& entry : Logger::GetEntries()) {
+    if (entry.level == Logger::Level::kWarning) {
+      warned = true;
+    }
+  }
+
+  EXPECT_TRUE(warned);
+  EXPECT_TRUE(AssetRegistry::All().empty());
 }
 }  // namespace
 

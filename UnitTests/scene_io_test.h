@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 
 #include <audio/sound_manager.h>
+#include <core/asset_registry.h>
 #include <core/texture_manager.h>
 #include <ecs/components/include_list.h>
 #include <ecs/ecs_manager.h>
@@ -34,6 +35,7 @@ class SceneIOTest : public ::testing::Test {
     m_file = m_directory / "start.xml";
     m_scratch = std::filesystem::path{m_file}.concat(".tmp");
 
+    AssetRegistry::Clean();
     SceneIO::Clear();
   }
 
@@ -41,6 +43,7 @@ class SceneIOTest : public ::testing::Test {
     SceneIO::Clear();
     TextureManager::Clean();
     SoundManager::Clean();
+    AssetRegistry::Clean();
     std::filesystem::remove_all(m_directory);
   }
 
@@ -109,7 +112,7 @@ TEST_F(SceneIOTest, SavingWritesTheSceneFile) {
   EXPECT_FALSE(std::filesystem::exists(m_scratch));
 
   const std::string contents = ReadFile(m_file);
-  EXPECT_NE(contents.find("<formatVersion>5</formatVersion>"), std::string::npos);
+  EXPECT_NE(contents.find("<formatVersion>6</formatVersion>"), std::string::npos);
   EXPECT_NE(contents.find("<camera>"), std::string::npos);
   EXPECT_NE(contents.find("<entities>"), std::string::npos);
 }
@@ -503,6 +506,10 @@ TEST_F(SceneIOTest, AV2SceneLoadsFromTheFixture) {
           EXPECT_FLOAT_EQ(sprite.m_sprite->GetSize().x, 64.f);
           EXPECT_EQ(sprite.m_sprite->GetColor(), 0xffff0000u);
           EXPECT_EQ(sprite.m_sprite->GetTextureName(), "shared.png");
+
+          // No asset registry is open here, so the name is a bare path: the
+          // fallback that keeps a scene written before the registry loading.
+          EXPECT_TRUE(sprite.m_sprite->GetTextureAssetId().empty());
         } else if (basic.m_name == "floor") {
           EXPECT_TRUE(basic.m_is_static);
           EXPECT_FLOAT_EQ(transform.position.y, 80.f);
@@ -618,6 +625,71 @@ TEST_F(SceneIOTest, AV5SceneLoadsFromTheFixture) {
   EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.r, 0.2f);
   EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.g, 0.4f);
   EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.b, 0.8f);
+}
+
+// A version 6 scene stores an asset *id*, not a name: the registry the fixture
+// pairs with resolves it back to a name for the inspector. The scene is the
+// sample's physics scene, which is the rule worked through.
+TEST_F(SceneIOTest, AV6SceneLoadsFromTheFixture) {
+  const std::filesystem::path registry = std::filesystem::path{RSE_FIXTURES_DIR} / "assets_v1.xml";
+  const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "scene_v6.xml";
+
+  std::string error;
+  ASSERT_TRUE(AssetRegistry::Load(registry, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(fixture, &error)) << error;
+
+  ASSERT_EQ(CountEntities(), 2u);
+
+  int crates = 0;
+
+  ECSManager::GetView<BasicComponent, SpriteComponent>().each(
+      [&crates](auto, BasicComponent& basic, SpriteComponent& sprite) {
+        if (basic.m_name != "crate") {
+          return;
+        }
+
+        ++crates;
+        ASSERT_NE(sprite.m_sprite, nullptr);
+
+        // The id is what the file stores; the name is what the registry says it
+        // is, which is what the inspector shows.
+        EXPECT_EQ(sprite.m_sprite->GetTextureAssetId(), "0123456789abcdef");
+        EXPECT_EQ(sprite.m_sprite->GetTextureName(), "tex3.png");
+      });
+
+  EXPECT_EQ(crates, 1);
+}
+
+// A version 5 scene names its texture, and the registry maps that name onto the
+// asset's id. Saving then writes the id, which is the migration: the file moves
+// from names to ids without the author doing anything.
+TEST_F(SceneIOTest, AV5SceneMigratesNamesToIds) {
+  AssetRegistry::Init(m_directory);
+  const std::string id = AssetRegistry::Add("shared.png", "texture", "assets/shared.png");
+
+  const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "scene_v2.xml";
+
+  std::string error;
+  ASSERT_TRUE(SceneIO::Load(fixture, &error)) << error;
+
+  int textured = 0;
+
+  ECSManager::GetView<SpriteComponent>().each([&textured, &id](auto, SpriteComponent& sprite) {
+    if (sprite.m_sprite == nullptr || sprite.m_sprite->GetTextureName() != "shared.png") {
+      return;
+    }
+
+    ++textured;
+    EXPECT_EQ(sprite.m_sprite->GetTextureAssetId(), id);
+  });
+
+  EXPECT_EQ(textured, 1);
+
+  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+
+  const std::string contents = ReadFile(m_file);
+  EXPECT_EQ(contents.find("<Texture>shared.png</Texture>"), std::string::npos);
+  EXPECT_NE(contents.find("<Texture>" + id + "</Texture>"), std::string::npos);
 }
 
 TEST_F(SceneIOTest, AVersionZeroSceneIsNotASceneFile) {

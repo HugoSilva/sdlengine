@@ -1,14 +1,16 @@
 #pragma once
 
+#include <filesystem>
 #include <memory>
 
 #include <gtest/gtest.h>
 
 #include <components/texture.h>
+#include <core/asset_registry.h>
 #include <core/texture_manager.h>
 
 /*
-The manager owns one texture per name and components only borrow it, so the
+The manager owns one texture per asset and components only borrow it, so the
 tests that matter are the ones about identity and lifetime, not about pixels.
 The files named here do not exist: a missing image still loads, as a texture
 with id 0 that draws white, which is what keeps a scene referring to it
@@ -20,7 +22,10 @@ using namespace rse;
 
 class TextureManagerTest : public ::testing::Test {
  protected:
-  void TearDown() override { TextureManager::Clean(); }
+  void TearDown() override {
+    TextureManager::Clean();
+    AssetRegistry::Clean();
+  }
 };
 
 TEST_F(TextureManagerTest, AddTexture) {
@@ -80,5 +85,29 @@ TEST_F(TextureManagerTest, CleanTwiceIsSafe) {
 
   TextureManager::Clean();
   EXPECT_EQ(0u, TextureManager::Count());
+}
+
+// With a registry open, a reference resolves to an asset: the texture carries
+// the id a scene saves and the name the inspector shows, and the id and the
+// name are the same texture.
+TEST_F(TextureManagerTest, ARegisteredReferenceLoadsByIdAndKeepsTheName) {
+  const std::filesystem::path directory = std::filesystem::temp_directory_path() / "rse_texture_registry_test";
+  std::filesystem::remove_all(directory);
+  std::filesystem::create_directories(directory / "assets");
+
+  AssetRegistry::Init(directory);
+  const std::string id = AssetRegistry::Add("tex3.png", "texture", "assets/tex3.png");
+
+  Texture* by_id = TextureManager::GetOrLoad(id);
+  ASSERT_NE(nullptr, by_id);
+  EXPECT_EQ(by_id->GetAssetId(), id);
+  EXPECT_EQ(by_id->GetName(), "tex3.png");
+  EXPECT_EQ(1u, TextureManager::Count());
+
+  EXPECT_EQ(by_id, TextureManager::Get("tex3.png"));
+  EXPECT_EQ(by_id, TextureManager::GetOrLoad("tex3.png"));
+  EXPECT_EQ(1u, TextureManager::Count());
+
+  std::filesystem::remove_all(directory);
 }
 }  // namespace

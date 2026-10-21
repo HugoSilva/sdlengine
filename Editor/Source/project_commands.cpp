@@ -9,8 +9,11 @@
 #include <SDL3/SDL.h>
 #include <entity/entity.hpp>
 
+#include <core/asset_registry.h>
 #include <core/project.h>
 #include <core/scene_manager.h>
+#include <ecs/components/include_list.h>
+#include <ecs/ecs_manager.h>
 #include <ecs/prefab_io.h>
 #include <ecs/scene_io.h>
 #include <utils/logger.h>
@@ -18,7 +21,16 @@
 namespace {
 // What a chosen path is for. The dialog callback carries one of these through
 // its userdata, so a single callback serves every dialog.
-enum class PathPromptKind { kNone, kNewProjectFolder, kOpenProject, kSaveSceneAs, kCreatePrefab, kInstantiatePrefab };
+enum class PathPromptKind {
+  kNone,
+  kNewProjectFolder,
+  kOpenProject,
+  kSaveSceneAs,
+  kCreatePrefab,
+  kInstantiatePrefab,
+  kImportAsset,
+  kRenameAsset
+};
 
 // The typed-path fallback. One at a time: a dialog can only be started from a
 // menu, and a modal prompt blocks the menu.
@@ -28,6 +40,8 @@ struct PathPrompt {
   bool needs_focus{false};
   // Only a prefab save uses it: the entity selected when the command ran.
   uint32_t entity{entt::null};
+  // Only an asset rename uses it: the asset being renamed.
+  std::string asset_id;
 };
 
 PathPrompt g_prompt;
@@ -40,11 +54,12 @@ constexpr SDL_DialogFileFilter kProjectFilters[]{{"RSE project", "xml"}};
 constexpr SDL_DialogFileFilter kSceneFilters[]{{"RSE scene", "xml"}};
 constexpr SDL_DialogFileFilter kPrefabFilters[]{{"RSE prefab", "xml"}};
 
-void BeginPrompt(PathPromptKind kind, uint32_t entity = entt::null) {
+void BeginPrompt(PathPromptKind kind, uint32_t entity = entt::null, const std::string& asset_id = "") {
   g_prompt.kind = kind;
   g_prompt.path[0] = '\0';
   g_prompt.needs_focus = true;
   g_prompt.entity = entity;
+  g_prompt.asset_id = asset_id;
 }
 
 const char* PromptText(PathPromptKind kind) {
@@ -59,6 +74,10 @@ const char* PromptText(PathPromptKind kind) {
       return "Path for the prefab file:";
     case PathPromptKind::kInstantiatePrefab:
       return "Path to a prefab file:";
+    case PathPromptKind::kImportAsset:
+      return "Path to a file to register as an asset:";
+    case PathPromptKind::kRenameAsset:
+      return "New name for the asset:";
     case PathPromptKind::kNone:
       break;
   }
@@ -66,7 +85,8 @@ const char* PromptText(PathPromptKind kind) {
   return "";
 }
 
-void ApplyChosenPath(PathPromptKind kind, const std::filesystem::path& path, uint32_t entity) {
+void ApplyChosenPath(PathPromptKind kind, const std::filesystem::path& path, uint32_t entity,
+                     const std::string& asset_id) {
   switch (kind) {
     case PathPromptKind::kNewProjectFolder:
       NewProjectAt(path);
@@ -82,6 +102,12 @@ void ApplyChosenPath(PathPromptKind kind, const std::filesystem::path& path, uin
       break;
     case PathPromptKind::kInstantiatePrefab:
       InstantiatePrefabAt(path);
+      break;
+    case PathPromptKind::kImportAsset:
+      ImportAssetAt(path);
+      break;
+    case PathPromptKind::kRenameAsset:
+      RenameAssetAt(asset_id, path.string());
       break;
     case PathPromptKind::kNone:
       break;
@@ -118,9 +144,54 @@ void OnPathChosen(void* userdata, const char* const* filelist, int filter) {
     return;
   }
 
-  ApplyChosenPath(kind, std::filesystem::path{filelist[0]}, entity);
+  ApplyChosenPath(kind, std::filesystem::path{filelist[0]}, entity, "");
 }
 #endif
+
+// True when a component of the open scene still references the asset id. This
+// is the warning DeleteAssetAt turns into a message: the entry goes away, but a
+// scene that already stores the id has nothing to resolve it to until the file
+// is imported again.
+bool SceneReferencesAsset(const std::string& id) {
+  bool referenced = false;
+
+  rse::ECSManager::GetView<SpriteComponent>().each([&referenced, &id](auto, SpriteComponent& component) {
+    if (component.m_sprite != nullptr && component.m_sprite->GetTextureAssetId() == id) {
+      referenced = true;
+    }
+  });
+
+  rse::ECSManager::GetView<AudioComponent>().each([&referenced, &id](auto, AudioComponent& component) {
+    if (component.m_sound != nullptr && component.m_sound->GetAssetId() == id) {
+      referenced = true;
+    }
+  });
+
+  return referenced;
+}
+
+// The path of `file` relative to the project directory, or false with the
+// reason. Every registry path travels with the project, so a file outside it
+// cannot be registered.
+bool ProjectRelativePath(const std::filesystem::path& file, std::string* relative, std::string* error) {
+  rse::Project& project = Core::GetProject();
+
+  if (!project.IsAttached()) {
+    *error = "no project is open";
+    return false;
+  }
+
+  std::error_code error_code;
+  const std::filesystem::path resolved = std::filesystem::relative(file, project.Directory(), error_code);
+
+  if (error_code || resolved.empty() || resolved.generic_string().rfind("..", 0) == 0) {
+    *error = "an asset has to live inside the project directory: " + file.string();
+    return false;
+  }
+
+  *relative = resolved.generic_string();
+  return true;
+}
 }  // namespace
 
 void NewProject() {
@@ -176,6 +247,23 @@ void InstantiatePrefab() {
 #endif
 }
 
+void ImportAsset() {
+#ifdef EMSCRIPTEN
+  BeginPrompt(PathPromptKind::kImportAsset);
+#else
+  SDL_ShowOpenFileDialog(OnPathChosen, new DialogRequest{PathPromptKind::kImportAsset, entt::null},
+                         Core::GetWindow()->GetWindow(), nullptr, 0, nullptr, false);
+#endif
+}
+
+void RenameAsset(const std::string& id) {
+  // Renaming moves the file, so the prompt asks for a name rather than a path;
+  // there is no file dialog for it on any platform.
+  BeginPrompt(PathPromptKind::kRenameAsset, entt::null, id);
+}
+
+void DeleteAsset(const std::string& id) { DeleteAssetAt(id); }
+
 void ReloadScene() {
   if (SceneManager::GetActiveScene().empty()) {
     Logger::Log("No scene is open.");
@@ -198,10 +286,19 @@ void NewProjectAt(const std::filesystem::path& directory) {
   std::filesystem::create_directories(directory / "assets", error_code);
   std::filesystem::create_directories(directory / "prefabs", error_code);
 
+  std::string error;
+
+  // An empty asset registry, so the project has the table a scene's asset ids
+  // are looked up in from the start.
+  rse::AssetRegistry::Init(directory);
+
+  if (!rse::AssetRegistry::Save(&error)) {
+    Logger::Error("Failed to write the new project's asset registry: " + error);
+    return;
+  }
+
   // An empty first scene, written where the manifest will look for it.
   rse::SceneIO::Clear();
-
-  std::string error;
 
   if (!rse::SceneIO::Save(directory / "scenes" / "start.xml", &error)) {
     Logger::Error("Failed to write the new project's first scene: " + error);
@@ -314,6 +411,82 @@ void InstantiatePrefabAt(const std::filesystem::path& file) {
   Logger::Log("Placed prefab " + file.stem().string());
 }
 
+void ImportAssetAt(const std::filesystem::path& file) {
+  std::string relative;
+  std::string error;
+
+  if (!ProjectRelativePath(file, &relative, &error)) {
+    Logger::Error("Failed to import the asset: " + error);
+    return;
+  }
+
+  if (rse::AssetRegistry::FindByPath(relative) != nullptr) {
+    Logger::Warning("The asset is already registered: " + relative);
+    return;
+  }
+
+  const std::string type = rse::AssetRegistry::TypeForPath(file);
+
+  if (type.empty()) {
+    Logger::Error("The file is not an asset this engine knows: " + relative);
+    return;
+  }
+
+  const std::string name = file.filename().string();
+  rse::AssetRegistry::Add(name, type, relative);
+
+  if (!rse::AssetRegistry::Save(&error)) {
+    Logger::Error("Failed to save the asset registry: " + error);
+    return;
+  }
+
+  Logger::Log("Registered asset " + name + " (" + type + ")");
+}
+
+void RenameAssetAt(const std::string& id, const std::string& name) {
+  std::string error;
+
+  if (!rse::AssetRegistry::Rename(id, name, &error)) {
+    Logger::Error("Failed to rename the asset: " + error);
+    return;
+  }
+
+  if (!rse::AssetRegistry::Save(&error)) {
+    Logger::Error("Failed to save the asset registry: " + error);
+    return;
+  }
+
+  Logger::Log("Renamed asset to " + rse::AssetRegistry::Name(id));
+}
+
+void DeleteAssetAt(const std::string& id) {
+  const std::string name = rse::AssetRegistry::Name(id);
+
+  if (name.empty()) {
+    Logger::Error("There is no asset with that id.");
+    return;
+  }
+
+  if (SceneReferencesAsset(id)) {
+    Logger::Warning("The open scene still references the asset '" + name +
+                    "'; a scene that stores its id will load it as nothing.");
+  }
+
+  if (!rse::AssetRegistry::Remove(id)) {
+    Logger::Error("Failed to remove the asset.");
+    return;
+  }
+
+  std::string error;
+
+  if (!rse::AssetRegistry::Save(&error)) {
+    Logger::Error("Failed to save the asset registry: " + error);
+    return;
+  }
+
+  Logger::Log("Removed asset " + name);
+}
+
 void DrawProjectCommands() {
   if (g_prompt.kind == PathPromptKind::kNone) {
     return;
@@ -348,9 +521,10 @@ void DrawProjectCommands() {
   } else if (accepted) {
     const PathPromptKind kind = g_prompt.kind;
     const uint32_t entity = g_prompt.entity;
+    const std::string asset_id = g_prompt.asset_id;
     g_prompt.kind = PathPromptKind::kNone;
     ImGui::CloseCurrentPopup();
-    ApplyChosenPath(kind, std::filesystem::path{g_prompt.path}, entity);
+    ApplyChosenPath(kind, std::filesystem::path{g_prompt.path}, entity, asset_id);
   }
 
   ImGui::EndPopup();

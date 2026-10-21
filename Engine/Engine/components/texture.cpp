@@ -12,7 +12,10 @@
 #include <utils/image.h>
 
 namespace rse {
-Texture::Texture(const std::string& name, const std::string& filename) : m_name(name), m_filename(filename) {
+Texture::Texture(const std::string& name, const std::string& filename) : Texture("", name, filename) {}
+
+Texture::Texture(const std::string& asset_id, const std::string& name, const std::string& filename)
+    : m_asset_id(asset_id), m_name(name), m_filename(filename) {
   int mode = GL_RGB;
   // Image::loadImage hands us an owned surface; it must outlive the upload.
   SDL_Surface* surface = Image::LoadImage(m_filename.c_str());
