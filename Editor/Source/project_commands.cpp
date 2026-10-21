@@ -5,6 +5,7 @@
 #include <imgui.h>
 #include <string>
 #include <system_error>
+#include <utility>
 
 #include <SDL3/SDL.h>
 #include <entity/entity.hpp>
@@ -27,6 +28,7 @@ enum class PathPromptKind {
   kNewProjectFolder,
   kOpenProject,
   kSaveSceneAs,
+  kNewScene,
   kCreatePrefab,
   kInstantiatePrefab,
   kImportAsset,
@@ -71,6 +73,8 @@ const char* PromptText(PathPromptKind kind) {
       return "Path to a project.xml:";
     case PathPromptKind::kSaveSceneAs:
       return "Path for the scene file:";
+    case PathPromptKind::kNewScene:
+      return "Path for the new scene file:";
     case PathPromptKind::kCreatePrefab:
       return "Path for the prefab file:";
     case PathPromptKind::kInstantiatePrefab:
@@ -97,6 +101,9 @@ void ApplyChosenPath(PathPromptKind kind, const std::filesystem::path& path, uin
       break;
     case PathPromptKind::kSaveSceneAs:
       SaveSceneAsAt(path);
+      break;
+    case PathPromptKind::kNewScene:
+      CreateSceneAt(path);
       break;
     case PathPromptKind::kCreatePrefab:
       CreatePrefabAt(entity, path);
@@ -230,6 +237,15 @@ void SaveSceneAs() {
 #endif
 }
 
+void NewScene() {
+#ifdef EMSCRIPTEN
+  BeginPrompt(PathPromptKind::kNewScene);
+#else
+  SDL_ShowSaveFileDialog(OnPathChosen, new DialogRequest{PathPromptKind::kNewScene, entt::null},
+                         Core::GetWindow()->GetWindow(), kSceneFilters, 1, nullptr);
+#endif
+}
+
 void CreatePrefab(uint32_t entity) {
 #ifdef EMSCRIPTEN
   BeginPrompt(PathPromptKind::kCreatePrefab, entity);
@@ -279,6 +295,255 @@ void ReloadScene() {
   }
 
   Logger::Log("Reloaded " + SceneManager::GetActiveScene().string());
+}
+
+namespace {
+// Where a manifest path lands on disk, with the spelling the active scene uses:
+// the project directory for a relative path, and normalised either way.
+std::filesystem::path ResolveAgainst(const std::filesystem::path& directory, const std::string& scene) {
+  const std::filesystem::path path{scene};
+
+  if (path.is_absolute()) {
+    return path.lexically_normal();
+  }
+
+  return (directory / path).lexically_normal();
+}
+
+void OpenScene(const std::string& scene) {
+  std::string error;
+
+  if (!SceneManager::Open(scene, &error)) {
+    Logger::Error("Failed to open the scene: " + error);
+    return;
+  }
+
+  Logger::Log("Opened scene " + SceneManager::GetActiveScene().string());
+}
+
+// The confirmed half of CreateSceneAt: an empty scene written to `file`, listed
+// in the manifest, and open.
+void CreateSceneNow(const std::filesystem::path& file) {
+  std::string error;
+
+  if (!SceneManager::Create(file, &error)) {
+    Logger::Error("Failed to create the scene: " + error);
+    return;
+  }
+
+  rse::Project& project = Core::GetProject();
+
+  std::error_code error_code;
+  const std::filesystem::path relative = std::filesystem::relative(file, project.Directory(), error_code);
+
+  if (error_code || relative.empty()) {
+    Logger::Error("Failed to list the new scene in the project: " + file.string());
+    return;
+  }
+
+  project.scenes.push_back(relative.generic_string());
+
+  if (!Core::SaveProject(&error)) {
+    Logger::Error("Failed to save the project: " + error);
+    return;
+  }
+
+  Logger::Log("Created scene " + SceneManager::GetActiveScene().string());
+}
+
+struct Confirmation {
+  std::string message;
+  std::function<void()> on_confirm;
+};
+
+Confirmation g_confirmation;
+bool g_confirmation_requested{false};
+
+constexpr const char* kConfirmationTitle = "Unsaved changes";
+}  // namespace
+
+ScenesMenuModel ScenesMenuModel::Build(const rse::Project& project, const std::filesystem::path& active_scene) {
+  ScenesMenuModel model;
+
+  if (!project.IsAttached()) {
+    return model;
+  }
+
+  const std::filesystem::path active = active_scene.lexically_normal();
+  bool found = false;
+
+  for (const std::string& path : project.scenes) {
+    ScenesMenuModel::Entry entry;
+    entry.path = path;
+    entry.name = std::filesystem::path{path}.stem().string();
+    entry.active = ResolveAgainst(project.Directory(), path) == active;
+    model.entries.push_back(entry);
+
+    if (entry.active && !found) {
+      model.active = model.entries.size() - 1;
+      found = true;
+    }
+  }
+
+  // No tick when the open scene is not in the manifest; the callers treat that
+  // as "nothing is current" rather than ticking the first row by accident.
+  if (!found) {
+    model.active = model.entries.size();
+  }
+
+  return model;
+}
+
+const ScenesMenuModel::Entry* ScenesMenuModel::Next() const {
+  if (entries.size() < 2) {
+    return nullptr;
+  }
+
+  // With no tick to move from, "next" starts at the top of the list.
+  if (active >= entries.size()) {
+    return &entries.front();
+  }
+
+  return &entries.at((active + 1) % entries.size());
+}
+
+const ScenesMenuModel::Entry* ScenesMenuModel::Previous() const {
+  if (entries.size() < 2) {
+    return nullptr;
+  }
+
+  if (active >= entries.size()) {
+    return &entries.back();
+  }
+
+  return &entries.at((active + entries.size() - 1) % entries.size());
+}
+
+void SwitchScene(const std::string& scene) {
+  if (!Core::GetProject().IsAttached()) {
+    Logger::Warning("No project is open, so there is no scene to switch to.");
+    return;
+  }
+
+  if (scene.empty()) {
+    return;
+  }
+
+  const std::filesystem::path requested = ResolveAgainst(Core::GetProject().Directory(), scene);
+
+  // The menu ticks what is open and Reload is its own command: asking for the
+  // active scene must not quietly throw edits away.
+  if (requested == SceneManager::GetActiveScene().lexically_normal()) {
+    return;
+  }
+
+  if (SceneManager::IsDirty()) {
+    ConfirmDiscard("Discard the unsaved changes to " + SceneManager::GetActiveSceneName() + " and open " +
+                       std::filesystem::path{scene}.stem().string() + "?",
+                   [scene]() { OpenScene(scene); });
+    return;
+  }
+
+  OpenScene(scene);
+}
+
+void NextScene() {
+  if (!Core::GetProject().IsAttached()) {
+    Logger::Warning("No project is open, so there is no next scene.");
+    return;
+  }
+
+  const ScenesMenuModel model = ScenesMenuModel::Build(Core::GetProject(), SceneManager::GetActiveScene());
+
+  if (const ScenesMenuModel::Entry* next = model.Next(); next != nullptr) {
+    SwitchScene(next->path);
+  }
+}
+
+void PreviousScene() {
+  if (!Core::GetProject().IsAttached()) {
+    Logger::Warning("No project is open, so there is no previous scene.");
+    return;
+  }
+
+  const ScenesMenuModel model = ScenesMenuModel::Build(Core::GetProject(), SceneManager::GetActiveScene());
+
+  if (const ScenesMenuModel::Entry* previous = model.Previous(); previous != nullptr) {
+    SwitchScene(previous->path);
+  }
+}
+
+void ConfirmDiscard(const std::string& message, std::function<void()> on_confirm) {
+  // One at a time: the modal blocks the menus that could start another, and
+  // overwriting a question nobody answered would lose the command behind it.
+  if (HasPendingConfirmation()) {
+    Logger::Warning("Another confirmation is still open; not asking: " + message);
+    return;
+  }
+
+  g_confirmation.message = message;
+  g_confirmation.on_confirm = std::move(on_confirm);
+  g_confirmation_requested = true;
+}
+
+bool HasPendingConfirmation() { return g_confirmation.on_confirm != nullptr; }
+
+bool ConfirmPending() {
+  if (!HasPendingConfirmation()) {
+    return false;
+  }
+
+  // The callback may open a scene, so it runs after the state is cleared: a
+  // command that asks again from inside it is a new question, not this one.
+  std::function<void()> on_confirm = std::move(g_confirmation.on_confirm);
+  g_confirmation = Confirmation{};
+  on_confirm();
+  return true;
+}
+
+bool CancelPending() {
+  if (!HasPendingConfirmation()) {
+    return false;
+  }
+
+  g_confirmation = Confirmation{};
+  return true;
+}
+
+void CreateSceneAt(const std::filesystem::path& file) {
+  rse::Project& project = Core::GetProject();
+
+  if (!project.IsAttached()) {
+    Logger::Error("No project is open, so a scene has nowhere to belong. Use File > New Project.");
+    return;
+  }
+
+  std::error_code error_code;
+  const std::filesystem::path relative = std::filesystem::relative(file, project.Directory(), error_code);
+
+  if (error_code || relative.empty() || relative.generic_string().rfind("..", 0) == 0) {
+    Logger::Error("A scene has to live inside the project directory: " + file.string());
+    return;
+  }
+
+  const std::string manifest_path = relative.generic_string();
+
+  // Creating over a scene the manifest already lists would replace a file the
+  // project is using. A second "new" at the same path is a mistake, not an
+  // overwrite.
+  if (std::find(project.scenes.begin(), project.scenes.end(), manifest_path) != project.scenes.end()) {
+    Logger::Warning("The project already lists that scene: " + manifest_path);
+    return;
+  }
+
+  if (SceneManager::IsDirty()) {
+    ConfirmDiscard("Discard the unsaved changes to " + SceneManager::GetActiveSceneName() + " and create " +
+                       std::filesystem::path{manifest_path}.stem().string() + "?",
+                   [file]() { CreateSceneNow(file); });
+    return;
+  }
+
+  CreateSceneNow(file);
 }
 
 void NewProjectAt(const std::filesystem::path& directory) {
@@ -570,12 +835,54 @@ void DrawProjectSettings() {
 
   ImGui::EndPopup();
 }
+
+void DrawConfirmation() {
+  if (g_confirmation_requested) {
+    ImGui::OpenPopup(kConfirmationTitle);
+    g_confirmation_requested = false;
+  }
+
+  if (!ImGui::IsPopupOpen(kConfirmationTitle)) {
+    return;
+  }
+
+  if (!ImGui::BeginPopupModal(kConfirmationTitle, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+    return;
+  }
+
+  // The answer can also come from outside the modal -- the tests call the same
+  // ConfirmPending the buttons do -- so a window with no question left is
+  // closed rather than left showing stale text.
+  if (!HasPendingConfirmation()) {
+    ImGui::CloseCurrentPopup();
+    ImGui::EndPopup();
+    return;
+  }
+
+  ImGui::TextUnformatted(g_confirmation.message.c_str());
+  ImGui::Separator();
+
+  if (ImGui::Button("Discard")) {
+    ImGui::CloseCurrentPopup();
+    ConfirmPending();
+  }
+
+  ImGui::SameLine();
+
+  if (ImGui::Button("Cancel")) {
+    ImGui::CloseCurrentPopup();
+    CancelPending();
+  }
+
+  ImGui::EndPopup();
+}
 }  // namespace
 
 void DrawProjectCommands() {
-  // The settings dialog is independent of the path prompt, which is why it is
-  // drawn before the early return.
+  // The settings dialog and the confirmation are independent of the path
+  // prompt, which is why they are drawn before the early return.
   DrawProjectSettings();
+  DrawConfirmation();
 
   if (g_prompt.kind == PathPromptKind::kNone) {
     return;

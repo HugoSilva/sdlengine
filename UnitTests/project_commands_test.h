@@ -42,6 +42,7 @@ class ProjectCommandsTest : public ::testing::Test {
     SceneManager::Clean();
     SceneIO::Clear();
     AssetRegistry::Clean();
+    CancelPending();
   }
 
   void TearDown() override {
@@ -51,6 +52,7 @@ class ProjectCommandsTest : public ::testing::Test {
     AssetRegistry::Clean();
     TextureManager::Clean();
     SoundManager::Clean();
+    CancelPending();
     std::filesystem::remove_all(m_root);
   }
 
@@ -357,6 +359,223 @@ TEST_F(ProjectCommandsTest, DeleteAssetWarnsWhenTheSceneReferencesIt) {
   EXPECT_TRUE(warned);
   EXPECT_TRUE(AssetRegistry::All().empty());
 }
+// The Scenes menu is built from the manifest and the open scene, without
+// ImGui, so the order and the tick are testable on their own.
+TEST_F(ProjectCommandsTest, ScenesMenuListsTheManifestInOrderAndTicksTheOpenScene) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+  SaveSceneAsAt(directory / "scenes" / "level_02.xml");
+
+  Project project;
+  std::string error;
+  ASSERT_TRUE(Project::Load(directory / "project.xml", project, &error)) << error;
+
+  const ScenesMenuModel model = ScenesMenuModel::Build(project, SceneManager::GetActiveScene());
+
+  ASSERT_EQ(model.entries.size(), 2u);
+  EXPECT_EQ(model.entries.at(0).path, "scenes/start.xml");
+  EXPECT_EQ(model.entries.at(0).name, "start");
+  EXPECT_FALSE(model.entries.at(0).active);
+  EXPECT_EQ(model.entries.at(1).path, "scenes/level_02.xml");
+  EXPECT_EQ(model.entries.at(1).name, "level_02");
+  EXPECT_TRUE(model.entries.at(1).active);
+
+  // The tick is where Next and Previous start from.
+  EXPECT_EQ(model.active, 1u);
+}
+
+TEST_F(ProjectCommandsTest, ScenesMenuTicksNothingWhenTheOpenSceneIsNotListed) {
+  Project project;
+  project.SetFile(m_root / "project.xml");
+  project.scenes = {"scenes/start.xml"};
+
+  const ScenesMenuModel model = ScenesMenuModel::Build(project, m_root / "scenes" / "elsewhere.xml");
+
+  ASSERT_EQ(model.entries.size(), 1u);
+  EXPECT_FALSE(model.entries.front().active);
+  EXPECT_EQ(model.active, model.entries.size());
+}
+
+TEST_F(ProjectCommandsTest, ScenesMenuIsEmptyWithoutAProject) {
+  // A default Project still carries the start scene, but it is not attached, so
+  // there is no directory for the paths to mean anything against.
+  const Project project;
+
+  const ScenesMenuModel model = ScenesMenuModel::Build(project, {});
+
+  EXPECT_TRUE(model.entries.empty());
+  EXPECT_EQ(model.Next(), nullptr);
+  EXPECT_EQ(model.Previous(), nullptr);
+}
+
+TEST_F(ProjectCommandsTest, ScenesMenuNextAndPreviousWrapAtTheEnds) {
+  Project project;
+  project.SetFile(m_root / "project.xml");
+  project.scenes = {"scenes/a.xml", "scenes/b.xml", "scenes/c.xml"};
+
+  const ScenesMenuModel middle = ScenesMenuModel::Build(project, m_root / "scenes" / "b.xml");
+  ASSERT_NE(middle.Next(), nullptr);
+  ASSERT_NE(middle.Previous(), nullptr);
+  EXPECT_EQ(middle.Next()->name, "c");
+  EXPECT_EQ(middle.Previous()->name, "a");
+
+  const ScenesMenuModel last = ScenesMenuModel::Build(project, m_root / "scenes" / "c.xml");
+  ASSERT_NE(last.Next(), nullptr);
+  EXPECT_EQ(last.Next()->name, "a");
+
+  const ScenesMenuModel first = ScenesMenuModel::Build(project, m_root / "scenes" / "a.xml");
+  ASSERT_NE(first.Previous(), nullptr);
+  EXPECT_EQ(first.Previous()->name, "c");
+
+  // One scene is nowhere to go.
+  project.scenes = {"scenes/a.xml"};
+  const ScenesMenuModel single = ScenesMenuModel::Build(project, m_root / "scenes" / "a.xml");
+  EXPECT_EQ(single.Next(), nullptr);
+  EXPECT_EQ(single.Previous(), nullptr);
+}
+
+TEST_F(ProjectCommandsTest, SwitchSceneOpensTheChosenScene) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+  SaveSceneAsAt(directory / "scenes" / "level_02.xml");
+  ASSERT_EQ(SceneManager::GetActiveSceneName(), "level_02");
+
+  SwitchScene("scenes/start.xml");
+
+  EXPECT_EQ(SceneManager::GetActiveSceneName(), "start");
+  EXPECT_FALSE(HasPendingConfirmation());
+}
+
+// Losing edits is the one thing switching must not do by accident: a dirty
+// scene asks, and Cancel leaves everything as it was.
+TEST_F(ProjectCommandsTest, SwitchSceneWithUnsavedEditsAsksBeforeSwitching) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+  SaveSceneAsAt(directory / "scenes" / "level_02.xml");
+
+  const std::filesystem::path level = SceneManager::GetActiveScene();
+  AddSprite(glm::vec3(1.0f, 2.0f, 0.0f));
+  SceneManager::MarkDirty();
+
+  SwitchScene("scenes/start.xml");
+
+  EXPECT_TRUE(HasPendingConfirmation());
+  EXPECT_EQ(SceneManager::GetActiveScene(), level);
+  EXPECT_TRUE(SceneManager::IsDirty());
+
+  EXPECT_TRUE(CancelPending());
+  EXPECT_EQ(SceneManager::GetActiveScene(), level);
+  EXPECT_TRUE(SceneManager::IsDirty());
+
+  SwitchScene("scenes/start.xml");
+  ASSERT_TRUE(HasPendingConfirmation());
+  EXPECT_TRUE(ConfirmPending());
+  EXPECT_EQ(SceneManager::GetActiveSceneName(), "start");
+  EXPECT_FALSE(SceneManager::IsDirty());
+  EXPECT_FALSE(HasPendingConfirmation());
+}
+
+TEST_F(ProjectCommandsTest, SwitchSceneToTheOpenSceneKeepsTheEdits) {
+  NewProjectAt(m_root / "MyGame");
+  AddSprite(glm::vec3(1.0f, 2.0f, 0.0f));
+  SceneManager::MarkDirty();
+
+  SwitchScene("scenes/start.xml");
+
+  // Reload is the command that re-reads a scene; switching to the one that is
+  // already open must not be a quiet reload.
+  EXPECT_FALSE(HasPendingConfirmation());
+  EXPECT_TRUE(SceneManager::IsDirty());
+  EXPECT_EQ(SceneManager::GetActiveSceneName(), "start");
+}
+
+TEST_F(ProjectCommandsTest, NextAndPreviousSceneWalkTheManifest) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+  SaveSceneAsAt(directory / "scenes" / "level_02.xml");
+  ASSERT_EQ(SceneManager::GetActiveSceneName(), "level_02");
+
+  // level_02 is the last entry, so next wraps to the first.
+  NextScene();
+  EXPECT_EQ(SceneManager::GetActiveSceneName(), "start");
+
+  NextScene();
+  EXPECT_EQ(SceneManager::GetActiveSceneName(), "level_02");
+
+  PreviousScene();
+  EXPECT_EQ(SceneManager::GetActiveSceneName(), "start");
+}
+
+TEST_F(ProjectCommandsTest, CreateSceneAtWritesAnEmptySceneAndListsIt) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+
+  const std::filesystem::path scene = directory / "scenes" / "blank.xml";
+  CreateSceneAt(scene);
+
+  EXPECT_TRUE(std::filesystem::exists(scene));
+  EXPECT_EQ(SceneManager::GetActiveSceneName(), "blank");
+  EXPECT_EQ(CountEntities(), 0u);
+
+  Project project;
+  std::string error;
+  ASSERT_TRUE(Project::Load(directory / "project.xml", project, &error)) << error;
+  ASSERT_EQ(project.scenes.size(), 2u);
+  EXPECT_EQ(project.scenes.back(), "scenes/blank.xml");
+}
+
+// A path the manifest already lists is a scene the project is using: creating
+// over it would replace it, so it is refused instead.
+TEST_F(ProjectCommandsTest, CreateSceneAtRefusesASceneTheManifestAlreadyLists) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+
+  const std::filesystem::path start = directory / "scenes" / "start.xml";
+  AddSprite(glm::vec3(3.0f, 4.0f, 0.0f));
+  std::string error;
+  ASSERT_TRUE(Core::SaveProject(&error)) << error;
+
+  CreateSceneAt(start);
+
+  EXPECT_EQ(Core::GetProject().scenes.size(), 1u);
+  EXPECT_EQ(SceneManager::GetActiveSceneName(), "start");
+
+  // The file is untouched: one entity, not an empty scene.
+  SceneIO::Clear();
+  ASSERT_TRUE(SceneIO::Load(start, &error)) << error;
+  EXPECT_EQ(CountEntities(), 1u);
+}
+
+TEST_F(ProjectCommandsTest, CreateSceneAtOutsideTheProjectIsRefused) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+
+  const std::filesystem::path outside = m_root / "elsewhere.xml";
+  CreateSceneAt(outside);
+
+  EXPECT_FALSE(std::filesystem::exists(outside));
+  EXPECT_EQ(Core::GetProject().scenes.size(), 1u);
+  EXPECT_EQ(SceneManager::GetActiveSceneName(), "start");
+}
+
+TEST_F(ProjectCommandsTest, CreateSceneAtWithUnsavedEditsAsksFirst) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+  AddSprite(glm::vec3(1.0f, 1.0f, 0.0f));
+  SceneManager::MarkDirty();
+
+  const std::filesystem::path scene = directory / "scenes" / "blank.xml";
+  CreateSceneAt(scene);
+
+  EXPECT_FALSE(std::filesystem::exists(scene));
+  EXPECT_TRUE(HasPendingConfirmation());
+  EXPECT_EQ(SceneManager::GetActiveSceneName(), "start");
+
+  ASSERT_TRUE(ConfirmPending());
+  EXPECT_TRUE(std::filesystem::exists(scene));
+  EXPECT_EQ(SceneManager::GetActiveSceneName(), "blank");
+}
+
 }  // namespace
 
 #endif  // RSE_EDITOR_COMMANDS

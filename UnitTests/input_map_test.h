@@ -89,8 +89,9 @@ TEST_F(InputMapTest, MatchesHonoursEveryModifier) {
 }
 
 TEST_F(InputMapTest, TheDefaultsCoverEveryActionTheBuildUses) {
-  for (const std::string action : {"editor.save", "editor.reload", "editor.gizmo.translate", "editor.gizmo.rotate",
-                                   "editor.gizmo.scale", "game.up", "game.down", "game.left", "game.right"}) {
+  for (const std::string action :
+       {"editor.save", "editor.reload", "editor.scene.next", "editor.scene.previous", "editor.gizmo.translate",
+        "editor.gizmo.rotate", "editor.gizmo.scale", "game.up", "game.down", "game.left", "game.right"}) {
     EXPECT_TRUE(InputMap::IsKnown(action)) << action;
     EXPECT_TRUE(InputMap::Get(action).IsValid()) << action;
   }

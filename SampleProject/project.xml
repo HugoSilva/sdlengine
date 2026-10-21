@@ -42,21 +42,29 @@
 				<key>Ctrl+S</key>
 			</value4>
 			<value5>
-				<action>game.down</action>
-				<key>Down</key>
+				<action>editor.scene.next</action>
+				<key>Ctrl+Tab</key>
 			</value5>
 			<value6>
-				<action>game.left</action>
-				<key>Left</key>
+				<action>editor.scene.previous</action>
+				<key>Ctrl+Shift+Tab</key>
 			</value6>
 			<value7>
-				<action>game.right</action>
-				<key>Right</key>
+				<action>game.down</action>
+				<key>Down</key>
 			</value7>
 			<value8>
+				<action>game.left</action>
+				<key>Left</key>
+			</value8>
+			<value9>
+				<action>game.right</action>
+				<key>Right</key>
+			</value9>
+			<value10>
 				<action>game.up</action>
 				<key>Up</key>
-			</value8>
+			</value10>
 		</input>
 	</project>
 </cereal>
