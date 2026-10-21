@@ -85,6 +85,16 @@ void EditorApp::Update(float delta_time) {
     if (rse::InputMap::IsActionPressed("editor.reload")) {
       ::ReloadScene();
     }
+
+    // Ctrl+Tab walks the manifest's scenes in order and wraps at the ends. The
+    // switch goes through the same dirty check as the Scenes menu.
+    if (rse::InputMap::IsActionPressed("editor.scene.next")) {
+      ::NextScene();
+    }
+
+    if (rse::InputMap::IsActionPressed("editor.scene.previous")) {
+      ::PreviousScene();
+    }
   }
 
   // A project or scene opened this frame is remembered now, not only on exit:

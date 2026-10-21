@@ -56,6 +56,8 @@ The editor keeps its own state in `editor.cfg` in the working directory, next to
 
 `Edit > Project Settings` sets the project's master, music and sound-effect levels. They are stored in the manifest, so the game opens at the same mix the editor was tuned with.
 
+`Scenes` lists the manifest's scenes with a tick on the open one; `Ctrl+Tab` and `Ctrl+Shift+Tab` walk the list, wrapping at the ends. Switching, and `New Scene...`, ask before unsaved edits are discarded.
+
 Keys are rebindable from the manifest too: the `input` section maps actions such as `editor.save` and `game.up` to keys like `Ctrl+S` or `Space`. A project that names an action this build does not know gets a warning and keeps the default — see [the manifest's input bindings](docs/ProjectFormat.md#input-bindings).
 
 ### Tests

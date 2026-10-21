@@ -177,6 +177,59 @@ void EditorLayout::DrawMenuBar() {
     ImGui::EndMenu();
   }
 
+  if (ImGui::BeginMenu("Scenes", Core::GetProject().IsAttached())) {
+    const ScenesMenuModel scenes = ScenesMenuModel::Build(Core::GetProject(), SceneManager::GetActiveScene());
+
+    for (std::size_t index = 0; index < scenes.entries.size(); ++index) {
+      const ScenesMenuModel::Entry& entry = scenes.entries.at(index);
+
+      // Two scenes can share a stem in different folders, so the row is what
+      // the id is made of, not the name.
+      ImGui::PushID(static_cast<int>(index));
+
+      // A tick rather than a disabled row: the menu stays a list of places to
+      // go, and the tick says where you are.
+      if (ImGui::MenuItem(entry.name.c_str(), nullptr, entry.active)) {
+        SwitchScene(entry.path);
+      }
+
+      ImGui::PopID();
+    }
+
+    if (scenes.entries.empty()) {
+      ImGui::TextDisabled("No scenes in the manifest");
+    }
+
+    ImGui::Separator();
+
+    // With fewer than two scenes there is nowhere to go: the model says so and
+    // the items say it too.
+    const bool can_cycle = scenes.entries.size() > 1;
+    if (ImGui::MenuItem("Next Scene", "Ctrl+Tab", false, can_cycle)) {
+      NextScene();
+    }
+    if (ImGui::MenuItem("Previous Scene", "Ctrl+Shift+Tab", false, can_cycle)) {
+      PreviousScene();
+    }
+
+    ImGui::Separator();
+    if (ImGui::MenuItem("Save Scene", "Ctrl+S")) {
+      SaveProject();
+    }
+    if (ImGui::MenuItem("Save Scene As...")) {
+      SaveSceneAs();
+    }
+    if (ImGui::MenuItem("Reload Scene", "F2")) {
+      ReloadScene();
+    }
+
+    ImGui::Separator();
+    if (ImGui::MenuItem("New Scene...")) {
+      NewScene();
+    }
+    ImGui::EndMenu();
+  }
+
   if (ImGui::BeginMenu("View")) {
     for (const std::unique_ptr<EditorPanel>& panel : m_panels) {
       ImGui::MenuItem(panel->Id(), nullptr, &panel->visible);

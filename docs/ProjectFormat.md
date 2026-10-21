@@ -136,21 +136,29 @@ the asset registry, and the manifest's audio and input sections.
 				<key>Ctrl+S</key>
 			</value4>
 			<value5>
-				<action>game.down</action>
-				<key>Down</key>
+				<action>editor.scene.next</action>
+				<key>Ctrl+Tab</key>
 			</value5>
 			<value6>
-				<action>game.left</action>
-				<key>Left</key>
+				<action>editor.scene.previous</action>
+				<key>Ctrl+Shift+Tab</key>
 			</value6>
 			<value7>
-				<action>game.right</action>
-				<key>Right</key>
+				<action>game.down</action>
+				<key>Down</key>
 			</value7>
 			<value8>
+				<action>game.left</action>
+				<key>Left</key>
+			</value8>
+			<value9>
+				<action>game.right</action>
+				<key>Right</key>
+			</value9>
+			<value10>
 				<action>game.up</action>
 				<key>Up</key>
-			</value8>
+			</value10>
 		</input>
 	</project>
 </cereal>
@@ -191,6 +199,8 @@ that quietly does nothing:
 |---|---|---|
 | `editor.save` | `Ctrl+S` | `File > Save` |
 | `editor.reload` | `F2` | `File > Reload Scene` |
+| `editor.scene.next` | `Ctrl+Tab` | `Scenes > Next Scene` |
+| `editor.scene.previous` | `Ctrl+Shift+Tab` | `Scenes > Previous Scene` |
 | `editor.gizmo.translate` | `W` | viewport: move gizmo |
 | `editor.gizmo.rotate` | `E` | viewport: rotate gizmo |
 | `editor.gizmo.scale` | `R` | viewport: scale gizmo |
@@ -534,6 +544,23 @@ the same fallback, and is rewritten with ids the next time it is saved.
 | Assets > Create Prefab from Selection... | -- | Asks for a path inside the project and writes the selected entity to it as a prefab. Disabled while nothing is selected. |
 | Assets > Instantiate Prefab... | -- | Asks for a prefab and copies it into the open scene at the positions it stores, then marks the scene dirty. |
 | Assets > Import Asset... | -- | Asks for a file inside the project and adds it to the asset registry with a new id. Disabled while no project is open. |
+
+`Scenes` is the manifest's scene list as a menu, in the order the manifest stores
+it, with a tick next to the open scene:
+
+| Command | Shortcut | Does |
+|---|---|---|
+| Scenes > \<name\> | -- | Opens that scene. Asking for the scene that is already open does nothing -- `Reload Scene` is how a scene is re-read. |
+| Scenes > Next Scene / Previous Scene | Ctrl+Tab, Ctrl+Shift+Tab | Opens the next/previous scene in manifest order, wrapping at the ends. Disabled with fewer than two scenes. |
+| Scenes > Save Scene | Ctrl+S | The same command as File > Save: the open scene, then the manifest. |
+| Scenes > Save Scene As... | -- | The same command as File > Save Scene As.... |
+| Scenes > Reload Scene | F2 | The same command as File > Reload Scene. |
+| Scenes > New Scene... | -- | Asks for a path inside the project, writes an empty scene there, adds it to the manifest and opens it. A path the manifest already lists is refused rather than overwritten. |
+
+Switching scenes, creating one and `Next`/`Previous` all go through the same
+check: when the open scene has unsaved edits, a modal asks whether to discard
+them, and Cancel leaves the scene open and dirty. The menu is disabled while no
+project is open, because the scene list is manifest data.
 
 The content browser's details panel is the file-level half of the same commands:
 it shows the registry name, type and id of the selected file, offers

@@ -171,6 +171,8 @@ const std::map<std::string, Binding>& InputMap::Defaults() {
       {"editor.gizmo.translate", {SDL_SCANCODE_W, false, false, false}},
       {"editor.reload", {SDL_SCANCODE_F2, false, false, false}},
       {"editor.save", {SDL_SCANCODE_S, true, false, false}},
+      {"editor.scene.next", {SDL_SCANCODE_TAB, true, false, false}},
+      {"editor.scene.previous", {SDL_SCANCODE_TAB, true, true, false}},
       {"game.down", {SDL_SCANCODE_DOWN, false, false, false}},
       {"game.left", {SDL_SCANCODE_LEFT, false, false, false}},
       {"game.right", {SDL_SCANCODE_RIGHT, false, false, false}},
