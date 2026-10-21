@@ -97,6 +97,18 @@ void EditorApp::Update(float delta_time) {
     }
   }
 
+  // A different project is a different tree: the panels that cache project
+  // paths start again from its directory. The manifest is the project's
+  // identity, so comparing it is enough -- opening one replaces it.
+  const std::filesystem::path project_file = Core::GetProject().File();
+  if (project_file != m_last_project_file) {
+    m_last_project_file = project_file;
+
+    if (m_layout != nullptr) {
+      m_layout->ProjectChanged();
+    }
+  }
+
   // A project or scene opened this frame is remembered now, not only on exit:
   // a crash should not lose the project the user was in.
   RememberSession();

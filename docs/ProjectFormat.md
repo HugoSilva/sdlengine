@@ -562,6 +562,21 @@ check: when the open scene has unsaved edits, a modal asks whether to discard
 them, and Cancel leaves the scene open and dirty. The menu is disabled while no
 project is open, because the scene list is manifest data.
 
+The content browser is rooted at the project directory -- the editor's working
+directory while no project is open -- and opens in `scenes/` when the project
+has one. Double-clicking a scene's row opens it through the same command as
+`Scenes > <name>`, including the unsaved-edits question; double-clicking a
+folder enters it, and an image still previews in the details panel.
+
+Right-clicking a scene's row offers `Open Scene`, `Rename...`, `Delete` and
+`Show in Explorer`; `New Scene...` is on every row and on the empty space, so a
+folder with no files in it is still a place to create one. Renaming keeps the
+scene in its folder, updates the manifest entry (and the startup scene if that
+is the one renamed), saves the open scene first if it is the one being renamed,
+and then forgets that scene -- the path it held no longer exists. Deleting
+removes the file and its manifest entry; the startup scene and the open scene
+are refused, before any confirmation is shown.
+
 The content browser's details panel is the file-level half of the same commands:
 it shows the registry name, type and id of the selected file, offers
 `Register as Asset` for a file with no entry, and `Rename Asset...` /

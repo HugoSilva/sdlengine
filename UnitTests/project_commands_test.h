@@ -576,6 +576,150 @@ TEST_F(ProjectCommandsTest, CreateSceneAtWithUnsavedEditsAsksFirst) {
   EXPECT_EQ(SceneManager::GetActiveSceneName(), "blank");
 }
 
+// Renaming is a file move plus a manifest edit: the two have to agree.
+TEST_F(ProjectCommandsTest, RenameSceneUpdatesTheManifest) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+  SaveSceneAsAt(directory / "scenes" / "level_02.xml");
+  SwitchScene("scenes/start.xml");
+
+  const std::filesystem::path old_file = directory / "scenes" / "level_02.xml";
+  const std::filesystem::path new_file = directory / "scenes" / "level_two.xml";
+  RenameSceneAt(old_file, "level_two");
+
+  EXPECT_FALSE(std::filesystem::exists(old_file));
+  EXPECT_TRUE(std::filesystem::exists(new_file));
+
+  Project project;
+  std::string error;
+  ASSERT_TRUE(Project::Load(directory / "project.xml", project, &error)) << error;
+  ASSERT_EQ(project.scenes.size(), 2u);
+  EXPECT_EQ(project.scenes.at(1), "scenes/level_two.xml");
+  EXPECT_EQ(project.startup_scene, "scenes/start.xml");
+}
+
+TEST_F(ProjectCommandsTest, RenameSceneUpdatesTheStartupScene) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+  SaveSceneAsAt(directory / "scenes" / "level_02.xml");
+
+  RenameSceneAt(directory / "scenes" / "start.xml", "begin");
+
+  EXPECT_TRUE(std::filesystem::exists(directory / "scenes" / "begin.xml"));
+  EXPECT_FALSE(std::filesystem::exists(directory / "scenes" / "start.xml"));
+
+  Project project;
+  std::string error;
+  ASSERT_TRUE(Project::Load(directory / "project.xml", project, &error)) << error;
+  ASSERT_EQ(project.scenes.size(), 2u);
+  EXPECT_EQ(project.scenes.at(0), "scenes/begin.xml");
+  EXPECT_EQ(project.startup_scene, "scenes/begin.xml");
+}
+
+// The open scene is a path, so renaming the file it names leaves nothing to
+// point at: the editor forgets it rather than holding a path that is gone.
+TEST_F(ProjectCommandsTest, RenameSceneClearsTheOpenScene) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+  SaveSceneAsAt(directory / "scenes" / "level_02.xml");
+  ASSERT_EQ(SceneManager::GetActiveSceneName(), "level_02");
+
+  RenameSceneAt(directory / "scenes" / "level_02.xml", "level_two");
+
+  EXPECT_TRUE(SceneManager::GetActiveScene().empty());
+  EXPECT_TRUE(std::filesystem::exists(directory / "scenes" / "level_two.xml"));
+
+  Project project;
+  std::string error;
+  ASSERT_TRUE(Project::Load(directory / "project.xml", project, &error)) << error;
+  ASSERT_EQ(project.scenes.size(), 2u);
+  EXPECT_EQ(project.scenes.at(1), "scenes/level_two.xml");
+}
+
+TEST_F(ProjectCommandsTest, RenameSceneRefusesANameThatIsTaken) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+  SaveSceneAsAt(directory / "scenes" / "level_02.xml");
+
+  const std::filesystem::path level = directory / "scenes" / "level_02.xml";
+  RenameSceneAt(level, "start");
+
+  EXPECT_TRUE(std::filesystem::exists(level));
+  EXPECT_EQ(Core::GetProject().scenes.size(), 2u);
+  EXPECT_EQ(SceneManager::GetActiveSceneName(), "level_02");
+}
+
+TEST_F(ProjectCommandsTest, DeleteSceneAtRemovesTheFileAndTheManifestEntry) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+  SaveSceneAsAt(directory / "scenes" / "level_02.xml");
+  SwitchScene("scenes/start.xml");
+
+  const std::filesystem::path level = directory / "scenes" / "level_02.xml";
+  DeleteSceneAt(level);
+
+  EXPECT_FALSE(std::filesystem::exists(level));
+
+  Project project;
+  std::string error;
+  ASSERT_TRUE(Project::Load(directory / "project.xml", project, &error)) << error;
+  ASSERT_EQ(project.scenes.size(), 1u);
+  EXPECT_EQ(project.scenes.front(), "scenes/start.xml");
+}
+
+// The startup scene is what the editor and the game open first; deleting it
+// would leave a manifest pointing at nothing.
+TEST_F(ProjectCommandsTest, DeleteSceneRefusesTheStartupScene) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+  SaveSceneAsAt(directory / "scenes" / "level_02.xml");
+
+  const std::filesystem::path start = directory / "scenes" / "start.xml";
+  DeleteSceneAt(start);
+
+  EXPECT_TRUE(std::filesystem::exists(start));
+  EXPECT_EQ(Core::GetProject().scenes.size(), 2u);
+
+  // Refused before the question, not after it.
+  DeleteScene("scenes/start.xml");
+  EXPECT_FALSE(HasPendingConfirmation());
+  EXPECT_TRUE(std::filesystem::exists(start));
+}
+
+TEST_F(ProjectCommandsTest, DeleteSceneRefusesTheOpenScene) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+  SaveSceneAsAt(directory / "scenes" / "level_02.xml");
+  ASSERT_EQ(SceneManager::GetActiveSceneName(), "level_02");
+
+  const std::filesystem::path level = directory / "scenes" / "level_02.xml";
+  DeleteSceneAt(level);
+
+  EXPECT_TRUE(std::filesystem::exists(level));
+  EXPECT_EQ(Core::GetProject().scenes.size(), 2u);
+
+  DeleteScene("scenes/level_02.xml");
+  EXPECT_FALSE(HasPendingConfirmation());
+  EXPECT_TRUE(std::filesystem::exists(level));
+}
+
+TEST_F(ProjectCommandsTest, DeleteSceneAsksBeforeDeleting) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+  SaveSceneAsAt(directory / "scenes" / "level_02.xml");
+  SwitchScene("scenes/start.xml");
+
+  const std::filesystem::path level = directory / "scenes" / "level_02.xml";
+  DeleteScene("scenes/level_02.xml");
+
+  EXPECT_TRUE(HasPendingConfirmation());
+  EXPECT_TRUE(std::filesystem::exists(level));
+
+  ASSERT_TRUE(ConfirmPending());
+  EXPECT_FALSE(std::filesystem::exists(level));
+  EXPECT_EQ(Core::GetProject().scenes.size(), 1u);
+}
+
 }  // namespace
 
 #endif  // RSE_EDITOR_COMMANDS

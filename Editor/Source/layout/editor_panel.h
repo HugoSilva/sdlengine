@@ -27,6 +27,11 @@ class EditorPanel {
 
   virtual DockSlot Slot() const { return DockSlot::kCenter; }
 
+  // A different project is open. A panel that caches project paths (the content
+  // browser) drops them and starts again from the new directory; most panels
+  // read from the engine every frame and do not care.
+  virtual void ProjectChanged() {}
+
   // Toggled from the View menu and by the panel's own close button.
   bool visible{true};
 };

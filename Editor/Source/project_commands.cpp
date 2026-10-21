@@ -10,6 +10,10 @@
 #include <SDL3/SDL.h>
 #include <entity/entity.hpp>
 
+#ifdef _WIN32
+#include <shellapi.h>
+#endif
+
 #include <core/asset_registry.h>
 #include <core/project.h>
 #include <core/scene_manager.h>
@@ -32,7 +36,8 @@ enum class PathPromptKind {
   kCreatePrefab,
   kInstantiatePrefab,
   kImportAsset,
-  kRenameAsset
+  kRenameAsset,
+  kRenameScene
 };
 
 // The typed-path fallback. One at a time: a dialog can only be started from a
@@ -43,8 +48,8 @@ struct PathPrompt {
   bool needs_focus{false};
   // Only a prefab save uses it: the entity selected when the command ran.
   uint32_t entity{entt::null};
-  // Only an asset rename uses it: the asset being renamed.
-  std::string asset_id;
+  // Only a rename uses it: the asset id or the manifest scene path.
+  std::string subject;
 };
 
 PathPrompt g_prompt;
@@ -57,12 +62,12 @@ constexpr SDL_DialogFileFilter kProjectFilters[]{{"RSE project", "xml"}};
 constexpr SDL_DialogFileFilter kSceneFilters[]{{"RSE scene", "xml"}};
 constexpr SDL_DialogFileFilter kPrefabFilters[]{{"RSE prefab", "xml"}};
 
-void BeginPrompt(PathPromptKind kind, uint32_t entity = entt::null, const std::string& asset_id = "") {
+void BeginPrompt(PathPromptKind kind, uint32_t entity = entt::null, const std::string& subject = "") {
   g_prompt.kind = kind;
   g_prompt.path[0] = '\0';
   g_prompt.needs_focus = true;
   g_prompt.entity = entity;
-  g_prompt.asset_id = asset_id;
+  g_prompt.subject = subject;
 }
 
 const char* PromptText(PathPromptKind kind) {
@@ -83,6 +88,8 @@ const char* PromptText(PathPromptKind kind) {
       return "Path to a file to register as an asset:";
     case PathPromptKind::kRenameAsset:
       return "New name for the asset:";
+    case PathPromptKind::kRenameScene:
+      return "New name for the scene:";
     case PathPromptKind::kNone:
       break;
   }
@@ -91,7 +98,7 @@ const char* PromptText(PathPromptKind kind) {
 }
 
 void ApplyChosenPath(PathPromptKind kind, const std::filesystem::path& path, uint32_t entity,
-                     const std::string& asset_id) {
+                     const std::string& subject) {
   switch (kind) {
     case PathPromptKind::kNewProjectFolder:
       NewProjectAt(path);
@@ -115,7 +122,10 @@ void ApplyChosenPath(PathPromptKind kind, const std::filesystem::path& path, uin
       ImportAssetAt(path);
       break;
     case PathPromptKind::kRenameAsset:
-      RenameAssetAt(asset_id, path.string());
+      RenameAssetAt(subject, path.string());
+      break;
+    case PathPromptKind::kRenameScene:
+      RenameSceneAt(subject, path.string());
       break;
     case PathPromptKind::kNone:
       break;
@@ -281,6 +291,12 @@ void RenameAsset(const std::string& id) {
 
 void DeleteAsset(const std::string& id) { DeleteAssetAt(id); }
 
+void RenameScene(const std::string& scene) {
+  // A scene is renamed in place: the prompt takes a file name, and the browser
+  // and the Scenes menu both hand in the manifest's spelling.
+  BeginPrompt(PathPromptKind::kRenameScene, entt::null, scene);
+}
+
 void ReloadScene() {
   if (SceneManager::GetActiveScene().empty()) {
     Logger::Log("No scene is open.");
@@ -352,14 +368,34 @@ void CreateSceneNow(const std::filesystem::path& file) {
 }
 
 struct Confirmation {
+  std::string title;
   std::string message;
+  std::string confirm_label;
   std::function<void()> on_confirm;
 };
 
 Confirmation g_confirmation;
 bool g_confirmation_requested{false};
 
-constexpr const char* kConfirmationTitle = "Unsaved changes";
+// The popup id of the question being drawn. It outlives the pending question,
+// because the frame that closes the modal still has to name it.
+std::string g_confirmation_title;
+
+void AskConfirmation(const std::string& title, const std::string& message, const std::string& confirm_label,
+                     std::function<void()> on_confirm) {
+  // One at a time: the modal blocks the menus that could start another, and
+  // overwriting a question nobody answered would lose the command behind it.
+  if (HasPendingConfirmation()) {
+    Logger::Warning("Another confirmation is still open; not asking: " + message);
+    return;
+  }
+
+  g_confirmation.title = title;
+  g_confirmation.message = message;
+  g_confirmation.confirm_label = confirm_label;
+  g_confirmation.on_confirm = std::move(on_confirm);
+  g_confirmation_requested = true;
+}
 }  // namespace
 
 ScenesMenuModel ScenesMenuModel::Build(const rse::Project& project, const std::filesystem::path& active_scene) {
@@ -474,16 +510,11 @@ void PreviousScene() {
 }
 
 void ConfirmDiscard(const std::string& message, std::function<void()> on_confirm) {
-  // One at a time: the modal blocks the menus that could start another, and
-  // overwriting a question nobody answered would lose the command behind it.
-  if (HasPendingConfirmation()) {
-    Logger::Warning("Another confirmation is still open; not asking: " + message);
-    return;
-  }
+  AskConfirmation("Unsaved changes", message, "Discard", std::move(on_confirm));
+}
 
-  g_confirmation.message = message;
-  g_confirmation.on_confirm = std::move(on_confirm);
-  g_confirmation_requested = true;
+void ConfirmAction(const std::string& message, const std::string& confirm_label, std::function<void()> on_confirm) {
+  AskConfirmation("Confirm", message, confirm_label, std::move(on_confirm));
 }
 
 bool HasPendingConfirmation() { return g_confirmation.on_confirm != nullptr; }
@@ -544,6 +575,252 @@ void CreateSceneAt(const std::filesystem::path& file) {
   }
 
   CreateSceneNow(file);
+}
+
+namespace {
+// The manifest spelling of a scene, with a relative path resolved against the
+// project directory first. Empty when the file is outside the project, because
+// a manifest cannot describe it there.
+std::string SceneManifestPath(const std::filesystem::path& scene) {
+  rse::Project& project = Core::GetProject();
+
+  if (!project.IsAttached()) {
+    return {};
+  }
+
+  std::filesystem::path absolute = scene;
+  if (absolute.is_relative()) {
+    absolute = project.Directory() / absolute;
+  }
+
+  std::error_code error_code;
+  const std::filesystem::path relative = std::filesystem::relative(absolute, project.Directory(), error_code);
+
+  if (error_code || relative.empty() || relative.generic_string().rfind("..", 0) == 0) {
+    return {};
+  }
+
+  return relative.generic_string();
+}
+
+// Why a scene cannot be deleted right now, or empty when it can. Startup and
+// open are the two the editor would miss immediately.
+std::string DeleteRefusal(const std::string& manifest_path) {
+  rse::Project& project = Core::GetProject();
+
+  if (manifest_path == project.startup_scene) {
+    return "The startup scene cannot be deleted: " + manifest_path;
+  }
+
+  const std::filesystem::path active = SceneManager::GetActiveScene().lexically_normal();
+
+  if (!active.empty() && ResolveAgainst(project.Directory(), manifest_path) == active) {
+    return "The open scene cannot be deleted: " + manifest_path;
+  }
+
+  return {};
+}
+}  // namespace
+
+void RenameSceneAt(const std::filesystem::path& scene, const std::string& name) {
+  rse::Project& project = Core::GetProject();
+
+  if (!project.IsAttached()) {
+    Logger::Error("No project is open, so there is no scene to rename.");
+    return;
+  }
+
+  const std::string manifest_path = SceneManifestPath(scene);
+
+  if (manifest_path.empty()) {
+    Logger::Error("A scene has to live inside the project directory: " + scene.string());
+    return;
+  }
+
+  const std::vector<std::string>::iterator entry =
+      std::find(project.scenes.begin(), project.scenes.end(), manifest_path);
+
+  if (entry == project.scenes.end()) {
+    Logger::Warning("The project does not list that scene: " + manifest_path);
+    return;
+  }
+
+  // A name is a file name: a separator would move the scene to another folder
+  // without updating anything that expects it there.
+  if (name.empty() || name == "." || name == ".." || name.find('/') != std::string::npos ||
+      name.find('\\') != std::string::npos) {
+    Logger::Error("A scene name cannot be empty or contain a path: " + name);
+    return;
+  }
+
+  std::filesystem::path target_name{name};
+
+  if (target_name.extension().empty()) {
+    target_name += ".xml";
+  }
+
+  const std::filesystem::path old_file = project.Directory() / manifest_path;
+  const std::filesystem::path new_file = old_file.parent_path() / target_name;
+  const std::string new_manifest_path = SceneManifestPath(new_file);
+
+  if (new_manifest_path.empty()) {
+    Logger::Error("A scene has to live inside the project directory: " + new_file.string());
+    return;
+  }
+
+  if (new_manifest_path == manifest_path) {
+    Logger::Log("The scene is already called " + manifest_path);
+    return;
+  }
+
+  std::error_code error_code;
+
+  if (std::filesystem::exists(new_file, error_code) ||
+      std::find(project.scenes.begin(), project.scenes.end(), new_manifest_path) != project.scenes.end()) {
+    Logger::Error("A scene with that name already exists: " + new_manifest_path);
+    return;
+  }
+
+  const bool was_open = SceneManager::GetActiveScene().lexically_normal() == old_file.lexically_normal();
+
+  // Renaming the open scene: save it first so the edits move with the file.
+  // The editor forgets the scene below -- the path it held is gone -- but the
+  // work is not.
+  if (was_open) {
+    std::string save_error;
+
+    if (!Core::SaveProject(&save_error)) {
+      Logger::Error("Failed to save the open scene before renaming it: " + save_error);
+      return;
+    }
+  }
+
+  std::filesystem::rename(old_file, new_file, error_code);
+
+  if (error_code) {
+    Logger::Error("Failed to rename the scene: " + error_code.message());
+    return;
+  }
+
+  *entry = new_manifest_path;
+
+  if (project.startup_scene == manifest_path) {
+    project.startup_scene = new_manifest_path;
+  }
+
+  std::string error;
+
+  if (!project.Save(&error)) {
+    Logger::Error("Failed to save the project: " + error);
+    return;
+  }
+
+  if (was_open) {
+    // The open scene is a path, and that path no longer exists. Opening the
+    // renamed file is a separate decision -- Scenes > <name> does it -- and the
+    // entities of the scene that is no longer open go with it.
+    SceneManager::Init(project.Directory());
+    rse::SceneIO::Clear();
+  }
+
+  Logger::Log("Renamed scene " + manifest_path + " to " + new_manifest_path);
+}
+
+void DeleteScene(const std::string& scene) {
+  if (!Core::GetProject().IsAttached()) {
+    Logger::Warning("No project is open, so there is no scene to delete.");
+    return;
+  }
+
+  const std::string manifest_path = SceneManifestPath(scene);
+
+  if (manifest_path.empty()) {
+    Logger::Error("A scene has to live inside the project directory: " + scene);
+    return;
+  }
+
+  // Refused before the question, not after: confirming and then being told no
+  // is worse than not being asked.
+  const std::string refusal = DeleteRefusal(manifest_path);
+
+  if (!refusal.empty()) {
+    Logger::Warning(refusal);
+    return;
+  }
+
+  ConfirmAction("Delete the scene " + std::filesystem::path{manifest_path}.stem().string() +
+                    "? Its file is removed from the project.",
+                "Delete", [manifest_path]() { DeleteSceneAt(manifest_path); });
+}
+
+void DeleteSceneAt(const std::filesystem::path& scene) {
+  rse::Project& project = Core::GetProject();
+
+  if (!project.IsAttached()) {
+    Logger::Error("No project is open, so there is no scene to delete.");
+    return;
+  }
+
+  const std::string manifest_path = SceneManifestPath(scene);
+
+  if (manifest_path.empty()) {
+    Logger::Error("A scene has to live inside the project directory: " + scene.string());
+    return;
+  }
+
+  const std::vector<std::string>::iterator entry =
+      std::find(project.scenes.begin(), project.scenes.end(), manifest_path);
+
+  if (entry == project.scenes.end()) {
+    Logger::Warning("The project does not list that scene: " + manifest_path);
+    return;
+  }
+
+  const std::string refusal = DeleteRefusal(manifest_path);
+
+  if (!refusal.empty()) {
+    Logger::Warning(refusal);
+    return;
+  }
+
+  std::error_code error_code;
+  const bool removed = std::filesystem::remove(project.Directory() / manifest_path, error_code);
+
+  if (error_code) {
+    Logger::Error("Failed to delete the scene file: " + error_code.message());
+    return;
+  }
+
+  if (!removed) {
+    // The manifest is still the place to fix: drop the entry even though the
+    // file had already been removed outside the editor.
+    Logger::Warning("The scene file was already gone: " + manifest_path);
+  }
+
+  project.scenes.erase(entry);
+
+  std::string error;
+
+  if (!project.Save(&error)) {
+    Logger::Error("Failed to save the project: " + error);
+    return;
+  }
+
+  Logger::Log("Deleted scene " + manifest_path);
+}
+
+void ShowInExplorer(const std::filesystem::path& file) {
+#ifdef _WIN32
+  // Explorer takes the selection as one argument: /select,"C:\path\scene.xml".
+  const std::wstring argument = L"/select,\"" + file.wstring() + L"\"";
+  const HINSTANCE result = ShellExecuteW(nullptr, L"open", L"explorer.exe", argument.c_str(), nullptr, SW_SHOWNORMAL);
+
+  if (reinterpret_cast<std::intptr_t>(result) <= 32) {
+    Logger::Error("Could not open Explorer at " + file.string());
+  }
+#else
+  Logger::Warning("Showing a file in the file manager is only implemented on Windows: " + file.string());
+#endif
 }
 
 void NewProjectAt(const std::filesystem::path& directory) {
@@ -838,15 +1115,16 @@ void DrawProjectSettings() {
 
 void DrawConfirmation() {
   if (g_confirmation_requested) {
-    ImGui::OpenPopup(kConfirmationTitle);
+    g_confirmation_title = g_confirmation.title;
+    ImGui::OpenPopup(g_confirmation_title.c_str());
     g_confirmation_requested = false;
   }
 
-  if (!ImGui::IsPopupOpen(kConfirmationTitle)) {
+  if (g_confirmation_title.empty() || !ImGui::IsPopupOpen(g_confirmation_title.c_str())) {
     return;
   }
 
-  if (!ImGui::BeginPopupModal(kConfirmationTitle, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+  if (!ImGui::BeginPopupModal(g_confirmation_title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
     return;
   }
 
@@ -862,7 +1140,7 @@ void DrawConfirmation() {
   ImGui::TextUnformatted(g_confirmation.message.c_str());
   ImGui::Separator();
 
-  if (ImGui::Button("Discard")) {
+  if (ImGui::Button(g_confirmation.confirm_label.c_str())) {
     ImGui::CloseCurrentPopup();
     ConfirmPending();
   }
@@ -917,10 +1195,10 @@ void DrawProjectCommands() {
   } else if (accepted) {
     const PathPromptKind kind = g_prompt.kind;
     const uint32_t entity = g_prompt.entity;
-    const std::string asset_id = g_prompt.asset_id;
+    const std::string subject = g_prompt.subject;
     g_prompt.kind = PathPromptKind::kNone;
     ImGui::CloseCurrentPopup();
-    ApplyChosenPath(kind, std::filesystem::path{g_prompt.path}, entity, asset_id);
+    ApplyChosenPath(kind, std::filesystem::path{g_prompt.path}, entity, subject);
   }
 
   ImGui::EndPopup();
