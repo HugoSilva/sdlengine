@@ -54,6 +54,9 @@ class ProjectIOTest : public ::testing::Test {
     project.window.height = 900;
     project.startup_scene = "scenes/start.xml";
     project.scenes = {"scenes/start.xml", "scenes/level_02.xml"};
+    project.audio.master = 100;
+    project.audio.music = 80;
+    project.audio.sfx = 60;
     return project;
   }
 
@@ -106,8 +109,30 @@ TEST_F(ProjectIOTest, RoundTripPreservesEveryField) {
   ASSERT_EQ(actual.scenes.size(), expected.scenes.size());
   EXPECT_EQ(actual.scenes.at(0), expected.scenes.at(0));
   EXPECT_EQ(actual.scenes.at(1), expected.scenes.at(1));
+  EXPECT_EQ(actual.audio.master, expected.audio.master);
+  EXPECT_EQ(actual.audio.music, expected.audio.music);
+  EXPECT_EQ(actual.audio.sfx, expected.audio.sfx);
   EXPECT_TRUE(actual.IsAttached());
   EXPECT_EQ(actual.File(), expected.File());
+}
+
+TEST_F(ProjectIOTest, AudioLevelsOutsideZeroToFullAreClampedOnLoad) {
+  Project project = MakeProject();
+  project.audio.master = 300;
+  project.audio.music = -5;
+  project.audio.sfx = 200;
+
+  std::string error;
+  ASSERT_TRUE(project.Save(&error)) << error;
+
+  Project loaded;
+  ASSERT_TRUE(Project::Load(m_file, loaded, &error)) << error;
+
+  // The scale is 0-128; a hand-edited manifest cannot ask for a gain above one
+  // or below silence.
+  EXPECT_EQ(loaded.audio.master, 128);
+  EXPECT_EQ(loaded.audio.music, 0);
+  EXPECT_EQ(loaded.audio.sfx, 128);
 }
 
 TEST_F(ProjectIOTest, SavedPathsUseForwardSlashes) {
@@ -207,6 +232,13 @@ TEST_F(ProjectIOTest, AV1ManifestLoadsFromTheFixture) {
   EXPECT_EQ(project.startup_scene, "scenes/start.xml");
   ASSERT_EQ(project.scenes.size(), 1u);
   EXPECT_EQ(project.scenes.front(), "scenes/start.xml");
+
+  // A version 1 manifest predates the audio section; it opens at the full
+  // volume it played at, not at silence.
+  EXPECT_EQ(project.audio.master, 128);
+  EXPECT_EQ(project.audio.music, 128);
+  EXPECT_EQ(project.audio.sfx, 128);
+
   EXPECT_EQ(project.File(), std::filesystem::absolute(fixture));
 }
 
@@ -220,7 +252,8 @@ TEST_F(ProjectIOTest, SaveWritesTheCurrentFormatVersionNotTheLoadedOne) {
 
   const std::string contents = ReadFile(m_file);
 
-  EXPECT_NE(contents.find("<formatVersion>1</formatVersion>"), std::string::npos);
+  EXPECT_NE(contents.find("<formatVersion>" + std::to_string(Project::kFormatVersion) + "</formatVersion>"),
+            std::string::npos);
   EXPECT_EQ(contents.find("<formatVersion>0</formatVersion>"), std::string::npos);
 
   // The engine version is informational, but it would otherwise keep naming the
@@ -236,7 +269,8 @@ TEST_F(ProjectIOTest, AFailedLoadLeavesTheGivenProjectAlone) {
   ASSERT_TRUE(Project::Load(m_file, project, &error)) << error;
   ASSERT_TRUE(project.IsAttached());
 
-  WriteManifest("<cereal><project><formatVersion>2</formatVersion></project></cereal>");
+  WriteManifest("<cereal><project><formatVersion>" + std::to_string(Project::kFormatVersion + 1) +
+                "</formatVersion></project></cereal>");
   EXPECT_FALSE(Project::Load(m_file, project, &error));
 
   // Still the project that was open, not a half-read replacement of it.

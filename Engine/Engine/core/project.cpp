@@ -118,16 +118,20 @@ bool Project::Load(const std::filesystem::path& file, Project& project, std::str
 }
 
 void Project::Migrate(Project& project, int from_version) {
-  // No published version has changed the meaning of existing data yet, so
-  // every version this build reads is already in the current shape. When one
-  // does, it gets one block per version, oldest first, each gated on the
-  // version it upgrades *from*:
+  // A manifest can be hand-edited, so the audio levels are clamped rather than
+  // trusted: the scale is 0-128, and 200 would otherwise be a gain above one.
+  project.audio.master = std::clamp(project.audio.master, 0, 128);
+  project.audio.music = std::clamp(project.audio.music, 0, 128);
+  project.audio.sfx = std::clamp(project.audio.sfx, 0, 128);
+
+  // A version that changes the meaning of existing data gets one block per
+  // version, oldest first, each gated on the version it upgrades *from*:
   //
-  //   if (from_version < 2) { project.audio = ...; }   // #46b
+  //   if (from_version < 3) { project.input = ...; }   // #46c
   //
-  // Additive fields need no block: serialize() already skips them for an
-  // older file and the defaults stay in place.
-  (void)project;
+  // Additive fields need no block: serialize() already skips them for an older
+  // file and the defaults stay in place, so a version 1 manifest opens with
+  // the volume it played at before the field existed.
   (void)from_version;
 }
 

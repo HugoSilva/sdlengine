@@ -26,7 +26,7 @@ struct Project {
   // is readable when its version is in [kFirstFormatVersion, kFormatVersion]:
   // older files are migrated forward by Migrate(), newer ones are refused
   // because this build cannot know what they mean.
-  static constexpr int kFormatVersion{1};
+  static constexpr int kFormatVersion{2};
 
   // The oldest manifest this build still understands. It only moves when a
   // migration stops being possible at all, not when a version is added.
@@ -43,6 +43,21 @@ struct Project {
     }
   };
 
+  // The project's mix, on the same 0-128 scale as Sound::SetVolume: the sound
+  // effects and the music each sit under a master, so lowering the master
+  // lowers both. Version 2 appended it; a version 1 manifest opens at full
+  // volume, which is what it played at.
+  struct Audio {
+    int master{128};
+    int music{128};
+    int sfx{128};
+
+    template <typename Archive>
+    void serialize(Archive& archive) {
+      archive(cereal::make_nvp("master", master), cereal::make_nvp("music", music), cereal::make_nvp("sfx", sfx));
+    }
+  };
+
   int format_version{kFormatVersion};
   std::string name{"Untitled"};
   std::string engine_version{kEngineVersion};
@@ -50,6 +65,7 @@ struct Project {
   Window window;
   std::string startup_scene{"scenes/start.xml"};
   std::vector<std::string> scenes{"scenes/start.xml"};
+  Audio audio;
 
   // Reads `file` into `project`. `project` is left untouched and false is
   // returned, with `error` filled in, when the file is missing, unreadable,
@@ -83,10 +99,14 @@ struct Project {
     // separate call guarded by the version that introduced it, so older files
     // keep opening:
     //
-    //   if (format_version >= 2) archive(cereal::make_nvp("audio", audio));
+    //   if (format_version >= 3) archive(cereal::make_nvp("input", input));
     archive(cereal::make_nvp("name", name), cereal::make_nvp("engineVersion", engine_version),
             cereal::make_nvp("assetRoot", asset_root), cereal::make_nvp("window", window),
             cereal::make_nvp("startupScene", startup_scene), cereal::make_nvp("scene", scenes));
+
+    if (format_version >= 2) {
+      archive(cereal::make_nvp("audio", audio));
+    }
   }
 
  private:

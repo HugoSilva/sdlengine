@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <cereal>
 	<project>
-		<formatVersion>1</formatVersion>
+		<formatVersion>2</formatVersion>
 		<name>Sample</name>
 		<engineVersion>0.13</engineVersion>
 		<assetRoot>assets</assetRoot>
@@ -15,6 +15,11 @@
 			<value0>scenes/start.xml</value0>
 			<value1>scenes/physics.xml</value1>
 		</scene>
+		<audio>
+			<master>128</master>
+			<music>128</music>
+			<sfx>128</sfx>
+		</audio>
 	</project>
 </cereal>
 

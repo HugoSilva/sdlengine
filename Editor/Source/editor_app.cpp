@@ -23,6 +23,11 @@ void EditorApp::Init() {
   // visibility, and EditorLayout::AddPanel reads them.
   EditorManager::Init();
 
+  // The mix the project was saved with, so the editor hears what the game will
+  // before a slider is touched.
+  SoundManager::SetVolumes(Core::GetProject().audio.master, Core::GetProject().audio.music,
+                           Core::GetProject().audio.sfx);
+
   const std::string vertex_shader = Core::ResolveResource("Default.vert");
   const std::string fragment_shader = Core::ResolveResource("Default.frag");
   m_shader = new Shader(vertex_shader.c_str(), fragment_shader.c_str());

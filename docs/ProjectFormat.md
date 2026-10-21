@@ -72,7 +72,7 @@ Two rules keep the additive case honest:
 
 | Milestone | Manifest | Scene | Prefab | Assets |
 |---|---|---|---|---|
-| today | 1 | 6 | 1 | 1 |
+| today | 2 | 6 | 1 | 1 |
 | #54 | 1 | 1 | -- | -- |
 | #47 | 1 | **2** | -- | -- |
 | #48 | 1 | **3** | -- | -- |
@@ -84,9 +84,10 @@ Two rules keep the additive case honest:
 | #46c | **3** | 6 | 1 | 1 |
 
 Only the rows up to today are shipped behaviour; the rest is the order the
-increments land in, one issue at a time. The first eight rows are shipped: the
+increments land in, one issue at a time. The first nine rows are shipped: the
 migration policy itself, the first breaking change made under it, the four
-additive changes made after it, prefabs, and the asset registry.
+additive changes made after it, prefabs, the asset registry, and the manifest's
+audio section.
 
 ## The manifest
 
@@ -96,7 +97,7 @@ additive changes made after it, prefabs, and the asset registry.
 <?xml version="1.0" encoding="utf-8"?>
 <cereal>
 	<project>
-		<formatVersion>1</formatVersion>
+		<formatVersion>2</formatVersion>
 		<name>Sample</name>
 		<engineVersion>0.13</engineVersion>
 		<assetRoot>assets</assetRoot>
@@ -110,6 +111,11 @@ additive changes made after it, prefabs, and the asset registry.
 			<value0>scenes/start.xml</value0>
 			<value1>scenes/physics.xml</value1>
 		</scene>
+		<audio>
+			<master>128</master>
+			<music>128</music>
+			<sfx>128</sfx>
+		</audio>
 	</project>
 </cereal>
 ```
@@ -123,10 +129,15 @@ additive changes made after it, prefabs, and the asset registry.
 | `window/title`, `window/width`, `window/height` | The window the project opens with. |
 | `startupScene` | The scene opened at startup. It has to be one of `scene`. |
 | `scene` | The project's scenes, in order. Each entry is a path relative to the manifest. |
+| `audio/master`, `audio/music`, `audio/sfx` | The project's mix, each 0-128 like `Sound::SetVolume`. Music and effects sit under the master. Version 2 appended the group; a version 1 manifest opens at 128, the volume it played at. |
 
 Every path in the manifest is **relative to the manifest's own directory** and is
 stored with forward slashes, so a project directory can be copied or moved and
 still opens. Backslashes are accepted on the way in and normalised on the way out.
+
+The audio levels are clamped to 0-128 when the manifest is read. A hand-edited
+200 is a gain above one, not something to pass to the mixer; a negative value is
+silence.
 
 `<scene>` is a cereal container: `size="dynamic"` means the count is not stored,
 and the reader counts the `valueN` children. Hand-editing a manifest means keeping
@@ -142,6 +153,10 @@ failed save leaves the previous file intact.
 
 A project manifest is only written when a project is attached. A run started
 without one can open a scene but cannot save a project.
+
+`Edit > Project Settings` edits the three audio levels. The sliders apply to the
+mix as they move, so a level is set by ear; the dialog's **Save** writes just the
+manifest, while **Cancel** puts the levels back and leaves the file alone.
 
 ## The asset registry
 
@@ -536,13 +551,15 @@ keeping them in step.
 - The game applies the scene camera when it starts; the game has no runtime scene
   switch yet, and the editor viewport deliberately keeps its own editor camera, so
   it does not preview the scene's camera.
-- The editor's session state (open panels, last scene, selection) is not part of
-  the project; it still lives in `imgui.ini` and `default.cfg`.
+- The editor's session state -- open panels, the last project and scene, the grid
+  and the gizmo -- is not part of the project: it lives in `editor.cfg` in the
+  working directory, and the dock layout in `imgui.ini`. Selection and undo
+  history are not persisted, because entity ids do not survive a load and there
+  is no undo system yet.
 - There is no recent-projects list.
-- Manifests are still on version 1, the only version published, so
-  `Project::Migrate` has no blocks yet -- the range check and the hook are in place
-  for the first manifest change that needs one. Scenes have had their first
-  breaking change and refuse version 1 outright; see above.
+- Manifests are on version 2: version 1 is read with the default audio levels,
+  and `Project::Migrate` clamps them to 0-128. There is still no manifest change
+  that rewrites existing data; the hook is in place for the first one.
 - The renderer's default shader is chosen when the window is created, so opening a
   different project at runtime reloads scenes and window settings but keeps the
   shader it started with.

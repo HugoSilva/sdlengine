@@ -1,5 +1,6 @@
 #include "sound_manager.h"
 
+#include <algorithm>
 #include <core.h>
 #include <utility>
 
@@ -15,6 +16,9 @@ std::vector<std::unique_ptr<Sound>> SoundManager::s_sounds;
 std::vector<std::unique_ptr<Music>> SoundManager::s_music;
 MIX_Mixer* SoundManager::s_mixer = nullptr;
 bool SoundManager::s_initialized = false;
+int SoundManager::s_master_volume{128};
+int SoundManager::s_music_volume{128};
+int SoundManager::s_sfx_volume{128};
 
 void SoundManager::Init() {
   if (s_initialized) {
@@ -94,6 +98,37 @@ Sound* SoundManager::GetOrLoad(const std::string& reference) {
 
 std::size_t SoundManager::Count() { return s_sounds.size(); }
 
+void SoundManager::SetVolumes(int master, int music, int sfx) {
+  s_master_volume = std::clamp(master, 0, kMaxVolume);
+  s_music_volume = std::clamp(music, 0, kMaxVolume);
+  s_sfx_volume = std::clamp(sfx, 0, kMaxVolume);
+
+  // A volume is heard now, not on the next Play: re-gain everything that is
+  // already loaded. SetVolume keeps the per-source volume and only recomputes
+  // the gain, which is why it is the call used here.
+  for (const std::unique_ptr<Sound>& sound : s_sounds) {
+    sound->SetVolume(sound->GetVolume());
+  }
+
+  for (const std::unique_ptr<Music>& music_track : s_music) {
+    music_track->SetVolume(music_track->GetVolume());
+  }
+}
+
+float SoundManager::SfxGain(int volume) {
+  const float source = static_cast<float>(std::clamp(volume, 0, kMaxVolume)) / kMaxVolume;
+  const float effects = static_cast<float>(s_sfx_volume) / kMaxVolume;
+  const float master = static_cast<float>(s_master_volume) / kMaxVolume;
+  return source * effects * master;
+}
+
+float SoundManager::MusicGain(int volume) {
+  const float source = static_cast<float>(std::clamp(volume, 0, kMaxVolume)) / kMaxVolume;
+  const float music = static_cast<float>(s_music_volume) / kMaxVolume;
+  const float master = static_cast<float>(s_master_volume) / kMaxVolume;
+  return source * music * master;
+}
+
 void SoundManager::Clean() {
   // The objects first: their destructors still talk to the mixer.
   s_sounds.clear();
@@ -108,5 +143,11 @@ void SoundManager::Clean() {
   }
 
   s_mixer = nullptr;
+
+  // Back to the defaults, so one test (or one project) cannot leave the next
+  // one quiet.
+  s_master_volume = kMaxVolume;
+  s_music_volume = kMaxVolume;
+  s_sfx_volume = kMaxVolume;
 }
 }  // namespace rse

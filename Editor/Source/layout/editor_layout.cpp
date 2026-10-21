@@ -99,6 +99,12 @@ void EditorLayout::DrawMenuBar() {
     }
     if (ImGui::MenuItem("Paste", "CTRL+V")) {
     }
+    ImGui::Separator();
+
+    // A project's audio levels are project data, so the item needs a project.
+    if (ImGui::MenuItem("Project Settings...", nullptr, false, Core::GetProject().IsAttached())) {
+      OpenProjectSettings();
+    }
     ImGui::EndMenu();
   }
 

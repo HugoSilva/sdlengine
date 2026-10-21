@@ -63,6 +63,32 @@ TEST_F(SampleProjectTest, ManifestLoads) {
   EXPECT_NE(startup, project.scenes.end()) << "the startup scene has to be one of the project's scenes";
 }
 
+TEST_F(SampleProjectTest, ManifestSavesInTheCurrentVersion) {
+  Project project;
+  std::string error;
+
+  ASSERT_TRUE(Project::Load(kSampleProject / "project.xml", project, &error)) << error;
+
+  // Saving the shipped manifest must produce a file this build reads back: the
+  // sample is the one project that ships with every binary.
+  const std::filesystem::path directory = std::filesystem::temp_directory_path() / "rse_sample_manifest";
+  std::filesystem::remove_all(directory);
+  std::filesystem::create_directories(directory);
+  project.SetFile(directory / "project.xml");
+
+  ASSERT_TRUE(project.Save(&error)) << error;
+
+  Project reloaded;
+  ASSERT_TRUE(Project::Load(project.File(), reloaded, &error)) << error;
+
+  EXPECT_EQ(reloaded.format_version, Project::kFormatVersion);
+  EXPECT_EQ(reloaded.name, project.name);
+  EXPECT_EQ(reloaded.scenes, project.scenes);
+  EXPECT_EQ(reloaded.audio.master, project.audio.master);
+
+  std::filesystem::remove_all(directory);
+}
+
 TEST_F(SampleProjectTest, EveryListedSceneLoads) {
   Project project;
   std::string error;

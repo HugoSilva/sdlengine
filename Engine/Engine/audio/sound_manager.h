@@ -17,6 +17,10 @@ class Music;  // forward declaration for Music
 // so two entities using one file share one decoded copy.
 class SoundManager {
  public:
+  // The scale every volume uses, matching Sound::SetVolume and the manifest's
+  // audio levels. 128 is full volume.
+  static constexpr int kMaxVolume{128};
+
   static void Init();
 
   // Take ownership. Callers construct the object and hand it over; nothing
@@ -35,6 +39,21 @@ class SoundManager {
   // stays silent, so a scene referring to a missing file still opens.
   static Sound* GetOrLoad(const std::string& reference);
 
+  // The project's mix. The master scales both categories; the music and sfx
+  // values scale their own. Set on the manager rather than on every component
+  // so a project's manifest can be applied before any scene is loaded, and so
+  // a slider is heard on the sounds that are already loaded.
+  static void SetVolumes(int master, int music, int sfx);
+  static int GetMasterVolume() { return s_master_volume; }
+  static int GetMusicVolume() { return s_music_volume; }
+  static int GetSfxVolume() { return s_sfx_volume; }
+
+  // The gain a sound at `volume` plays at, master and effects included, and the
+  // same for music. Exposed because it is the arithmetic a test can pin down
+  // without a mixer: every track the engine creates is set to one of these.
+  static float SfxGain(int volume);
+  static float MusicGain(int volume);
+
   // How many sounds the manager owns. For tests and diagnostics.
   static std::size_t Count();
 
@@ -52,5 +71,8 @@ class SoundManager {
   static std::vector<std::unique_ptr<Music>> s_music;
   static MIX_Mixer* s_mixer;
   static bool s_initialized;
+  static int s_master_volume;
+  static int s_music_volume;
+  static int s_sfx_volume;
 };
 }  // namespace rse

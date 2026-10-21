@@ -119,4 +119,63 @@ TEST_F(SoundManagerTest, ARegisteredReferenceLoadsByIdAndKeepsTheName) {
 
   std::filesystem::remove_all(directory);
 }
+TEST_F(SoundManagerTest, VolumesStartAtFull) {
+  EXPECT_EQ(SoundManager::GetMasterVolume(), SoundManager::kMaxVolume);
+  EXPECT_EQ(SoundManager::GetMusicVolume(), SoundManager::kMaxVolume);
+  EXPECT_EQ(SoundManager::GetSfxVolume(), SoundManager::kMaxVolume);
+}
+
+TEST_F(SoundManagerTest, MasterVolumeScalesEverything) {
+  SoundManager::SetVolumes(64, 128, 128);
+
+  EXPECT_FLOAT_EQ(SoundManager::SfxGain(128), 0.5f);
+  EXPECT_FLOAT_EQ(SoundManager::MusicGain(128), 0.5f);
+  EXPECT_FLOAT_EQ(SoundManager::SfxGain(64), 0.25f);
+}
+
+TEST_F(SoundManagerTest, TheCategoriesScaleTheirOwnSources) {
+  SoundManager::SetVolumes(128, 64, 32);
+
+  EXPECT_FLOAT_EQ(SoundManager::SfxGain(128), 0.25f);
+  EXPECT_FLOAT_EQ(SoundManager::MusicGain(128), 0.5f);
+}
+
+TEST_F(SoundManagerTest, VolumesAreClampedToTheScale) {
+  SoundManager::SetVolumes(999, -20, 300);
+
+  EXPECT_EQ(SoundManager::GetMasterVolume(), 128);
+  EXPECT_EQ(SoundManager::GetMusicVolume(), 0);
+  EXPECT_EQ(SoundManager::GetSfxVolume(), 128);
+}
+
+TEST_F(SoundManagerTest, ChangingTheMixKeepsPerSourceVolumes) {
+  Sound* sound = SoundManager::GetOrLoad("shared.wav");
+  ASSERT_NE(nullptr, sound);
+  sound->SetVolume(64);
+
+  SoundManager::SetVolumes(32, 128, 128);
+
+  // The scene owns the per-sound level; the project's mix is applied on top of
+  // it, so changing the mix must not rewrite what the scene saved.
+  EXPECT_EQ(sound->GetVolume(), 64);
+  EXPECT_FLOAT_EQ(SoundManager::SfxGain(64), 0.125f);
+}
+
+TEST_F(SoundManagerTest, SetVolumeIsClamped) {
+  Sound* sound = SoundManager::GetOrLoad("shared.wav");
+  ASSERT_NE(nullptr, sound);
+
+  sound->SetVolume(1000);
+  EXPECT_EQ(sound->GetVolume(), 128);
+
+  sound->SetVolume(-1);
+  EXPECT_EQ(sound->GetVolume(), 0);
+}
+
+TEST_F(SoundManagerTest, CleanRestoresFullVolume) {
+  SoundManager::SetVolumes(10, 10, 10);
+  SoundManager::Clean();
+
+  EXPECT_EQ(SoundManager::GetMasterVolume(), 128);
+}
 }  // namespace
