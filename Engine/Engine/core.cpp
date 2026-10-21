@@ -190,6 +190,12 @@ void Core::Start() {
   } catch (...) {
     Logger::Error("Failed to start the application");
   }
+
+#ifndef EMSCRIPTEN
+  // The window loop has ended, and the scene and the managers are still alive:
+  // the last chance for an application to write state that outlives the run.
+  Shutdown();
+#endif
 }
 
 void Core::Run() {

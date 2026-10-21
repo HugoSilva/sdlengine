@@ -6,6 +6,10 @@
 
 #include "editor_panel.h"
 
+// Only a reference in SyncVisibility's signature; the layout does not own or
+// read the settings itself.
+struct EditorSettings;
+
 // ---------------------------------------------------------------------------
 // Owns the editor's dock space and the set of dockable panels.
 //
@@ -17,6 +21,10 @@
 class EditorLayout {
  public:
   void AddPanel(std::unique_ptr<EditorPanel> panel);
+
+  // Copies every panel's current visibility into the settings, so the next run
+  // starts with the same set. Called when the editor shuts down.
+  void SyncVisibility(EditorSettings& settings) const;
 
   // Draws the whole editor UI for the current frame: menu bar, dock space,
   // then every visible panel.

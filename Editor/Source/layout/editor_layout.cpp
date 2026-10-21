@@ -15,7 +15,25 @@ constexpr const char* kDockSpaceId = "RSE_DockSpace";
 constexpr const char* kDockSpaceHost = "###RSE_DockSpaceHost";
 }  // namespace
 
-void EditorLayout::AddPanel(std::unique_ptr<EditorPanel> panel) { m_panels.push_back(std::move(panel)); }
+void EditorLayout::AddPanel(std::unique_ptr<EditorPanel> panel) {
+  // The saved state is read before the panels are built, so a panel the user
+  // had hidden comes back hidden. An id the file does not mention keeps the
+  // panel's own default.
+  const std::map<std::string, bool>& saved = EditorManager::Settings().panels;
+  const std::map<std::string, bool>::const_iterator found = saved.find(panel->Id());
+
+  if (found != saved.end()) {
+    panel->visible = found->second;
+  }
+
+  m_panels.push_back(std::move(panel));
+}
+
+void EditorLayout::SyncVisibility(EditorSettings& settings) const {
+  for (const std::unique_ptr<EditorPanel>& panel : m_panels) {
+    settings.panels[panel->Id()] = panel->visible;
+  }
+}
 
 void EditorLayout::Draw() {
   // The scene target is deliberately *not* reset here. The viewport panel owns

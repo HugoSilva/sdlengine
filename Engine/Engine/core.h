@@ -95,6 +95,11 @@ class Core {
   virtual void Init() = 0;
   virtual void Tick() {}
 
+  // Runs once when the window loop ends, before the destructor tears the
+  // managers down: the last chance to write state that has to outlive the run.
+  // The editor persists its settings here.
+  virtual void Shutdown() {}
+
   // Runs once a frame, before the UI and the scene pass. Per-frame behaviour
   // belongs here (or in an ECS system): a scene is data, not a class.
   virtual void Update(float delta_time) {}
