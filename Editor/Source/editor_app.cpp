@@ -98,14 +98,21 @@ void EditorApp::RememberSession() {
   EditorSettings& settings = EditorManager::Settings();
 
   const rse::Project& project = Core::GetProject();
-  const std::string last_project = project.IsAttached() ? project.File().string() : "";
   const std::string last_scene = SceneManager::GetActiveScene().string();
+  const std::vector<std::string> recent_projects = settings.recent_projects;
 
-  if (settings.last_project == last_project && settings.last_scene == last_scene) {
+  // The open project is a recent one wherever it came from: a dialog, the
+  // typed-path prompt, the command line, or project.xml next to the binary.
+  // RememberRecentProject is idempotent, so doing it every frame costs a
+  // comparison; the file is written only when the list or the scene changed.
+  if (project.IsAttached()) {
+    settings.RememberRecentProject(project.File().string());
+  }
+
+  if (settings.last_scene == last_scene && settings.recent_projects == recent_projects) {
     return;
   }
 
-  settings.last_project = last_project;
   settings.last_scene = last_scene;
   settings.Save();
 }
