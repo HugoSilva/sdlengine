@@ -15,11 +15,14 @@
 // ---------------------------------------------------------------------------
 
 #include <charconv>
+#include <filesystem>
+#include <map>
 #include <sstream>
 #include <string>
 #include <system_error>
 
 #include <utils/file.h>
+#include <utils/logger.h>
 
 struct EditorSettings {
   struct Grid {
@@ -42,20 +45,55 @@ struct EditorSettings {
   Grid grid;
   Gizmo gizmo;
 
+  // The project and scene the editor had open last. The project is what the
+  // next run reopens when no path is given; the scene is recorded for the same
+  // reason, and is informational until the Scenes menu learns to switch.
+  std::string last_project;
+  std::string last_scene;
+
+  // Panel visibility, one entry per `EditorPanel::Id()`, written as
+  // `panel.<id>=true|false`. A map, because the set of panels is whatever the
+  // editor added: an id the file has and the editor no longer does is simply
+  // never read, and a panel the file does not mention keeps its default.
+  std::map<std::string, bool> panels;
+
   // The settings file, in the working directory next to imgui.ini.
   static constexpr const char* kFilePath = "editor.cfg";
 
   // Reads the file over the built-in defaults. A key that is missing -- a file
   // from an older build, or one somebody has trimmed -- leaves its default in
   // place, and so does a value that cannot be parsed: a typo should not
-  // silently turn a setting into something arbitrary.
-  void Load();
+  // silently turn a setting into something arbitrary. The path is a parameter
+  // so the tests can keep their own file out of the working directory.
+  void Load(const std::string& file = kFilePath);
 
   // Writes the whole struct. There is no "dirty" flag anywhere because there
   // are two places a setting can change and they both call this; nothing else
   // has to remember, and nothing rewrites the file every frame.
-  void Save() const;
+  void Save(const std::string& file = kFilePath) const;
 };
+
+// The project the editor opens on a fresh run. An explicit command-line path
+// wins even when it is wrong: the error should name what was typed rather than
+// quietly opening some other project. Otherwise the last project this machine
+// opened, when it is still there; a path that has gone is a warning, never a
+// failure, so a folder somebody moved cannot stop the editor from starting.
+// With neither, the manifest next to the binary.
+inline std::filesystem::path StartupProject(const EditorSettings& settings, const std::string& argument) {
+  if (!argument.empty()) {
+    return argument;
+  }
+
+  if (!settings.last_project.empty()) {
+    if (std::filesystem::exists(settings.last_project)) {
+      return settings.last_project;
+    }
+
+    Logger::Warning("The last project is gone (" + settings.last_project + "); falling back to project.xml.");
+  }
+
+  return "project.xml";
+}
 
 inline const char* GizmoModeName(EditorSettings::GizmoMode mode) {
   switch (mode) {
@@ -70,10 +108,10 @@ inline const char* GizmoModeName(EditorSettings::GizmoMode mode) {
   return "translate";
 }
 
-inline void EditorSettings::Load() {
+inline void EditorSettings::Load(const std::string& file) {
   // exists() first: File::read logs an error for a file that is not there, and
   // the very first run has no settings file yet. That is not an error.
-  if (!File::Exists(kFilePath)) {
+  if (!File::Exists(file.c_str())) {
     return;
   }
 
@@ -89,7 +127,7 @@ inline void EditorSettings::Load() {
     return text.substr(first, text.find_last_not_of(" \t\r\n") - first + 1);
   };
 
-  std::istringstream lines(File::Read(kFilePath));
+  std::istringstream lines(File::Read(file.c_str()));
   std::string line;
 
   while (std::getline(lines, line)) {
@@ -135,11 +173,23 @@ inline void EditorSettings::Load() {
           gizmo.mode = candidate;
         }
       }
+    } else if (key == "last.project") {
+      last_project = value;
+    } else if (key == "last.scene") {
+      last_scene = value;
+    } else if (key.rfind("panel.", 0) == 0) {
+      // Only a real boolean is a visibility; anything else leaves the panel at
+      // its default rather than hiding it on a typo.
+      if (value == "true") {
+        panels[key.substr(6)] = true;
+      } else if (value == "false") {
+        panels[key.substr(6)] = false;
+      }
     }
   }
 }
 
-inline void EditorSettings::Save() const {
+inline void EditorSettings::Save(const std::string& file) const {
   std::ostringstream out;
 
   out << "grid.visible=" << (grid.visible ? "true" : "false") << "\n";
@@ -148,6 +198,14 @@ inline void EditorSettings::Save() const {
   // write: 32 saves as "32" and reloads as 32.
   out << "grid.base=" << grid.base << "\n";
   out << "gizmo.mode=" << GizmoModeName(gizmo.mode) << "\n";
+  out << "last.project=" << last_project << "\n";
+  out << "last.scene=" << last_scene << "\n";
 
-  File::Write(kFilePath, out.str().c_str());
+  // The map is ordered, so the file is stable across runs and a diff shows the
+  // panel that actually changed.
+  for (const std::pair<const std::string, bool>& panel : panels) {
+    out << "panel." << panel.first << "=" << (panel.second ? "true" : "false") << "\n";
+  }
+
+  File::Write(file.c_str(), out.str().c_str());
 }

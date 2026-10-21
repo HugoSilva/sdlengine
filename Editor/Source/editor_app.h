@@ -20,12 +20,19 @@ class EditorApp : public Core {
   void Update(float delta_time) override;
   void Render() override;
 
+  // Writes the session back to editor.cfg: which project and scene were open,
+  // and which panels were visible.
+  void Shutdown() override;
+
   // The editor renders the scene into its viewport panel's framebuffer instead
   // of straight to the window.
   rse::Framebuffer* GetSceneTarget() override;
 
  private:
   void UpdateTitle();
+
+  // Records the open project and scene, saving only when one of them changed.
+  void RememberSession();
 
   EditorLayout* m_layout{nullptr};
   EditorCamera* m_camera{nullptr};

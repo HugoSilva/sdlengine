@@ -52,6 +52,8 @@ Game.exe SampleProject\project.xml
 
 `SampleProject/` is checked in and deployed next to the binaries, so the command above works out of the box. [`docs/ProjectFormat.md`](docs/ProjectFormat.md) documents the manifest, the scene files, and what they do and do not store.
 
+The editor keeps its own state in `editor.cfg` in the working directory, next to `imgui.ini`: the grid, the gizmo, which panels are visible, and the project and scene it had open last. Run it without a path and it reopens that project — a path that has since been moved only earns a warning and falls back to `./project.xml`, so a renamed folder cannot stop the editor from starting.
+
 ### Tests
 
 ```sh

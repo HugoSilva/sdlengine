@@ -19,6 +19,10 @@ EditorApp::EditorApp(const std::filesystem::path& project_file) : Core(project_f
 void EditorApp::Init() {
   using namespace rse;
 
+  // Before the panels exist: the settings are what decide their initial
+  // visibility, and EditorLayout::AddPanel reads them.
+  EditorManager::Init();
+
   const std::string vertex_shader = Core::ResolveResource("Default.vert");
   const std::string fragment_shader = Core::ResolveResource("Default.frag");
   m_shader = new Shader(vertex_shader.c_str(), fragment_shader.c_str());
@@ -45,8 +49,6 @@ void EditorApp::Init() {
   // what puts it underneath them.
   ECSManager::AddSystem(new GridRenderSystem(Core::GetRenderer(), m_camera), rse::SystemPhase::kPreScene);
 
-  EditorManager::Init();
-
 #ifdef EMSCRIPTEN
 #else
   ThreadManager::Init();
@@ -71,7 +73,40 @@ void EditorApp::Update(float delta_time) {
     }
   }
 
+  // A project or scene opened this frame is remembered now, not only on exit:
+  // a crash should not lose the project the user was in.
+  RememberSession();
+
   UpdateTitle();
+}
+
+void EditorApp::RememberSession() {
+  EditorSettings& settings = EditorManager::Settings();
+
+  const rse::Project& project = Core::GetProject();
+  const std::string last_project = project.IsAttached() ? project.File().string() : "";
+  const std::string last_scene = SceneManager::GetActiveScene().string();
+
+  if (settings.last_project == last_project && settings.last_scene == last_scene) {
+    return;
+  }
+
+  settings.last_project = last_project;
+  settings.last_scene = last_scene;
+  settings.Save();
+}
+
+void EditorApp::Shutdown() {
+  EditorSettings& settings = EditorManager::Settings();
+
+  // The panels are the truth about what is on screen; the settings are what the
+  // next run reads before it builds them.
+  if (m_layout != nullptr) {
+    m_layout->SyncVisibility(settings);
+  }
+
+  RememberSession();
+  settings.Save();
 }
 
 void EditorApp::UpdateTitle() {
