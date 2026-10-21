@@ -3,9 +3,11 @@
 #include <filesystem>
 #include <functional>
 #include <imgui.h>
+#include <utility>
 
 #include <core/asset_registry.h>
 #include <ecs/scene_io.h>
+#include <input/input_map.h>
 #include <render/imgui_layer.h>
 
 #ifdef EMSCRIPTEN
@@ -65,6 +67,17 @@ Core::Core(const std::filesystem::path& project_file) : m_frames_per_second(0) {
   }
 }
 
+void Core::ApplyProjectInput() {
+  std::vector<std::pair<std::string, std::string>> overrides;
+  overrides.reserve(m_project.input.size());
+
+  for (const rse::Project::InputBinding& binding : m_project.input) {
+    overrides.emplace_back(binding.action, binding.key);
+  }
+
+  rse::InputMap::SetOverrides(overrides);
+}
+
 void Core::LoadProject(const std::filesystem::path& project_file) {
   rse::Project project;
   std::string error;
@@ -82,6 +95,12 @@ void Core::LoadProject(const std::filesystem::path& project_file) {
   }
 
   m_project = project;
+
+  // The manifest's bindings are part of the project, like its window: they are
+  // in place before the startup scene opens, so the first frame already
+  // answers to them.
+  ApplyProjectInput();
+
   // The asset registry is part of the project: its table is loaded before any
   // scene, because a scene resolves its textures and sounds through it.
   rse::AssetRegistry::Init(m_project.Directory());
@@ -96,6 +115,7 @@ bool Core::OpenProject(const std::filesystem::path& project_file, std::string* e
   }
 
   m_project = project;
+  ApplyProjectInput();
   SceneManager::Init(m_project.Directory());
   rse::AssetRegistry::Init(m_project.Directory());
 
@@ -166,6 +186,10 @@ Core::~Core() {
 
   // Must happen while the GL context and the SDL window are still alive.
   rse::ImGuiLayer::Shutdown();
+
+  // The bindings belonged to the project that just closed; a later Core in
+  // this process starts from the compiled defaults.
+  rse::InputMap::Reset();
 
   delete m_window;
 }

@@ -14,6 +14,7 @@
 #include <ecs/ecs_manager.h>
 #include <ecs/prefab_io.h>
 #include <ecs/scene_io.h>
+#include <input/input_map.h>
 
 /*
 The sample project is checked in and deployed with the binaries, so it is the
@@ -85,8 +86,29 @@ TEST_F(SampleProjectTest, ManifestSavesInTheCurrentVersion) {
   EXPECT_EQ(reloaded.name, project.name);
   EXPECT_EQ(reloaded.scenes, project.scenes);
   EXPECT_EQ(reloaded.audio.master, project.audio.master);
+  EXPECT_EQ(reloaded.input.size(), project.input.size());
 
   std::filesystem::remove_all(directory);
+}
+
+// The sample spells out every binding, and a key that no longer parses would
+// silently fall back to the default: this is the test that notices.
+TEST_F(SampleProjectTest, TheSampleBindingsMatchTheCompiledDefaults) {
+  Project project;
+  std::string error;
+
+  ASSERT_TRUE(Project::Load(kSampleProject / "project.xml", project, &error)) << error;
+  ASSERT_FALSE(project.input.empty());
+
+  // The sample is the file a person reads to learn the defaults, so it lists
+  // all of them: a missing entry would leave a reader thinking an action has no
+  // key.
+  EXPECT_EQ(project.input.size(), InputMap::Defaults().size());
+
+  for (const Project::InputBinding& binding : project.input) {
+    ASSERT_TRUE(InputMap::IsKnown(binding.action)) << binding.action;
+    EXPECT_EQ(InputMap::Format(InputMap::Defaults().at(binding.action)), binding.key) << binding.action;
+  }
 }
 
 TEST_F(SampleProjectTest, EveryListedSceneLoads) {

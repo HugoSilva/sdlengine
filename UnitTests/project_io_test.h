@@ -57,6 +57,7 @@ class ProjectIOTest : public ::testing::Test {
     project.audio.master = 100;
     project.audio.music = 80;
     project.audio.sfx = 60;
+    project.input = {{"editor.save", "F5"}, {"game.up", "W"}};
     return project;
   }
 
@@ -112,6 +113,11 @@ TEST_F(ProjectIOTest, RoundTripPreservesEveryField) {
   EXPECT_EQ(actual.audio.master, expected.audio.master);
   EXPECT_EQ(actual.audio.music, expected.audio.music);
   EXPECT_EQ(actual.audio.sfx, expected.audio.sfx);
+  ASSERT_EQ(actual.input.size(), expected.input.size());
+  EXPECT_EQ(actual.input.at(0).action, expected.input.at(0).action);
+  EXPECT_EQ(actual.input.at(0).key, expected.input.at(0).key);
+  EXPECT_EQ(actual.input.at(1).action, expected.input.at(1).action);
+  EXPECT_EQ(actual.input.at(1).key, expected.input.at(1).key);
   EXPECT_TRUE(actual.IsAttached());
   EXPECT_EQ(actual.File(), expected.File());
 }
@@ -239,7 +245,38 @@ TEST_F(ProjectIOTest, AV1ManifestLoadsFromTheFixture) {
   EXPECT_EQ(project.audio.music, 128);
   EXPECT_EQ(project.audio.sfx, 128);
 
+  // Version 1 also predates the input section: the compiled defaults are the
+  // bindings, and there is nothing for the project to override.
+  EXPECT_TRUE(project.input.empty());
+
   EXPECT_EQ(project.File(), std::filesystem::absolute(fixture));
+}
+
+// Version 2 added the audio section; version 3 the input bindings. A version 2
+// manifest therefore has one and not the other, which is what additive means.
+TEST_F(ProjectIOTest, AV2ManifestHasAudioButNoInputOverrides) {
+  WriteManifest(
+      "<cereal><project>"
+      "<formatVersion>2</formatVersion>"
+      "<name>Two</name>"
+      "<engineVersion>0.13</engineVersion>"
+      "<assetRoot>assets</assetRoot>"
+      "<window><title>Two</title><width>800</width><height>600</height></window>"
+      "<startupScene>scenes/start.xml</startupScene>"
+      "<scene size=\"dynamic\"><value0>scenes/start.xml</value0></scene>"
+      "<audio><master>64</master><music>32</music><sfx>16</sfx></audio>"
+      "</project></cereal>");
+
+  Project project;
+  std::string error;
+
+  ASSERT_TRUE(Project::Load(m_file, project, &error)) << error;
+
+  EXPECT_EQ(project.format_version, 2);
+  EXPECT_EQ(project.audio.master, 64);
+  EXPECT_EQ(project.audio.music, 32);
+  EXPECT_EQ(project.audio.sfx, 16);
+  EXPECT_TRUE(project.input.empty());
 }
 
 TEST_F(ProjectIOTest, SaveWritesTheCurrentFormatVersionNotTheLoadedOne) {

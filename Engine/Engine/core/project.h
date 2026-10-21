@@ -26,7 +26,7 @@ struct Project {
   // is readable when its version is in [kFirstFormatVersion, kFormatVersion]:
   // older files are migrated forward by Migrate(), newer ones are refused
   // because this build cannot know what they mean.
-  static constexpr int kFormatVersion{2};
+  static constexpr int kFormatVersion{3};
 
   // The oldest manifest this build still understands. It only moves when a
   // migration stops being possible at all, not when a version is added.
@@ -58,6 +58,21 @@ struct Project {
     }
   };
 
+  // One action the project binds to a key. The key is stored as the text a
+  // person would write -- "Ctrl+S", "F2", "Up" -- rather than as a scancode,
+  // so a manifest survives a platform where the numbers differ and can be
+  // edited without looking one up. Version 3 appended the list; an action the
+  // list does not mention keeps the binding compiled into InputMap::Defaults().
+  struct InputBinding {
+    std::string action;
+    std::string key;
+
+    template <typename Archive>
+    void serialize(Archive& archive) {
+      archive(cereal::make_nvp("action", action), cereal::make_nvp("key", key));
+    }
+  };
+
   int format_version{kFormatVersion};
   std::string name{"Untitled"};
   std::string engine_version{kEngineVersion};
@@ -66,6 +81,7 @@ struct Project {
   std::string startup_scene{"scenes/start.xml"};
   std::vector<std::string> scenes{"scenes/start.xml"};
   Audio audio;
+  std::vector<InputBinding> input;
 
   // Reads `file` into `project`. `project` is left untouched and false is
   // returned, with `error` filled in, when the file is missing, unreadable,
@@ -106,6 +122,10 @@ struct Project {
 
     if (format_version >= 2) {
       archive(cereal::make_nvp("audio", audio));
+    }
+
+    if (format_version >= 3) {
+      archive(cereal::make_nvp("input", input));
     }
   }
 

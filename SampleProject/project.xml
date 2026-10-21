@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <cereal>
 	<project>
-		<formatVersion>2</formatVersion>
+		<formatVersion>3</formatVersion>
 		<name>Sample</name>
 		<engineVersion>0.13</engineVersion>
 		<assetRoot>assets</assetRoot>
@@ -20,6 +20,44 @@
 			<music>128</music>
 			<sfx>128</sfx>
 		</audio>
+		<input size="dynamic">
+			<value0>
+				<action>editor.gizmo.rotate</action>
+				<key>E</key>
+			</value0>
+			<value1>
+				<action>editor.gizmo.scale</action>
+				<key>R</key>
+			</value1>
+			<value2>
+				<action>editor.gizmo.translate</action>
+				<key>W</key>
+			</value2>
+			<value3>
+				<action>editor.reload</action>
+				<key>F2</key>
+			</value3>
+			<value4>
+				<action>editor.save</action>
+				<key>Ctrl+S</key>
+			</value4>
+			<value5>
+				<action>game.down</action>
+				<key>Down</key>
+			</value5>
+			<value6>
+				<action>game.left</action>
+				<key>Left</key>
+			</value6>
+			<value7>
+				<action>game.right</action>
+				<key>Right</key>
+			</value7>
+			<value8>
+				<action>game.up</action>
+				<key>Up</key>
+			</value8>
+		</input>
 	</project>
 </cereal>
 
