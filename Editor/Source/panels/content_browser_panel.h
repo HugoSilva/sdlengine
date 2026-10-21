@@ -11,6 +11,7 @@
 #include <project_commands.h>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include <core/asset_registry.h>
 #include <layout/editor_panel.h>
@@ -27,30 +28,36 @@
 class ContentBrowserPanel : public EditorPanel {
  public:
   ContentBrowserPanel() {
-    std::error_code error;
-    m_root = std::filesystem::current_path(error);
-    if (error) {
-      m_root = std::filesystem::path{"."};
-    }
-
-    // Assets are where you usually want to start, so open there when it
-    // exists and fall back to the root.
-    m_directory = m_root;
-    const std::filesystem::path resources = m_root / "Resources";
-    if (std::filesystem::is_directory(resources, error)) {
-      m_directory = resources;
-    }
-
+    m_root = RootDirectory();
+    m_directory = StartDirectory();
+    m_scenes = Core::GetProject().scenes;
     Refresh();
   }
 
   const char* Id() const override { return "Content Browser"; }
   DockSlot Slot() const override { return DockSlot::kLeft; }
 
+  void ProjectChanged() override {
+    m_root = RootDirectory();
+    m_directory = StartDirectory();
+    m_previews.clear();
+    m_scenes = Core::GetProject().scenes;
+    Refresh();
+  }
+
   void Draw() override {
     if (!ImGui::Begin(Id(), &visible)) {
       ImGui::End();
       return;
+    }
+
+    // The scene list is manifest data and can change from the Scenes menu or a
+    // command while this panel is open. Comparing it is cheaper than listing
+    // the directory every frame, and it catches a rename or delete that did not
+    // come from this panel.
+    if (m_scenes != Core::GetProject().scenes) {
+      m_scenes = Core::GetProject().scenes;
+      Refresh();
     }
 
     DrawToolbar();
@@ -62,6 +69,75 @@ class ContentBrowserPanel : public EditorPanel {
   }
 
  private:
+  // The project directory is the browser's tree: a project is self-contained,
+  // and its manifest paths are relative to it. Without a project the editor's
+  // working directory is the best there is.
+  static std::filesystem::path RootDirectory() {
+    const std::filesystem::path project = Core::GetProject().Directory();
+
+    if (!project.empty()) {
+      return project;
+    }
+
+    std::error_code error;
+    const std::filesystem::path current = std::filesystem::current_path(error);
+    return error ? std::filesystem::path{"."} : current;
+  }
+
+  // Scenes are what the browser is for once a project is open, so it starts
+  // there; a tree without one starts at the root.
+  std::filesystem::path StartDirectory() const {
+    std::error_code error;
+    const std::filesystem::path scenes = m_root / "scenes";
+
+    if (std::filesystem::is_directory(scenes, error)) {
+      return scenes;
+    }
+
+    return m_root;
+  }
+
+  // The manifest spelling of a file, or empty when it is outside the project.
+  // Both the listing and the commands spell a scene this way.
+  static std::string ManifestPath(const std::filesystem::path& path) {
+    const rse::Project& project = Core::GetProject();
+
+    if (!project.IsAttached()) {
+      return {};
+    }
+
+    std::error_code error;
+    std::filesystem::path absolute = std::filesystem::absolute(path, error);
+
+    if (error) {
+      absolute = path;
+    }
+
+    const std::filesystem::path relative = std::filesystem::relative(absolute, project.Directory(), error);
+
+    if (error || relative.empty() || relative.generic_string().rfind("..", 0) == 0) {
+      return {};
+    }
+
+    return relative.generic_string();
+  }
+
+  // A scene is a file the manifest lists: project.xml is XML too, and a stray
+  // XML in the tree is not a scene. Windows paths compare case-insensitively.
+  static bool IsSceneFile(const std::filesystem::path& path) {
+    const std::string manifest_path = ManifestPath(path);
+
+    if (manifest_path.empty()) {
+      return false;
+    }
+
+    const std::vector<std::string>& scenes = Core::GetProject().scenes;
+    const std::string lowered = ToLower(manifest_path);
+
+    return std::any_of(scenes.begin(), scenes.end(),
+                       [&lowered](const std::string& scene) { return ToLower(scene) == lowered; });
+  }
+
   void Refresh() {
     m_entries.clear();
     m_selected = -1;
@@ -137,12 +213,16 @@ class ContentBrowserPanel : public EditorPanel {
     }
 
     for (int index = 0; index < static_cast<int>(m_entries.size()); ++index) {
-      const std::filesystem::path& path = m_entries[index];
+      // Copied: a double-click can refresh the listing this element lives in.
+      const std::filesystem::path path = m_entries[index];
 
       std::error_code error;
       const bool is_directory = std::filesystem::is_directory(path, error);
+      const bool is_scene = !is_directory && IsSceneFile(path);
       const std::string name = path.filename().string();
       const std::string label = is_directory ? name + "/" : name;
+
+      ImGui::PushID(index);
 
       if (is_directory) {
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.62f, 0.80f, 0.98f, 1.0f));
@@ -158,14 +238,68 @@ class ContentBrowserPanel : public EditorPanel {
         m_selected = index;
 
         if (is_directory && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-          // Copied because navigate() refreshes the listing this
-          // element lives in.
-          const std::filesystem::path target = path;
-          Navigate(target);
+          ImGui::PopID();
           ImGui::EndChild();
+          Navigate(path);
+          return;
+        }
+
+        // A scene is the one file the browser can open: double-clicking it is
+        // the same command as Scenes > <name>, so the dirty check and the
+        // confirmation are shared.
+        if (is_scene && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+          ImGui::PopID();
+          ImGui::EndChild();
+          SwitchScene(ManifestPath(path));
           return;
         }
       }
+
+      // Right-clicking a row acts on it. The browser has no multi-select, so
+      // the row under the pointer is the subject.
+      if (ImGui::BeginPopupContextItem()) {
+        m_selected = index;
+
+        if (ImGui::MenuItem("New Scene...")) {
+          NewScene();
+        }
+
+        ImGui::Separator();
+
+        if (is_scene) {
+          if (ImGui::MenuItem("Open Scene")) {
+            SwitchScene(ManifestPath(path));
+          }
+          if (ImGui::MenuItem("Rename...")) {
+            RenameScene(ManifestPath(path));
+          }
+          if (ImGui::MenuItem("Delete")) {
+            DeleteScene(ManifestPath(path));
+          }
+          ImGui::Separator();
+        }
+
+        if (ImGui::MenuItem("Show in Explorer")) {
+          ShowInExplorer(path);
+        }
+
+        ImGui::EndPopup();
+      }
+
+      ImGui::PopID();
+    }
+
+    // Right-clicking the empty space creates in the folder that is open, and
+    // works in a folder that holds no files yet.
+    if (ImGui::BeginPopupContextWindow("##content_menu",
+                                       ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems)) {
+      if (ImGui::MenuItem("New Scene...")) {
+        NewScene();
+      }
+      if (ImGui::MenuItem("Refresh")) {
+        Refresh();
+      }
+      ImGui::EndPopup();
     }
 
     if (m_entries.empty()) {
@@ -331,6 +465,9 @@ class ContentBrowserPanel : public EditorPanel {
   std::filesystem::path m_root;
   std::filesystem::path m_directory;
   std::vector<std::filesystem::path> m_entries;
+  // The manifest's scene list the listing was built for: a change means a scene
+  // was added, renamed or deleted, so the folder is listed again.
+  std::vector<std::string> m_scenes;
   std::map<std::string, std::unique_ptr<rse::Texture>> m_previews;
   int m_selected{-1};
 };

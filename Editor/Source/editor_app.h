@@ -39,4 +39,7 @@ class EditorApp : public Core {
   RenderSystem* m_render{nullptr};
   rse::Shader* m_shader{nullptr};
   std::string m_title;
+  // The manifest the panels were last told about; empty while no project is
+  // open. See Update.
+  std::filesystem::path m_last_project_file;
 };

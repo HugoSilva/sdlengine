@@ -30,6 +30,10 @@ class EditorLayout {
   // then every visible panel.
   void Draw();
 
+  // Tells every panel that a different project is open. Called once per change
+  // from EditorApp, not once a frame.
+  void ProjectChanged();
+
   void RequestResetLayout() { m_reset_layout = true; }
 
  private:

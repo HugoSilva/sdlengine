@@ -61,6 +61,12 @@ void EditorLayout::SyncVisibility(EditorSettings& settings) const {
   }
 }
 
+void EditorLayout::ProjectChanged() {
+  for (const std::unique_ptr<EditorPanel>& panel : m_panels) {
+    panel->ProjectChanged();
+  }
+}
+
 void EditorLayout::Draw() {
   // The scene target is deliberately *not* reset here. The viewport panel owns
   // it and publishes it whenever it is given the chance to draw, so hiding or

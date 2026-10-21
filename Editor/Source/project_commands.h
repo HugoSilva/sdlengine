@@ -62,11 +62,27 @@ void SwitchScene(const std::string& scene);
 void NextScene();
 void PreviousScene();
 
+// Scenes > Rename/Delete and the content browser's context menu. Rename takes a
+// file name, not a path: the scene stays in its folder. Both keep the file and
+// the manifest in step, and refuse what would leave the editor without the
+// scene it is showing.
+void RenameScene(const std::string& scene);
+void DeleteScene(const std::string& scene);
+
+// Opens the file's folder in the platform's file manager with the file
+// selected. Only Windows has an implementation; elsewhere it says so.
+void ShowInExplorer(const std::filesystem::path& file);
+
 // A yes/no question a command asks before losing unsaved work. The command
 // returns immediately; DrawProjectCommands draws the question, and the modal's
 // buttons call the same ConfirmPending/CancelPending the tests do, so the
 // decision is testable without a window. One question at a time.
 void ConfirmDiscard(const std::string& message, std::function<void()> on_confirm);
+
+// The same modal with another affirmative label, for a command that is
+// destructive without discarding edits -- a delete.
+void ConfirmAction(const std::string& message, const std::string& confirm_label, std::function<void()> on_confirm);
+
 bool HasPendingConfirmation();
 bool ConfirmPending();
 bool CancelPending();
@@ -96,6 +112,8 @@ void NewProjectAt(const std::filesystem::path& directory);
 void OpenProjectAt(const std::filesystem::path& file);
 void SaveSceneAsAt(const std::filesystem::path& file);
 void CreateSceneAt(const std::filesystem::path& file);
+void RenameSceneAt(const std::filesystem::path& scene, const std::string& name);
+void DeleteSceneAt(const std::filesystem::path& scene);
 void CreatePrefabAt(uint32_t entity, const std::filesystem::path& file);
 void InstantiatePrefabAt(const std::filesystem::path& file);
 void ImportAssetAt(const std::filesystem::path& file);
