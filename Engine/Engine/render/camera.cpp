@@ -12,7 +12,7 @@
 
 #include "ortho_view.h"
 #include <components/shader.h>
-#include <input/keyboard.h>
+#include <input/input_map.h>
 #include <input/mouse.h>
 
 namespace rse {
@@ -63,19 +63,22 @@ void Camera::SetZoom(float zoom) {
 void Camera::Update(float delta_time) {
   using namespace rse;
 
-  if (Keyboard::IsKeyPressed(SDL_SCANCODE_UP)) {
+  // The actions, not the keys: a project rebinds its camera like it rebinds
+  // anything else, and this camera does not know which key that ended up
+  // being.
+  if (InputMap::IsActionPressed("game.up")) {
     ProcessKeyboard(kForward, delta_time);
   }
 
-  if (Keyboard::IsKeyPressed(SDL_SCANCODE_DOWN)) {
+  if (InputMap::IsActionPressed("game.down")) {
     ProcessKeyboard(kBackward, delta_time);
   }
 
-  if (Keyboard::IsKeyPressed(SDL_SCANCODE_LEFT)) {
+  if (InputMap::IsActionPressed("game.left")) {
     ProcessKeyboard(kLeft, delta_time);
   }
 
-  if (Keyboard::IsKeyPressed(SDL_SCANCODE_RIGHT)) {
+  if (InputMap::IsActionPressed("game.right")) {
     ProcessKeyboard(kRight, delta_time);
   }
 

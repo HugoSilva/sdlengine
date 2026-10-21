@@ -127,11 +127,12 @@ void Project::Migrate(Project& project, int from_version) {
   // A version that changes the meaning of existing data gets one block per
   // version, oldest first, each gated on the version it upgrades *from*:
   //
-  //   if (from_version < 3) { project.input = ...; }   // #46c
+  //   if (from_version < 4) { project.something = ...; }
   //
-  // Additive fields need no block: serialize() already skips them for an older
-  // file and the defaults stay in place, so a version 1 manifest opens with
-  // the volume it played at before the field existed.
+  // Additive sections need no block: serialize() already skips them for an
+  // older file and the defaults stay in place, so a version 1 manifest opens
+  // with the volume it played at and a version 2 one with the bindings this
+  // build ships.
   (void)from_version;
 }
 

@@ -72,7 +72,7 @@ Two rules keep the additive case honest:
 
 | Milestone | Manifest | Scene | Prefab | Assets |
 |---|---|---|---|---|
-| today | 2 | 6 | 1 | 1 |
+| today | 3 | 6 | 1 | 1 |
 | #54 | 1 | 1 | -- | -- |
 | #47 | 1 | **2** | -- | -- |
 | #48 | 1 | **3** | -- | -- |
@@ -83,11 +83,9 @@ Two rules keep the additive case honest:
 | #46b | **2** | 6 | 1 | 1 |
 | #46c | **3** | 6 | 1 | 1 |
 
-Only the rows up to today are shipped behaviour; the rest is the order the
-increments land in, one issue at a time. The first nine rows are shipped: the
-migration policy itself, the first breaking change made under it, the four
-additive changes made after it, prefabs, the asset registry, and the manifest's
-audio section.
+Every row above is shipped behaviour: the migration policy itself, the first
+breaking change made under it, the four additive changes made after it, prefabs,
+the asset registry, and the manifest's audio and input sections.
 
 ## The manifest
 
@@ -97,7 +95,7 @@ audio section.
 <?xml version="1.0" encoding="utf-8"?>
 <cereal>
 	<project>
-		<formatVersion>2</formatVersion>
+		<formatVersion>3</formatVersion>
 		<name>Sample</name>
 		<engineVersion>0.13</engineVersion>
 		<assetRoot>assets</assetRoot>
@@ -116,6 +114,44 @@ audio section.
 			<music>128</music>
 			<sfx>128</sfx>
 		</audio>
+		<input size="dynamic">
+			<value0>
+				<action>editor.gizmo.rotate</action>
+				<key>E</key>
+			</value0>
+			<value1>
+				<action>editor.gizmo.scale</action>
+				<key>R</key>
+			</value1>
+			<value2>
+				<action>editor.gizmo.translate</action>
+				<key>W</key>
+			</value2>
+			<value3>
+				<action>editor.reload</action>
+				<key>F2</key>
+			</value3>
+			<value4>
+				<action>editor.save</action>
+				<key>Ctrl+S</key>
+			</value4>
+			<value5>
+				<action>game.down</action>
+				<key>Down</key>
+			</value5>
+			<value6>
+				<action>game.left</action>
+				<key>Left</key>
+			</value6>
+			<value7>
+				<action>game.right</action>
+				<key>Right</key>
+			</value7>
+			<value8>
+				<action>game.up</action>
+				<key>Up</key>
+			</value8>
+		</input>
 	</project>
 </cereal>
 ```
@@ -130,6 +166,7 @@ audio section.
 | `startupScene` | The scene opened at startup. It has to be one of `scene`. |
 | `scene` | The project's scenes, in order. Each entry is a path relative to the manifest. |
 | `audio/master`, `audio/music`, `audio/sfx` | The project's mix, each 0-128 like `Sound::SetVolume`. Music and effects sit under the master. Version 2 appended the group; a version 1 manifest opens at 128, the volume it played at. |
+| `input` | The project's key bindings: one `action` and `key` per entry. Version 3 appended it. An action the list does not mention keeps the key compiled into `InputMap::Defaults()`; an unknown action is ignored with a warning. |
 
 Every path in the manifest is **relative to the manifest's own directory** and is
 stored with forward slashes, so a project directory can be copied or moved and
@@ -143,6 +180,37 @@ silence.
 and the reader counts the `valueN` children. Hand-editing a manifest means keeping
 that shape. The editor is what normally writes the file, so this only matters for
 projects created by hand or by a script.
+
+### Input bindings
+
+`input` maps an action to the key that performs it. The actions are the ones
+this build uses, so a typo in the manifest is a warning rather than a binding
+that quietly does nothing:
+
+| Action | Default | Used by |
+|---|---|---|
+| `editor.save` | `Ctrl+S` | `File > Save` |
+| `editor.reload` | `F2` | `File > Reload Scene` |
+| `editor.gizmo.translate` | `W` | viewport: move gizmo |
+| `editor.gizmo.rotate` | `E` | viewport: rotate gizmo |
+| `editor.gizmo.scale` | `R` | viewport: scale gizmo |
+| `game.up`, `game.down`, `game.left`, `game.right` | `Up`, `Down`, `Left`, `Right` | the game's camera |
+
+A key is written the way a person would: `"Ctrl+S"`, `"Shift+F2"`,
+`"Ctrl+Shift+Alt+A"`, `"Space"`, `"Up"`. Modifier and key names are read
+case-insensitively, and `Enter`/`Return`, `Esc`/`Escape`, and `Del`/`Delete` are
+the same name. The modifiers are part of the match, not optional: `W` does not
+fire while `Ctrl` is held, so binding an action to `W` cannot collide with a
+`Ctrl+W` somewhere else.
+
+An action missing from the list keeps its compiled default, so a manifest can
+override one key without restating the rest. A key that cannot be read keeps the
+default too, and says so. A new project's manifest is written with every default
+in it, which is where to look up what the build answers to.
+
+The editor's `Ctrl+S` is also a hard fallback, and so is `F1`: a project that
+rebinds `editor.save` -- or binds it to a key that cannot be pressed -- must not
+lock the editor out of saving.
 
 ### Saving a project
 
@@ -538,7 +606,8 @@ keeping them in step.
   The settings themselves are per entity and survive a save.
 - Physics is one world with fixed gravity and a fixed time step, owned by
   `PhysicsSystem`; there is no way to change either from a scene yet.
-- There are no input bindings in the manifest.
+- There are no input bindings for the mouse or a gamepad: `input` binds keys,
+  and the gamepad paths in `InputManager` are still stubs.
 - The asset registry is a table, not a watcher: a file moved or renamed outside
   the editor leaves its entry pointing at the old path, and the next load falls
   back to a white texture or a silent sound. There is no auto-import, no folder
@@ -557,9 +626,10 @@ keeping them in step.
   history are not persisted, because entity ids do not survive a load and there
   is no undo system yet.
 - There is no recent-projects list.
-- Manifests are on version 2: version 1 is read with the default audio levels,
-  and `Project::Migrate` clamps them to 0-128. There is still no manifest change
-  that rewrites existing data; the hook is in place for the first one.
+- Manifests are on version 3: version 1 is read with the default audio levels and
+  the compiled bindings, version 2 with the compiled bindings. `Project::Migrate`
+  clamps the levels to 0-128. There is still no manifest change that rewrites
+  existing data; the hook is in place for the first one.
 - The renderer's default shader is chosen when the window is created, so opening a
   different project at runtime reloads scenes and window settings but keeps the
   shader it started with.

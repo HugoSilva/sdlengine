@@ -12,6 +12,7 @@
 
 #include <camera/editor_camera.h>
 #include <gizmo/gizmo.h>
+#include <input/input_map.h>
 #include <layout/editor_panel.h>
 #include <scene/entity_bounds.h>
 
@@ -269,19 +270,19 @@ class ViewportPanel : public EditorPanel {
     // shortcut.
     const bool keys = viewport_active && !io.WantTextInput;
 
-    // W/E/R choose the gizmo, as they do in most editors. Nothing else has to
-    // happen on a mode change: the gizmo reads the mode every frame and so
-    // does the HUD, so the handle set and the readout follow in the same
-    // frame.
+    // W/E/R choose the gizmo, as they do in most editors, unless the project
+    // binds them to something else. Nothing else has to happen on a mode
+    // change: the gizmo reads the mode every frame and so does the HUD, so the
+    // handle set and the readout follow in the same frame.
     if (keys) {
       EditorSettings& settings = EditorManager::Settings();
       const EditorSettings::GizmoMode previous = settings.gizmo.mode;
 
-      if (ImGui::IsKeyPressed(ImGuiKey_W)) {
+      if (rse::InputMap::IsActionPressed("editor.gizmo.translate")) {
         settings.gizmo.mode = EditorSettings::GizmoMode::kTranslate;
-      } else if (ImGui::IsKeyPressed(ImGuiKey_E)) {
+      } else if (rse::InputMap::IsActionPressed("editor.gizmo.rotate")) {
         settings.gizmo.mode = EditorSettings::GizmoMode::kRotate;
-      } else if (ImGui::IsKeyPressed(ImGuiKey_R)) {
+      } else if (rse::InputMap::IsActionPressed("editor.gizmo.scale")) {
         settings.gizmo.mode = EditorSettings::GizmoMode::kScale;
       }
 

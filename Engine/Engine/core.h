@@ -114,6 +114,10 @@ class Core {
   void Run();
   void LoadProject(const std::filesystem::path& project_file);
 
+  // Points InputMap at the open project's bindings, over the compiled
+  // defaults. Called whenever m_project changes.
+  static void ApplyProjectInput();
+
   // SDL3's SDL_GetTicks() returns Uint64 (milliseconds).
   uint64_t m_now = 0, m_last = 0;
   float m_delta_time = 0.0;

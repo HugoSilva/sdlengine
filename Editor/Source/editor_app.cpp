@@ -4,6 +4,7 @@
 #include <imgui.h>
 #include <project_commands.h>
 
+#include <input/input_map.h>
 #include <layout/editor_layout.h>
 #include <panels/console_panel.h>
 #include <panels/content_browser_panel.h>
@@ -13,6 +14,15 @@
 #include <panels/viewport_panel.h>
 #include <render/grid_render_system.h>
 #include <systems/render_system.h>
+
+namespace {
+// Ctrl+S is a hard fallback, and so is F1: a project that rebinds its actions --
+// or binds editor.save to something it cannot press -- must not lock the editor
+// out of saving. File scope rather than the function's, so the two are built
+// once and are read-only everywhere they are used.
+const rse::Binding kSaveFallback{SDL_SCANCODE_S, true, false, false};
+const rse::Binding kLegacySaveFallback{SDL_SCANCODE_F1, false, false, false};
+}  // namespace
 
 EditorApp::EditorApp(const std::filesystem::path& project_file) : Core(project_file) {}
 
@@ -65,15 +75,14 @@ void EditorApp::Update(float delta_time) {
   // Shortcuts stay out of the way of text fields: "S" is a letter before it is
   // a shortcut, and typing a path must not save over anything.
   if (!ImGui::GetIO().WantTextInput) {
-    const bool control =
-        rse::InputManager::IsKeyPressed(SDL_SCANCODE_LCTRL) || rse::InputManager::IsKeyPressed(SDL_SCANCODE_RCTRL);
-
-    if (rse::InputManager::IsKeyPressed(SDL_SCANCODE_F1) ||
-        (control && rse::InputManager::IsKeyPressed(SDL_SCANCODE_S))) {
+    // The bindings come first so a project can add a key, not remove the only
+    // one -- see kSaveFallback.
+    if (rse::InputMap::IsActionPressed("editor.save") || rse::InputMap::IsPressed(kSaveFallback) ||
+        rse::InputMap::IsPressed(kLegacySaveFallback)) {
       ::SaveProject();
     }
 
-    if (rse::InputManager::IsKeyPressed(SDL_SCANCODE_F2)) {
+    if (rse::InputMap::IsActionPressed("editor.reload")) {
       ::ReloadScene();
     }
   }

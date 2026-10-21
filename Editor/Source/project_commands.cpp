@@ -16,6 +16,7 @@
 #include <ecs/ecs_manager.h>
 #include <ecs/prefab_io.h>
 #include <ecs/scene_io.h>
+#include <input/input_map.h>
 #include <utils/logger.h>
 
 namespace {
@@ -311,6 +312,13 @@ void NewProjectAt(const std::filesystem::path& directory) {
   project.window.title = project.name;
   project.startup_scene = "scenes/start.xml";
   project.scenes = {"scenes/start.xml"};
+
+  // The compiled defaults, written out: a new manifest is where somebody looks
+  // to find out what the editor and the game answer to. The map is ordered, so
+  // the file starts the same way every time.
+  for (const std::pair<const std::string, rse::Binding>& binding : rse::InputMap::Defaults()) {
+    project.input.push_back({binding.first, rse::InputMap::Format(binding.second)});
+  }
 
   if (!project.Save(&error)) {
     Logger::Error("Failed to write the new project: " + error);
