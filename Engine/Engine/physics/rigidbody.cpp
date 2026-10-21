@@ -2,6 +2,16 @@
 
 Rigidbody::Rigidbody(glm::vec2 position, glm::vec2 size) : m_position(position), m_size(size) {}
 
+Rigidbody* Rigidbody::Clone() const {
+  // Init has not run on the copy, so m_world, m_body and m_init keep the
+  // values a newly constructed body has: PhysicsSystem builds it later.
+  Rigidbody* clone = new Rigidbody(m_position, m_size);
+  clone->m_density = m_density;
+  clone->m_friction = m_friction;
+  clone->m_body_type = m_body_type;
+  return clone;
+}
+
 Rigidbody::~Rigidbody() {
   // A loaded body has none until its first update; the world is the one
   // PhysicsSystem owns and it is still alive when the registry is emptied.

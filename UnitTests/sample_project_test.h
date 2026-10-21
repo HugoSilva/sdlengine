@@ -11,6 +11,7 @@
 #include <core/texture_manager.h>
 #include <ecs/components/include_list.h>
 #include <ecs/ecs_manager.h>
+#include <ecs/prefab_io.h>
 #include <ecs/scene_io.h>
 
 /*
@@ -141,5 +142,35 @@ TEST_F(SampleProjectTest, ThePhysicsSceneHasAFloorAndAFallingBody) {
 
   EXPECT_EQ(static_bodies, 1);
   EXPECT_EQ(dynamic_bodies, 1);
+}
+
+// The sample's prefab is the physics crate saved on its own: instantiating it
+// places the same dynamic crate, uninitialised, at the position the file stores.
+TEST_F(SampleProjectTest, ThePrefabPlacesTheCrate) {
+  Project project;
+  std::string error;
+  ASSERT_TRUE(Project::Load(kSampleProject / "project.xml", project, &error)) << error;
+
+  const uint32_t crate = rse::PrefabIO::Instantiate(kSampleProject / "prefabs" / "crate.xml", &error);
+  ASSERT_NE(crate, static_cast<uint32_t>(entt::null)) << error;
+  ASSERT_EQ(CountEntities(), 1u);
+
+  ASSERT_TRUE(ECSManager::HasComponent<SpriteComponent>(crate));
+  ASSERT_TRUE(ECSManager::HasComponent<RigidBodyComponent>(crate));
+
+  EXPECT_EQ(ECSManager::GetComponent<BasicComponent>(crate).m_name, "crate");
+
+  const TransformComponent& transform = ECSManager::GetComponent<TransformComponent>(crate);
+  EXPECT_FLOAT_EQ(transform.position.x, 640.f);
+  EXPECT_FLOAT_EQ(transform.position.y, 400.f);
+
+  const SpriteComponent& sprite = ECSManager::GetComponent<SpriteComponent>(crate);
+  ASSERT_NE(sprite.m_sprite, nullptr);
+  EXPECT_EQ(sprite.m_sprite->GetTextureName(), "tex3.png");
+
+  const RigidBodyComponent& rigidbody = ECSManager::GetComponent<RigidBodyComponent>(crate);
+  ASSERT_NE(rigidbody.m_rigidbody, nullptr);
+  EXPECT_FALSE(rigidbody.m_rigidbody->m_init);
+  EXPECT_EQ(*rigidbody.m_rigidbody->GetBodyType(), b2_dynamicBody);
 }
 }  // namespace

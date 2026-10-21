@@ -3,7 +3,8 @@
 A **project** is a directory. Its `project.xml` is the manifest: what the project
 is called, how its window opens, where its assets live and which **scenes** it is
 made of. A **scene** is a file of its own: the entities and components that were
-open in the editor when it was saved.
+open in the editor when it was saved. A **prefab** is one entity saved on its own,
+so it can be placed into any scene.
 
 Before this split, `project.xml` *was* the scene: a flat list of entities written
 into whatever directory the binary happened to be run from. A project that could
@@ -67,7 +68,7 @@ Two rules keep the additive case honest:
 
 | Milestone | Manifest | Scene | Prefab | Assets |
 |---|---|---|---|---|
-| today | 1 | 5 | -- | -- |
+| today | 1 | 5 | 1 | -- |
 | #54 | 1 | 1 | -- | -- |
 | #47 | 1 | **2** | -- | -- |
 | #48 | 1 | **3** | -- | -- |
@@ -79,9 +80,9 @@ Two rules keep the additive case honest:
 | #46c | **3** | 6 | 1 | 1 |
 
 Only the rows up to today are shipped behaviour; the rest is the order the
-increments land in, one issue at a time. The first six rows are shipped: the
-migration policy itself, the first breaking change made under it, and the four
-additive changes made after it.
+increments land in, one issue at a time. The first seven rows are shipped: the
+migration policy itself, the first breaking change made under it, the four
+additive changes made after it, and prefabs.
 
 ## The manifest
 
@@ -291,15 +292,69 @@ the same state as one added in the editor, and `PhysicsSystem` creates the
 `b2Body` on its first update. A body is per entity, so there is no manager to
 resolve it against -- unlike a texture or a sound.
 
+## Prefab files
+
+A prefab is one entity saved on its own, so it can be placed into any scene. Its
+file is a `formatVersion` header and one `<entity>`:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<cereal>
+	<formatVersion>1</formatVersion>
+	<entity>
+		<value0>1</value0>
+		...
+	</entity>
+</cereal>
+```
+
+`<entity>` is an entt snapshot of one entity, exactly like a scene's
+`<entities>`: the same `valueN` names and the same component groups in the same
+order. A prefab therefore stores everything a scene stores for an entity --
+name, transform, sprite, audio settings and rigid-body inputs -- and a component
+group appended to scenes later is a prefab group the moment it is appended here
+too. A prefab's format version moves independently of a scene's.
+
+The entity ids in the file are **not restored**. `PrefabIO::Instantiate` reads
+the whole file into a scratch registry first, then copies each entity into the
+open scene with an id the scene hands out. This is deliberate: entt's
+`restore()` keeps the ids from the file, and a prefab saved from a scene would
+otherwise overwrite whatever the scene already has at those ids. It also means
+a failed load cannot half-replace the scene -- the header and every component
+are read before the first entity is copied.
+
+The copy owns what the entity owns:
+
+- a sprite is copied, so changing one placed copy does not change another; the
+  texture inside it is still shared by name through `TextureManager`;
+- a rigid body is cloned as its inputs, uninitialised, so `PhysicsSystem` builds
+  a fresh `b2Body` for each placement;
+- a sound is borrowed from `SoundManager`, which is what a sound is; the
+  per-entity volume, mute, loop and autoplay settings are copied with it.
+
+A prefab is **not linked** to what it places. Editing the file does not change
+entities already placed, and editing a placed entity does not change the file.
+Linked instances would be a separate feature.
+
+Prefabs live in the project's `prefabs/` directory. They are not listed in
+`project.xml`: the manifest is version 1 and has no prefab list, so a prefab is
+found by path -- through the editor today, and through the content browser when
+it learns about prefabs. Saving one still has to happen inside the project
+directory, for the same reason a scene does. Format 1 is the first prefab
+version; a file newer than the build is refused before the open scene is
+touched, like every other format.
+
 ## The editor's project commands
 
 | Command | Shortcut | Does |
 |---|---|---|
-| File > New Project... | -- | Asks for a folder, writes `project.xml`, an empty `scenes/start.xml` and an empty `assets/`, then opens it. |
+| File > New Project... | -- | Asks for a folder, writes `project.xml`, an empty `scenes/start.xml`, an empty `assets/` and an empty `prefabs/`, then opens it. |
 | File > Open Project... | -- | Asks for a `project.xml`, retitles and resizes the window, opens its startup scene. |
 | File > Save | Ctrl+S, F1 | Saves the open scene, then the manifest. |
 | File > Save Scene As... | -- | Writes the open entities to a new scene inside the project, adds it to the manifest and makes it the open scene. |
 | File > Reload Scene | F2 | Re-reads the open scene from disk, discarding unsaved edits. |
+| Assets > Create Prefab from Selection... | -- | Asks for a path inside the project and writes the selected entity to it as a prefab. Disabled while nothing is selected. |
+| Assets > Instantiate Prefab... | -- | Asks for a prefab and copies it into the open scene at the positions it stores, then marks the scene dirty. |
 
 The file and folder pickers are SDL's native dialogs. They are asynchronous: the
 chosen path arrives during the event pump, not when the menu item is clicked. When
@@ -324,6 +379,8 @@ SampleProject/
     Default.frag
     tex3.png
     effect.wav
+  prefabs/
+    crate.xml         the physics scene's dynamic crate, on its own
   scenes/
     start.xml         12 sprites in a 4x3 grid, all using tex3.png
     physics.xml       one static floor and one dynamic crate
@@ -347,6 +404,13 @@ the open scene's value, and saving the scene stores it. The unit tests open both
 scenes: the sample is the one project that has to keep loading when the format
 moves.
 
+`prefabs/crate.xml` is the physics crate saved with
+`Assets > Create Prefab from Selection`, and the worked example of the prefab
+rule: instantiating it places another dynamic crate at the file's own position,
+with its own sprite and its own uninitialised body. Nothing links the copy back
+to the file, which is why the sample can keep the file and two scenes without
+keeping them in step.
+
 ## Limits and follow-ups
 
 - Audio is 2D and one mixer track per sound: two entities that play the same file
@@ -354,7 +418,10 @@ moves.
   The settings themselves are per entity and survive a save.
 - Physics is one world with fixed gravity and a fixed time step, owned by
   `PhysicsSystem`; there is no way to change either from a scene yet.
-- There are no prefabs, no asset ids and no input bindings in the manifest.
+- There is no asset registry and there are no input bindings in the manifest.
+- A placed prefab is a copy, not a linked instance: editing the prefab file does
+  not update entities already placed, and editing a placed entity does not
+  update the file.
 - The game applies the scene camera when it starts; the game has no runtime scene
   switch yet, and the editor viewport deliberately keeps its own editor camera, so
   it does not preview the scene's camera.
@@ -368,5 +435,5 @@ moves.
 - The renderer's default shader is chosen when the window is created, so opening a
   different project at runtime reloads scenes and window settings but keeps the
   shader it started with.
-- The content browser does not create or open scenes yet, and there is no
-  `Scenes` menu built from the manifest's list.
+- The content browser does not create or open scenes or prefabs yet, and there is
+  no `Scenes` menu built from the manifest's list.

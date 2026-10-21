@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <filesystem>
 
 // The project and scene commands the File menu and the keyboard share. Each
@@ -15,11 +16,19 @@ void SaveProject();
 void SaveSceneAs();
 void ReloadScene();
 
+// Prefabs are one entity saved from the open scene and placed into any scene.
+// Save takes the entity at click time because the dialog is asynchronous and
+// the selection may change before a path arrives.
+void CreatePrefab(uint32_t entity);
+void InstantiatePrefab();
+
 // The ...At forms are what the dialogs, the prompt and the tests all end up
 // calling: the command with a path already chosen.
 void NewProjectAt(const std::filesystem::path& directory);
 void OpenProjectAt(const std::filesystem::path& file);
 void SaveSceneAsAt(const std::filesystem::path& file);
+void CreatePrefabAt(uint32_t entity, const std::filesystem::path& file);
+void InstantiatePrefabAt(const std::filesystem::path& file);
 
 // Draws the typed-path prompt, when one is open. Called once a frame from the
 // editor layout.

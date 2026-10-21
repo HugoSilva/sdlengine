@@ -7,7 +7,8 @@
 class BaseSystem;  // forward declaration for BaseSystem
 
 namespace rse {
-class SceneIO;  // forward declaration for SceneIO
+class SceneIO;   // forward declaration for SceneIO
+class PrefabIO;  // forward declaration for PrefabIO
 
 // When a system runs relative to everything else.
 //
@@ -61,6 +62,12 @@ class ECSManager {
   // SceneIO reads and writes the registry as a whole; it is the only thing
   // that should touch the buffer behind it directly.
   friend class SceneIO;
+
+  // PrefabIO reads one entity out of the registry and adds a copy of one back
+  // into it. The copy code lives there rather than here because only a prefab
+  // knows that a placed entity owns new sprites and bodies instead of sharing
+  // them.
+  friend class PrefabIO;
 
   static entt::DefaultRegistry registry;
   static std::vector<BaseSystem*> m_systems_list;

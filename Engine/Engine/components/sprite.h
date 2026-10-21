@@ -15,11 +15,10 @@ class Sprite : public rse::Renderable2D {
   Sprite(glm::vec3 position, glm::vec2 size, Texture* texture);
 
   void Submit(rse::Renderer2D* renderer) {};
-  glm::vec3& position;
 
   template <typename Archive>
   void serialize(Archive& archive) {
-    archive(cereal::base_class<rse::Renderable2D>(this), cereal::make_nvp("Position", position));
+    archive(cereal::base_class<rse::Renderable2D>(this), cereal::make_nvp("Position", m_position));
   }
 };
 }  // namespace rse

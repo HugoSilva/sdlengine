@@ -53,11 +53,12 @@ class ProjectCommandsTest : public ::testing::Test {
     return entities;
   }
 
-  static void AddSprite(const glm::vec3& position) {
+  static uint32_t AddSprite(const glm::vec3& position) {
     const uint32_t entity = ECSManager::CreateEntity();
     ECSManager::AddComponent<BasicComponent>(entity, "sprite", false, 0, 0);
     ECSManager::AddComponent<TransformComponent>(entity, position, glm::vec3(0.0f), glm::vec3(1.0f));
     ECSManager::AddComponent<SpriteComponent>(entity, new Sprite(position, glm::vec2(8.0f), 0xffffffffu));
+    return entity;
   }
 
   std::filesystem::path m_root;
@@ -71,6 +72,7 @@ TEST_F(ProjectCommandsTest, NewProjectWritesTheFolderStructure) {
   ASSERT_TRUE(std::filesystem::exists(directory / "project.xml"));
   ASSERT_TRUE(std::filesystem::exists(directory / "scenes" / "start.xml"));
   ASSERT_TRUE(std::filesystem::is_directory(directory / "assets"));
+  ASSERT_TRUE(std::filesystem::is_directory(directory / "prefabs"));
 
   Project project;
   std::string error;
@@ -137,6 +139,39 @@ TEST_F(ProjectCommandsTest, SaveSceneAsOutsideTheProjectIsRefused) {
   EXPECT_FALSE(std::filesystem::exists(outside));
   EXPECT_EQ(Core::GetProject().scenes.size(), 1u);
   EXPECT_EQ(SceneManager::GetActiveSceneName(), "start");
+}
+
+TEST_F(ProjectCommandsTest, CreatePrefabWritesTheSelectedEntityAndPlacesIt) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+
+  const uint32_t entity = AddSprite(glm::vec3(10.0f, 20.0f, 0.0f));
+  const std::filesystem::path prefab = directory / "prefabs" / "sprite.xml";
+
+  CreatePrefabAt(entity, prefab);
+
+  ASSERT_TRUE(std::filesystem::exists(prefab));
+  EXPECT_FALSE(std::filesystem::exists(std::filesystem::path{prefab}.concat(".tmp")));
+  EXPECT_EQ(CountEntities(), 1u);
+
+  // Placing it copies the entity into the open scene and marks it unsaved; the
+  // original is still there under its own id.
+  InstantiatePrefabAt(prefab);
+
+  EXPECT_EQ(CountEntities(), 2u);
+  EXPECT_TRUE(SceneManager::IsDirty());
+}
+
+TEST_F(ProjectCommandsTest, CreatePrefabOutsideTheProjectIsRefused) {
+  const std::filesystem::path directory = m_root / "MyGame";
+  NewProjectAt(directory);
+
+  const uint32_t entity = AddSprite(glm::vec3(10.0f, 20.0f, 0.0f));
+  const std::filesystem::path outside = m_root / "elsewhere.xml";
+
+  CreatePrefabAt(entity, outside);
+
+  EXPECT_FALSE(std::filesystem::exists(outside));
 }
 
 TEST_F(ProjectCommandsTest, OpeningAProjectSwitchesTheProjectAndTheScene) {
