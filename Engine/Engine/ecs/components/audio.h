@@ -40,18 +40,20 @@ struct AudioComponent {
 
   template <typename Archive>
   void serialize(Archive& archive) {
-    // Saving writes the sound's name; loading asks the manager for it. Same
-    // split as a sprite's texture, and for the same reason: cereal writes a
-    // pointer record for a shared_ptr and a string for a string.
+    // Saving writes a *reference* to the sound -- the asset registry's id when
+    // the sound has one, or its name otherwise -- and loading asks the manager
+    // for it. Same split as a sprite's texture, and for the same reason: cereal
+    // writes a pointer record for a shared_ptr and a string for a string.
     if constexpr (Archive::is_saving::value) {
-      const std::string name = m_sound == nullptr ? "" : m_sound->GetName();
-      archive(cereal::make_nvp("Sound", name), cereal::make_nvp("Volume", volume), cereal::make_nvp("Mute", mute),
+      const std::string reference =
+          m_sound == nullptr ? "" : (m_sound->GetAssetId().empty() ? m_sound->GetName() : m_sound->GetAssetId());
+      archive(cereal::make_nvp("Sound", reference), cereal::make_nvp("Volume", volume), cereal::make_nvp("Mute", mute),
               cereal::make_nvp("Loop", loop), cereal::make_nvp("Autoplay", autoplay));
     } else {
-      std::string name;
-      archive(cereal::make_nvp("Sound", name), cereal::make_nvp("Volume", volume), cereal::make_nvp("Mute", mute),
+      std::string reference;
+      archive(cereal::make_nvp("Sound", reference), cereal::make_nvp("Volume", volume), cereal::make_nvp("Mute", mute),
               cereal::make_nvp("Loop", loop), cereal::make_nvp("Autoplay", autoplay));
-      m_sound = name.empty() ? nullptr : BorrowSound(rse::SoundManager::GetOrLoad(name));
+      m_sound = reference.empty() ? nullptr : BorrowSound(rse::SoundManager::GetOrLoad(reference));
     }
   }
 };

@@ -8,9 +8,11 @@
 #include <imgui.h>
 #include <map>
 #include <memory>
+#include <project_commands.h>
 #include <sstream>
 #include <string>
 
+#include <core/asset_registry.h>
 #include <layout/editor_panel.h>
 #include <utils/logger.h>
 
@@ -195,6 +197,8 @@ class ContentBrowserPanel : public EditorPanel {
 
     ImGui::TextDisabled("%s", DescribeSize(path).c_str());
 
+    DrawAssetRegistrySection(path);
+
     if (!IsImage(path.extension().string())) {
       return;
     }
@@ -220,6 +224,54 @@ class ContentBrowserPanel : public EditorPanel {
     }
 
     ImGui::Image(static_cast<ImTextureID>(static_cast<intptr_t>(preview->GetId())), ImVec2(width, height));
+  }
+
+  // The registry side of a file: what it is called once it is an asset, and the
+  // two things that change that. A file outside the project directory, or a
+  // directory, has no registry presence.
+  void DrawAssetRegistrySection(const std::filesystem::path& path) {
+    if (rse::AssetRegistry::Directory().empty()) {
+      return;
+    }
+
+    std::error_code error;
+    const std::filesystem::path relative = std::filesystem::relative(path, rse::AssetRegistry::Directory(), error);
+
+    if (error || relative.empty() || relative.generic_string().rfind("..", 0) == 0) {
+      return;
+    }
+
+    const rse::AssetRegistry::Asset* asset = rse::AssetRegistry::FindByPath(relative.generic_string());
+
+    if (asset == nullptr) {
+      // Only a file the registry knows how to classify can be registered.
+      if (rse::AssetRegistry::TypeForPath(path).empty()) {
+        return;
+      }
+
+      if (ImGui::Button("Register as Asset")) {
+        ImportAssetAt(path);
+      }
+
+      return;
+    }
+
+    // A copy, because the operations below edit the registry the pointer is
+    // into.
+    const std::string id = asset->id;
+
+    ImGui::Text("Asset: %s (%s)", asset->name.c_str(), asset->type.c_str());
+    ImGui::TextDisabled("id %s", asset->id.c_str());
+
+    if (ImGui::Button("Rename Asset...")) {
+      RenameAsset(id);
+    }
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Unregister")) {
+      DeleteAsset(id);
+    }
   }
 
   // Loads an image the first time it is selected and keeps it, so clicking

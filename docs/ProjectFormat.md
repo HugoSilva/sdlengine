@@ -2,9 +2,10 @@
 
 A **project** is a directory. Its `project.xml` is the manifest: what the project
 is called, how its window opens, where its assets live and which **scenes** it is
-made of. A **scene** is a file of its own: the entities and components that were
-open in the editor when it was saved. A **prefab** is one entity saved on its own,
-so it can be placed into any scene.
+made of. An `assets.xml` beside it is the asset **registry**: the table that gives
+every texture, sound, font and prefab a stable id. A **scene** is a file of its
+own: the entities and components that were open in the editor when it was saved.
+A **prefab** is one entity saved on its own, so it can be placed into any scene.
 
 Before this split, `project.xml` *was* the scene: a flat list of entities written
 into whatever directory the binary happened to be run from. A project that could
@@ -56,6 +57,9 @@ Two kinds of change exist, and they are not equal:
   up to the new one and older files are refused as too old. Best-effort parsing
   is not an option: a file read as the wrong shape is worse than one that will
   not open. Scene version 2 is the first breaking change; see [Scene files](#scene-files).
+  Scene version 6 is the second: a texture and a sound reference changed meaning,
+  from a name to an asset id. It keeps the same shape, so the migration is the
+  resolution order on load -- id, then name, then path -- rather than a rewrite.
 
 Two rules keep the additive case honest:
 
@@ -68,7 +72,7 @@ Two rules keep the additive case honest:
 
 | Milestone | Manifest | Scene | Prefab | Assets |
 |---|---|---|---|---|
-| today | 1 | 5 | 1 | -- |
+| today | 1 | 6 | 1 | 1 |
 | #54 | 1 | 1 | -- | -- |
 | #47 | 1 | **2** | -- | -- |
 | #48 | 1 | **3** | -- | -- |
@@ -80,9 +84,9 @@ Two rules keep the additive case honest:
 | #46c | **3** | 6 | 1 | 1 |
 
 Only the rows up to today are shipped behaviour; the rest is the order the
-increments land in, one issue at a time. The first seven rows are shipped: the
+increments land in, one issue at a time. The first eight rows are shipped: the
 migration policy itself, the first breaking change made under it, the four
-additive changes made after it, and prefabs.
+additive changes made after it, prefabs, and the asset registry.
 
 ## The manifest
 
@@ -138,6 +142,75 @@ failed save leaves the previous file intact.
 
 A project manifest is only written when a project is attached. A run started
 without one can open a scene but cannot save a project.
+
+## The asset registry
+
+`SampleProject/assets.xml`, the table that gives every asset a stable id:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<cereal>
+	<assets>
+		<formatVersion>1</formatVersion>
+		<asset size="dynamic">
+			<value0>
+				<id>09378fbe1b6be4bc</id>
+				<name>tex3.png</name>
+				<type>texture</type>
+				<path>assets/tex3.png</path>
+			</value0>
+			<value1>
+				<id>c47f914a7bba8c37</id>
+				<name>effect.wav</name>
+				<type>sound</type>
+				<path>assets/effect.wav</path>
+			</value1>
+		</asset>
+	</assets>
+</cereal>
+```
+
+| Field | Meaning |
+|---|---|
+| `id` | 16 lowercase hex characters, generated when the asset is imported. A scene or prefab stores this, never the path. |
+| `name` | The display name the editor shows, and what an older scene may still call the asset. It is the file's name, extension included. |
+| `type` | `texture`, `sound`, `font` or `prefab`, inferred from the extension when the asset is imported. |
+| `path` | Where the file is, relative to the project directory and stored with forward slashes -- the same rule every other project path follows. `Core::ResolveProjectPath` turns it into a path the OS can open. |
+
+The table exists to make a **rename** an entry update rather than a scene edit.
+The id is generated from a random engine and is never derived from the path, so
+moving `assets/tex3.png` to `assets/sprites/crate.png` changes `path` and leaves
+`id` alone; every scene that stored the id keeps resolving. Two files with the
+same name in different folders are two entries with distinct ids.
+
+A reference in a scene or prefab resolves in this order:
+
+1. a registered **id**;
+2. a registered **name**;
+3. a registered **path**, including a bare file name or a path suffix, so
+   `tex3.png` finds `assets/tex3.png`;
+4. otherwise the text is a legacy path relative to `assetRoot`, which is what
+   every version 5 file stores.
+
+Step 4 is the migration. A scene written before the registry keeps loading
+unchanged, and saving it later writes ids for the references the registry knows
+and leaves the rest as names. Nothing has to be rewritten in place, and no
+runtime version check is involved: the field is a string in both versions.
+
+`Assets > Import Asset...` and the content browser's `Register as Asset` add a
+file inside the project and give it a fresh id; `Rename Asset...` renames the
+file and updates the entry; `Unregister` drops the entry and keeps the file, so
+nothing a user authored is deleted by a table edit. An entry whose file is
+missing is not an error either: the reference resolves to a texture at id 0 (a
+white sprite) or a silent sound, with the file named in one warning.
+
+The table is loaded when a project opens -- `Core::OpenProject` and the startup
+path both do it before any scene -- and `File > New Project...` writes an empty
+one. A project without `assets.xml` still opens: the table is simply empty and
+every reference takes the legacy path route. Format 1 is the first registry
+version. A file newer than the build is refused by `AssetRegistry::Load`; opening
+a project logs the reason and continues with an empty table rather than refusing
+to open the project.
 
 ## Scene files
 
@@ -250,13 +323,24 @@ that does not set them looks exactly as it did. The game applies the camera once
 when it starts and then leaves the arrow keys alone; the editor viewport keeps
 its own editor camera and only uses the background.
 
-A sprite stores its texture by **name**, not by value: `<Texture>tex3.png</Texture>`
-is a path relative to `assetRoot`. The name is resolved through `TextureManager`
-the first time a scene that uses it is loaded, and the manager keeps one texture
-per name, so twelve sprites naming one image share one upload and one copy in
-memory. A name that cannot be loaded does not fail the load: the texture keeps its
-name, ends at id 0 and the sprite draws white, and the engine logs one warning per
-missing name. An empty `<Texture></Texture>` is a sprite with no texture at all.
+A sprite stores a **reference** to its texture, not the texture itself. At
+format 6 that reference is the asset registry's id:
+`<Texture>09378fbe1b6be4bc</Texture>`. The id is resolved through
+`TextureManager`, which asks the registry which file it names and keeps one
+texture per asset, so twelve sprites referencing one image share one upload and
+one copy in memory. The id is what makes a rename safe: moving `tex3.png` to
+`crate.png` updates one registry entry, and every scene that stored the id keeps
+resolving without being edited.
+
+A reference that is not a known id is looked up as an asset **name**, and failing
+that it is treated as a **path relative to `assetRoot`** -- exactly what it meant
+before the registry existed. That fallback is the version 5 to 6 migration, and
+it is why version 6 did not break older files: the field is a string either way,
+so the version moved for the meaning and not for the shape. A reference that
+resolves to nothing does not fail the load: the texture keeps the reference as
+its name, ends at id 0 and the sprite draws white, and the engine logs one
+warning per missing reference. An empty `<Texture></Texture>` is a sprite with no
+texture at all.
 
 Version 1 stored the texture itself, with cereal's polymorphic wrapper. Version 2
 changed the field's shape, so a version 1 scene is **refused** as too old rather
@@ -264,25 +348,29 @@ than half-read -- there is no migration. `SceneIO::kFirstFormatVersion` moved to
 with it, and `UnitTests/fixtures/scene_v1.xml` is kept as the file the refusal is
 tested against.
 
-A sound is stored by **name** in the same way: `<Sound>effect.wav</Sound>` is
-resolved through `SoundManager`, which keeps one `Sound` per name -- one decoded
-copy, however many entities play it. The playback settings belong to the entity,
-not to the shared sound: `Volume`, `Mute`, `Loop` and `Autoplay` sit beside the
-name, so two entities using one file can have different volumes, and one can loop
-while the other plays once. `AudioSystem` applies them, and starts a sound that
-asks to autoplay exactly once -- a one-shot is not restarted on the next frame.
-A file that cannot be loaded does not fail the load either: the entity keeps its
-name and stays silent.
+A sound is stored the same way: `<Sound>c47f914a7bba8c37</Sound>` is an asset id
+at format 6, resolved through `SoundManager`, which keeps one `Sound` per asset
+-- one decoded copy, however many entities play it -- and is matched by name or
+by path in an older file, exactly like a texture. The playback settings belong
+to the entity, not to the shared sound: `Volume`, `Mute`, `Loop` and `Autoplay`
+sit beside the reference, so two entities using one file can have different
+volumes, and one can loop while the other plays once. `AudioSystem` applies
+them, and starts a sound that asks to autoplay exactly once -- a one-shot is not
+restarted on the next frame. A file that cannot be loaded does not fail the load
+either: the entity keeps the reference and stays silent.
 
 Version 3 appended the audio group, so a version 2 scene still opens -- the group
 is read only when the file says version 3 or newer. Version 4 appended the rigid
 bodies for the same reason. Version 5 added the camera node, which is root data
 rather than a component group: a version 4 scene has none, so it opens with the
-defaults, which are the framing it was drawn with. The example above is a version
-2 file, which is why it has neither the camera nor the audio and rigid-body
-groups; a current file has all three. `UnitTests/fixtures/scene_v3.xml`,
-`scene_v4.xml` and `scene_v5.xml` are the files that pin this, and `scene_v2.xml`
-is the one that has to keep opening.
+defaults, which are the framing it was drawn with. Version 6 changed what a
+texture and a sound reference *mean* -- an asset id rather than a name -- without
+changing their shape; the fallback above is what keeps version 5 files opening.
+The example above is a version 2 file, which is why it has neither the camera nor
+the audio and rigid-body groups, and names its texture; a current file has all
+three and stores ids. `UnitTests/fixtures/scene_v2.xml` through `scene_v5.xml`
+are the files that pin the additive versions, and `scene_v6.xml` is the current
+format, paired with `assets_v1.xml`.
 
 A rigid body is stored as its **inputs**, by value: position, size, density,
 friction and the body type by name (`static`, `kinematic`, `dynamic`). A
@@ -326,7 +414,8 @@ are read before the first entity is copied.
 The copy owns what the entity owns:
 
 - a sprite is copied, so changing one placed copy does not change another; the
-  texture inside it is still shared by name through `TextureManager`;
+  texture inside it is still shared through `TextureManager`, by asset id or by
+  name;
 - a rigid body is cloned as its inputs, uninitialised, so `PhysicsSystem` builds
   a fresh `b2Body` for each placement;
 - a sound is borrowed from `SoundManager`, which is what a sound is; the
@@ -344,6 +433,12 @@ directory, for the same reason a scene does. Format 1 is the first prefab
 version; a file newer than the build is refused before the open scene is
 touched, like every other format.
 
+A prefab's texture and sound references mean what they mean in a scene -- an
+asset id, or a name/path that falls back through the registry -- so the prefab
+format did not move when scene version 6 changed the meaning. A prefab written by
+this build stores ids; an older prefab that names its files still loads, through
+the same fallback, and is rewritten with ids the next time it is saved.
+
 ## The editor's project commands
 
 | Command | Shortcut | Does |
@@ -355,6 +450,15 @@ touched, like every other format.
 | File > Reload Scene | F2 | Re-reads the open scene from disk, discarding unsaved edits. |
 | Assets > Create Prefab from Selection... | -- | Asks for a path inside the project and writes the selected entity to it as a prefab. Disabled while nothing is selected. |
 | Assets > Instantiate Prefab... | -- | Asks for a prefab and copies it into the open scene at the positions it stores, then marks the scene dirty. |
+| Assets > Import Asset... | -- | Asks for a file inside the project and adds it to the asset registry with a new id. Disabled while no project is open. |
+
+The content browser's details panel is the file-level half of the same commands:
+it shows the registry name, type and id of the selected file, offers
+`Register as Asset` for a file with no entry, and `Rename Asset...` /
+`Unregister` for one that has. Renaming moves the file and keeps the id;
+unregistering drops the entry and leaves the file. `Unregister` warns when the
+open scene still references the id, because the scene will store an id that no
+longer resolves.
 
 The file and folder pickers are SDL's native dialogs. They are asynchronous: the
 chosen path arrives during the event pump, not when the menu item is clicked. When
@@ -374,6 +478,7 @@ the box:
 ```
 SampleProject/
   project.xml
+  assets.xml        the asset registry: tex3.png and effect.wav, with their ids
   assets/
     Default.vert
     Default.frag
@@ -418,7 +523,13 @@ keeping them in step.
   The settings themselves are per entity and survive a save.
 - Physics is one world with fixed gravity and a fixed time step, owned by
   `PhysicsSystem`; there is no way to change either from a scene yet.
-- There is no asset registry and there are no input bindings in the manifest.
+- There are no input bindings in the manifest.
+- The asset registry is a table, not a watcher: a file moved or renamed outside
+  the editor leaves its entry pointing at the old path, and the next load falls
+  back to a white texture or a silent sound. There is no auto-import, no folder
+  entries and no reference counting; unregistering an asset keeps its file, and
+  re-importing it gives it a new id, so a scene that stored the old one will not
+  pick the file up again -- its reference has to be re-pointed in the editor.
 - A placed prefab is a copy, not a linked instance: editing the prefab file does
   not update entities already placed, and editing a placed entity does not
   update the file.

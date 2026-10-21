@@ -56,22 +56,30 @@ class Renderable2D {
   inline const std::string GetTextureName() const {
     return m_texture.get() == nullptr ? "" : m_texture.get()->GetName();
   }
+  inline const std::string GetTextureAssetId() const {
+    return m_texture.get() == nullptr ? "" : m_texture.get()->GetAssetId();
+  }
 
   template <typename Archive>
   void serialize(Archive& archive) {
     archive(cereal::make_nvp("Size", m_size), cereal::make_nvp("Color", m_color));
 
-    // A scene stores the texture's name, never a copy of the texture: the
-    // manager owns one texture per name, so twelve sprites that use one image
-    // load it once. Saving writes that name; loading asks the manager for it,
-    // which is the only place a texture is created.
+    // A scene stores a *reference* to the texture, never a copy of it: the
+    // asset registry's id when the texture has one, or the name when it came
+    // from a bare path (a file with no registry entry, or a test). The manager
+    // owns one texture per reference, so twelve sprites that use one asset
+    // share one upload. Loading asks the manager for the reference, which
+    // resolves an id, a name or a path and is the only place a texture is
+    // created.
     if constexpr (Archive::is_saving::value) {
-      const std::string name = GetTextureName();
-      archive(cereal::make_nvp("Texture", name));
+      const std::string reference =
+          m_texture == nullptr ? ""
+                               : (m_texture->GetAssetId().empty() ? m_texture->GetName() : m_texture->GetAssetId());
+      archive(cereal::make_nvp("Texture", reference));
     } else {
-      std::string name;
-      archive(cereal::make_nvp("Texture", name));
-      m_texture = name.empty() ? nullptr : BorrowTexture(TextureManager::GetOrLoad(name));
+      std::string reference;
+      archive(cereal::make_nvp("Texture", reference));
+      m_texture = reference.empty() ? nullptr : BorrowTexture(TextureManager::GetOrLoad(reference));
     }
   }
 

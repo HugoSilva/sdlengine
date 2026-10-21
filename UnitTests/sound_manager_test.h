@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <memory>
 
 #include <gtest/gtest.h>
@@ -7,9 +8,10 @@
 #include <audio/music.h>
 #include <audio/sound.h>
 #include <audio/sound_manager.h>
+#include <core/asset_registry.h>
 
 /*
-Sounds are loaded once per name and owned by the manager; a component only
+Sounds are loaded once per asset and owned by the manager; a component only
 borrows one. No mixer is created here, so every Sound is valid but silent --
 which is the same state a missing file leaves behind in an app that does have
 a mixer.
@@ -19,7 +21,10 @@ using namespace rse;
 
 class SoundManagerTest : public ::testing::Test {
  protected:
-  void TearDown() override { SoundManager::Clean(); }
+  void TearDown() override {
+    SoundManager::Clean();
+    AssetRegistry::Clean();
+  }
 };
 
 TEST_F(SoundManagerTest, AddSound) {
@@ -89,5 +94,29 @@ TEST_F(SoundManagerTest, CleanTwiceIsSafe) {
 
   SoundManager::Clean();
   EXPECT_EQ(0u, SoundManager::Count());
+}
+
+// With a registry open, a reference resolves to an asset: the sound carries the
+// id a scene saves and the name the inspector shows, and the id and the name
+// are the same sound.
+TEST_F(SoundManagerTest, ARegisteredReferenceLoadsByIdAndKeepsTheName) {
+  const std::filesystem::path directory = std::filesystem::temp_directory_path() / "rse_sound_registry_test";
+  std::filesystem::remove_all(directory);
+  std::filesystem::create_directories(directory / "assets");
+
+  AssetRegistry::Init(directory);
+  const std::string id = AssetRegistry::Add("effect.wav", "sound", "assets/effect.wav");
+
+  Sound* by_id = SoundManager::GetOrLoad(id);
+  ASSERT_NE(nullptr, by_id);
+  EXPECT_EQ(by_id->GetAssetId(), id);
+  EXPECT_EQ(by_id->GetName(), "effect.wav");
+  EXPECT_EQ(1u, SoundManager::Count());
+
+  EXPECT_EQ(by_id, SoundManager::GetSound("effect.wav"));
+  EXPECT_EQ(by_id, SoundManager::GetOrLoad("effect.wav"));
+  EXPECT_EQ(1u, SoundManager::Count());
+
+  std::filesystem::remove_all(directory);
 }
 }  // namespace

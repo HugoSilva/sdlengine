@@ -4,7 +4,10 @@
 #include <utils/logger.h>
 
 namespace rse {
-Sound::Sound(const std::string& name, const std::string& filename) : m_name(name), m_filename(filename) {
+Sound::Sound(const std::string& name, const std::string& filename) : Sound("", name, filename) {}
+
+Sound::Sound(const std::string& asset_id, const std::string& name, const std::string& filename)
+    : m_asset_id(asset_id), m_name(name), m_filename(filename) {
   MIX_Mixer* mixer = SoundManager::GetMixer();
   if (mixer == nullptr) {
     // No mixer yet (e.g. headless unit tests): keep the object valid but silent.

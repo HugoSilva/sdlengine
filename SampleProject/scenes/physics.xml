@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <cereal>
-	<formatVersion>5</formatVersion>
+	<formatVersion>6</formatVersion>
 	<camera>
 		<Position>
 			<x>640</x>
@@ -107,7 +107,7 @@
 								<y>80</y>
 							</Size>
 							<Color>4294901760</Color>
-							<Texture>tex3.png</Texture>
+							<Texture>09378fbe1b6be4bc</Texture>
 						</value0>
 						<Position>
 							<x>640</x>

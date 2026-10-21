@@ -4,6 +4,7 @@
 #include <functional>
 #include <imgui.h>
 
+#include <core/asset_registry.h>
 #include <ecs/scene_io.h>
 #include <render/imgui_layer.h>
 
@@ -81,6 +82,9 @@ void Core::LoadProject(const std::filesystem::path& project_file) {
   }
 
   m_project = project;
+  // The asset registry is part of the project: its table is loaded before any
+  // scene, because a scene resolves its textures and sounds through it.
+  rse::AssetRegistry::Init(m_project.Directory());
   Logger::Log("Opened project " + m_project.name + " (" + m_project.File().string() + ")");
 }
 
@@ -93,6 +97,7 @@ bool Core::OpenProject(const std::filesystem::path& project_file, std::string* e
 
   m_project = project;
   SceneManager::Init(m_project.Directory());
+  rse::AssetRegistry::Init(m_project.Directory());
 
   if (m_window != nullptr) {
     m_window->SetTitle(m_project.window.title);
@@ -134,6 +139,14 @@ std::string Core::ResolveResource(const std::string& name) {
   return EngineResourcePath(name);
 }
 
+std::string Core::ResolveProjectPath(const std::string& relative) {
+  if (m_project.IsAttached()) {
+    return m_project.Resolve(relative).string();
+  }
+
+  return relative;
+}
+
 Core::~Core() {
   SceneManager::Clean();
 
@@ -145,6 +158,7 @@ Core::~Core() {
   rse::SceneIO::Clear();
   rse::ECSManager::Clean();
 
+  rse::AssetRegistry::Clean();
   rse::SoundManager::Clean();
   rse::FontManager::Clean();
   rse::TextureManager::Clean();

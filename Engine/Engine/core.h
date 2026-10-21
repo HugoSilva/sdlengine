@@ -69,9 +69,15 @@ class Core {
 
   // A resource by name: the open project's asset root first, then the engine's
   // own Resources/ next to the binary. This is what lets a project directory be
-  // opened from anywhere, and the bridge until textures are loaded by name
-  // rather than by value (see docs/ProjectFormat.md).
+  // opened from anywhere, and the route a reference takes when the asset
+  // registry has no entry for it -- an older scene's texture name, or a shader
+  // the project does not ship. See docs/ProjectFormat.md.
   static std::string ResolveResource(const std::string& name);
+
+  // A path relative to the project directory, resolved against it. Used for
+  // asset-registry entries, whose paths are project-relative rather than
+  // asset-root-relative. Without a project the path is returned unchanged.
+  static std::string ResolveProjectPath(const std::string& relative);
 
   // Render target the scene pass should draw into, or nullptr to draw into the
   // window's back buffer. The editor overrides this so the scene lands in its

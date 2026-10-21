@@ -46,7 +46,7 @@ struct LoadEntities {
     // Groups added after version 2 are chained here, in the order SaveEntities
     // writes them, each read only from the version that introduced it:
     //
-    //   if (format_version >= 6) loader.component<...>(archive);
+    //   if (format_version >= 7) loader.component<...>(archive);
     if (format_version >= 3) {
       loader.component<AudioComponent>(archive);
     }

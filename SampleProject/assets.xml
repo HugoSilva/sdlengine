@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cereal>
+	<assets>
+		<formatVersion>1</formatVersion>
+		<asset size="dynamic">
+			<value0>
+				<id>09378fbe1b6be4bc</id>
+				<name>tex3.png</name>
+				<type>texture</type>
+				<path>assets/tex3.png</path>
+			</value0>
+			<value1>
+				<id>c47f914a7bba8c37</id>
+				<name>effect.wav</name>
+				<type>sound</type>
+				<path>assets/effect.wav</path>
+			</value1>
+			<value2>
+				<id>4a22809fbb3269ad</id>
+				<name>tex3.png</name>
+				<type>texture</type>
+				<path>assets/tex3.png</path>
+			</value2>
+			<value3>
+				<id>7a4b4799390cda21</id>
+				<name>effect.wav</name>
+				<type>sound</type>
+				<path>assets/effect.wav</path>
+			</value3>
+		</asset>
+	</assets>
+</cereal>
+
