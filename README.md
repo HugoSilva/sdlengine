@@ -4,7 +4,7 @@ Is a small C++ game engine that is heavily reliant on SDL3, it is work in progre
 
 ## Build target
 
-The project is self-sustained: every dependency lives in the `Thirdparty/` folder. It currently targets **Windows** (x86 / x64) and is built with **CMake + Ninja + MSVC (C++20)**.
+The project is self-sustained: every dependency lives in the `Thirdparty/` folder. It targets **64-bit Windows** and is built with **CMake + Ninja + MSVC (C++20)**.
 
 ## Building
 
@@ -15,11 +15,11 @@ cmake --preset x64-debug
 cmake --build --preset x64-debug
 ```
 
-Other presets: `x64-release`, `x86-debug`, `x86-release`.
+Other preset: `x64-release`.
 
-> The Ninja generator targets whatever toolchain your shell provides. Run `x64-*`
-> from the **x64** developer prompt and `x86-*` from the **x86** developer prompt
-> (`vcvars64.bat` / `vcvars32.bat`).
+> The Ninja generator targets whatever toolchain your shell provides. Run the
+> presets from the **x64** developer prompt (`vcvars64.bat`); a 32-bit prompt is
+> rejected at configure time.
 
 ### Prerequisites
 

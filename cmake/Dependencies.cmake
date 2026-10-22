@@ -11,7 +11,7 @@
 #   SDL3_mixer::SDL3_mixer audio                              (shared)
 #   SDL3_ttf::SDL3_ttf     font rendering                     (shared)
 #   Box2D::Box2D          2D physics                          (static, per-config)
-#   gtest                 GoogleTest (only if vendored for $ARCHITECTURE)
+#   gtest                 GoogleTest (built from source, optional)
 #   OpenGL::GL            system OpenGL
 #
 # Runtime DLLs of the shared dependencies are collected in RSE_RUNTIME_DLLS and
@@ -19,13 +19,6 @@
 
 set(RSE_TP "${CMAKE_SOURCE_DIR}/Thirdparty")
 
-if(NOT ARCHITECTURE)
-  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(ARCHITECTURE "x64")
-  else()
-    set(ARCHITECTURE "Win32")
-  endif()
-endif()
 message(STATUS "RSE: resolving vendored libraries for architecture '${ARCHITECTURE}'")
 
 # ---------------------------------------------------------------------------
@@ -99,9 +92,8 @@ set_target_properties(Box2D::Box2D PROPERTIES
 # ---------------------------------------------------------------------------
 # GoogleTest
 # ---------------------------------------------------------------------------
-# Built from source so every architecture/configuration works. The old
-# Thirdparty/googletest binaries were Win32/Debug only, which is why UnitTests
-# could not be built for x64.
+# Built from source rather than imported prebuilt binaries, so the test target
+# follows the same compiler and configuration as the rest of the tree.
 #
 # Default: fetch a pinned release with FetchContent.
 # Offline : point RSE_GTEST_SOURCE_DIR at a local GoogleTest checkout, or set

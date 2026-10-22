@@ -1,8 +1,8 @@
 
 # ---------------------------------------------------------------------------
 # UnitTests -- GoogleTest based unit tests for the engine.
-# Skipped automatically when the vendored googletest has no build for the
-# requested architecture (it currently only ships Win32/Debug).
+# Skipped automatically when GoogleTest is not available (RSE_BUILD_TESTS=OFF,
+# or the fetch/subdirectory failed).
 # ---------------------------------------------------------------------------
 if(NOT RSE_GTEST_AVAILABLE)
   message(WARNING "RSE: skipping UnitTests target - GoogleTest is not available (enable RSE_BUILD_TESTS or set RSE_GTEST_SOURCE_DIR)")

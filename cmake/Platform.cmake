@@ -7,15 +7,16 @@
 # ---------------------------------------------------------------------------
 # Architecture
 # ---------------------------------------------------------------------------
-# The vendored libraries ship prebuilt for a specific folder name: "Win32" or
-# "x64". The CMake presets set ARCHITECTURE explicitly; when they don't we fall
-# back to a best guess so a plain `cmake -S . -B build` still works.
+# The vendored libraries ship prebuilt for x64 only, so a 32-bit configure is
+# refused rather than left to fail at link time. The presets set ARCHITECTURE
+# explicitly; the default keeps a plain `cmake -S . -B build` working.
+if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+  message(FATAL_ERROR
+    "RSE targets 64-bit Windows only. Run the x64 developer prompt (vcvars64.bat) and use an x64 preset.")
+endif()
+
 if(NOT ARCHITECTURE)
-  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(ARCHITECTURE "x64")
-  else()
-    set(ARCHITECTURE "Win32")
-  endif()
+  set(ARCHITECTURE "x64")
 endif()
 
 # ---------------------------------------------------------------------------
