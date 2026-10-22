@@ -76,12 +76,15 @@ point `-DRSE_GTEST_SOURCE_DIR=<path>` at a local GoogleTest checkout, or disable
 The project follows the [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html) with a
 short list of deliberate deviations. [`docs/CodingStandards.md`](docs/CodingStandards.md) has the rules and
 the reasons; [`.clang-format`](.clang-format) and [`.clang-tidy`](.clang-tidy) are the machine-readable half
-of it, and they are what CI enforces.
+of it. CI enforces formatting; naming is checked by the pre-push hook, which passes the files a push adds
+or changes to `clang-tidy`.
 
 ```bat
-tools\format.bat                 :: reformat every source file in place
-tools\check-format.bat           :: fail if any file is not clang-format clean
-tools\check-naming.bat x64-debug :: naming check (needs: cmake --preset x64-debug)
+git config core.hooksPath .githooks         :: once per clone: enables the pre-push naming check
+tools\format.bat                            :: reformat every source file in place
+tools\check-format.bat                      :: fail if any file is not clang-format clean
+tools\check-naming-changed.bat x64-debug    :: naming check for files added/changed since upstream
+tools\check-naming.bat x64-debug            :: naming check for the whole tree (slow)
 ```
 
 ## Library dependencies

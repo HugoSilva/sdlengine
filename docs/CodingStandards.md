@@ -9,7 +9,7 @@ The rules have a machine-readable form, and that form is normative:
 | Half | File | Checked by |
 |---|---|---|
 | Formatting | [`.clang-format`](../.clang-format) | `tools\check-format.bat` |
-| Naming | [`.clang-tidy`](../.clang-tidy) | `tools\check-naming.bat` |
+| Naming | [`.clang-tidy`](../.clang-tidy) | `tools\check-naming-changed.bat` (pre-push hook) |
 | Editor defaults | [`.editorconfig`](../.editorconfig) | editors |
 
 Read this document to know *what* the rules are and *why*; read the config files to know precisely
@@ -142,34 +142,58 @@ code is good".
 
 ## 6. Checking your work
 
-The tools are pinned in one place — `tools\_llvm.bat` finds them — and the same scripts run locally and
-in CI, so "it passes on my machine" and "it passes in CI" are the same statement.
+The tools are pinned in one place — `tools\_llvm.bat` finds them — and the formatting scripts run both
+locally and in CI, so for formatting "it passes on my machine" and "it passes in CI" are the same
+statement. Naming is checked before a push instead; §6.2 says why.
 
 ```bat
-tools\format.bat                 :: reformat every source file in place
-tools\check-format.bat           :: fail if any file is not clang-format clean
-tools\check-naming.bat x64-debug :: fail if any translation unit has a naming violation
+git config core.hooksPath .githooks   :: once per clone: enables the pre-push naming check
+tools\format.bat                      :: reformat every source file in place
+tools\check-format.bat                :: fail if any file is not clang-format clean
+tools\check-naming-changed.bat        :: fail if a translation unit this branch changes has a naming violation
+tools\check-naming.bat x64-debug      :: fail if any translation unit in the tree has one (slow)
 ```
 
-`check-naming.bat` needs a **built** tree — configure it and then build it — because `clang-tidy`
+Both naming scripts need a **built** tree — configure it and then build it — because `clang-tidy`
 reads `out/<preset>/compile_commands.json`, and the compile commands MSVC generates carry
-`.obj.modmap` response files that only exist once something has actually been compiled. The other two
+`.obj.modmap` response files that only exist once something has actually been compiled. The formatting
 scripts need nothing at all.
 
-Both checks are complete-or-nothing by design: a rename that is 95% done looks like a convention,
-which is worse than one not started. That is also why the gates are **verified against deliberately
-broken input** — an instrument that cannot fail proves nothing.
+Formatting is complete-or-nothing by design: a half-formatted tree looks like a convention, which is
+worse than one not started. That is also why the format gate is **verified against deliberately broken
+input** — an instrument that cannot fail proves nothing.
 
-### 6.1 A note on versions
+### 6.1 The pre-push naming check
+
+`.githooks/pre-push` runs `tools\check-naming-changed.bat x64-debug <remote tip>` for each ref being
+pushed, so the check sees exactly the commits the push delivers. `git push --no-verify` skips it.
+
+- Only **added and changed** files are examined, not the tree — but each affected translation unit is
+  checked in full, so a rename that is 95% done still fails.
+- A changed **header** is checked through the `.cpp` files that include it. A header no tracked `.cpp`
+  includes is reported as unchecked, and a transitive include (a TU includes A, A includes the changed B)
+  is not followed.
+- A **newly added** `.cpp` is only checkable after `cmake --preset x64-debug` has run again, because a
+  file enters `compile_commands.json` at configure time. The script names such a file and skips it rather
+  than passing it silently.
+- **Uncommitted work** is not checked: the hook sees commits, so it acts after you commit rather than
+  before.
+
+`tools\check-naming.bat` stays for whole-tree sweeps — after a shared rule change in `.clang-tidy`, or
+when a header's includers are not what the mapping expects.
+
+### 6.2 Why naming is not a CI gate
+
+It used to be one. `clang-tidy` needs a built tree, so that job configured and built `x64-debug` in
+addition to the build matrix: a second full build for a check that, on a normal change, looks at a
+handful of files. Checking the diff at push time costs seconds where the change is made, and the rules
+are unchanged — both scripts read the same `.clang-tidy`.
 
 `clang-format` output changes between major versions, so CI installs the same release line we build with
 locally, LLVM 19.1.x. If they ever drift, every file in the tree will appear to need reformatting at once.
-
-`clang-tidy` cannot be pinned that way. A hosted runner ships a newer MSVC than a developer machine,
-and the MSVC STL refuses to be parsed by an old Clang at all (`STL1000: expected Clang 20 or newer`),
-so CI runs the newest LLVM that can read the runner's toolchain. The naming **rules** are what must
-agree — and they are shared, since `.clang-tidy` and the scripts are. This is the one place where
-"passes locally" and "passes in CI" are only approximately the same statement.
+`clang-tidy` is not pinned, which is the price of keeping it out of CI: the hosted runner's newer MSVC
+forced a newer LLVM there (`STL1000: expected Clang 20 or newer`). Locally, `tools\_llvm.bat` uses
+whatever clang the machine has; if a naming result looks wrong, check the version before the rule.
 
 ---
 

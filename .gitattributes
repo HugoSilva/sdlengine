@@ -1,0 +1,4 @@
+# Git runs hooks through sh, and a CRLF checkout makes the shebang line fail
+# ("bad interpreter"). Keep the hooks byte-for-byte LF whatever core.autocrlf
+# says -- most Windows clones set it to true.
+.githooks/* text eol=lf

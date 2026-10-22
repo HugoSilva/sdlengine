@@ -1,0 +1,51 @@
+#!/bin/sh
+# Naming precheck before a push. See docs/CodingStandards.md §6.
+#
+# Only the commits this push delivers are checked, not the whole tree: for each
+# ref being pushed, the files changed between the remote tip and the local tip
+# are handed to tools\check-naming-changed.bat, which maps them to translation
+# units and runs clang-tidy on those. `git push --no-verify` skips this.
+#
+# Needs Git for Windows (the repository is Windows-only: MSVC and .bat tools)
+# and a built x64-debug tree.
+set -u
+
+root=$(git rev-parse --show-toplevel) || exit 0
+cd "$root" || exit 0
+
+zero=0000000000000000000000000000000000000000
+status=0
+seen=""
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  # Deleting a ref delivers no files.
+  [ -z "${local_sha:-}" ] && continue
+  [ "$local_sha" = "$zero" ] && continue
+
+  if [ "$remote_sha" != "$zero" ] && git cat-file -e "${remote_sha}^{commit}" 2>/dev/null; then
+    base=$remote_sha
+  else
+    # New remote branch: compare against the tip it was branched from, i.e. the
+    # same branch on the remote if it exists, otherwise the default branch.
+    base=""
+    branch=${remote_ref#refs/heads/}
+    for candidate in "origin/$branch" origin/HEAD origin/dev origin/master; do
+      git rev-parse --verify --quiet "$candidate" >/dev/null 2>&1 || continue
+      base=$(git merge-base "$candidate" "$local_sha" 2>/dev/null) && [ -n "$base" ] && break
+      base=""
+    done
+  fi
+
+  [ -z "$base" ] && continue
+
+  # One run per base: pushing several refs from one tip is one diff.
+  case " $seen " in
+    *" $base "*) continue ;;
+  esac
+  seen="$seen $base"
+
+  echo "[pre-push] naming: files changed since $(git rev-parse --short "$base")"
+  cmd //c "tools\\check-naming-changed.bat x64-debug $base $local_sha" || status=1
+done
+
+exit $status

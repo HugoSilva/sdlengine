@@ -36,8 +36,11 @@ jobs:
       - name: Test
         run: ctest --preset ${{ matrix.preset }}
 
-  # The two style gates. They are separate jobs so that a formatting or naming
-  # failure is legible on its own and does not hold up the build matrix.
+  # The style gate. Formatting is complete-or-nothing and cheap, so CI checks
+  # every file; it runs as its own job so a failure is legible on its own and
+  # does not hold up the build matrix. Naming is not checked here: clang-tidy
+  # needs a full build, and the pre-push hook checks the files a push actually
+  # changes instead (see docs/CodingStandards.md §6).
   format:
     name: format
     runs-on: windows-latest
@@ -57,37 +60,3 @@ jobs:
       # tools\_llvm.bat finds clang-format through PATH, which the action sets.
       - name: Check formatting
         run: tools\check-format.bat
-
-  naming:
-    name: naming
-    runs-on: windows-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up MSVC
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
-
-      # Deliberately not the 19.1 the format job uses. The runner ships a newer
-      # MSVC, and its STL refuses to be parsed by Clang 19 at all ("STL1000:
-      # expected Clang 20 or newer"), so clang-tidy here is the newest release
-      # that can read the toolchain. The naming *rules* are what have to agree.
-      - name: Install LLVM
-        uses: KyleMayes/install-llvm-action@v2
-        with:
-          version: "20.1"
-
-      # clang-tidy reads out/<preset>/compile_commands.json, and those compile
-      # commands carry MSVC's .obj.modmap response files -- which only exist once
-      # the tree has actually been built. So this has to build, not just configure.
-      - name: Configure
-        run: cmake --preset x64-debug
-
-      - name: Build
-        run: cmake --build --preset x64-debug
-
-      - name: Check naming
-        run: tools\check-naming.bat x64-debug
