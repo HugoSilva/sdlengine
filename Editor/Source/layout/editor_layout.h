@@ -2,6 +2,7 @@
 
 #include <imgui.h>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "editor_panel.h"
@@ -15,8 +16,9 @@ struct EditorSettings;
 //
 // The layout itself -- which panel sits where, node sizes, floating windows --
 // is stored by ImGui in imgui.ini and restored automatically. The default
-// layout is only generated when there is nothing to restore, or when the user
-// asks for it from View > Reset Layout.
+// layout is only generated when there is nothing to restore, when the layout
+// version in editor.cfg is older than this build, or when the user asks for it
+// from View > Reset Layout.
 // ---------------------------------------------------------------------------
 class EditorLayout {
  public:
@@ -41,7 +43,21 @@ class EditorLayout {
   void DrawDockSpace();
   void BuildDefaultLayout(ImGuiID dockspace_id);
 
+  // Shows the panel with `id` and focuses it, or does nothing if no panel has
+  // that id. The default layout docks a hidden panel too, so this brings it up
+  // as a tab rather than as a floating window.
+  void ShowPanel(const std::string& id);
+
   std::vector<std::unique_ptr<EditorPanel>> m_panels;
   bool m_layout_built{false};
   bool m_reset_layout{false};
+
+  // Set on the first frame and when the default layout is built, consumed
+  // after the panels have drawn, when their windows exist. ImGui selects the
+  // last submitted tab in a node, which would otherwise leave the console in
+  // front of the content browser.
+  bool m_select_content_browser{false};
+
+  // A panel opened from the Edit menu, focused after it has drawn this frame.
+  std::string m_focus_panel;
 };

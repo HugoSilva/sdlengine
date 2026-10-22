@@ -8,9 +8,10 @@
 #include <layout/editor_layout.h>
 #include <panels/console_panel.h>
 #include <panels/content_browser_panel.h>
-#include <panels/debug_panel.h>
+#include <panels/editor_settings_panel.h>
 #include <panels/hierarchy_panel.h>
 #include <panels/inspector_panel.h>
+#include <panels/project_settings_panel.h>
 #include <panels/viewport_panel.h>
 #include <render/grid_render_system.h>
 #include <systems/render_system.h>
@@ -52,10 +53,11 @@ void EditorApp::Init() {
   m_layout = new EditorLayout();
   m_layout->AddPanel(std::make_unique<HierarchyPanel>());
   m_layout->AddPanel(std::make_unique<ContentBrowserPanel>());
-  m_layout->AddPanel(std::make_unique<DebugPanel>());
   m_layout->AddPanel(std::make_unique<ViewportPanel>(m_camera));
   m_layout->AddPanel(std::make_unique<InspectorPanel>());
   m_layout->AddPanel(std::make_unique<ConsolePanel>());
+  m_layout->AddPanel(std::make_unique<EditorSettingsPanel>());
+  m_layout->AddPanel(std::make_unique<ProjectSettingsPanel>());
 
   m_render = new RenderSystem(m_layout);
   ECSManager::AddSystem(m_render);

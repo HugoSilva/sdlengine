@@ -232,9 +232,10 @@ failed save leaves the previous file intact.
 A project manifest is only written when a project is attached. A run started
 without one can open a scene but cannot save a project.
 
-`Edit > Project Settings` edits the three audio levels. The sliders apply to the
-mix as they move, so a level is set by ear; the dialog's **Save** writes just the
-manifest, while **Cancel** puts the levels back and leaves the file alone.
+`Edit > Project Settings` opens a panel that edits the three audio levels. The
+sliders apply to the mix as they move, so a level is set by ear; the panel's
+**Save** writes just the manifest, while **Cancel** puts the levels back and
+leaves the file alone.
 
 ## The asset registry
 
@@ -629,10 +630,10 @@ store their inputs; neither stores a `b2Body`, so the crate starts falling as
 soon as the scene is open and stepping.
 
 Both sample scenes carry the default camera and background, so the sample looks
-the way it always did; editing the background in the editor's Debug panel changes
-the open scene's value, and saving the scene stores it. The unit tests open both
-scenes: the sample is the one project that has to keep loading when the format
-moves.
+the way it always did; editing the background in the editor's Editor Settings
+panel changes the open scene's value, and saving the scene stores it. The unit
+tests open both scenes: the sample is the one project that has to keep loading
+when the format moves.
 
 `prefabs/crate.xml` is the physics crate saved with
 `Assets > Create Prefab from Selection`, and the worked example of the prefab
@@ -662,9 +663,10 @@ keeping them in step.
 - The game applies the scene camera when it starts; the game has no runtime scene
   switch yet, and the editor viewport deliberately keeps its own editor camera, so
   it does not preview the scene's camera.
-- The editor's session state -- open panels, the five most recent projects, the
-  last scene, the grid and the gizmo -- is not part of the project: it lives in
-  `editor.cfg` in the working directory, and the dock layout in `imgui.ini`.
+- The editor's session state -- open panels, the layout version, the five most
+  recent projects, the last scene, the grid and the gizmo -- is not part of the
+  project: it lives in `editor.cfg` in the working directory, and the dock
+  layout in `imgui.ini`.
   `File > Open Recent` lists the projects, most recent first; the editor drops
   the ones whose folder has gone when it reads the file, so a moved project is a
   one-time fallback rather than a menu item that fails. Selection and undo

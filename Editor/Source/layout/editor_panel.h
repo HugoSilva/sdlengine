@@ -32,6 +32,11 @@ class EditorPanel {
   // read from the engine every frame and do not care.
   virtual void ProjectChanged() {}
 
+  // The panel went from hidden to shown. A panel that snapshots the state it
+  // edits -- Project Settings' Cancel -- takes the snapshot here, so reopening
+  // it starts from what is on screen now rather than from the first opening.
+  virtual void Shown() {}
+
   // Toggled from the View menu and by the panel's own close button.
   bool visible{true};
 };

@@ -15,6 +15,10 @@
 namespace {
 constexpr const char* kDockSpaceId = "RSE_DockSpace";
 
+// Bumped when the default layout changes in a way everybody should see. An
+// older editor.cfg rebuilds the layout once; imgui.ini takes over from there.
+constexpr int kLayoutVersion = 1;
+
 // The host window is never visible: it just carries the dock space, so it
 // has no title bar and no background of its own.
 constexpr const char* kDockSpaceHost = "###RSE_DockSpaceHost";
@@ -55,6 +59,24 @@ void EditorLayout::AddPanel(std::unique_ptr<EditorPanel> panel) {
   m_panels.push_back(std::move(panel));
 }
 
+void EditorLayout::ShowPanel(const std::string& id) {
+  for (const std::unique_ptr<EditorPanel>& panel : m_panels) {
+    if (id != panel->Id()) {
+      continue;
+    }
+
+    // Shown() only on the transition: a panel whose Cancel restores a snapshot
+    // must not take a new one when the menu item merely focuses it again.
+    if (!panel->visible) {
+      panel->visible = true;
+      panel->Shown();
+    }
+
+    m_focus_panel = panel->Id();
+    return;
+  }
+}
+
 void EditorLayout::SyncVisibility(EditorSettings& settings) const {
   for (const std::unique_ptr<EditorPanel>& panel : m_panels) {
     settings.panels[panel->Id()] = panel->visible;
@@ -68,6 +90,14 @@ void EditorLayout::ProjectChanged() {
 }
 
 void EditorLayout::Draw() {
+  // On the first frame the editor opens on the content browser, whether the
+  // layout was just built or restored. Panels are submitted in order and the
+  // console comes after the browser, so without this the console would take
+  // the tab bar on its activation frame.
+  if (!m_layout_built) {
+    m_select_content_browser = true;
+  }
+
   // The scene target is deliberately *not* reset here. The viewport panel owns
   // it and publishes it whenever it is given the chance to draw, so hiding or
   // collapsing the panel keeps the scene offscreen instead of letting it fall
@@ -83,6 +113,41 @@ void EditorLayout::Draw() {
     if (panel->visible) {
       panel->Draw();
     }
+  }
+
+  // The windows exist now, so this can select a tab. Keeping the console from
+  // being the default is the whole point: ImGui picks the last submitted tab
+  // when the node has no selection yet.
+  if (m_select_content_browser) {
+    for (const std::unique_ptr<EditorPanel>& panel : m_panels) {
+      if (std::string(panel->Id()) != "Content Browser" || !panel->visible) {
+        continue;
+      }
+
+      ImGuiWindow* window = ImGui::FindWindowByName(panel->Id());
+
+      if (window == nullptr) {
+        break;
+      }
+
+      if (ImGuiDockNode* node = ImGui::DockBuilderGetNode(window->DockId)) {
+        // Both: focusing the window makes the tab bar pick it again on the
+        // next frame (docking applies NavWindow focus back to the tab bar),
+        // and the node keeps the choice if focus wanders.
+        ImGui::SetWindowFocus(panel->Id());
+        node->SelectedTabId = window->TabId;
+        m_select_content_browser = false;
+      }
+
+      break;
+    }
+  }
+
+  if (!m_focus_panel.empty()) {
+    // An opened panel was drawn above, so focusing it both raises its window
+    // and selects its tab. One shot: the user is free to focus elsewhere next.
+    ImGui::SetWindowFocus(m_focus_panel.c_str());
+    m_focus_panel.clear();
   }
 
   DrawProjectCommands();
@@ -155,9 +220,13 @@ void EditorLayout::DrawMenuBar() {
     }
     ImGui::Separator();
 
+    if (ImGui::MenuItem("Editor Settings...")) {
+      ShowPanel("Editor Settings");
+    }
+
     // A project's audio levels are project data, so the item needs a project.
     if (ImGui::MenuItem("Project Settings...", nullptr, false, Core::GetProject().IsAttached())) {
-      OpenProjectSettings();
+      ShowPanel("Project Settings");
     }
     ImGui::EndMenu();
   }
@@ -242,14 +311,6 @@ void EditorLayout::DrawMenuBar() {
     }
     ImGui::Separator();
 
-    // MenuItem flips the bool itself and reports the click, so by the time
-    // this returns, the setting is already the new value and saving cannot
-    // write the old one.
-    if (ImGui::MenuItem("Show Grid", nullptr, &EditorManager::Settings().grid.visible)) {
-      EditorManager::Settings().Save();
-    }
-
-    ImGui::Separator();
     if (ImGui::MenuItem("Reset Layout")) {
       RequestResetLayout();
     }
@@ -289,13 +350,26 @@ void EditorLayout::DrawDockSpace() {
 
   const ImGuiID dockspace_id = ImGui::GetID(kDockSpaceId);
 
+  // A layout saved by a build with a different default is rebuilt once, so the
+  // new arrangement does not need View > Reset Layout on every existing
+  // install. imgui.ini takes over again from the next run.
+  EditorSettings& settings = EditorManager::Settings();
+  if (settings.layout_version < kLayoutVersion) {
+    m_reset_layout = true;
+  }
+
   // An existing dock node means imgui.ini supplied one, so the user's layout
   // is left alone. Only build the default when there is nothing to restore,
-  // or when a reset was requested.
+  // when a reset was requested, or when the version says the default moved.
   const bool has_saved_layout = ImGui::DockBuilderGetNode(dockspace_id) != nullptr;
   if (m_reset_layout || (!m_layout_built && !has_saved_layout)) {
     BuildDefaultLayout(dockspace_id);
     m_reset_layout = false;
+
+    if (settings.layout_version < kLayoutVersion) {
+      settings.layout_version = kLayoutVersion;
+      settings.Save();
+    }
   }
   m_layout_built = true;
 
@@ -375,4 +449,8 @@ void EditorLayout::BuildDefaultLayout(ImGuiID dockspace_id) {
   }
 
   ImGui::DockBuilderFinish(dockspace_id);
+
+  // Consumed after the panels have drawn: the content browser has to be the
+  // active tab, and ImGui would otherwise pick the last submitted one.
+  m_select_content_browser = true;
 }

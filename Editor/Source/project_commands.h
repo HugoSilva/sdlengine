@@ -87,11 +87,6 @@ bool HasPendingConfirmation();
 bool ConfirmPending();
 bool CancelPending();
 
-// Edit > Project Settings: the manifest's audio levels, applied as they move
-// and written to the manifest when the dialog is saved. A no-op with a warning
-// when no project is open, because the levels live in the manifest.
-void OpenProjectSettings();
-
 // Prefabs are one entity saved from the open scene and placed into any scene.
 // Save takes the entity at click time because the dialog is asynchronous and
 // the selection may change before a path arrives.

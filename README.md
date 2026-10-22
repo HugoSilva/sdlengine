@@ -52,9 +52,9 @@ Game.exe SampleProject\project.xml
 
 `SampleProject/` is checked in and deployed next to the binaries, so the command above works out of the box. [`docs/ProjectFormat.md`](docs/ProjectFormat.md) documents the manifest, the scene files, and what they do and do not store.
 
-The editor keeps its own state in `editor.cfg` in the working directory, next to `imgui.ini`: the grid, the gizmo, which panels are visible, the last scene, and the five most recent projects. Run it without a path and it reopens the most recent one; `File > Open Recent` lists the rest. A project that has since been moved is dropped from the list instead of failing, and with none left the editor falls back to `./project.xml`, so a renamed folder cannot stop the editor from starting.
+The editor keeps its own state in `editor.cfg` in the working directory, next to `imgui.ini`: the grid, the gizmo, which panels are visible, the layout version, the last scene, and the five most recent projects. Run it without a path and it reopens the most recent one; `File > Open Recent` lists the rest. A project that has since been moved is dropped from the list instead of failing, and with none left the editor falls back to `./project.xml`, so a renamed folder cannot stop the editor from starting.
 
-`Edit > Project Settings` sets the project's master, music and sound-effect levels. They are stored in the manifest, so the game opens at the same mix the editor was tuned with.
+`Edit > Editor Settings` opens a panel with the grid toggle and the open scene's background colour. `Edit > Project Settings` opens a panel that sets the project's master, music and sound-effect levels. They are stored in the manifest, so the game opens at the same mix the editor was tuned with.
 
 `Scenes` lists the manifest's scenes with a tick on the open one; `Ctrl+Tab` and `Ctrl+Shift+Tab` walk the list, wrapping at the ends. Switching, and `New Scene...`, ask before unsaved edits are discarded. The content browser is rooted at the project directory and opens in `scenes/`: double-click a scene there to open it, or right-click for open, rename, delete and `Show in Explorer`.
 

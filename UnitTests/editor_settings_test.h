@@ -69,6 +69,7 @@ TEST_F(EditorSettingsTest, SaveAndLoadRoundTrip) {
   saved.RememberRecentProject(one.string());
   saved.RememberRecentProject(two.string());
   saved.last_scene = "scenes/physics.xml";
+  saved.layout_version = 1;
   saved.panels["Hierarchy"] = false;
   saved.panels["Viewport"] = true;
   saved.Save(m_file.string());
@@ -83,6 +84,7 @@ TEST_F(EditorSettingsTest, SaveAndLoadRoundTrip) {
   EXPECT_EQ(loaded.recent_projects.at(0), Absolute(two.string()));
   EXPECT_EQ(loaded.recent_projects.at(1), Absolute(one.string()));
   EXPECT_EQ(loaded.last_scene, saved.last_scene);
+  EXPECT_EQ(loaded.layout_version, 1);
   ASSERT_EQ(loaded.panels.size(), 2u);
   EXPECT_FALSE(loaded.panels.at("Hierarchy"));
   EXPECT_TRUE(loaded.panels.at("Viewport"));
@@ -91,7 +93,7 @@ TEST_F(EditorSettingsTest, SaveAndLoadRoundTrip) {
 TEST_F(EditorSettingsTest, ACorruptValueKeepsTheDefault) {
   Write(
       "grid.visible=maybe\ngrid.base=not-a-number\ngizmo.mode=spin\npanel.Viewport=perhaps\n"
-      "recent.x=somewhere/project.xml\nrecent.0=\nlast.project=\n");
+      "layout.version=soon\nrecent.x=somewhere/project.xml\nrecent.0=\nlast.project=\n");
 
   EditorSettings settings;
   settings.Load(m_file.string());
@@ -100,8 +102,26 @@ TEST_F(EditorSettingsTest, ACorruptValueKeepsTheDefault) {
   EXPECT_TRUE(settings.grid.visible);
   EXPECT_FLOAT_EQ(settings.grid.base, 32.0f);
   EXPECT_EQ(settings.gizmo.mode, EditorSettings::GizmoMode::kTranslate);
+  EXPECT_EQ(settings.layout_version, 0);
   EXPECT_TRUE(settings.panels.empty());
   EXPECT_TRUE(settings.recent_projects.empty());
+}
+
+TEST_F(EditorSettingsTest, TheRemovedDebugPanelIsDropped) {
+  Write("panel.Debug=false\npanel.Hierarchy=true\n");
+
+  EditorSettings settings;
+  settings.Load(m_file.string());
+
+  // The panel no longer exists, so the key is neither read nor carried into
+  // the next write.
+  EXPECT_EQ(settings.panels.find("Debug"), settings.panels.end());
+  ASSERT_EQ(settings.panels.size(), 1u);
+  EXPECT_TRUE(settings.panels.at("Hierarchy"));
+
+  settings.Save(m_file.string());
+  const std::string written = File::Read(m_file.string().c_str());
+  EXPECT_EQ(written.find("panel.Debug"), std::string::npos);
 }
 
 TEST_F(EditorSettingsTest, AMissingFileKeepsEveryDefault) {
