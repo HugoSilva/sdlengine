@@ -256,8 +256,14 @@ void EditorLayout::DrawMenuBar() {
     ImGui::EndMenu();
   }
 
-  ImGui::SameLine(ImGui::GetWindowWidth() - 160);
-  ImGui::Text("%.2f FPS (%.2f ms)", ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
+  // Right-aligned by the text's own width rather than a fixed offset, so the
+  // readout stays inside the bar whatever the UI font size is.
+  char fps_text[64];
+  ImFormatString(fps_text, sizeof(fps_text), "%.2f FPS (%.2f ms)", ImGui::GetIO().Framerate,
+                 1000.0f / ImGui::GetIO().Framerate);
+  const float fps_width = ImGui::CalcTextSize(fps_text).x;
+  ImGui::SameLine(ImGui::GetWindowWidth() - fps_width - ImGui::GetStyle().WindowPadding.x);
+  ImGui::TextUnformatted(fps_text);
 
   ImGui::EndMainMenuBar();
 }
