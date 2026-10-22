@@ -67,6 +67,12 @@ struct EditorSettings {
   // never read, and a panel the file does not mention keeps its default.
   std::map<std::string, bool> panels;
 
+  // The default layout this file was written with. EditorLayout rebuilds the
+  // built-in arrangement once when the editor's version is higher, so a change
+  // to the defaults reaches existing installs without resetting the layout on
+  // every run.
+  int layout_version{0};
+
   // The settings file, in the working directory next to imgui.ini.
   static constexpr const char* kFilePath = "editor.cfg";
 
@@ -225,13 +231,31 @@ inline void EditorSettings::Load(const std::string& file) {
       legacy_last_project = value;
     } else if (key == "last.scene") {
       last_scene = value;
+    } else if (key == "layout.version") {
+      int parsed = 0;
+      const char* first = value.data();
+      const char* last = first + value.size();
+      const std::from_chars_result result = std::from_chars(first, last, parsed);
+
+      if (result.ec == std::errc() && result.ptr == last && parsed >= 0) {
+        layout_version = parsed;
+      }
     } else if (key.rfind("panel.", 0) == 0) {
+      const std::string id = key.substr(6);
+
+      // The Debug panel is gone. Ignoring the key rather than reading it drops
+      // it from the next Save, so an old file does not carry a dead panel
+      // around forever.
+      if (id == "Debug") {
+        continue;
+      }
+
       // Only a real boolean is a visibility; anything else leaves the panel at
       // its default rather than hiding it on a typo.
       if (value == "true") {
-        panels[key.substr(6)] = true;
+        panels[id] = true;
       } else if (value == "false") {
-        panels[key.substr(6)] = false;
+        panels[id] = false;
       }
     }
   }
@@ -294,6 +318,7 @@ inline void EditorSettings::Save(const std::string& file) const {
   }
 
   out << "last.scene=" << last_scene << "\n";
+  out << "layout.version=" << layout_version << "\n";
 
   // The map is ordered, so the file is stable across runs and a diff shows the
   // panel that actually changed.

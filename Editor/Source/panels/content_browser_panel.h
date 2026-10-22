@@ -35,7 +35,7 @@ class ContentBrowserPanel : public EditorPanel {
   }
 
   const char* Id() const override { return "Content Browser"; }
-  DockSlot Slot() const override { return DockSlot::kLeft; }
+  DockSlot Slot() const override { return DockSlot::kBottom; }
 
   void ProjectChanged() override {
     m_root = RootDirectory();
