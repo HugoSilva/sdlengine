@@ -67,6 +67,13 @@ class SceneIO {
   // empty scene rather than half of the old one and half of the new one.
   static bool Load(const std::filesystem::path& file, std::string* error);
 
+  // The same payload as Save/Load, held in memory. This is what the editor's
+  // play session snapshots the open scene with, so starting and stopping play
+  // never writes a project file. The version checks and the load contract are
+  // the file functions' own; an error names the source as <snapshot>.
+  static bool SaveToString(std::string* contents, std::string* error);
+  static bool LoadFromString(const std::string& contents, std::string* error);
+
   // Empties the registry and returns the camera to its defaults.
   static void Clear();
 

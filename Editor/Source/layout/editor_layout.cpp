@@ -188,10 +188,10 @@ void EditorLayout::DrawMenuBar() {
     }
 
     ImGui::Separator();
-    if (ImGui::MenuItem("Save", "Ctrl+S")) {
+    if (ImGui::MenuItem("Save", "Ctrl+S", false, !SceneManager::IsPlayActive())) {
       SaveProject();
     }
-    if (ImGui::MenuItem("Save Scene As...")) {
+    if (ImGui::MenuItem("Save Scene As...", nullptr, false, !SceneManager::IsPlayActive())) {
       SaveSceneAs();
     }
     if (ImGui::MenuItem("Reload Scene", "F2")) {
@@ -253,6 +253,24 @@ void EditorLayout::DrawMenuBar() {
   }
 
   if (ImGui::BeginMenu("Scenes", Core::GetProject().IsAttached())) {
+    const bool playing = SceneManager::IsPlaying();
+    const bool paused = SceneManager::IsPaused();
+    const bool active = SceneManager::IsPlayActive();
+
+    // The same three actions as the viewport toolbar. Play doubles as Resume
+    // when the scene is paused; Pause only makes sense while it runs.
+    if (ImGui::MenuItem(paused ? "Resume" : "Play", "F5", false, !playing)) {
+      EditorManager::PlayScene();
+    }
+    if (ImGui::MenuItem("Pause", "F6", false, playing)) {
+      EditorManager::PauseScene();
+    }
+    if (ImGui::MenuItem("Stop", "Shift+F5", false, active)) {
+      EditorManager::StopScene();
+    }
+
+    ImGui::Separator();
+
     const ScenesMenuModel scenes = ScenesMenuModel::Build(Core::GetProject(), SceneManager::GetActiveScene());
 
     for (std::size_t index = 0; index < scenes.entries.size(); ++index) {
@@ -288,10 +306,10 @@ void EditorLayout::DrawMenuBar() {
     }
 
     ImGui::Separator();
-    if (ImGui::MenuItem("Save Scene", "Ctrl+S")) {
+    if (ImGui::MenuItem("Save Scene", "Ctrl+S", false, !SceneManager::IsPlayActive())) {
       SaveProject();
     }
-    if (ImGui::MenuItem("Save Scene As...")) {
+    if (ImGui::MenuItem("Save Scene As...", nullptr, false, !SceneManager::IsPlayActive())) {
       SaveSceneAs();
     }
     if (ImGui::MenuItem("Reload Scene", "F2")) {

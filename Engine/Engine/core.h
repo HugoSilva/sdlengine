@@ -104,6 +104,11 @@ class Core {
   // belongs here (or in an ECS system): a scene is data, not a class.
   virtual void Update(float delta_time) {}
 
+  // Whether the scene's simulation systems run this frame. A game always runs
+  // them; the editor overrides this with its play state, so a stopped scene
+  // keeps drawing without stepping physics or audio.
+  virtual bool SceneLogicEnabled() const { return true; }
+
   // Runs after the render target is bound and the UI phase is over, so a
   // shader can upload the uniforms the camera ended up with this frame.
   virtual void Render() = 0;

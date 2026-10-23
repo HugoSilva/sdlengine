@@ -39,6 +39,14 @@ class SoundManager {
   // stays silent, so a scene referring to a missing file still opens.
   static Sound* GetOrLoad(const std::string& reference);
 
+  // The scene's audio, as a whole. The editor's play session uses these to hold
+  // every sound and piece of music with the simulation: skipping AudioSystem
+  // stops new playback updates, but it does not pause tracks that are already
+  // running.
+  static void PauseAll();
+  static void ResumeAll();
+  static void StopAll();
+
   // The project's mix. The master scales both categories; the music and sfx
   // values scale their own. Set on the manager rather than on every component
   // so a project's manifest can be applied before any scene is loaded, and so

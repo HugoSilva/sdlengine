@@ -1,5 +1,7 @@
 #include "editor_manager.h"
 
+#include <utils/logger.h>
+
 uint32_t EditorManager::m_selected_entity{INVALID_ENTITY_ID};
 rse::Framebuffer* EditorManager::m_scene_target{nullptr};
 EditorSettings EditorManager::m_settings;
@@ -135,5 +137,31 @@ void EditorManager::HandleRemoveComponentEvent(const RemoveComponent& event) {
       break;
     default:
       break;
+  }
+}
+
+void EditorManager::PlayScene() {
+  std::string error;
+
+  if (!SceneManager::Play(&error)) {
+    Logger::Error("Could not play the scene: " + error);
+  }
+}
+
+void EditorManager::PauseScene() { SceneManager::Pause(); }
+
+void EditorManager::StopScene() {
+  std::string error;
+
+  if (!SceneManager::Stop(&error)) {
+    Logger::Error("Could not stop the scene: " + error);
+  }
+
+  ValidateSelection();
+}
+
+void EditorManager::ValidateSelection() {
+  if (m_selected_entity != INVALID_ENTITY_ID && !rse::ECSManager::IsValidEntity(m_selected_entity)) {
+    m_selected_entity = INVALID_ENTITY_ID;
   }
 }

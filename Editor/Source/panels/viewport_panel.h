@@ -46,10 +46,14 @@ class ViewportPanel : public EditorPanel {
       return;
     }
 
-    const ImVec2 available = ImGui::GetContentRegionAvail();
+    DrawPlayToolbar();
+
+    // The toolbar consumed a row, so the image gets what is left.
+    const ImVec2 image_available = ImGui::GetContentRegionAvail();
     const float dpi_scale = DisplayScale();
 
-    m_framebuffer.Resize(static_cast<int>(available.x * dpi_scale), static_cast<int>(available.y * dpi_scale));
+    m_framebuffer.Resize(static_cast<int>(image_available.x * dpi_scale),
+                         static_cast<int>(image_available.y * dpi_scale));
 
     if (m_camera != nullptr) {
       m_camera->SetViewportSize(
@@ -62,7 +66,7 @@ class ViewportPanel : public EditorPanel {
     const ImVec2 image_pos = ImGui::GetCursorScreenPos();
 
     // GL textures are bottom-up, ImGui images are top-down.
-    ImGui::Image((ImTextureID)(intptr_t)m_framebuffer.GetColorTexture(), available, ImVec2(0.0f, 1.0f),
+    ImGui::Image((ImTextureID)(intptr_t)m_framebuffer.GetColorTexture(), image_available, ImVec2(0.0f, 1.0f),
                  ImVec2(1.0f, 0.0f));
 
     HandleNavigation(image_pos);
@@ -90,6 +94,55 @@ class ViewportPanel : public EditorPanel {
   }
 
   void ClaimSceneTarget() { EditorManager::SetSceneTarget(&m_framebuffer); }
+
+  // Play/Pause/Stop above the image. The state label is text rather than an
+  // icon: the UI font is Arial at a fixed size and carries no transport glyphs.
+  void DrawPlayToolbar() {
+    const bool playing = SceneManager::IsPlaying();
+    const bool paused = SceneManager::IsPaused();
+    const bool active = SceneManager::IsPlayActive();
+
+    ImGui::BeginDisabled(playing);
+    if (ImGui::Button(paused ? "Resume" : "Play")) {
+      EditorManager::PlayScene();
+    }
+    ImGui::EndDisabled();
+
+    if (ImGui::IsItemHovered()) {
+      ImGui::SetTooltip(paused ? "Resume the scene (F5)" : "Play the open scene (F5)");
+    }
+
+    ImGui::SameLine();
+    ImGui::BeginDisabled(!playing);
+    if (ImGui::Button("Pause")) {
+      EditorManager::PauseScene();
+    }
+    ImGui::EndDisabled();
+
+    if (ImGui::IsItemHovered()) {
+      ImGui::SetTooltip("Pause the scene (F6)");
+    }
+
+    ImGui::SameLine();
+    ImGui::BeginDisabled(!active);
+    if (ImGui::Button("Stop")) {
+      EditorManager::StopScene();
+    }
+    ImGui::EndDisabled();
+
+    if (ImGui::IsItemHovered()) {
+      ImGui::SetTooltip("Stop and restore the scene (Shift+F5)");
+    }
+
+    ImGui::SameLine();
+    if (playing) {
+      ImGui::TextColored(ImVec4(0.45f, 0.85f, 0.45f, 1.0f), "Playing");
+    } else if (paused) {
+      ImGui::TextColored(ImVec4(0.95f, 0.80f, 0.25f, 1.0f), "Paused");
+    } else {
+      ImGui::TextDisabled("Stopped");
+    }
+  }
 
   void HandleNavigation(const ImVec2& image_pos) {
     if (m_camera == nullptr) {

@@ -89,9 +89,9 @@ TEST_F(InputMapTest, MatchesHonoursEveryModifier) {
 }
 
 TEST_F(InputMapTest, TheDefaultsCoverEveryActionTheBuildUses) {
-  for (const std::string action :
-       {"editor.save", "editor.reload", "editor.scene.next", "editor.scene.previous", "editor.gizmo.translate",
-        "editor.gizmo.rotate", "editor.gizmo.scale", "game.up", "game.down", "game.left", "game.right"}) {
+  for (const std::string action : {"editor.save", "editor.reload", "editor.scene.next", "editor.scene.previous",
+                                   "editor.gizmo.translate", "editor.gizmo.rotate", "editor.gizmo.scale", "editor.play",
+                                   "editor.pause", "editor.stop", "game.up", "game.down", "game.left", "game.right"}) {
     EXPECT_TRUE(InputMap::IsKnown(action)) << action;
     EXPECT_TRUE(InputMap::Get(action).IsValid()) << action;
   }
@@ -107,9 +107,9 @@ TEST_F(InputMapTest, AProjectOverridesTheDefault) {
 }
 
 TEST_F(InputMapTest, AnUnknownActionWarnsOnceAndIsIgnored) {
-  InputMap::SetOverrides({{"editor.stop", "F9"}, {"editor.stop", "F10"}});
+  InputMap::SetOverrides({{"editor.not.an.action", "F9"}, {"editor.not.an.action", "F10"}});
 
-  EXPECT_FALSE(InputMap::IsKnown("editor.stop"));
+  EXPECT_FALSE(InputMap::IsKnown("editor.not.an.action"));
 
   int warnings = 0;
 
