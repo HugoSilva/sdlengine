@@ -7,7 +7,8 @@ Sprite::Sprite(glm::vec3 position, glm::vec2 size, unsigned int color) : Rendera
 
 Sprite::Sprite(glm::vec3 position, glm::vec2 size, Texture* texture) : Renderable2D(position, size, 0xffffffff) {
   // Borrowed, not owned: the texture belongs to TextureManager and outlives
-  // this sprite (see BorrowTexture).
-  m_texture = BorrowTexture(texture);
+  // this sprite (see BorrowTexture). SetTexture also applies an atlas region's
+  // UV rectangle when the texture is packed.
+  SetTexture(texture);
 }
 }  // namespace rse

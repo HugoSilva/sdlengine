@@ -1,7 +1,8 @@
 #pragma once
 
+#include <array>
 #include <memory>
-#include <vector>
+#include <string>
 
 #include <cereal/cereal.hpp>
 #include <glm/glm.hpp>
@@ -11,13 +12,6 @@
 #include <core/texture_manager.h>
 
 namespace rse {
-struct VertexData {
-  glm::vec3 vertex;
-  glm::vec2 uv;
-  float tid;
-  unsigned int color;
-};
-
 // Sprites carry their tint as an unsigned int with red in the low byte.
 // InspectorPanel unpacks it for the colour picker; this is the matching
 // packer, so the layout is stated once instead of re-derived at every call
@@ -51,13 +45,32 @@ class Renderable2D {
   inline const glm::vec2& GetSize() const { return m_size; }
   inline void SetColor(unsigned int color) { m_color = color; }
   inline const unsigned int& GetColor() const { return m_color; }
-  inline const std::vector<glm::vec2>& GetUv() const { return m_uv; }
+  inline const std::array<glm::vec2, 4>& GetUv() const { return m_uv; }
   inline const unsigned int GetTId() const { return m_texture.get() == nullptr ? 0 : m_texture.get()->GetId(); }
   inline const std::string GetTextureName() const {
     return m_texture.get() == nullptr ? "" : m_texture.get()->GetName();
   }
   inline const std::string GetTextureAssetId() const {
     return m_texture.get() == nullptr ? "" : m_texture.get()->GetAssetId();
+  }
+
+  // Points the sprite at a borrowed texture and copies that texture's UV
+  // rectangle. A texture that lives on an atlas page therefore uses only its
+  // own region instead of the whole page.
+  void SetTexture(Texture* texture) {
+    m_texture = BorrowTexture(texture);
+    if (texture == nullptr) {
+      SetUvDefaults();
+      return;
+    }
+
+    const glm::vec4 uv = texture->GetUvRect();
+    m_uv = {{
+        glm::vec2(uv.x, uv.w),
+        glm::vec2(uv.x, uv.y),
+        glm::vec2(uv.z, uv.y),
+        glm::vec2(uv.z, uv.w),
+    }};
   }
 
   template <typename Archive>
@@ -79,16 +92,18 @@ class Renderable2D {
     } else {
       std::string reference;
       archive(cereal::make_nvp("Texture", reference));
-      m_texture = reference.empty() ? nullptr : BorrowTexture(TextureManager::GetOrLoad(reference));
+      SetTexture(reference.empty() ? nullptr : TextureManager::GetOrLoad(reference));
     }
   }
 
  private:
   void SetUvDefaults() {
-    m_uv.push_back(glm::vec2(0, 1));
-    m_uv.push_back(glm::vec2(0, 0));
-    m_uv.push_back(glm::vec2(1, 0));
-    m_uv.push_back(glm::vec2(1, 1));
+    m_uv = {{
+        glm::vec2(0.0f, 1.0f),
+        glm::vec2(0.0f, 0.0f),
+        glm::vec2(1.0f, 0.0f),
+        glm::vec2(1.0f, 1.0f),
+    }};
   }
 
  protected:
@@ -97,7 +112,7 @@ class Renderable2D {
   glm::vec3 m_position;
   glm::vec2 m_size;
   unsigned int m_color{0x00};
-  std::vector<glm::vec2> m_uv;
+  std::array<glm::vec2, 4> m_uv{};
   std::shared_ptr<Texture> m_texture{nullptr};
 };
 }  // namespace rse

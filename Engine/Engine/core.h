@@ -11,6 +11,7 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -22,6 +23,7 @@
 #include <audio/music.h>
 #include <audio/sound.h>
 #include <audio/sound_manager.h>
+#include <components/shader.h>
 #include <components/sprite.h>
 #include <core/event_manager.h>
 #include <core/project.h>
@@ -38,13 +40,18 @@
 #include <render/camera.h>
 #include <render/font.h>
 #include <render/font_manager.h>
-#include <render/framebuffer.h>
-#include <render/layer.h>
-#include <render/opengl_renderer.h>
 #include <render/renderable_2d.h>
 #include <render/renderer_2d.h>
-#include <render/window.h>
 #include <utils/file.h>
+
+namespace rse {
+class Framebuffer;
+class Window;
+}  // namespace rse
+
+namespace rse::platform {
+class Clock;
+}  // namespace rse::platform
 
 class Core {
  public:
@@ -123,7 +130,9 @@ class Core {
   // defaults. Called whenever m_project changes.
   static void ApplyProjectInput();
 
-  // SDL3's SDL_GetTicks() returns Uint64 (milliseconds).
+  // The platform clock is the only source of elapsed time in Core; game code
+  // never sees SDL ticks.
+  std::unique_ptr<rse::platform::Clock> m_clock;
   uint64_t m_now = 0, m_last = 0;
   float m_delta_time = 0.0;
   float m_delta_accumulator = 0.0f;

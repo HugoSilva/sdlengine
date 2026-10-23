@@ -2,25 +2,23 @@
 
 layout (location = 0) out vec4 color;
 
-uniform vec4 colour;
+uniform sampler2D texture0;
 
 in DATA
 {
-	vec4 position;
 	vec2 uv;
 	float tid;
 	vec4 color;
 } fs_in;
 
-uniform sampler2D textures[32];
-
 void main()
 {
+	// `tid` is the textured flag now, not a sampler index: the renderer binds
+	// one texture per batch to unit 0 and submits an untextured quad with tid 0.
 	vec4 texColor = fs_in.color;
-	if (fs_in.tid > 0.0)
+	if (fs_in.tid > 0.5)
 	{
-		int tid = int(fs_in.tid - 0.5);
-		texColor = fs_in.color * texture(textures[tid], fs_in.uv);
+		texColor = fs_in.color * texture(texture0, fs_in.uv);
 	}
 	color = texColor;
 }

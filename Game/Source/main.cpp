@@ -55,6 +55,9 @@ class Game : public Core {
   void Render() override {
     m_shader->Enable();
     m_camera->Render(m_shader);
+
+    const rse::OrthoView view = m_camera->GetView();
+    Core::GetRenderer()->SetViewBounds(view.Min(), view.Max());
   }
 
  private:

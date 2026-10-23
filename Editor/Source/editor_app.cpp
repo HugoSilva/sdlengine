@@ -14,6 +14,7 @@
 #include <panels/project_settings_panel.h>
 #include <panels/viewport_panel.h>
 #include <render/grid_render_system.h>
+#include <render/window.h>
 #include <systems/render_system.h>
 
 namespace {
@@ -201,6 +202,11 @@ void EditorApp::UpdateTitle() {
 void EditorApp::Render() {
   m_shader->Enable();
   m_camera->Apply(m_shader);
+
+  // The renderer culls in world space. The editor camera owns the authoritative
+  // view rectangle, so publish it before the scene systems submit this frame.
+  const rse::OrthoView& view = m_camera->GetView();
+  Core::GetRenderer()->SetViewBounds(view.Min(), view.Max());
 }
 
 rse::Framebuffer* EditorApp::GetSceneTarget() { return EditorManager::GetSceneTarget(); }

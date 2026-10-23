@@ -14,6 +14,7 @@
 #include <gizmo/gizmo.h>
 #include <input/input_map.h>
 #include <layout/editor_panel.h>
+#include <render/framebuffer.h>
 #include <scene/entity_bounds.h>
 
 // ---------------------------------------------------------------------------

@@ -5,10 +5,15 @@
 #include <imgui.h>
 #include <utility>
 
+#include <components/shader.h>
 #include <core/asset_registry.h>
 #include <ecs/scene_io.h>
 #include <input/input_map.h>
+#include <platform/sdl_clock.h>
+#include <render/framebuffer.h>
 #include <render/imgui_layer.h>
+#include <render/opengl_renderer.h>
+#include <render/window.h>
 
 #ifdef EMSCRIPTEN
 static void DispatchLoop(void* fp) {
@@ -29,7 +34,8 @@ std::string EngineResourcePath(const std::string& file_name) {
 }
 }  // namespace
 
-Core::Core(const std::filesystem::path& project_file) : m_frames_per_second(0) {
+Core::Core(const std::filesystem::path& project_file)
+    : m_clock(std::make_unique<rse::platform::SdlClock>()), m_frames_per_second(0) {
   LoadProject(project_file);
 
   const bool project_loaded = m_project.IsAttached();
@@ -223,7 +229,7 @@ void Core::Start() {
 }
 
 void Core::Run() {
-  m_now = SDL_GetTicks();
+  m_now = m_clock->NowMilliseconds();
   m_delta_time = (m_now - m_last) / 1000.0f;
   m_last = m_now;
 

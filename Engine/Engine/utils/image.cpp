@@ -51,7 +51,7 @@ SDL_Surface* Image::LoadFont(TTF_Font* font, const char* text, SDL_Color text_co
   return surface;
 }
 
-SDL_Surface* Image::LoadImage(const char* filename) {
+SDL_Surface* Image::LoadSurface(const char* filename) {
   SDL_Surface* surface = IMG_Load(filename);
 
   if (surface == nullptr) {
