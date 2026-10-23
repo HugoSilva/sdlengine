@@ -32,6 +32,12 @@ TEST(SpriteBatchTest, GroupsDrawsByTexture) {
   EXPECT_EQ(2u, builder.GetBatches()[1].texture);
   EXPECT_EQ(12u, builder.GetVertices().size());
   EXPECT_EQ(18u, builder.GetIndices().size());
+  // The second batch starts at the fifth vertex, so a shared vertex buffer has
+  // to draw it with first_vertex as the base vertex.
+  EXPECT_EQ(0u, builder.GetBatches()[0].first_vertex);
+  EXPECT_EQ(4u, builder.GetBatches()[1].first_vertex);
+  EXPECT_EQ(0u, builder.GetBatches()[0].first_index);
+  EXPECT_EQ(6u, builder.GetBatches()[1].first_index);
   EXPECT_EQ(3u, builder.GetStats().submitted);
   EXPECT_EQ(0u, builder.GetStats().culled);
   EXPECT_EQ(2u, builder.GetStats().batches);

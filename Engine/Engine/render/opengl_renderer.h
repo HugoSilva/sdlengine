@@ -12,14 +12,16 @@
 struct SDL_Window;
 
 namespace rse {
-class Shader;
-
 // The desktop OpenGL implementation of the 2D renderer. It deliberately keeps
 // GL out of this header: gameplay and editor code see Renderer2D, while the only
 // translation unit that knows about buffers and draw calls is the .cpp.
+//
+// The renderer does not own a shader. The application enables its scene shader
+// and uploads the camera uniforms before submitting; the renderer only binds
+// textures and draws. Switching programs here would discard those uniforms.
 class OpenGLRenderer : public Renderer2D {
  public:
-  OpenGLRenderer(SDL_Window* window, Shader* shader);
+  explicit OpenGLRenderer(SDL_Window* window);
   ~OpenGLRenderer() override;
 
   void Begin() override;
@@ -38,7 +40,7 @@ class OpenGLRenderer : public Renderer2D {
   RenderCapabilities GetCapabilities() const override { return m_capabilities; }
 
  private:
-  void DrawBatch(const SpriteBatch& batch);
+  void DrawBatch(const SpriteBatch& batch, int base_vertex, std::size_t first_index);
 
   unsigned int m_vao{0};
   unsigned int m_vbo{0};
@@ -46,7 +48,6 @@ class OpenGLRenderer : public Renderer2D {
   std::size_t m_vbo_capacity{0};
   std::size_t m_ibo_capacity{0};
 
-  Shader* m_shader{nullptr};
   SpriteBatchBuilder m_builder;
   Renderer2DStats m_stats;
   RenderCapabilities m_capabilities;

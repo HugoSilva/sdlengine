@@ -11,11 +11,10 @@
 #include <GL/glew.h>
 #endif  // EMSCRIPTEN
 
-#include <components/shader.h>
 #include <render/renderable_2d.h>
 
 namespace rse {
-OpenGLRenderer::OpenGLRenderer(SDL_Window* window, Shader* shader) : m_shader(shader) {
+OpenGLRenderer::OpenGLRenderer(SDL_Window* window) {
   // The window is part of the constructor because backends need it to create
   // their context; the batched 2D path itself has no SDL dependency.
   (void)window;
@@ -41,12 +40,6 @@ OpenGLRenderer::OpenGLRenderer(SDL_Window* window, Shader* shader) : m_shader(sh
 
   glBindVertexArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-  if (m_shader != nullptr) {
-    m_shader->Enable();
-    m_shader->SetUniform1i("texture0", 0);
-    m_shader->Disable();
-  }
 
   GLint texture_units = 0;
   GLint texture_size = 0;
@@ -118,15 +111,43 @@ void OpenGLRenderer::Flush() {
   m_stats.indices = batch_stats.indices;
   m_stats.draw_calls = batch_stats.batches;
 
-  if (m_shader != nullptr) m_shader->Enable();
+  // The application owns the shader and enables it before submitting the
+  // frame; enabling a renderer-private program here would discard the camera
+  // uniforms the app just uploaded. The renderer only binds textures and draws.
   glBindVertexArray(m_vao);
   glActiveTexture(GL_TEXTURE0);
 
-  // One upload for the frame, not one per batch. The batch index ranges are
-  // local to the batch, so each draw is an offset into that single index
-  // buffer and no base-vertex support is needed.
+  const auto& batches = m_builder.GetBatches();
   const auto& vertices = m_builder.GetVertices();
   const auto& indices = m_builder.GetIndices();
+
+#ifdef EMSCRIPTEN
+  // WebGL2 has no base-vertex draw, so give each batch its own upload and keep
+  // the 16-bit indices local to that batch.
+  for (const SpriteBatch& batch : batches) {
+    const std::size_t vertex_bytes = batch.vertex_count * sizeof(SpriteVertex);
+    const std::size_t index_bytes = batch.index_count * sizeof(std::uint16_t);
+
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    if (vertex_bytes > m_vbo_capacity) {
+      glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertex_bytes), nullptr, GL_STREAM_DRAW);
+      m_vbo_capacity = vertex_bytes;
+    }
+    glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(vertex_bytes), vertices.data() + batch.first_vertex);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+    if (index_bytes > m_ibo_capacity) {
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(index_bytes), nullptr, GL_STREAM_DRAW);
+      m_ibo_capacity = index_bytes;
+    }
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(index_bytes),
+                    indices.data() + batch.first_index);
+
+    DrawBatch(batch, 0, 0);
+  }
+#else
+  // One upload for the frame. The batch indices stay 16-bit and local to their
+  // batch, so the draw supplies the batch's first vertex as the base vertex.
   const std::size_t vertex_bytes = vertices.size() * sizeof(SpriteVertex);
   const std::size_t index_bytes = indices.size() * sizeof(std::uint16_t);
 
@@ -148,9 +169,10 @@ void OpenGLRenderer::Flush() {
     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(index_bytes), indices.data());
   }
 
-  for (const SpriteBatch& batch : m_builder.GetBatches()) {
-    DrawBatch(batch);
+  for (const SpriteBatch& batch : batches) {
+    DrawBatch(batch, static_cast<GLint>(batch.first_vertex), batch.first_index);
   }
+#endif
 
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindVertexArray(0);
@@ -159,10 +181,16 @@ void OpenGLRenderer::Flush() {
   m_stats.cpu_ms = std::chrono::duration<double, std::milli>(elapsed).count();
 }
 
-void OpenGLRenderer::DrawBatch(const SpriteBatch& batch) {
-  const auto* index_offset = reinterpret_cast<const void*>(batch.first_index * sizeof(std::uint16_t));
+void OpenGLRenderer::DrawBatch(const SpriteBatch& batch, int base_vertex, std::size_t first_index) {
+  const auto* index_offset = reinterpret_cast<const void*>(first_index * sizeof(std::uint16_t));
   glBindTexture(GL_TEXTURE_2D, batch.texture);
+#ifdef EMSCRIPTEN
+  (void)base_vertex;
   glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(batch.index_count), GL_UNSIGNED_SHORT, index_offset);
+#else
+  glDrawElementsBaseVertex(GL_TRIANGLES, static_cast<GLsizei>(batch.index_count), GL_UNSIGNED_SHORT, index_offset,
+                           base_vertex);
+#endif
 }
 
 void OpenGLRenderer::SetClearColor(const glm::vec3& color) { m_clear_color = color; }

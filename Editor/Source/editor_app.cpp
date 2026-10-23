@@ -201,6 +201,8 @@ void EditorApp::UpdateTitle() {
 
 void EditorApp::Render() {
   m_shader->Enable();
+  // The batched renderer binds every batch to texture unit 0.
+  m_shader->SetUniform1i("texture0", 0);
   m_camera->Apply(m_shader);
 
   // The renderer culls in world space. The editor camera owns the authoritative

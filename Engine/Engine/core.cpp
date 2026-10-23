@@ -5,7 +5,6 @@
 #include <imgui.h>
 #include <utility>
 
-#include <components/shader.h>
 #include <core/asset_registry.h>
 #include <ecs/scene_io.h>
 #include <input/input_map.h>
@@ -55,10 +54,7 @@ Core::Core(const std::filesystem::path& project_file)
   rse::InputManager::Init();
   PhysicsManager::Init();
 
-  const std::string vertex_shader = ResolveResource("Default.vert");
-  const std::string fragment_shader = ResolveResource("Default.frag");
-  rse::Shader* default_shader = new rse::Shader(vertex_shader.c_str(), fragment_shader.c_str());
-  m_renderer = new rse::OpenGLRenderer(m_window->GetWindow(), default_shader);
+  m_renderer = new rse::OpenGLRenderer(m_window->GetWindow());
 
   rse::ImGuiLayer::Init(m_window->GetWindow(), m_window->GetContext());
 

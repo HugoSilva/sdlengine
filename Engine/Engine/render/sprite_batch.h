@@ -35,9 +35,10 @@ struct SpriteVertex {
   std::uint32_t color;
 };
 
-// One draw call's worth of geometry. The indices are local to the batch, so a
-// backend can upload the vertex and index ranges independently without needing
-// base-vertex support.
+// One draw call's worth of geometry. The indices are local to the batch. A
+// backend that uploads each batch separately can draw them as-is; one that keeps
+// a shared vertex buffer must pass first_vertex as the base vertex (or copy the
+// batch to the start of a scratch buffer first).
 struct SpriteBatch {
   std::uint32_t texture{0};
   std::size_t first_vertex{0};
