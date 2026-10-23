@@ -22,6 +22,7 @@
 #include <ecs/prefab_io.h>
 #include <ecs/scene_io.h>
 #include <input/input_map.h>
+#include <render/window.h>
 #include <utils/logger.h>
 
 namespace {

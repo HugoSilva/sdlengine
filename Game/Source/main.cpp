@@ -54,7 +54,12 @@ class Game : public Core {
 
   void Render() override {
     m_shader->Enable();
+    // The batched renderer binds every batch to texture unit 0.
+    m_shader->SetUniform1i("texture0", 0);
     m_camera->Render(m_shader);
+
+    const rse::OrthoView view = m_camera->GetView();
+    Core::GetRenderer()->SetViewBounds(view.Min(), view.Max());
   }
 
  private:

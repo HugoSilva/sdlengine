@@ -7,7 +7,6 @@
 #include <ecs/systems/base_system.h>
 #include <ecs/systems/physics_system.h>
 #include <ecs/systems/sprite_render_system.h>
-#include <render/opengl_renderer.h>
 
 namespace rse {
 entt::DefaultRegistry ECSManager::registry;

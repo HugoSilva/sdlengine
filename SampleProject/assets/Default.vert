@@ -7,11 +7,9 @@ layout (location = 3) in vec4 color;
 
 uniform mat4 projection;
 uniform mat4 view;
-uniform mat4 model;
 
 out DATA
 {
-	vec4 position;
 	vec2 uv;
 	float tid;
 	vec4 color;
@@ -20,7 +18,6 @@ out DATA
 void main()
 {
 	gl_Position = projection * view * position;
-	vs_out.position = model * position;
 	vs_out.uv = uv;
 	vs_out.tid = tid;
 	vs_out.color = color;

@@ -1,221 +1,201 @@
 #include "opengl_renderer.h"
 
-#include <glm/gtc/matrix_transform.hpp>  // glm::translate, glm::rotate, glm::scale, glm::perspective
-#include <glm/gtc/type_ptr.hpp>          // glm::value_ptr
-#include <glm/mat4x4.hpp>                // glm::mat4
+#include <algorithm>
+#include <cstddef>
+
+#include <glm/glm.hpp>
+
+#ifdef EMSCRIPTEN
+#include <SDL3/SDL_opengles2.h>
+#else
+#include <GL/glew.h>
+#endif  // EMSCRIPTEN
+
+#include <render/renderable_2d.h>
 
 namespace rse {
-OpenGLRenderer::OpenGLRenderer(SDL_Window* win, Shader* shader) : m_window(win), m_shader(shader) {
+OpenGLRenderer::OpenGLRenderer(SDL_Window* window) {
+  // The window is part of the constructor because backends need it to create
+  // their context; the batched 2D path itself has no SDL dependency.
+  (void)window;
+
   glGenVertexArrays(1, &m_vao);
   glGenBuffers(1, &m_vbo);
+  glGenBuffers(1, &m_ibo);
 
   glBindVertexArray(m_vao);
   glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-  glBufferData(GL_ARRAY_BUFFER, RENDERER_BUFFER_SIZE, nullptr, GL_DYNAMIC_DRAW);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
 
-  glEnableVertexAttribArray(SHADER_VERTEX_INDEX);
-  glEnableVertexAttribArray(SHADER_UV_INDEX);
-  glEnableVertexAttribArray(SHADER_TID_INDEX);
-  glEnableVertexAttribArray(SHADER_COLOR_INDEX);
+  glEnableVertexAttribArray(0);
+  glEnableVertexAttribArray(1);
+  glEnableVertexAttribArray(2);
+  glEnableVertexAttribArray(3);
 
-  glVertexAttribPointer(SHADER_VERTEX_INDEX, 3, GL_FLOAT, GL_FALSE, RENDERER_VERTEX_SIZE, (const GLvoid*)0);
-  glVertexAttribPointer(SHADER_UV_INDEX, 2, GL_FLOAT, GL_FALSE, RENDERER_VERTEX_SIZE,
-                        (const GLvoid*)(offsetof(VertexData, uv)));
-  glVertexAttribPointer(SHADER_TID_INDEX, 1, GL_FLOAT, GL_FALSE, RENDERER_VERTEX_SIZE,
-                        (const GLvoid*)(offsetof(VertexData, tid)));
-  glVertexAttribPointer(SHADER_COLOR_INDEX, 4, GL_UNSIGNED_BYTE, GL_TRUE, RENDERER_VERTEX_SIZE,
-                        (const GLvoid*)(offsetof(VertexData, color)));
-
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-  unsigned int* indices = new unsigned int[RENDERER_INDICES_SIZE];
-
-  int offset = 0;
-  for (int i = 0; i < RENDERER_INDICES_SIZE; i += 6) {
-    indices[i] = offset + 0;
-    indices[i + 1] = offset + 1;
-    indices[i + 2] = offset + 2;
-
-    indices[i + 3] = offset + 2;
-    indices[i + 4] = offset + 3;
-    indices[i + 5] = offset + 0;
-
-    offset += 4;
-  }
-
-  m_ibo = new IndexBuffer(indices, RENDERER_INDICES_SIZE);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), (const void*)offsetof(SpriteVertex, position));
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), (const void*)offsetof(SpriteVertex, uv));
+  glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), (const void*)offsetof(SpriteVertex, tid));
+  glVertexAttribPointer(3, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(SpriteVertex),
+                        (const void*)offsetof(SpriteVertex, color));
 
   glBindVertexArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-  m_clear_color = new test::TestClearColor();
-#ifdef EMSCRIPTEN
-  m_BufferBase = new VertexData[RENDERER_MAX_SPRITES * 4];
-#endif  // EMSCRIPTEN
+  GLint texture_units = 0;
+  GLint texture_size = 0;
+  glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &texture_units);
+  glGetIntegerv(GL_MAX_TEXTURE_SIZE, &texture_size);
+  m_capabilities.max_texture_units = static_cast<std::uint32_t>(std::max(1, texture_units));
+  m_capabilities.max_texture_size = static_cast<std::uint32_t>(std::max(0, texture_size));
+  m_capabilities.max_batch_vertices = static_cast<std::uint32_t>(SpriteBatchBuilder::kMaxVerticesPerBatch);
 }
 
 OpenGLRenderer::~OpenGLRenderer() {
-  delete m_ibo;
+  glDeleteBuffers(1, &m_ibo);
   glDeleteBuffers(1, &m_vbo);
   glDeleteVertexArrays(1, &m_vao);
 }
 
 void OpenGLRenderer::Begin() {
-  glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-#ifdef EMSCRIPTEN
-  m_Buffer = m_BufferBase;
-#else
-  m_buffer = (VertexData*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-#endif  // EMSCRIPTEN
+  m_builder.Reset();
+  m_stats = {};
+  m_frame_start = std::chrono::steady_clock::now();
 
-  m_clear_color->OnRender();
+  glClearColor(m_clear_color.r, m_clear_color.g, m_clear_color.b, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void OpenGLRenderer::SetClearColor(const glm::vec3& color) {
-  float* clear_color = m_clear_color->GetClearColor();
-  clear_color[0] = color.r;
-  clear_color[1] = color.g;
-  clear_color[2] = color.b;
+void OpenGLRenderer::Submit(TransformComponent& transform, const Renderable2D* renderable, std::int32_t layer) {
+  if (renderable == nullptr) return;
+
+  SpriteDraw draw;
+  draw.uv = renderable->GetUv();
+  draw.position = transform.position;
+  draw.rotation = transform.rotation;
+  draw.size = renderable->GetSize();
+  draw.scale = transform.scale;
+  draw.color = renderable->GetColor();
+  draw.texture = renderable->GetTId();
+  draw.layer = layer;
+  draw.depth = transform.position.z;
+  m_builder.Add(draw);
 }
 
-void OpenGLRenderer::Submit(TransformComponent& transform, const Renderable2D* renderable) {
-  // const glm::vec3& position = renderable->getPosition();
-  const glm::vec2& size = renderable->GetSize();
-  const unsigned int& color = renderable->GetColor();
-  const std::vector<glm::vec2>& uv = renderable->GetUv();
-  const unsigned int tid = renderable->GetTId();
-
-  float ts = 0.0f;
-  if (tid > 0) {
-    bool found = false;
-    for (unsigned int i = 0; i < m_texture_slots.size(); i++) {
-      if (m_texture_slots[i] == tid) {
-        ts = (float)(i + 1);
-        found = true;
-        break;
-      }
-    }
-
-    if (!found) {
-      if (m_texture_slots.size() >= RENDERER_MAX_TEXTURES) {
-        End();
-        Flush();
-        Begin();
-      }
-      m_texture_slots.push_back(tid);
-      ts = (float)(m_texture_slots.size());
-    }
-  }
-
-  // TODO Create a proper anchor concept for the sprites this hard codes center points
-  glm::vec3 up_right = glm::vec3(1.f * size.x, 1.f * size.y, 0.f);
-  glm::vec3 up_left = glm::vec3(-1.f * size.x, 1.f * size.y, 0.f);
-  glm::vec3 down_right = glm::vec3(1.f * size.x, -1.f * size.y, 0.f);
-  glm::vec3 down_left = glm::vec3(-1.f * size.x, -1.f * size.y, 0.f);
-
-  // TODO Move the vertex calculation outside of the renderer for better performance
-  glm::mat4 model = glm::translate(glm::mat4(1.f), transform.position);
-  model = glm::rotate(model, glm::radians(transform.rotation.x), glm::vec3(1.f, 0.f, 0.f));
-  model = glm::rotate(model, glm::radians(transform.rotation.y), glm::vec3(0.f, 1.f, 0.f));
-  model = glm::rotate(model, glm::radians(transform.rotation.z), glm::vec3(0.f, 0.f, 1.f));
-  model = glm::scale(model, transform.scale);
-
-  m_buffer->vertex = model * glm::vec4(down_left, 1.f);
-  m_buffer->uv = uv[0];
-  m_buffer->tid = ts;
-  m_buffer->color = color;
-  m_buffer++;
-
-  m_buffer->vertex = model * glm::vec4(up_left, 1.f);
-  m_buffer->uv = uv[1];
-  m_buffer->tid = ts;
-  m_buffer->color = color;
-  m_buffer++;
-
-  m_buffer->vertex = model * glm::vec4(up_right, 1.f);
-  m_buffer->uv = uv[2];
-  m_buffer->tid = ts;
-  m_buffer->color = color;
-  m_buffer++;
-
-  m_buffer->vertex = model * glm::vec4(down_right, 1.f);
-  m_buffer->uv = uv[3];
-  m_buffer->tid = ts;
-  m_buffer->color = color;
-  m_buffer++;
-
-  m_index_count += 6;
-}
-
-void OpenGLRenderer::SubmitQuad(TransformComponent& transform, glm::vec2 half_extent, unsigned int color) {
-  // Same transform and corner order as submit(), so the index buffer's
-  // winding applies unchanged; the difference is that tid stays 0, which is
-  // what makes Default.frag fall through to fs_in.color instead of sampling
-  // a texture. That is why a grid line needs no shader change.
-  glm::mat4 model = glm::translate(glm::mat4(1.f), transform.position);
-  model = glm::rotate(model, glm::radians(transform.rotation.x), glm::vec3(1.f, 0.f, 0.f));
-  model = glm::rotate(model, glm::radians(transform.rotation.y), glm::vec3(0.f, 1.f, 0.f));
-  model = glm::rotate(model, glm::radians(transform.rotation.z), glm::vec3(0.f, 0.f, 1.f));
-  model = glm::scale(model, transform.scale);
-
-  const glm::vec3 down_left = glm::vec3(-1.f * half_extent.x, -1.f * half_extent.y, 0.f);
-  const glm::vec3 up_left = glm::vec3(-1.f * half_extent.x, 1.f * half_extent.y, 0.f);
-  const glm::vec3 up_right = glm::vec3(1.f * half_extent.x, 1.f * half_extent.y, 0.f);
-  const glm::vec3 down_right = glm::vec3(1.f * half_extent.x, -1.f * half_extent.y, 0.f);
-
-  m_buffer->vertex = model * glm::vec4(down_left, 1.f);
-  m_buffer->uv = glm::vec2(0.f, 1.f);
-  m_buffer->tid = 0.0f;
-  m_buffer->color = color;
-  m_buffer++;
-
-  m_buffer->vertex = model * glm::vec4(up_left, 1.f);
-  m_buffer->uv = glm::vec2(0.f, 0.f);
-  m_buffer->tid = 0.0f;
-  m_buffer->color = color;
-  m_buffer++;
-
-  m_buffer->vertex = model * glm::vec4(up_right, 1.f);
-  m_buffer->uv = glm::vec2(1.f, 0.f);
-  m_buffer->tid = 0.0f;
-  m_buffer->color = color;
-  m_buffer++;
-
-  m_buffer->vertex = model * glm::vec4(down_right, 1.f);
-  m_buffer->uv = glm::vec2(1.f, 1.f);
-  m_buffer->tid = 0.0f;
-  m_buffer->color = color;
-  m_buffer++;
-
-  m_index_count += 6;
+void OpenGLRenderer::SubmitQuad(TransformComponent& transform, glm::vec2 half_extent, unsigned int color,
+                                std::int32_t layer) {
+  SpriteDraw draw;
+  draw.position = transform.position;
+  draw.rotation = transform.rotation;
+  draw.size = half_extent;
+  draw.scale = transform.scale;
+  draw.color = color;
+  draw.texture = 0;
+  draw.layer = layer;
+  draw.depth = transform.position.z;
+  m_builder.Add(draw);
 }
 
 void OpenGLRenderer::End() {
-#ifdef EMSCRIPTEN
-  glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-  glBufferSubData(GL_ARRAY_BUFFER, 0, (m_Buffer - m_BufferBase) * RENDERER_VERTEX_SIZE, m_BufferBase);
-  m_Buffer = m_BufferBase;
-#else
-  glUnmapBuffer(GL_ARRAY_BUFFER);
-#endif  // EMSCRIPTEN
-
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  // Nothing is mapped or copied here any more. The queue is built in Flush,
+  // after every system has submitted its frame, which is what makes sorting and
+  // texture grouping possible.
 }
 
 void OpenGLRenderer::Flush() {
-  for (unsigned int i = 0; i < m_texture_slots.size(); i++) {
-    glActiveTexture(GL_TEXTURE0 + i);
-    glBindTexture(GL_TEXTURE_2D, m_texture_slots[i]);
+  m_builder.Build();
+  const SpriteBatchStats& batch_stats = m_builder.GetStats();
+  m_stats.submitted = batch_stats.submitted;
+  m_stats.culled = batch_stats.culled;
+  m_stats.batches = batch_stats.batches;
+  m_stats.vertices = batch_stats.vertices;
+  m_stats.indices = batch_stats.indices;
+  m_stats.draw_calls = batch_stats.batches;
+
+  // The application owns the shader and enables it before submitting the
+  // frame; enabling a renderer-private program here would discard the camera
+  // uniforms the app just uploaded. The renderer only binds textures and draws.
+  glBindVertexArray(m_vao);
+  glActiveTexture(GL_TEXTURE0);
+
+  const auto& batches = m_builder.GetBatches();
+  const auto& vertices = m_builder.GetVertices();
+  const auto& indices = m_builder.GetIndices();
+
+#ifdef EMSCRIPTEN
+  // WebGL2 has no base-vertex draw, so give each batch its own upload and keep
+  // the 16-bit indices local to that batch.
+  for (const SpriteBatch& batch : batches) {
+    const std::size_t vertex_bytes = batch.vertex_count * sizeof(SpriteVertex);
+    const std::size_t index_bytes = batch.index_count * sizeof(std::uint16_t);
+
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    if (vertex_bytes > m_vbo_capacity) {
+      glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertex_bytes), nullptr, GL_STREAM_DRAW);
+      m_vbo_capacity = vertex_bytes;
+    }
+    glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(vertex_bytes), vertices.data() + batch.first_vertex);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+    if (index_bytes > m_ibo_capacity) {
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(index_bytes), nullptr, GL_STREAM_DRAW);
+      m_ibo_capacity = index_bytes;
+    }
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(index_bytes),
+                    indices.data() + batch.first_index);
+
+    DrawBatch(batch, 0, 0);
+  }
+#else
+  // One upload for the frame. The batch indices stay 16-bit and local to their
+  // batch, so the draw supplies the batch's first vertex as the base vertex.
+  const std::size_t vertex_bytes = vertices.size() * sizeof(SpriteVertex);
+  const std::size_t index_bytes = indices.size() * sizeof(std::uint16_t);
+
+  if (vertex_bytes > 0) {
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    if (vertex_bytes > m_vbo_capacity) {
+      glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertex_bytes), nullptr, GL_STREAM_DRAW);
+      m_vbo_capacity = vertex_bytes;
+    }
+    glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(vertex_bytes), vertices.data());
   }
 
-  glBindVertexArray(m_vao);
-  m_ibo->Bind();
+  if (index_bytes > 0) {
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+    if (index_bytes > m_ibo_capacity) {
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(index_bytes), nullptr, GL_STREAM_DRAW);
+      m_ibo_capacity = index_bytes;
+    }
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(index_bytes), indices.data());
+  }
 
-  glDrawElements(GL_TRIANGLES, m_index_count, GL_UNSIGNED_INT, nullptr);
+  for (const SpriteBatch& batch : batches) {
+    DrawBatch(batch, static_cast<GLint>(batch.first_vertex), batch.first_index);
+  }
+#endif
 
-  m_ibo->Unbind();
+  glBindTexture(GL_TEXTURE_2D, 0);
   glBindVertexArray(0);
 
-  m_index_count = 0;
-  m_texture_slots.clear();
+  const auto elapsed = std::chrono::steady_clock::now() - m_frame_start;
+  m_stats.cpu_ms = std::chrono::duration<double, std::milli>(elapsed).count();
 }
+
+void OpenGLRenderer::DrawBatch(const SpriteBatch& batch, int base_vertex, std::size_t first_index) {
+  const auto* index_offset = reinterpret_cast<const void*>(first_index * sizeof(std::uint16_t));
+  glBindTexture(GL_TEXTURE_2D, batch.texture);
+#ifdef EMSCRIPTEN
+  (void)base_vertex;
+  glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(batch.index_count), GL_UNSIGNED_SHORT, index_offset);
+#else
+  glDrawElementsBaseVertex(GL_TRIANGLES, static_cast<GLsizei>(batch.index_count), GL_UNSIGNED_SHORT, index_offset,
+                           base_vertex);
+#endif
+}
+
+void OpenGLRenderer::SetClearColor(const glm::vec3& color) { m_clear_color = color; }
+
+void OpenGLRenderer::SetViewBounds(const glm::vec2& min, const glm::vec2& max) { m_builder.SetViewBounds(min, max); }
+
+void OpenGLRenderer::ClearViewBounds() { m_builder.ClearViewBounds(); }
 }  // namespace rse

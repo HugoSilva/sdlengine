@@ -4,6 +4,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "ortho_view.h"
+
 namespace rse {
 class Shader;  // forward declaration for Shader
 
@@ -38,6 +40,14 @@ class Camera {
   inline const glm::vec3 GetPosition() const { return m_position; }
   inline const glm::vec3 GetFront() const { return m_front; }
   inline const glm::mat4& GetProjection() const { return m_projection; }
+
+  // The world rectangle this camera sees. The projection is centred at the
+  // origin and the view matrix carries the position, so the culling rectangle
+  // is centred on the camera's XY position. Render() keeps m_target_size up to
+  // date from the current framebuffer.
+  inline OrthoView GetView() const {
+    return MakeOrthoView(glm::vec2(m_position.x, m_position.y), m_zoom, m_target_size, m_reference_size);
+  }
 
  private:
   void UpdateCameraVectors();
