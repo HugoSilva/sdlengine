@@ -129,6 +129,36 @@ float SoundManager::MusicGain(int volume) {
   return source * music * master;
 }
 
+void SoundManager::PauseAll() {
+  for (const std::unique_ptr<Sound>& sound : s_sounds) {
+    sound->Pause();
+  }
+
+  for (const std::unique_ptr<Music>& music_track : s_music) {
+    music_track->Pause();
+  }
+}
+
+void SoundManager::ResumeAll() {
+  for (const std::unique_ptr<Sound>& sound : s_sounds) {
+    sound->Resume();
+  }
+
+  for (const std::unique_ptr<Music>& music_track : s_music) {
+    music_track->Resume();
+  }
+}
+
+void SoundManager::StopAll() {
+  for (const std::unique_ptr<Sound>& sound : s_sounds) {
+    sound->Stop();
+  }
+
+  for (const std::unique_ptr<Music>& music_track : s_music) {
+    music_track->Stop();
+  }
+}
+
 void SoundManager::Clean() {
   // The objects first: their destructors still talk to the mixer.
   s_sounds.clear();

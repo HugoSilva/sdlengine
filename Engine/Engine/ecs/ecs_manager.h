@@ -15,7 +15,11 @@ class PrefabIO;  // forward declaration for PrefabIO
 // There is no depth to lean on in the 2D scene pass -- every sprite sits at
 // the same depth -- so anything that has to end up *under* the sprites, the
 // editor's grid, has to be submitted before the systems that draw them.
-enum class SystemPhase { kPreScene, kScene };
+//
+// kSimulation is the scene's logic rather than its picture. The editor skips
+// this phase unless the scene is playing, while the render phases keep running
+// so a stopped scene still shows what it contains.
+enum class SystemPhase { kPreScene, kSimulation, kScene };
 
 class ECSManager {
  public:
@@ -26,6 +30,11 @@ class ECSManager {
   static uint32_t CreateEntity() { return registry.create(); }
 
   static void DestroyEntity(uint32_t entity) { registry.destroy(entity); }
+
+  // Whether an id still names a live entity. Selection outlives a scene
+  // restore, and the restore may have removed an entity that was created while
+  // the scene was playing.
+  static bool IsValidEntity(uint32_t entity) { return registry.valid(entity); }
 
   template <typename... Components, typename... TArgs>
   static void AddComponent(uint32_t entity, TArgs... arguments) {
@@ -54,7 +63,10 @@ class ECSManager {
 
   static void AddSystem(BaseSystem* system, SystemPhase phase = SystemPhase::kScene);
 
-  static void Update(float delta);
+  // Runs the frame's systems. `run_simulation` is false in the editor while the
+  // scene is stopped or paused: pre-scene and scene render systems still run,
+  // so the scene keeps drawing, but physics and audio wait.
+  static void Update(float delta, bool run_simulation = true);
   static void UpdateUi();
   static void Clean();
 
@@ -72,5 +84,6 @@ class ECSManager {
   static entt::DefaultRegistry registry;
   static std::vector<BaseSystem*> m_systems_list;
   static std::vector<BaseSystem*> m_pre_scene_systems;
+  static std::vector<BaseSystem*> m_simulation_systems;
 };
 }  // namespace rse

@@ -263,7 +263,7 @@ void Core::Run() {
 
   m_renderer->Begin();
   // TODO need to split this up for normal systems and render systems
-  rse::ECSManager::Update(m_delta_time);
+  rse::ECSManager::Update(m_delta_time, SceneLogicEnabled());
   m_renderer->End();
   m_renderer->Flush();
 

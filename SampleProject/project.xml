@@ -34,37 +34,49 @@
 				<key>W</key>
 			</value2>
 			<value3>
-				<action>editor.reload</action>
-				<key>F2</key>
+				<action>editor.pause</action>
+				<key>F6</key>
 			</value3>
 			<value4>
-				<action>editor.save</action>
-				<key>Ctrl+S</key>
+				<action>editor.play</action>
+				<key>F5</key>
 			</value4>
 			<value5>
-				<action>editor.scene.next</action>
-				<key>Ctrl+Tab</key>
+				<action>editor.reload</action>
+				<key>F2</key>
 			</value5>
 			<value6>
-				<action>editor.scene.previous</action>
-				<key>Ctrl+Shift+Tab</key>
+				<action>editor.save</action>
+				<key>Ctrl+S</key>
 			</value6>
 			<value7>
-				<action>game.down</action>
-				<key>Down</key>
+				<action>editor.scene.next</action>
+				<key>Ctrl+Tab</key>
 			</value7>
 			<value8>
-				<action>game.left</action>
-				<key>Left</key>
+				<action>editor.scene.previous</action>
+				<key>Ctrl+Shift+Tab</key>
 			</value8>
 			<value9>
-				<action>game.right</action>
-				<key>Right</key>
+				<action>editor.stop</action>
+				<key>Shift+F5</key>
 			</value9>
 			<value10>
+				<action>game.down</action>
+				<key>Down</key>
+			</value10>
+			<value11>
+				<action>game.left</action>
+				<key>Left</key>
+			</value11>
+			<value12>
+				<action>game.right</action>
+				<key>Right</key>
+			</value12>
+			<value13>
 				<action>game.up</action>
 				<key>Up</key>
-			</value10>
+			</value13>
 		</input>
 	</project>
 </cereal>

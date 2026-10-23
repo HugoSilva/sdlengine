@@ -51,6 +51,18 @@ class EditorManager {
 
   static void ClearSelection() { m_selected_entity = INVALID_ENTITY_ID; }
 
+  // The play session, as one action each. The toolbar, the Scenes menu and the
+  // shortcuts all come through here so error handling and the post-stop
+  // selection cleanup live in one place.
+  static void PlayScene();
+  static void PauseScene();
+  static void StopScene();
+
+  // Drops a selection whose entity the current scene no longer contains. A
+  // restore or a scene switch can leave the id pointing at an entity that is
+  // gone; every panel that reads the selection would then be reading a dead id.
+  static void ValidateSelection();
+
   // The *active* entity: the one the inspector edits and the hierarchy
   // highlights, and the anchor a gizmo drag is measured from.
   static uint32_t GetSelectedEntity() { return m_selected_entity; }

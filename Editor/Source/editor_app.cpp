@@ -79,6 +79,18 @@ void EditorApp::Update(float delta_time) {
   if (!ImGui::GetIO().WantTextInput) {
     // The bindings come first so a project can add a key, not remove the only
     // one -- see kSaveFallback.
+    if (rse::InputMap::IsActionPressed("editor.play")) {
+      EditorManager::PlayScene();
+    }
+
+    if (rse::InputMap::IsActionPressed("editor.pause")) {
+      EditorManager::PauseScene();
+    }
+
+    if (rse::InputMap::IsActionPressed("editor.stop")) {
+      EditorManager::StopScene();
+    }
+
     if (rse::InputMap::IsActionPressed("editor.save") || rse::InputMap::IsPressed(kSaveFallback) ||
         rse::InputMap::IsPressed(kLegacySaveFallback)) {
       ::SaveProject();
@@ -114,6 +126,10 @@ void EditorApp::Update(float delta_time) {
   // A project or scene opened this frame is remembered now, not only on exit:
   // a crash should not lose the project the user was in.
   RememberSession();
+
+  // A stop, a scene switch or a restore can leave the selection naming an
+  // entity that is gone.
+  EditorManager::ValidateSelection();
 
   UpdateTitle();
 }
@@ -188,3 +204,5 @@ void EditorApp::Render() {
 }
 
 rse::Framebuffer* EditorApp::GetSceneTarget() { return EditorManager::GetSceneTarget(); }
+
+bool EditorApp::SceneLogicEnabled() const { return SceneManager::IsPlaying(); }

@@ -28,6 +28,10 @@ class EditorApp : public Core {
   // of straight to the window.
   rse::Framebuffer* GetSceneTarget() override;
 
+  // Scene logic only runs while the open scene is playing; a game always runs
+  // it.
+  bool SceneLogicEnabled() const override;
+
  private:
   void UpdateTitle();
 

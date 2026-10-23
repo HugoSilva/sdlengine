@@ -199,6 +199,9 @@ that quietly does nothing:
 |---|---|---|
 | `editor.save` | `Ctrl+S` | `File > Save` |
 | `editor.reload` | `F2` | `File > Reload Scene` |
+| `editor.play` | `F5` | viewport: Play/Resume the open scene |
+| `editor.pause` | `F6` | viewport: Pause the open scene |
+| `editor.stop` | `Shift+F5` | viewport: Stop and restore the open scene |
 | `editor.scene.next` | `Ctrl+Tab` | `Scenes > Next Scene` |
 | `editor.scene.previous` | `Ctrl+Shift+Tab` | `Scenes > Previous Scene` |
 | `editor.gizmo.translate` | `W` | viewport: move gizmo |
@@ -563,6 +566,35 @@ check: when the open scene has unsaved edits, a modal asks whether to discard
 them, and Cancel leaves the scene open and dirty. The menu is disabled while no
 project is open, because the scene list is manifest data.
 
+### Playing the open scene
+
+The viewport toolbar and the top of the `Scenes` menu drive the editor's play
+session:
+
+| Command | Shortcut | Does |
+|---|---|---|
+| Play / Resume | F5 | Snapshots the open scene and runs its logic. When paused, continues from where it stopped. |
+| Pause | F6 | Holds the scene: physics and audio stop, while the scene keeps drawing. |
+| Stop | Shift+F5 | Restores the snapshot taken at Play and returns to the stopped state. |
+
+Only the simulation systems run while the scene plays. The grid and sprites are
+render systems, so a stopped scene still shows what it contains; physics and
+audio are the logic that waits. A game never uses this state: it always runs its
+scene, exactly as before.
+
+Play snapshots the **live** scene, so unsaved edits are part of the state it
+starts from. Stop restores that snapshot -- entities, components, the scene
+camera and the unsaved-edits flag -- and discards anything changed while the
+scene was running. The snapshot lives in memory and uses the current scene
+format, so it is not a file and the scene format version does not change.
+Opening, reloading or switching scenes ends the session without restoring: the
+scene being replaced is not worth putting back.
+
+Saving is refused while the scene is playing or paused, because the live scene
+is no longer the authored one. `File > Save`, `File > Save Scene As...` and their
+`Scenes` menu equivalents are disabled until the scene is stopped; a shortcut
+that reaches the command anyway reports the refusal.
+
 The content browser is rooted at the project directory -- the editor's working
 directory while no project is open -- and opens in `scenes/` when the project
 has one. Double-clicking a scene's row opens it through the same command as
@@ -627,7 +659,8 @@ plays it.
 `physics.xml` is the second scene, listed in the manifest, and the worked example
 of the rigid-body rule: the floor is a static body, the crate a dynamic one. Both
 store their inputs; neither stores a `b2Body`, so the crate starts falling as
-soon as the scene is open and stepping.
+soon as the scene is played. While the editor is stopped, the crate sits at its
+authored position; Stop puts it back there.
 
 Both sample scenes carry the default camera and background, so the sample looks
 the way it always did; editing the background in the editor's Editor Settings
@@ -651,6 +684,10 @@ keeping them in step.
   `PhysicsSystem`; there is no way to change either from a scene yet.
 - There are no input bindings for the mouse or a gamepad: `input` binds keys,
   and the gamepad paths in `InputManager` are still stubs.
+- The play session is a single in-memory snapshot of the open scene: there is no
+  nested play, no snapshot history, and the editor viewport's own camera is not
+  part of it. Pausing holds the systems rather than freezing the process, so the
+  UI stays live.
 - The asset registry is a table, not a watcher: a file moved or renamed outside
   the editor leaves its entry pointing at the old path, and the next load falls
   back to a white texture or a silent sound. There is no auto-import, no folder

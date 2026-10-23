@@ -892,6 +892,11 @@ void SaveSceneAsAt(const std::filesystem::path& file) {
     return;
   }
 
+  if (SceneManager::IsPlayActive()) {
+    Logger::Error("Stop the playing scene before saving it.");
+    return;
+  }
+
   // Manifest paths are relative to the manifest, so a scene outside the
   // project directory could not be listed without an absolute path.
   std::error_code error_code;

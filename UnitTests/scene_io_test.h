@@ -711,4 +711,63 @@ TEST_F(SceneIOTest, AnUnwritablePathReportsFailureWithoutLeavingAScratchFile) {
   EXPECT_FALSE(error.empty());
   EXPECT_FALSE(std::filesystem::exists(missing_scratch));
 }
+
+TEST_F(SceneIOTest, AStringSnapshotRoundTrips) {
+  CreateSprite("snapshot", glm::vec3(4.5f, 6.25f, 0.f));
+
+  SceneIO::GetCamera().position = glm::vec2(10.f, 20.f);
+  SceneIO::GetCamera().zoom = 2.0f;
+  SceneIO::GetCamera().background = glm::vec3(0.25f, 0.5f, 0.75f);
+
+  std::string snapshot;
+  std::string error;
+
+  ASSERT_TRUE(SceneIO::SaveToString(&snapshot, &error)) << error;
+  EXPECT_FALSE(snapshot.empty());
+  EXPECT_FALSE(std::filesystem::exists(m_file));
+
+  // Run the live scene forward the way a play session would.
+  ECSManager::GetView<TransformComponent>().each(
+      [](auto, TransformComponent& transform) { transform.position = glm::vec3(99.f, 99.f, 0.f); });
+  CreateSprite("made-during-play", glm::vec3(0.f));
+  SceneIO::GetCamera().zoom = 0.5f;
+
+  ASSERT_TRUE(SceneIO::LoadFromString(snapshot, &error)) << error;
+
+  ASSERT_EQ(CountEntities(), 1u);
+
+  ECSManager::GetView<BasicComponent, TransformComponent>().each(
+      [](auto, BasicComponent& basic, TransformComponent& transform) {
+        EXPECT_EQ(basic.m_name, "snapshot");
+        EXPECT_FLOAT_EQ(transform.position.x, 4.5f);
+        EXPECT_FLOAT_EQ(transform.position.y, 6.25f);
+      });
+
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().position.x, 10.f);
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().position.y, 20.f);
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().zoom, 2.0f);
+  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.z, 0.75f);
+}
+
+TEST_F(SceneIOTest, AnInvalidStringSnapshotLeavesTheSceneAlone) {
+  CreateSprite("player", glm::vec3(1.f, 2.f, 0.f));
+
+  std::string error;
+
+  EXPECT_FALSE(SceneIO::LoadFromString("<cereal><formatVersion>0</formatVersion></cereal>", &error));
+  EXPECT_NE(error.find("not a scene file"), std::string::npos);
+  EXPECT_NE(error.find("<snapshot>"), std::string::npos);
+
+  EXPECT_EQ(CountEntities(), 1u);
+
+  ECSManager::GetView<BasicComponent>().each([](auto, BasicComponent& basic) { EXPECT_EQ(basic.m_name, "player"); });
+}
+
+TEST_F(SceneIOTest, ANewerStringSnapshotIsRefused) {
+  std::string error;
+
+  EXPECT_FALSE(SceneIO::LoadFromString("<cereal><formatVersion>99</formatVersion></cereal>", &error));
+  EXPECT_NE(error.find("newer than this build supports"), std::string::npos);
+  EXPECT_EQ(CountEntities(), 0u);
+}
 }  // namespace

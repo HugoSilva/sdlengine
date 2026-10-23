@@ -58,6 +58,8 @@ The editor keeps its own state in `editor.cfg` in the working directory, next to
 
 `Scenes` lists the manifest's scenes with a tick on the open one; `Ctrl+Tab` and `Ctrl+Shift+Tab` walk the list, wrapping at the ends. Switching, and `New Scene...`, ask before unsaved edits are discarded. The content browser is rooted at the project directory and opens in `scenes/`: double-click a scene there to open it, or right-click for open, rename, delete and `Show in Explorer`.
 
+The viewport toolbar plays the open scene: `Play` (`F5`) snapshots the scene and starts physics and audio, `Pause` (`F6`) holds them while the scene keeps drawing, and `Stop` (`Shift+F5`) restores the snapshot and returns to editing. The same commands are at the top of the `Scenes` menu. Stop puts back the state Play started from -- including unsaved edits -- and discards changes made while the scene ran. Saving and `Save Scene As...` are disabled until the scene is stopped. The game has no play state: it always runs its scene logic.
+
 Keys are rebindable from the manifest too: the `input` section maps actions such as `editor.save` and `game.up` to keys like `Ctrl+S` or `Space`. A project that names an action this build does not know gets a warning and keeps the default — see [the manifest's input bindings](docs/ProjectFormat.md#input-bindings).
 
 ### Tests
