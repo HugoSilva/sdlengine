@@ -6,6 +6,7 @@
 #include <editor_manager.h>
 #include <filesystem>
 #include <imgui.h>
+#include <imgui_internal.h>
 #include <project_commands.h>
 #include <string>
 #include <texture_catalog.h>
@@ -260,6 +261,10 @@ class InspectorPanel : public EditorPanel {
     }
 
     if (ImGui::BeginPopup(kTexturePickerPopup, ImGuiWindowFlags_NoFocusOnAppearing)) {
+      // NoFocusOnAppearing keeps the InputText active, but it also leaves the
+      // popup behind the inspector in the hit-test order. Bring it to the
+      // display front so its rows stay clickable without taking keyboard focus.
+      ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
       DrawTexturePickerPopup(sprite);
       ImGui::EndPopup();
     }
