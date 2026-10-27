@@ -7,6 +7,10 @@ rse::Framebuffer* EditorManager::m_scene_target{nullptr};
 EditorSettings EditorManager::m_settings;
 bool EditorManager::m_frame_requested{false};
 
+rse::Sprite* EditorManager::CreateDefaultSprite() {
+  return new rse::Sprite(glm::vec3(0.0f), glm::vec2(40.0f, 40.0f), 0xffffffffu);
+}
+
 void EditorManager::Init() {
   // Before anything can read a setting or draw a panel with one. Called from
   // the setup view's constructor, so it happens once.
@@ -26,8 +30,7 @@ void EditorManager::HandleCreateEntityEvent(const CreateEntity& event) {
   // Untextured: the editor used to hand every new entity a sample project's
   // image by name, which meant new entities in any other project pointed at a
   // texture that project did not have.
-  rse::ECSManager::AddComponent<SpriteComponent>(m_selected_entity,
-                                                 new rse::Sprite(glm::vec3(0, 0, 0), glm::vec2(40, 40), 0xffffffffu));
+  rse::ECSManager::AddComponent<SpriteComponent>(m_selected_entity, CreateDefaultSprite());
 
   SceneManager::MarkDirty();
 }
@@ -92,7 +95,7 @@ void EditorManager::HandleAddComponentEvent(const AddComponent& event) {
       if (rse::ECSManager::HasComponent<SpriteComponent>(m_selected_entity)) {
         Logger::Error("Already existing sprite component");
       } else {
-        rse::ECSManager::AddComponent<SpriteComponent>(m_selected_entity);
+        rse::ECSManager::AddComponent<SpriteComponent>(m_selected_entity, CreateDefaultSprite());
         SceneManager::MarkDirty();
       }
       break;
