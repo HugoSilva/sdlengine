@@ -4,6 +4,7 @@
 #include <cctype>
 #include <core.h>
 #include <cstdint>
+#include <cstdio>
 #include <filesystem>
 #include <imgui.h>
 #include <map>
@@ -11,6 +12,7 @@
 #include <project_commands.h>
 #include <sstream>
 #include <string>
+#include <texture_catalog.h>
 #include <vector>
 
 #include <core/asset_registry.h>
@@ -234,6 +236,25 @@ class ContentBrowserPanel : public EditorPanel {
         ImGui::PopStyleColor();
       }
 
+      // Images are the texture picker's drag source. The payload carries the
+      // absolute path: the inspector resolves it against the registry and the
+      // project root, so it does not have to know which folder is open here.
+      if (!is_directory && IsImageFile(path)) {
+        if (ImGui::BeginDragDropSource()) {
+          std::error_code absolute_error;
+          const std::string absolute = std::filesystem::absolute(path, absolute_error).string();
+          TextureDragPayload payload;
+
+          if (!absolute_error && absolute.size() < sizeof(payload.path)) {
+            std::snprintf(payload.path, sizeof(payload.path), "%s", absolute.c_str());
+            ImGui::SetDragDropPayload(kTextureDragDropPayload, &payload, sizeof(payload));
+            ImGui::Text("%s", name.c_str());
+          }
+
+          ImGui::EndDragDropSource();
+        }
+      }
+
       if (clicked) {
         m_selected = index;
 
@@ -333,7 +354,7 @@ class ContentBrowserPanel : public EditorPanel {
 
     DrawAssetRegistrySection(path);
 
-    if (!IsImage(path.extension().string())) {
+    if (!IsImageFile(path)) {
       return;
     }
 
@@ -427,12 +448,6 @@ class ContentBrowserPanel : public EditorPanel {
     }
 
     return raw;
-  }
-
-  static bool IsImage(const std::string& extension) {
-    const std::string lowered = ToLower(extension);
-    return lowered == ".png" || lowered == ".jpg" || lowered == ".jpeg" || lowered == ".bmp" || lowered == ".gif" ||
-           lowered == ".tga" || lowered == ".webp" || lowered == ".avif" || lowered == ".qoi";
   }
 
   static std::string DescribeSize(const std::filesystem::path& path) {

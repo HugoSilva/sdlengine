@@ -29,6 +29,11 @@ class EditorManager {
 
   static void Init();
 
+  // The sprite a new entity and a newly added Sprite component start with:
+  // 40x40, opaque white and no texture. Both paths use it so they cannot
+  // drift, and so the inspector always has a sprite to edit.
+  static rse::Sprite* CreateDefaultSprite();
+
   // Selection is shared state: the hierarchy panel drives it, the viewport
   // picks into it, the inspector panel reads it.
   //

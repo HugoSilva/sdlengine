@@ -18,6 +18,7 @@
 #include "sound_manager_test.h"
 #include "sprite_batch_test.h"
 #include "texture_atlas_test.h"
+#include "texture_catalog_test.h"
 #include "texture_manager_test.h"
 
 using namespace std;

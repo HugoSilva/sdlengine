@@ -384,7 +384,7 @@ that writes data, never a pointer, so saving and loading is a round trip:
 
 - `BasicComponent` -- name, static flag, tag, layer.
 - `TransformComponent` -- position, rotation, scale.
-- `SpriteComponent` -- size, colour, texture name.
+- `SpriteComponent` -- size, colour, texture reference.
 - `AudioComponent` -- sound name, volume, mute, loop, autoplay.
 - `RigidBodyComponent` -- position, size, density, friction, body type.
 

@@ -24,9 +24,14 @@ target_link_libraries(UnitTests PRIVATE Engine GTest::gtest)
 # The editor's project commands are file operations, so they are tested here
 # even though they live next to the editor. Only the command translation unit is
 # compiled in; the dialogs it can open never run headless.
+#
+# Editor/Source is on the include path unconditionally because the texture
+# catalog is header-only editor code with no ImGui dependency, and its tests run
+# whether or not the Editor target is built.
+target_include_directories(UnitTests PRIVATE "${CMAKE_SOURCE_DIR}/Editor/Source")
+
 if(RSE_BUILD_EDITOR AND EXISTS "${CMAKE_SOURCE_DIR}/Editor/Source/project_commands.cpp")
   target_sources(UnitTests PRIVATE "${CMAKE_SOURCE_DIR}/Editor/Source/project_commands.cpp")
-  target_include_directories(UnitTests PRIVATE "${CMAKE_SOURCE_DIR}/Editor/Source")
   target_compile_definitions(UnitTests PRIVATE RSE_EDITOR_COMMANDS)
 endif()
 
