@@ -189,7 +189,9 @@ class InspectorPanel : public EditorPanel {
   // The texture field is a search box, not a name field: the sprite holds a
   // borrowed Texture*, so the typed text only filters the catalog until a row
   // is picked. The popup opens on activation and on every edit, which is what
-  // makes "start typing" show every texture that matches.
+  // makes "start typing" show every texture that matches. It is positioned
+  // outside the field and opened without focus-on-appearing, so the InputText
+  // keeps the keyboard while the list is visible.
   void DrawSpriteTexture(rse::Sprite* sprite) {
     const uint32_t entity = EditorManager::GetSelectedEntity();
     const std::string current_name = sprite->GetTextureName();
@@ -221,6 +223,8 @@ class InspectorPanel : public EditorPanel {
 
     const bool edited = ImGui::InputTextWithHint("##texture", "(none) - type to search", buffer, IM_ARRAYSIZE(buffer));
     const bool activated = ImGui::IsItemActivated();
+    const ImVec2 field_min = ImGui::GetItemRectMin();
+    const ImVec2 field_max = ImGui::GetItemRectMax();
     m_texture_field_active = ImGui::IsItemActive();
 
     if (edited) {
@@ -251,10 +255,38 @@ class InspectorPanel : public EditorPanel {
       OpenTexturePicker(sprite);
     }
 
-    if (ImGui::BeginPopup(kTexturePickerPopup)) {
+    if (ImGui::IsPopupOpen(kTexturePickerPopup)) {
+      PositionTexturePickerPopup(field_min, field_max);
+    }
+
+    if (ImGui::BeginPopup(kTexturePickerPopup, ImGuiWindowFlags_NoFocusOnAppearing)) {
       DrawTexturePickerPopup(sprite);
       ImGui::EndPopup();
     }
+  }
+
+  // Place the list below the field, or above it when the inspector is close to
+  // the bottom of the screen. The size constraint keeps a large catalog inside
+  // the viewport instead of growing past the bottom edge.
+  static void PositionTexturePickerPopup(const ImVec2& field_min, const ImVec2& field_max) {
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    const ImVec2 work_min = viewport->WorkPos;
+    const ImVec2 work_max(work_min.x + viewport->WorkSize.x, work_min.y + viewport->WorkSize.y);
+    const float spacing = ImGui::GetStyle().ItemSpacing.y;
+
+    const float below = std::max(0.0f, work_max.y - (field_max.y + spacing));
+    const float above = std::max(0.0f, field_min.y - spacing - work_min.y);
+    const bool open_below = below >= 120.0f || below >= above;
+    const float max_height = std::max(1.0f, std::min(320.0f, open_below ? below : above));
+
+    // In the default layout the inspector sits on the right, so align the
+    // popup's right edge with the field to keep it on screen.
+    const bool align_right = field_min.x + 200.0f > work_max.x;
+
+    ImGui::SetNextWindowSizeConstraints(ImVec2(0.0f, 0.0f), ImVec2(FLT_MAX, max_height));
+    ImGui::SetNextWindowPos(
+        ImVec2(align_right ? field_max.x : field_min.x, open_below ? field_max.y + spacing : field_min.y - spacing),
+        ImGuiCond_Always, ImVec2(align_right ? 1.0f : 0.0f, open_below ? 0.0f : 1.0f));
   }
 
   void OpenTexturePicker(rse::Sprite* sprite) {
