@@ -190,7 +190,7 @@ class InspectorPanel : public EditorPanel {
         static_cast<float>((packed >> 24) & 0xFF) / 255.0f,
     };
 
-    BeginRightLabelRow("sprite_color");
+    BeginLabeledRow("sprite_color", "Color");
     if (ImGui::ColorEdit4(
             "##color", rgba,
             ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_AlphaPreviewHalf)) {
@@ -199,7 +199,7 @@ class InspectorPanel : public EditorPanel {
           (static_cast<unsigned int>(rgba[2] * 255.0f) << 16) | (static_cast<unsigned int>(rgba[3] * 255.0f) << 24));
     }
     MarkDirtyIfEdited();
-    EndRightLabelRow("Color");
+    EndLabeledRow();
   }
 
   void DrawSpriteFlip(rse::Sprite* sprite) {
@@ -210,7 +210,7 @@ class InspectorPanel : public EditorPanel {
     bool flip_x = appearance != nullptr && appearance->flip_x;
     bool flip_y = appearance != nullptr && appearance->flip_y;
 
-    BeginRightLabelRow("sprite_flip");
+    BeginLabeledRow("sprite_flip", "Flip");
 
     if (ImGui::Checkbox("X", &flip_x)) {
       EnsureAppearance(entity).flip_x = flip_x;
@@ -223,7 +223,7 @@ class InspectorPanel : public EditorPanel {
       SceneManager::MarkDirty();
     }
 
-    EndRightLabelRow("Flip");
+    EndLabeledRow();
   }
 
   // The sprite field looks like a disabled text input but is two affordances:
@@ -240,7 +240,7 @@ class InspectorPanel : public EditorPanel {
       m_sprite_catalog.clear();
     }
 
-    BeginRightLabelRow("sprite");
+    BeginLabeledRow("sprite", "Sprite");
 
     char buffer[256];
     std::snprintf(buffer, sizeof(buffer), "%s", current_name.empty() ? "" : current_name.c_str());
@@ -264,16 +264,24 @@ class InspectorPanel : public EditorPanel {
       ImGui::EndDragDropTarget();
     }
 
+    bool open_picker = false;
+
     ImGui::SameLine();
     if (ImGui::ArrowButton("##sprite_list", ImGuiDir_Down)) {
       m_sprite_query.clear();
-      OpenSpritePicker(sprite);
+      open_picker = true;
     }
 
-    EndRightLabelRow("Sprite");
+    EndLabeledRow();
 
     if (clicked) {
       RevealTexture(sprite);
+    }
+
+    // The popup has to be opened outside the row's PushID: OpenPopup and
+    // BeginPopup match by ID, and the table row pushed an ID of its own.
+    if (open_picker) {
+      OpenSpritePicker(sprite);
     }
 
     // Position before BeginPopup: that is where ImGui consumes the next-window
@@ -510,31 +518,23 @@ class InspectorPanel : public EditorPanel {
     SceneManager::MarkDirty();
   }
 
-  // A two-column table is the simplest way to guarantee the label is on the
-  // right: the value column stretches and the label column is fixed, so the
-  // widget stays on the left no matter what the field is. PushID makes the
-  // per-row table ids unique.
-  void BeginRightLabelRow(const char* id) {
+  // A two-column table keeps the label and the widget on one baseline. The
+  // label column is fixed and left-aligned; the value column stretches, so the
+  // widget fills the rest of the inspector. PushID makes each row's table id
+  // unique.
+  void BeginLabeledRow(const char* id, const char* label) {
     ImGui::PushID(id);
     ImGui::BeginTable("##row", 2, ImGuiTableFlags_SizingStretchProp);
-    ImGui::TableSetupColumn("value", ImGuiTableColumnFlags_WidthStretch);
     ImGui::TableSetupColumn("label", ImGuiTableColumnFlags_WidthFixed, kLabelColumnWidth);
+    ImGui::TableSetupColumn("value", ImGuiTableColumnFlags_WidthStretch);
     ImGui::TableNextRow();
+    ImGui::TableNextColumn();
+    ImGui::AlignTextToFramePadding();
+    ImGui::TextUnformatted(label);
     ImGui::TableNextColumn();
   }
 
-  void EndRightLabelRow(const char* label) {
-    ImGui::TableNextColumn();
-    ImGui::AlignTextToFramePadding();
-
-    const float available = ImGui::GetContentRegionAvail().x;
-    const float width = ImGui::CalcTextSize(label).x;
-
-    if (width < available) {
-      ImGui::SetCursorPosX(ImGui::GetCursorPosX() + available - width);
-    }
-
-    ImGui::TextUnformatted(label);
+  void EndLabeledRow() {
     ImGui::EndTable();
     ImGui::PopID();
   }
@@ -620,7 +620,7 @@ class InspectorPanel : public EditorPanel {
       m_material_catalog.clear();
     }
 
-    BeginRightLabelRow("sprite_material");
+    BeginLabeledRow("sprite_material", "Material");
 
     char buffer[256];
     std::snprintf(buffer, sizeof(buffer), "%s", current_name.empty() ? "" : current_name.c_str());
@@ -634,16 +634,24 @@ class InspectorPanel : public EditorPanel {
     const ImVec2 field_min = ImGui::GetItemRectMin();
     const ImVec2 field_max = ImGui::GetItemRectMax();
 
+    bool open_picker = false;
+
     ImGui::SameLine();
     if (ImGui::ArrowButton("##material_list", ImGuiDir_Down)) {
       m_material_query.clear();
-      OpenMaterialPicker(reference);
+      open_picker = true;
     }
 
-    EndRightLabelRow("Material");
+    EndLabeledRow();
 
     if (clicked) {
       RevealMaterial(reference, current_path);
+    }
+
+    // Match the row's PushID scope: the popup is opened and begun here, outside
+    // the table, or the two IDs do not name the same popup.
+    if (open_picker) {
+      OpenMaterialPicker(reference);
     }
 
     if (ImGui::IsPopupOpen(kMaterialPickerPopup)) {
