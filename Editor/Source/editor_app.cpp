@@ -205,6 +205,13 @@ void EditorApp::Render() {
   m_shader->SetUniform1i("texture0", 0);
   m_camera->Apply(m_shader);
 
+  // A sprite material switches programs in the renderer. Record the scene
+  // shader and the camera matrices it must return to and re-upload after each
+  // switch; the editor camera's ortho rectangle already carries its position,
+  // so its view matrix is identity.
+  Core::GetRenderer()->SetSceneShader(m_shader);
+  Core::GetRenderer()->SetCameraUniforms(glm::mat4(1.0f), m_camera->GetProjection());
+
   // The renderer culls in world space. The editor camera owns the authoritative
   // view rectangle, so publish it before the scene systems submit this frame.
   const rse::OrthoView& view = m_camera->GetView();

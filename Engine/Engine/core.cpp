@@ -56,6 +56,11 @@ Core::Core(const std::filesystem::path& project_file)
 
   m_renderer = new rse::OpenGLRenderer(m_window->GetWindow());
 
+  // The renderer's constructor makes the window's GL context current. Materials
+  // are parsed and compiled after that: a material loaded before there is a
+  // context would be cached with no program and never tried again.
+  rse::MaterialManager::Init();
+
   rse::ImGuiLayer::Init(m_window->GetWindow(), m_window->GetContext());
 
   rse::ECSManager::Init();
@@ -121,6 +126,12 @@ bool Core::OpenProject(const std::filesystem::path& project_file, std::string* e
   SceneManager::Init(m_project.Directory());
   rse::AssetRegistry::Init(m_project.Directory());
 
+  // Materials resolve through the registry and compile against the new project,
+  // so the old project's programs cannot stay. TextureManager has the same
+  // project-lifetime behaviour today; its cache is left alone here.
+  rse::MaterialManager::Clean();
+  rse::MaterialManager::Init();
+
   if (m_window != nullptr) {
     m_window->SetTitle(m_project.window.title);
     SDL_SetWindowSize(m_window->GetWindow(), m_project.window.width, m_project.window.height);
@@ -183,6 +194,7 @@ Core::~Core() {
   rse::AssetRegistry::Clean();
   rse::SoundManager::Clean();
   rse::FontManager::Clean();
+  rse::MaterialManager::Clean();
   rse::TextureManager::Clean();
   PhysicsManager::Clean();
 

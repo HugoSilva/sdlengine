@@ -27,7 +27,8 @@ struct SaveEntities {
   void serialize(Archive& archive) {
     registry.snapshot()
         .entities(archive)
-        .component<BasicComponent, TransformComponent, SpriteComponent, AudioComponent, RigidBodyComponent>(archive);
+        .component<BasicComponent, TransformComponent, SpriteComponent, AudioComponent, RigidBodyComponent,
+                   SpriteAppearanceComponent>(archive);
   }
 };
 
@@ -54,6 +55,10 @@ struct LoadEntities {
 
     if (format_version >= 4) {
       loader.component<RigidBodyComponent>(archive);
+    }
+
+    if (format_version >= 7) {
+      loader.component<SpriteAppearanceComponent>(archive);
     }
   }
 };

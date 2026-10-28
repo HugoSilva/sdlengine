@@ -3,9 +3,11 @@
 A **project** is a directory. Its `project.xml` is the manifest: what the project
 is called, how its window opens, where its assets live and which **scenes** it is
 made of. An `assets.xml` beside it is the asset **registry**: the table that gives
-every texture, sound, font and prefab a stable id. A **scene** is a file of its
-own: the entities and components that were open in the editor when it was saved.
-A **prefab** is one entity saved on its own, so it can be placed into any scene.
+every texture, sound, font, prefab and material a stable id. A **scene** is a file
+of its own: the entities and components that were open in the editor when it was
+saved. A **prefab** is one entity saved on its own, so it can be placed into any
+scene. A **material** is a pair of shader files a sprite can use instead of the
+scene's default program.
 
 Before this split, `project.xml` *was* the scene: a flat list of entities written
 into whatever directory the binary happened to be run from. A project that could
@@ -72,7 +74,7 @@ Two rules keep the additive case honest:
 
 | Milestone | Manifest | Scene | Prefab | Assets |
 |---|---|---|---|---|
-| today | 3 | 6 | 1 | 1 |
+| today | 3 | 7 | 2 | 1 |
 | #54 | 1 | 1 | -- | -- |
 | #47 | 1 | **2** | -- | -- |
 | #48 | 1 | **3** | -- | -- |
@@ -82,10 +84,11 @@ Two rules keep the additive case honest:
 | #51 | 1 | **6** | 1 | **1** |
 | #46b | **2** | 6 | 1 | 1 |
 | #46c | **3** | 6 | 1 | 1 |
+| #74 | 3 | **7** | **2** | 1 |
 
 Every row above is shipped behaviour: the migration policy itself, the first
-breaking change made under it, the four additive changes made after it, prefabs,
-the asset registry, and the manifest's audio and input sections.
+breaking change made under it, the additive changes made after it, prefabs, the
+asset registry, the manifest's audio and input sections, and material shaders.
 
 ## The manifest
 
@@ -271,7 +274,7 @@ leaves the file alone.
 |---|---|
 | `id` | 16 lowercase hex characters, generated when the asset is imported. A scene or prefab stores this, never the path. |
 | `name` | The display name the editor shows, and what an older scene may still call the asset. It is the file's name, extension included. |
-| `type` | `texture`, `sound`, `font` or `prefab`, inferred from the extension when the asset is imported. |
+| `type` | `texture`, `sound`, `font`, `prefab` or `material`, inferred from the extension when the asset is imported. |
 | `path` | Where the file is, relative to the project directory and stored with forward slashes -- the same rule every other project path follows. `Core::ResolveProjectPath` turns it into a path the OS can open. |
 
 The table exists to make a **rename** an entry update rather than a scene edit.
@@ -387,9 +390,10 @@ that writes data, never a pointer, so saving and loading is a round trip:
 - `SpriteComponent` -- size, colour, texture reference.
 - `AudioComponent` -- sound name, volume, mute, loop, autoplay.
 - `RigidBodyComponent` -- position, size, density, friction, body type.
+- `SpriteAppearanceComponent` -- flip X, flip Y, material reference.
 
-The five component groups above are written in that order and read in that
-order, after the scene's camera. Anything added later is appended as a sixth
+The six component groups above are written in that order and read in that
+order, after the scene's camera. Anything added later is appended as a seventh
 group, read only from the version that introduced it; see [Versions](#versions).
 
 A scene also stores its **camera**, which is scene-root data rather than a
@@ -456,6 +460,15 @@ them, and starts a sound that asks to autoplay exactly once -- a one-shot is not
 restarted on the next frame. A file that cannot be loaded does not fail the load
 either: the entity keeps the reference and stays silent.
 
+`SpriteAppearanceComponent` stores the sprite's flip flags and a **material
+reference**: an asset id, or a name/path that resolves through the registry the
+same way a texture does. `MaterialManager` turns it into one program per
+material and the renderer switches programs per batch, so two sprites with the
+same material share one program while a sprite with none keeps the scene shader.
+An empty material is the scene shader. A material that cannot be read or compiled
+logs one warning and falls back to the scene shader rather than hiding the
+sprite.
+
 Version 3 appended the audio group, so a version 2 scene still opens -- the group
 is read only when the file says version 3 or newer. Version 4 appended the rigid
 bodies for the same reason. Version 5 added the camera node, which is root data
@@ -463,11 +476,14 @@ rather than a component group: a version 4 scene has none, so it opens with the
 defaults, which are the framing it was drawn with. Version 6 changed what a
 texture and a sound reference *mean* -- an asset id rather than a name -- without
 changing their shape; the fallback above is what keeps version 5 files opening.
-The example above is a version 2 file, which is why it has neither the camera nor
-the audio and rigid-body groups, and names its texture; a current file has all
-three and stores ids. `UnitTests/fixtures/scene_v2.xml` through `scene_v5.xml`
-are the files that pin the additive versions, and `scene_v6.xml` is the current
-format, paired with `assets_v1.xml`.
+Version 7 appended the sprite appearance group. A version 6 file simply has no
+group, so every loaded sprite has flip off, no material and the scene shader; the
+defaults are the look it already had. The example above is a version 2 file,
+which is why it has neither the camera nor the audio and rigid-body groups, and
+names its texture; a current file has all of them and stores ids.
+`UnitTests/fixtures/scene_v2.xml` through `scene_v5.xml` are the files that pin
+the additive versions, and `scene_v6.xml` is the last pre-appearance file,
+paired with `assets_v1.xml`.
 
 A rigid body is stored as its **inputs**, by value: position, size, density,
 friction and the body type by name (`static`, `kinematic`, `dynamic`). A
@@ -485,7 +501,7 @@ file is a `formatVersion` header and one `<entity>`:
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <cereal>
-	<formatVersion>1</formatVersion>
+	<formatVersion>2</formatVersion>
 	<entity>
 		<value0>1</value0>
 		...
@@ -496,9 +512,10 @@ file is a `formatVersion` header and one `<entity>`:
 `<entity>` is an entt snapshot of one entity, exactly like a scene's
 `<entities>`: the same `valueN` names and the same component groups in the same
 order. A prefab therefore stores everything a scene stores for an entity --
-name, transform, sprite, audio settings and rigid-body inputs -- and a component
-group appended to scenes later is a prefab group the moment it is appended here
-too. A prefab's format version moves independently of a scene's.
+name, transform, sprite, audio settings, rigid-body inputs and the sprite's
+appearance -- and a component group appended to scenes later is a prefab group
+the moment it is appended here too. A prefab's format version moves
+independently of a scene's.
 
 The entity ids in the file are **not restored**. `PrefabIO::Instantiate` reads
 the whole file into a scratch registry first, then copies each entity into the
@@ -527,14 +544,54 @@ Prefabs live in the project's `prefabs/` directory. They are not listed in
 found by path -- through the editor today, and through the content browser when
 it learns about prefabs. Saving one still has to happen inside the project
 directory, for the same reason a scene does. Format 1 is the first prefab
-version; a file newer than the build is refused before the open scene is
-touched, like every other format.
+version; format 2 appended the sprite appearance group. A version 1 prefab still
+loads with flip off and no material, and `UnitTests/fixtures/prefab_v1.xml` and
+`prefab_v2.xml` pin both shapes. A file newer than the build is refused before
+the open scene is touched, like every other format.
 
-A prefab's texture and sound references mean what they mean in a scene -- an
-asset id, or a name/path that falls back through the registry -- so the prefab
-format did not move when scene version 6 changed the meaning. A prefab written by
-this build stores ids; an older prefab that names its files still loads, through
-the same fallback, and is rewritten with ids the next time it is saved.
+A prefab's texture, sound and material references mean what they mean in a
+scene -- an asset id, or a name/path that falls back through the registry -- so
+the prefab format did not move when scene version 6 changed the meaning. A
+prefab written by this build stores ids; an older prefab that names its files
+still loads, through the same fallback, and is rewritten with ids the next time
+it is saved.
+
+## Material files
+
+A material is a small XML file with two shader paths and a display name. It is a
+project asset like a texture: importing it adds a registry entry, and a sprite
+stores the entry's id. Its own format is independent of scenes and prefabs:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<cereal>
+	<material>
+		<formatVersion>1</formatVersion>
+		<name>Warm</name>
+		<vertexShader>assets/Default.vert</vertexShader>
+		<fragmentShader>assets/Warm.frag</fragmentShader>
+	</material>
+</cereal>
+```
+
+| Field | Meaning |
+|---|---|
+| `formatVersion` | Material format. Version 1 is the first; newer files are refused and an older one below 1 is not a material at all. |
+| `name` | The name the inspector shows. Empty is allowed; the manager then uses the asset name or the file stem. |
+| `vertexShader`, `fragmentShader` | Shader files. A path is resolved against the project directory first, then as an engine resource; a bare `Default.vert` therefore finds the engine's copy. |
+
+The program keeps the same uniform contract as the scene shader: `view`,
+`projection` and `texture0`. The renderer uploads the camera matrices again
+after every material switch, so a material does not have to know about the
+camera. Materials are cached by `MaterialManager`, one per asset, and the
+renderer groups sprites by material and texture into batches. A material that
+cannot be read or compiled is logged once and the sprite falls back to the scene
+shader; a project still opens if a material is missing.
+
+A material file is written to a scratch path and renamed into place, like a
+scene. The editor's Sprite inspector lists `.material` files that are registered
+or simply present in the project: the Material field's arrow opens a searchable
+picker, and clicking the field reveals the file in the Content Browser.
 
 ## The editor's project commands
 
@@ -640,6 +697,8 @@ SampleProject/
   assets/
     Default.vert
     Default.frag
+    Warm.material     a sample material using Warm.frag
+    Warm.frag
     tex3.png
     effect.wav
   prefabs/
@@ -654,7 +713,9 @@ the worked example of the texture rule: one asset, one texture, twelve sprites.
 `sprite_0` also carries an `AudioComponent` for `effect.wav`, with autoplay off:
 the scene is the worked example of the audio rule -- the file is named once and
 the playback settings live on the entity, so turning autoplay on in the inspector
-plays it.
+plays it. `Warm.material` is unregistered on purpose so the Material picker's
+project scan has something to offer; selecting it imports the file and gives the
+sprite a warm cast, which is the worked example of the material rule.
 
 `physics.xml` is the second scene, listed in the manifest, and the worked example
 of the rigid-body rule: the floor is a static body, the crate a dynamic one. Both

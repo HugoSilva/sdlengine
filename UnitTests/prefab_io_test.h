@@ -100,7 +100,7 @@ TEST_F(PrefabIOTest, SavingWritesThePrefabFile) {
 
   const std::string contents = ReadFile(m_file);
 
-  EXPECT_NE(contents.find("<formatVersion>1</formatVersion>"), std::string::npos);
+  EXPECT_NE(contents.find("<formatVersion>2</formatVersion>"), std::string::npos);
 
   // One entity, not a scene: no camera, and the entity block has the same
   // component shape a scene's <entities> has.
@@ -133,6 +133,30 @@ TEST_F(PrefabIOTest, APlacedEntityComesBackWithItsValues) {
         EXPECT_FLOAT_EQ(sprite.m_sprite->GetSize().x, 8.f);
         EXPECT_EQ(sprite.m_sprite->GetColor(), 0xff00ff00u);
       });
+}
+
+TEST_F(PrefabIOTest, ASpriteAppearanceIsCopiedWithThePrefab) {
+  const uint32_t crate = CreateSprite("crate", glm::vec3(1.f, 2.f, 0.f));
+
+  SpriteAppearanceComponent appearance;
+  appearance.flip_x = true;
+  appearance.material = "mat_warm";
+  ECSManager::AddComponent<SpriteAppearanceComponent>(crate, appearance);
+
+  std::string error;
+  ASSERT_TRUE(PrefabIO::Save(m_file, crate, &error)) << error;
+
+  SceneIO::Clear();
+  ASSERT_EQ(CountEntities(), 0u);
+
+  const uint32_t placed = PrefabIO::Instantiate(m_file, &error);
+  ASSERT_NE(placed, kNullEntity) << error;
+  ASSERT_TRUE(ECSManager::HasComponent<SpriteAppearanceComponent>(placed));
+
+  const SpriteAppearanceComponent& copied = ECSManager::GetComponent<SpriteAppearanceComponent>(placed);
+  EXPECT_TRUE(copied.flip_x);
+  EXPECT_FALSE(copied.flip_y);
+  EXPECT_EQ(copied.material, "mat_warm");
 }
 
 // The prefab was saved from this scene, so the live registry already has an
@@ -259,11 +283,11 @@ TEST_F(PrefabIOTest, AMissingPrefabLeavesTheSceneAlone) {
 
 TEST_F(PrefabIOTest, ANewerPrefabIsRefusedWithoutTouchingTheScene) {
   CreateSprite("keep", glm::vec3(1.f, 2.f, 0.f));
-  WriteFile("<cereal><formatVersion>2</formatVersion><entity><value0>0</value0></entity></cereal>");
+  WriteFile("<cereal><formatVersion>3</formatVersion><entity><value0>0</value0></entity></cereal>");
 
   std::string error;
   EXPECT_EQ(PrefabIO::Instantiate(m_file, &error), kNullEntity);
-  EXPECT_NE(error.find("2"), std::string::npos);
+  EXPECT_NE(error.find("3"), std::string::npos);
   EXPECT_NE(error.find("newer"), std::string::npos);
   EXPECT_EQ(CountEntities(), 1u);
 }
@@ -325,6 +349,7 @@ TEST_F(PrefabIOTest, APrefabV1FixtureLoads) {
   ASSERT_TRUE(ECSManager::HasComponent<SpriteComponent>(crate));
   ASSERT_TRUE(ECSManager::HasComponent<AudioComponent>(crate));
   ASSERT_TRUE(ECSManager::HasComponent<RigidBodyComponent>(crate));
+  EXPECT_FALSE(ECSManager::HasComponent<SpriteAppearanceComponent>(crate));
 
   const BasicComponent& basic = ECSManager::GetComponent<BasicComponent>(crate);
   EXPECT_EQ(basic.m_name, "crate");
@@ -353,4 +378,24 @@ TEST_F(PrefabIOTest, APrefabV1FixtureLoads) {
   EXPECT_FLOAT_EQ(*rigidbody.m_rigidbody->GetDensity(), 2.5f);
   EXPECT_FLOAT_EQ(*rigidbody.m_rigidbody->GetFriction(), 0.75f);
 }
+// The checked-in version 2 file: the first prefab format with the appearance
+// group. It is what a later format change has to keep reading.
+TEST_F(PrefabIOTest, APrefabV2FixtureLoads) {
+  const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "prefab_v2.xml";
+
+  std::string error;
+  const uint32_t crate = PrefabIO::Instantiate(fixture, &error);
+  ASSERT_NE(crate, kNullEntity) << error;
+  ASSERT_EQ(CountEntities(), 1u);
+
+  ASSERT_TRUE(ECSManager::HasComponent<SpriteAppearanceComponent>(crate));
+  const SpriteAppearanceComponent& appearance = ECSManager::GetComponent<SpriteAppearanceComponent>(crate);
+  EXPECT_TRUE(appearance.flip_x);
+  EXPECT_FALSE(appearance.flip_y);
+  EXPECT_EQ(appearance.material, "mat_warm");
+
+  const BasicComponent& basic = ECSManager::GetComponent<BasicComponent>(crate);
+  EXPECT_EQ(basic.m_name, "crate");
+}
+
 }  // namespace

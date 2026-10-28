@@ -25,7 +25,8 @@ struct SaveEntity {
   void serialize(Archive& archive) {
     registry.snapshot()
         .entities(archive)
-        .component<BasicComponent, TransformComponent, SpriteComponent, AudioComponent, RigidBodyComponent>(archive);
+        .component<BasicComponent, TransformComponent, SpriteComponent, AudioComponent, RigidBodyComponent,
+                   SpriteAppearanceComponent>(archive);
   }
 };
 
@@ -43,10 +44,11 @@ struct LoadEntity {
     loader.entities(archive);
     loader.component<BasicComponent, TransformComponent, SpriteComponent, AudioComponent, RigidBodyComponent>(archive);
 
-    // Format 1 stores every group the writer knows. Groups appended later are
-    // chained here, each read only from the version that introduced it:
-    //
-    //   if (format_version >= 2) loader.component<...>(archive);
+    // Format 1 stores the five groups above. Groups appended later are chained
+    // here, each read only from the version that introduced it.
+    if (format_version >= 2) {
+      loader.component<SpriteAppearanceComponent>(archive);
+    }
   }
 };
 
@@ -79,6 +81,10 @@ Registry::entity_type CopyEntity(Registry& source, Registry::entity_type entity,
     const SpriteComponent& sprite = source.get<SpriteComponent>(entity);
     Sprite* sprite_copy = sprite.m_sprite == nullptr ? nullptr : new Sprite{*sprite.m_sprite};
     target.assign<SpriteComponent>(copy, SpriteComponent{sprite_copy});
+  }
+
+  if (source.has<SpriteAppearanceComponent>(entity)) {
+    target.assign<SpriteAppearanceComponent>(copy, source.get<SpriteAppearanceComponent>(entity));
   }
 
   if (source.has<AudioComponent>(entity)) {

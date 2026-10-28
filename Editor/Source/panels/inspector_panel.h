@@ -14,6 +14,7 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+#include <components/material_shader.h>
 #include <layout/editor_panel.h>
 #include <utils/logger.h>
 
@@ -29,9 +30,12 @@
 //     was a buffer overrun).
 //
 // The sound field is still read-only: the component holds a Sound handle, not
-// a name. The sprite's texture is editable now, but not by typing a name into
-// the component: the field is a search over the project's textures, and the
-// result is written back as a borrowed Texture* from TextureManager.
+// a name. The sprite's texture and material are editable, but not by typing a
+// name into the component: each field shows the current asset, clicking its
+// name reveals the file in the Content Browser, and the arrow opens a searchable
+// picker. A picked texture is written back as a borrowed Texture* from
+// TextureManager; a picked material is written back as an asset reference in
+// SpriteAppearanceComponent.
 // ---------------------------------------------------------------------------
 class InspectorPanel : public EditorPanel {
  public:
@@ -39,11 +43,14 @@ class InspectorPanel : public EditorPanel {
   DockSlot Slot() const override { return DockSlot::kRight; }
 
   void ProjectChanged() override {
-    // A different project is a different set of textures. The next popup
-    // rebuilds the catalog from the new registry and directory.
-    m_texture_catalog.clear();
-    m_texture_edit_entity = INVALID_ENTITY_ID;
-    m_texture_query.clear();
+    // A different project is a different set of assets. The next popup rebuilds
+    // each catalog from the new registry and directory.
+    m_sprite_catalog.clear();
+    m_sprite_edit_entity = INVALID_ENTITY_ID;
+    m_sprite_query.clear();
+    m_material_catalog.clear();
+    m_material_edit_entity = INVALID_ENTITY_ID;
+    m_material_query.clear();
   }
 
   void Draw() override {
@@ -155,12 +162,15 @@ class InspectorPanel : public EditorPanel {
         ImGui::TextDisabled("No sprite assigned.");
         if (ImGui::SmallButton("Create Sprite")) {
           component.m_sprite.reset(EditorManager::CreateDefaultSprite());
+          EnsureAppearance(EditorManager::GetSelectedEntity());
           SceneManager::MarkDirty();
         }
       } else {
         rse::Sprite* sprite = component.m_sprite.get();
-        DrawSpriteColor(sprite);
         DrawSpriteTexture(sprite);
+        DrawSpriteColor(sprite);
+        DrawSpriteFlip(sprite);
+        DrawSpriteMaterial(sprite);
       }
 
       DrawRemoveComponentButton(Components::kSprite, "Remove Sprite");
@@ -169,7 +179,8 @@ class InspectorPanel : public EditorPanel {
 
   void DrawSpriteColor(rse::Sprite* sprite) {
     // The tint is packed into an unsigned int, so it has to be unpacked for
-    // the widget and re-packed when it changes.
+    // the widget and re-packed when it changes. NoInputs leaves the swatch and
+    // the picker; the numeric fields would only duplicate what the picker says.
     const unsigned int packed = sprite->GetColor();
 
     float rgba[4] = {
@@ -179,65 +190,69 @@ class InspectorPanel : public EditorPanel {
         static_cast<float>((packed >> 24) & 0xFF) / 255.0f,
     };
 
-    if (ImGui::ColorEdit4("Color", rgba)) {
+    BeginRightLabelRow("sprite_color");
+    if (ImGui::ColorEdit4(
+            "##color", rgba,
+            ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_AlphaPreviewHalf)) {
       sprite->SetColor(
           (static_cast<unsigned int>(rgba[0] * 255.0f) << 0) | (static_cast<unsigned int>(rgba[1] * 255.0f) << 8) |
           (static_cast<unsigned int>(rgba[2] * 255.0f) << 16) | (static_cast<unsigned int>(rgba[3] * 255.0f) << 24));
     }
     MarkDirtyIfEdited();
+    EndRightLabelRow("Color");
   }
 
-  // The texture field is a search box, not a name field: the sprite holds a
-  // borrowed Texture*, so the typed text only filters the catalog until a row
-  // is picked. The popup opens on activation and on every edit, which is what
-  // makes "start typing" show every texture that matches. It is positioned
-  // outside the field and opened without focus-on-appearing, so the InputText
-  // keeps the keyboard while the list is visible.
+  void DrawSpriteFlip(rse::Sprite* sprite) {
+    (void)sprite;
+
+    const uint32_t entity = EditorManager::GetSelectedEntity();
+    SpriteAppearanceComponent* appearance = FindAppearance(entity);
+    bool flip_x = appearance != nullptr && appearance->flip_x;
+    bool flip_y = appearance != nullptr && appearance->flip_y;
+
+    BeginRightLabelRow("sprite_flip");
+
+    if (ImGui::Checkbox("X", &flip_x)) {
+      EnsureAppearance(entity).flip_x = flip_x;
+      SceneManager::MarkDirty();
+    }
+
+    ImGui::SameLine();
+    if (ImGui::Checkbox("Y", &flip_y)) {
+      EnsureAppearance(entity).flip_y = flip_y;
+      SceneManager::MarkDirty();
+    }
+
+    EndRightLabelRow("Flip");
+  }
+
+  // The sprite field looks like a disabled text input but is two affordances:
+  // clicking the name reveals the texture in the Content Browser, and the arrow
+  // opens a searchable popup. It never accepts typed text: a sprite holds a
+  // borrowed Texture*, not a name, so a typed name would have nowhere to go.
   void DrawSpriteTexture(rse::Sprite* sprite) {
     const uint32_t entity = EditorManager::GetSelectedEntity();
     const std::string current_name = sprite->GetTextureName();
 
-    if (m_texture_edit_entity != entity) {
-      m_texture_edit_entity = entity;
-      m_texture_query = current_name;
-      m_texture_catalog.clear();
+    if (m_sprite_edit_entity != entity) {
+      m_sprite_edit_entity = entity;
+      m_sprite_query.clear();
+      m_sprite_catalog.clear();
     }
 
-    const bool popup_open = ImGui::IsPopupOpen(kTexturePickerPopup);
-
-    // When the field is not being edited, it follows the sprite. A reload or
-    // a different selection therefore cannot leave stale search text behind.
-    if (!m_texture_field_active && !popup_open && m_texture_query != current_name) {
-      m_texture_query = current_name;
-    }
+    BeginRightLabelRow("sprite");
 
     char buffer[256];
-    std::snprintf(buffer, sizeof(buffer), "%s", m_texture_query.c_str());
-
-    ImGui::AlignTextToFramePadding();
-    ImGui::TextUnformatted("Texture");
-    ImGui::SameLine();
+    std::snprintf(buffer, sizeof(buffer), "%s", current_name.empty() ? "" : current_name.c_str());
 
     const float button_width = ImGui::GetFrameHeight();
     const float spacing = ImGui::GetStyle().ItemSpacing.x;
     ImGui::SetNextItemWidth(std::max(1.0f, ImGui::GetContentRegionAvail().x - button_width - spacing));
 
-    const bool edited = ImGui::InputTextWithHint("##texture", "(none) - type to search", buffer, IM_ARRAYSIZE(buffer));
-    const bool activated = ImGui::IsItemActivated();
+    ImGui::InputTextWithHint("##sprite", "(none)", buffer, IM_ARRAYSIZE(buffer), ImGuiInputTextFlags_ReadOnly);
+    const bool clicked = ImGui::IsItemClicked();
     const ImVec2 field_min = ImGui::GetItemRectMin();
     const ImVec2 field_max = ImGui::GetItemRectMax();
-    m_texture_field_active = ImGui::IsItemActive();
-
-    if (edited) {
-      m_texture_query = buffer;
-      m_texture_highlight = 0;
-      OpenTexturePicker(sprite);
-    } else if (activated) {
-      // Clicking the field is the "browse everything" gesture; typing is what
-      // narrows it. The current name comes back if nothing is picked.
-      m_texture_query.clear();
-      OpenTexturePicker(sprite);
-    }
 
     if (ImGui::BeginDragDropTarget()) {
       if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(kTextureDragDropPayload)) {
@@ -250,22 +265,25 @@ class InspectorPanel : public EditorPanel {
     }
 
     ImGui::SameLine();
-    if (ImGui::ArrowButton("##texture_list", ImGuiDir_Down)) {
-      // The arrow is the "show everything" affordance; typing narrows it.
-      m_texture_query.clear();
-      OpenTexturePicker(sprite);
+    if (ImGui::ArrowButton("##sprite_list", ImGuiDir_Down)) {
+      m_sprite_query.clear();
+      OpenSpritePicker(sprite);
     }
 
-    if (ImGui::IsPopupOpen(kTexturePickerPopup)) {
-      PositionTexturePickerPopup(field_min, field_max);
+    EndRightLabelRow("Sprite");
+
+    if (clicked) {
+      RevealTexture(sprite);
     }
 
-    if (ImGui::BeginPopup(kTexturePickerPopup, ImGuiWindowFlags_NoFocusOnAppearing)) {
-      // NoFocusOnAppearing keeps the InputText active, but it also leaves the
-      // popup behind the inspector in the hit-test order. Bring it to the
-      // display front so its rows stay clickable without taking keyboard focus.
-      ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
-      DrawTexturePickerPopup(sprite);
+    // Position before BeginPopup: that is where ImGui consumes the next-window
+    // data. Doing it inside would only move the popup on its second frame.
+    if (ImGui::IsPopupOpen(kSpritePickerPopup)) {
+      PositionAssetPickerPopup(field_min, field_max);
+    }
+
+    if (ImGui::BeginPopup(kSpritePickerPopup)) {
+      DrawSpritePickerPopup(sprite);
       ImGui::EndPopup();
     }
   }
@@ -273,7 +291,7 @@ class InspectorPanel : public EditorPanel {
   // Place the list below the field, or above it when the inspector is close to
   // the bottom of the screen. The size constraint keeps a large catalog inside
   // the viewport instead of growing past the bottom edge.
-  static void PositionTexturePickerPopup(const ImVec2& field_min, const ImVec2& field_max) {
+  static void PositionAssetPickerPopup(const ImVec2& field_min, const ImVec2& field_max) {
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     const ImVec2 work_min = viewport->WorkPos;
     const ImVec2 work_max(work_min.x + viewport->WorkSize.x, work_min.y + viewport->WorkSize.y);
@@ -286,83 +304,103 @@ class InspectorPanel : public EditorPanel {
 
     // In the default layout the inspector sits on the right, so align the
     // popup's right edge with the field to keep it on screen.
-    const bool align_right = field_min.x + 200.0f > work_max.x;
+    const bool align_right = field_min.x + 280.0f > work_max.x;
 
-    ImGui::SetNextWindowSizeConstraints(ImVec2(0.0f, 0.0f), ImVec2(FLT_MAX, max_height));
+    ImGui::SetNextWindowSizeConstraints(ImVec2(280.0f, 0.0f), ImVec2(FLT_MAX, max_height));
     ImGui::SetNextWindowPos(
         ImVec2(align_right ? field_max.x : field_min.x, open_below ? field_max.y + spacing : field_min.y - spacing),
         ImGuiCond_Always, ImVec2(align_right ? 1.0f : 0.0f, open_below ? 0.0f : 1.0f));
   }
 
-  void OpenTexturePicker(rse::Sprite* sprite) {
+  void OpenSpritePicker(rse::Sprite* sprite) {
     // Rebuild on the frame the popup opens, not on every keystroke while it is
     // open: an asset imported since the last time would otherwise be missing.
-    if (!ImGui::IsPopupOpen(kTexturePickerPopup)) {
-      RefreshTextureCatalog();
+    if (!ImGui::IsPopupOpen(kSpritePickerPopup)) {
+      RefreshSpriteCatalog();
 
       // Start on the texture the sprite already has, so Enter without typing
       // is a no-op rather than a jump to the first alphabetically. A typed
       // query starts at its first match instead.
-      m_texture_highlight = 0;
+      m_sprite_highlight = 0;
 
-      if (m_texture_query.empty()) {
+      if (m_sprite_query.empty()) {
         const std::string current_id = sprite->GetTextureAssetId();
         const std::string current_name = sprite->GetTextureName();
 
-        for (std::size_t index = 0; index < m_texture_catalog.size(); ++index) {
-          const TextureChoice& choice = m_texture_catalog[index];
+        for (std::size_t index = 0; index < m_sprite_catalog.size(); ++index) {
+          const TextureChoice& choice = m_sprite_catalog[index];
           const bool id_match = !current_id.empty() && choice.reference == current_id;
           const bool name_match = current_id.empty() && !current_name.empty() && choice.name == current_name;
 
           if (id_match || name_match) {
-            m_texture_highlight = static_cast<int>(index);
+            m_sprite_highlight = static_cast<int>(index);
             break;
           }
         }
       }
+
+      m_focus_sprite_search = true;
     }
 
-    ImGui::OpenPopup(kTexturePickerPopup);
+    ImGui::OpenPopup(kSpritePickerPopup);
   }
 
-  void RefreshTextureCatalog() {
+  void RefreshSpriteCatalog() {
     const rse::Project& project = Core::GetProject();
-    m_texture_catalog = BuildTextureCatalog(project.Directory(), project.asset_root);
+    m_sprite_catalog = BuildTextureCatalog(project.Directory(), project.asset_root);
   }
 
-  void DrawTexturePickerPopup(rse::Sprite* sprite) {
+  void DrawSpritePickerPopup(rse::Sprite* sprite) {
+    // The search field takes focus as soon as the popup appears, so opening the
+    // arrow and typing is one gesture. AutoSelectAll means a query left over
+    // from a previous open is replaced by the first key press.
+    if (m_focus_sprite_search) {
+      ImGui::SetKeyboardFocusHere();
+      m_focus_sprite_search = false;
+    }
+
+    char search[256];
+    std::snprintf(search, sizeof(search), "%s", m_sprite_query.c_str());
+    ImGui::SetNextItemWidth(-1.0f);
+
+    if (ImGui::InputTextWithHint("##sprite_search", "Search sprites...", search, IM_ARRAYSIZE(search),
+                                 ImGuiInputTextFlags_AutoSelectAll)) {
+      m_sprite_query = search;
+      m_sprite_highlight = 0;
+    }
+
     std::vector<const TextureChoice*> matches;
 
-    for (const TextureChoice& choice : m_texture_catalog) {
-      if (MatchesTextureQuery(choice, m_texture_query)) {
+    for (const TextureChoice& choice : m_sprite_catalog) {
+      if (MatchesTextureQuery(choice, m_sprite_query)) {
         matches.push_back(&choice);
       }
     }
 
     const int count = static_cast<int>(matches.size());
 
-    if (m_texture_highlight < 0 || m_texture_highlight >= count) {
-      m_texture_highlight = count > 0 ? count - 1 : 0;
+    if (m_sprite_highlight < 0 || m_sprite_highlight >= count) {
+      m_sprite_highlight = count > 0 ? count - 1 : 0;
     }
 
     // Arrow keys move the row Enter will assign. They are read before the rows
     // are drawn so the highlight is correct on this frame, not the next one.
     if (count > 0) {
       if (ImGui::IsKeyPressed(ImGuiKey_DownArrow)) {
-        m_texture_highlight = (m_texture_highlight + 1) % count;
+        m_sprite_highlight = (m_sprite_highlight + 1) % count;
       } else if (ImGui::IsKeyPressed(ImGuiKey_UpArrow)) {
-        m_texture_highlight = (m_texture_highlight + count - 1) % count;
+        m_sprite_highlight = (m_sprite_highlight + count - 1) % count;
       }
     }
 
-    if (ImGui::Selectable("None##none", sprite->GetTextureName().empty())) {
+    ImGui::Separator();
+
+    if (ImGui::Selectable("None##sprite_none", sprite->GetTextureName().empty())) {
       sprite->SetTexture(nullptr);
-      m_texture_query.clear();
+      m_sprite_query.clear();
       SceneManager::MarkDirty();
       ImGui::CloseCurrentPopup();
     }
-
-    ImGui::Separator();
 
     for (int index = 0; index < count; ++index) {
       const TextureChoice& choice = *matches[static_cast<std::size_t>(index)];
@@ -376,7 +414,7 @@ class InspectorPanel : public EditorPanel {
 
       ImGui::PushID(choice.project_path.c_str());
 
-      if (ImGui::Selectable(label.c_str(), index == m_texture_highlight)) {
+      if (ImGui::Selectable(label.c_str(), index == m_sprite_highlight)) {
         AssignTextureChoice(sprite, choice);
         ImGui::CloseCurrentPopup();
       }
@@ -389,12 +427,12 @@ class InspectorPanel : public EditorPanel {
     }
 
     if (count > 0 && (ImGui::IsKeyPressed(ImGuiKey_Enter) || ImGui::IsKeyPressed(ImGuiKey_KeypadEnter))) {
-      AssignTextureChoice(sprite, *matches[static_cast<std::size_t>(m_texture_highlight)]);
+      AssignTextureChoice(sprite, *matches[static_cast<std::size_t>(m_sprite_highlight)]);
       ImGui::CloseCurrentPopup();
     }
 
     if (count == 0) {
-      ImGui::TextDisabled(m_texture_query.empty() ? "No textures in this project." : "No matching textures.");
+      ImGui::TextDisabled(m_sprite_query.empty() ? "No sprites in this project." : "No matching sprites.");
       ImGui::TextDisabled("Drag an image from the Content Browser, or import one with Assets > Import Asset.");
     }
   }
@@ -430,7 +468,7 @@ class InspectorPanel : public EditorPanel {
     }
 
     sprite->SetTexture(rse::TextureManager::GetOrLoad(reference));
-    m_texture_query = sprite->GetTextureName();
+    m_sprite_query.clear();
     SceneManager::MarkDirty();
   }
 
@@ -468,8 +506,320 @@ class InspectorPanel : public EditorPanel {
     }
 
     sprite->SetTexture(rse::TextureManager::GetOrLoad(reference));
-    m_texture_query = sprite->GetTextureName();
+    m_sprite_query.clear();
     SceneManager::MarkDirty();
+  }
+
+  // A two-column table is the simplest way to guarantee the label is on the
+  // right: the value column stretches and the label column is fixed, so the
+  // widget stays on the left no matter what the field is. PushID makes the
+  // per-row table ids unique.
+  void BeginRightLabelRow(const char* id) {
+    ImGui::PushID(id);
+    ImGui::BeginTable("##row", 2, ImGuiTableFlags_SizingStretchProp);
+    ImGui::TableSetupColumn("value", ImGuiTableColumnFlags_WidthStretch);
+    ImGui::TableSetupColumn("label", ImGuiTableColumnFlags_WidthFixed, kLabelColumnWidth);
+    ImGui::TableNextRow();
+    ImGui::TableNextColumn();
+  }
+
+  void EndRightLabelRow(const char* label) {
+    ImGui::TableNextColumn();
+    ImGui::AlignTextToFramePadding();
+
+    const float available = ImGui::GetContentRegionAvail().x;
+    const float width = ImGui::CalcTextSize(label).x;
+
+    if (width < available) {
+      ImGui::SetCursorPosX(ImGui::GetCursorPosX() + available - width);
+    }
+
+    ImGui::TextUnformatted(label);
+    ImGui::EndTable();
+    ImGui::PopID();
+  }
+
+  static SpriteAppearanceComponent* FindAppearance(uint32_t entity) {
+    if (entity == INVALID_ENTITY_ID || !rse::ECSManager::HasComponent<SpriteAppearanceComponent>(entity)) {
+      return nullptr;
+    }
+
+    return &rse::ECSManager::GetComponent<SpriteAppearanceComponent>(entity);
+  }
+
+  static SpriteAppearanceComponent& EnsureAppearance(uint32_t entity) {
+    if (!rse::ECSManager::HasComponent<SpriteAppearanceComponent>(entity)) {
+      rse::ECSManager::AddComponent<SpriteAppearanceComponent>(entity);
+    }
+
+    return rse::ECSManager::GetComponent<SpriteAppearanceComponent>(entity);
+  }
+
+  static bool ChoiceMatchesReference(const TextureChoice& choice, const std::string& reference) {
+    if (reference.empty()) {
+      return false;
+    }
+
+    if (!choice.reference.empty() && choice.reference == reference) {
+      return true;
+    }
+
+    return Lowercase(choice.name) == Lowercase(reference) || Lowercase(choice.project_path) == Lowercase(reference) ||
+           Lowercase(choice.asset_root_path) == Lowercase(reference);
+  }
+
+  // Clicking the texture name is a navigation request, not an edit. A file that
+  // has been deleted or an unregistered path still tries the project and asset
+  // roots so the browser can show the folder it lives in.
+  void RevealTexture(rse::Sprite* sprite) {
+    std::string path;
+    const std::string asset_id = sprite->GetTextureAssetId();
+
+    if (!asset_id.empty()) {
+      if (const rse::AssetRegistry::Asset* asset = rse::AssetRegistry::Find(asset_id)) {
+        path = Core::ResolveProjectPath(asset->path);
+      }
+    }
+
+    if (path.empty() && !sprite->GetTextureName().empty()) {
+      path = Core::ResolveResource(sprite->GetTextureName());
+    }
+
+    if (path.empty() || !std::filesystem::exists(path)) {
+      Logger::Warning("The sprite's texture is not on disk" + (path.empty() ? std::string{} : ": " + path));
+      return;
+    }
+
+    EditorManager::RequestRevealAsset(path);
+  }
+
+  void DrawSpriteMaterial(rse::Sprite* sprite) {
+    (void)sprite;
+
+    const uint32_t entity = EditorManager::GetSelectedEntity();
+    SpriteAppearanceComponent* appearance = FindAppearance(entity);
+    const std::string reference = appearance == nullptr ? std::string{} : appearance->material;
+
+    std::string current_name;
+    std::string current_path;
+
+    if (!reference.empty()) {
+      if (rse::MaterialShader* material = rse::MaterialManager::GetOrLoad(reference)) {
+        current_name = material->GetName();
+        current_path = material->GetAssetPath();
+      }
+
+      if (current_name.empty()) {
+        current_name = reference;
+      }
+    }
+
+    if (m_material_edit_entity != entity) {
+      m_material_edit_entity = entity;
+      m_material_query.clear();
+      m_material_catalog.clear();
+    }
+
+    BeginRightLabelRow("sprite_material");
+
+    char buffer[256];
+    std::snprintf(buffer, sizeof(buffer), "%s", current_name.empty() ? "" : current_name.c_str());
+
+    const float button_width = ImGui::GetFrameHeight();
+    const float spacing = ImGui::GetStyle().ItemSpacing.x;
+    ImGui::SetNextItemWidth(std::max(1.0f, ImGui::GetContentRegionAvail().x - button_width - spacing));
+
+    ImGui::InputTextWithHint("##material", "(none)", buffer, IM_ARRAYSIZE(buffer), ImGuiInputTextFlags_ReadOnly);
+    const bool clicked = ImGui::IsItemClicked();
+    const ImVec2 field_min = ImGui::GetItemRectMin();
+    const ImVec2 field_max = ImGui::GetItemRectMax();
+
+    ImGui::SameLine();
+    if (ImGui::ArrowButton("##material_list", ImGuiDir_Down)) {
+      m_material_query.clear();
+      OpenMaterialPicker(reference);
+    }
+
+    EndRightLabelRow("Material");
+
+    if (clicked) {
+      RevealMaterial(reference, current_path);
+    }
+
+    if (ImGui::IsPopupOpen(kMaterialPickerPopup)) {
+      PositionAssetPickerPopup(field_min, field_max);
+    }
+
+    if (ImGui::BeginPopup(kMaterialPickerPopup)) {
+      DrawMaterialPickerPopup(entity, reference);
+      ImGui::EndPopup();
+    }
+  }
+
+  void OpenMaterialPicker(const std::string& reference) {
+    if (!ImGui::IsPopupOpen(kMaterialPickerPopup)) {
+      RefreshMaterialCatalog();
+      m_material_highlight = 0;
+
+      if (m_material_query.empty() && !reference.empty()) {
+        for (std::size_t index = 0; index < m_material_catalog.size(); ++index) {
+          if (ChoiceMatchesReference(m_material_catalog[index], reference)) {
+            m_material_highlight = static_cast<int>(index);
+            break;
+          }
+        }
+      }
+
+      m_focus_material_search = true;
+    }
+
+    ImGui::OpenPopup(kMaterialPickerPopup);
+  }
+
+  void RefreshMaterialCatalog() {
+    const rse::Project& project = Core::GetProject();
+    m_material_catalog = BuildMaterialCatalog(project.Directory(), project.asset_root);
+  }
+
+  void DrawMaterialPickerPopup(uint32_t entity, const std::string& reference) {
+    if (m_focus_material_search) {
+      ImGui::SetKeyboardFocusHere();
+      m_focus_material_search = false;
+    }
+
+    char search[256];
+    std::snprintf(search, sizeof(search), "%s", m_material_query.c_str());
+    ImGui::SetNextItemWidth(-1.0f);
+
+    if (ImGui::InputTextWithHint("##material_search", "Search materials...", search, IM_ARRAYSIZE(search),
+                                 ImGuiInputTextFlags_AutoSelectAll)) {
+      m_material_query = search;
+      m_material_highlight = 0;
+    }
+
+    std::vector<const TextureChoice*> matches;
+
+    for (const TextureChoice& choice : m_material_catalog) {
+      if (MatchesTextureQuery(choice, m_material_query)) {
+        matches.push_back(&choice);
+      }
+    }
+
+    const int count = static_cast<int>(matches.size());
+
+    if (m_material_highlight < 0 || m_material_highlight >= count) {
+      m_material_highlight = count > 0 ? count - 1 : 0;
+    }
+
+    if (count > 0) {
+      if (ImGui::IsKeyPressed(ImGuiKey_DownArrow)) {
+        m_material_highlight = (m_material_highlight + 1) % count;
+      } else if (ImGui::IsKeyPressed(ImGuiKey_UpArrow)) {
+        m_material_highlight = (m_material_highlight + count - 1) % count;
+      }
+    }
+
+    ImGui::Separator();
+
+    if (ImGui::Selectable("None##material_none", reference.empty())) {
+      AssignMaterialReference(entity, {});
+      m_material_query.clear();
+      ImGui::CloseCurrentPopup();
+    }
+
+    for (int index = 0; index < count; ++index) {
+      const TextureChoice& choice = *matches[static_cast<std::size_t>(index)];
+      const bool is_current = ChoiceMatchesReference(choice, reference);
+
+      std::string label = choice.name;
+
+      if (is_current) {
+        label += "  (current)";
+      }
+
+      ImGui::PushID(choice.project_path.c_str());
+
+      if (ImGui::Selectable(label.c_str(), index == m_material_highlight)) {
+        AssignMaterialChoice(entity, choice);
+        ImGui::CloseCurrentPopup();
+      }
+
+      if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("%s", choice.project_path.c_str());
+      }
+
+      ImGui::PopID();
+    }
+
+    if (count > 0 && (ImGui::IsKeyPressed(ImGuiKey_Enter) || ImGui::IsKeyPressed(ImGuiKey_KeypadEnter))) {
+      AssignMaterialChoice(entity, *matches[static_cast<std::size_t>(m_material_highlight)]);
+      ImGui::CloseCurrentPopup();
+    }
+
+    if (count == 0) {
+      ImGui::TextDisabled(m_material_query.empty() ? "No materials in this project." : "No matching materials.");
+      ImGui::TextDisabled("Add a .material file and import it with Assets > Import Asset.");
+    }
+  }
+
+  static void AssignMaterialReference(uint32_t entity, const std::string& reference) {
+    EnsureAppearance(entity).material = reference;
+    SceneManager::MarkDirty();
+  }
+
+  void AssignMaterialChoice(uint32_t entity, const TextureChoice& choice) {
+    std::string reference = choice.reference;
+
+    if (reference.empty()) {
+      const rse::Project& project = Core::GetProject();
+
+      if (!project.IsAttached()) {
+        Logger::Error("Open a project before assigning a material.");
+        return;
+      }
+
+      const std::filesystem::path file = project.Directory() / choice.project_path;
+
+      ImportAssetAt(file);
+      reference = RegisteredAssetIdForFile(file, project.Directory(), "material");
+
+      if (reference.empty()) {
+        reference = choice.project_path;
+      }
+    }
+
+    if (reference.empty()) {
+      Logger::Error("Could not resolve the material " + choice.project_path);
+      return;
+    }
+
+    AssignMaterialReference(entity, reference);
+    m_material_query.clear();
+  }
+
+  void RevealMaterial(const std::string& reference, const std::string& known_path) {
+    if (reference.empty()) {
+      return;
+    }
+
+    std::string path = known_path;
+
+    if (path.empty()) {
+      if (rse::MaterialShader* material = rse::MaterialManager::GetOrLoad(reference)) {
+        path = material->GetAssetPath();
+      }
+    }
+
+    if (path.empty()) {
+      path = Core::ResolveProjectPath(reference);
+    }
+
+    if (path.empty() || !std::filesystem::exists(path)) {
+      Logger::Warning("The sprite's material is not on disk" + (path.empty() ? std::string{} : ": " + path));
+      return;
+    }
+
+    EditorManager::RequestRevealAsset(path);
   }
 
   void DrawAudio() {
@@ -559,15 +909,22 @@ class InspectorPanel : public EditorPanel {
     }
   }
 
-  static constexpr const char* kTexturePickerPopup = "texture_picker";
+  static constexpr const char* kSpritePickerPopup = "sprite_picker";
+  static constexpr const char* kMaterialPickerPopup = "material_picker";
+  static constexpr float kLabelColumnWidth{66.0f};
 
-  // The texture field's state. The query is the text being typed (or the
-  // current texture's name when the field is idle); the catalog is rebuilt
-  // every time the popup opens, so imports made elsewhere show up. The
-  // highlight is the filtered row Enter assigns.
-  std::string m_texture_query;
-  std::vector<TextureChoice> m_texture_catalog;
-  int m_texture_highlight{0};
-  bool m_texture_field_active{false};
-  uint32_t m_texture_edit_entity{INVALID_ENTITY_ID};
+  // Each picker keeps its own query, catalog, highlighted row and "focus the
+  // search on the next draw" flag. The catalogs are rebuilt every time a popup
+  // opens, so imports made elsewhere show up.
+  std::string m_sprite_query;
+  std::vector<TextureChoice> m_sprite_catalog;
+  int m_sprite_highlight{0};
+  bool m_focus_sprite_search{false};
+  uint32_t m_sprite_edit_entity{INVALID_ENTITY_ID};
+
+  std::string m_material_query;
+  std::vector<TextureChoice> m_material_catalog;
+  int m_material_highlight{0};
+  bool m_focus_material_search{false};
+  uint32_t m_material_edit_entity{INVALID_ENTITY_ID};
 };

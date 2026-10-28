@@ -6,6 +6,8 @@ uint32_t EditorManager::m_selected_entity{INVALID_ENTITY_ID};
 rse::Framebuffer* EditorManager::m_scene_target{nullptr};
 EditorSettings EditorManager::m_settings;
 bool EditorManager::m_frame_requested{false};
+std::filesystem::path EditorManager::m_reveal_asset;
+bool EditorManager::m_reveal_requested{false};
 
 rse::Sprite* EditorManager::CreateDefaultSprite() {
   return new rse::Sprite(glm::vec3(0.0f), glm::vec2(40.0f, 40.0f), 0xffffffffu);
@@ -31,6 +33,7 @@ void EditorManager::HandleCreateEntityEvent(const CreateEntity& event) {
   // image by name, which meant new entities in any other project pointed at a
   // texture that project did not have.
   rse::ECSManager::AddComponent<SpriteComponent>(m_selected_entity, CreateDefaultSprite());
+  rse::ECSManager::AddComponent<SpriteAppearanceComponent>(m_selected_entity);
 
   SceneManager::MarkDirty();
 }
@@ -96,6 +99,7 @@ void EditorManager::HandleAddComponentEvent(const AddComponent& event) {
         Logger::Error("Already existing sprite component");
       } else {
         rse::ECSManager::AddComponent<SpriteComponent>(m_selected_entity, CreateDefaultSprite());
+        rse::ECSManager::AddComponent<SpriteAppearanceComponent>(m_selected_entity);
         SceneManager::MarkDirty();
       }
       break;
@@ -136,6 +140,9 @@ void EditorManager::HandleRemoveComponentEvent(const RemoveComponent& event) {
         break;
       }
       rse::ECSManager::RemoveComponent<SpriteComponent>(m_selected_entity);
+      if (rse::ECSManager::HasComponent<SpriteAppearanceComponent>(m_selected_entity)) {
+        rse::ECSManager::RemoveComponent<SpriteAppearanceComponent>(m_selected_entity);
+      }
       SceneManager::MarkDirty();
       break;
     default:
@@ -167,4 +174,23 @@ void EditorManager::ValidateSelection() {
   if (m_selected_entity != INVALID_ENTITY_ID && !rse::ECSManager::IsValidEntity(m_selected_entity)) {
     m_selected_entity = INVALID_ENTITY_ID;
   }
+}
+
+void EditorManager::RequestRevealAsset(const std::filesystem::path& path) {
+  m_reveal_asset = path;
+  m_reveal_requested = true;
+}
+
+bool EditorManager::ConsumeRevealAsset(std::filesystem::path* path) {
+  if (!m_reveal_requested) {
+    return false;
+  }
+
+  if (path != nullptr) {
+    *path = m_reveal_asset;
+  }
+
+  m_reveal_asset.clear();
+  m_reveal_requested = false;
+  return true;
 }

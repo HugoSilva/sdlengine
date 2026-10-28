@@ -442,6 +442,10 @@ std::string AssetRegistry::TypeForPath(const std::filesystem::path& path) {
     return "font";
   }
 
+  if (extension == ".material") {
+    return "material";
+  }
+
   if (extension == ".xml") {
     return "prefab";
   }

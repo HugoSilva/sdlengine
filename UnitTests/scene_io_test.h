@@ -112,7 +112,7 @@ TEST_F(SceneIOTest, SavingWritesTheSceneFile) {
   EXPECT_FALSE(std::filesystem::exists(m_scratch));
 
   const std::string contents = ReadFile(m_file);
-  EXPECT_NE(contents.find("<formatVersion>6</formatVersion>"), std::string::npos);
+  EXPECT_NE(contents.find("<formatVersion>7</formatVersion>"), std::string::npos);
   EXPECT_NE(contents.find("<camera>"), std::string::npos);
   EXPECT_NE(contents.find("<entities>"), std::string::npos);
 }
@@ -416,6 +416,29 @@ TEST_F(SceneIOTest, ARigidBodyComponentRoundTrips) {
 
 // The camera is scene-root data: each scene stores its own, and loading one
 // replaces the other.
+TEST_F(SceneIOTest, ASpriteAppearanceRoundTrips) {
+  const uint32_t entity = CreateSprite("mirrored", glm::vec3(4.f, 5.f, 0.f));
+
+  SpriteAppearanceComponent appearance;
+  appearance.flip_x = true;
+  appearance.flip_y = true;
+  appearance.material = "mat_warm";
+  ECSManager::AddComponent<SpriteAppearanceComponent>(entity, appearance);
+
+  std::string error;
+  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+
+  SceneIO::Clear();
+  ASSERT_EQ(CountEntities(), 0u);
+  ASSERT_TRUE(SceneIO::Load(m_file, &error)) << error;
+
+  ASSERT_TRUE(ECSManager::HasComponent<SpriteAppearanceComponent>(entity));
+  const SpriteAppearanceComponent& loaded = ECSManager::GetComponent<SpriteAppearanceComponent>(entity);
+  EXPECT_TRUE(loaded.flip_x);
+  EXPECT_TRUE(loaded.flip_y);
+  EXPECT_EQ(loaded.material, "mat_warm");
+}
+
 TEST_F(SceneIOTest, ASceneCameraRoundTrips) {
   const std::filesystem::path second_file = m_directory / "second.xml";
 
@@ -639,6 +662,13 @@ TEST_F(SceneIOTest, AV6SceneLoadsFromTheFixture) {
   ASSERT_TRUE(SceneIO::Load(fixture, &error)) << error;
 
   ASSERT_EQ(CountEntities(), 2u);
+
+  // Version 6 has no appearance group, so every entity opens with the defaults
+  // and no component is invented for it.
+  uint32_t appearances = 0;
+  ECSManager::GetView<SpriteAppearanceComponent>().each(
+      [&appearances](auto, SpriteAppearanceComponent&) { ++appearances; });
+  EXPECT_EQ(appearances, 0u);
 
   int crates = 0;
 

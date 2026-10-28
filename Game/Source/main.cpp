@@ -58,6 +58,9 @@ class Game : public Core {
     m_shader->SetUniform1i("texture0", 0);
     m_camera->Render(m_shader);
 
+    Core::GetRenderer()->SetSceneShader(m_shader);
+    Core::GetRenderer()->SetCameraUniforms(m_camera->GetViewMatrix(), m_camera->GetProjection());
+
     const rse::OrthoView view = m_camera->GetView();
     Core::GetRenderer()->SetViewBounds(view.Min(), view.Max());
   }
