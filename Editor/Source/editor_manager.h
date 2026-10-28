@@ -1,6 +1,7 @@
 #pragma once
 
 #include <core.h>
+#include <filesystem>
 #include <span>
 
 #include "editor_settings.h"
@@ -97,6 +98,12 @@ class EditorManager {
     return requested;
   }
 
+  // A one-shot request to show a file in the Content Browser. The inspector's
+  // Sprite and Material fields ask for it when their name is clicked; the
+  // layout answers it by revealing the file and bringing the panel forward.
+  static void RequestRevealAsset(const std::filesystem::path& path);
+  static bool ConsumeRevealAsset(std::filesystem::path* path);
+
   template <typename Component>
   static bool ShowComponentWidget() {
     if (m_selected_entity != INVALID_ENTITY_ID) {
@@ -121,4 +128,6 @@ class EditorManager {
   static rse::Framebuffer* m_scene_target;
   static EditorSettings m_settings;
   static bool m_frame_requested;
+  static std::filesystem::path m_reveal_asset;
+  static bool m_reveal_requested;
 };

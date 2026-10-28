@@ -8,7 +8,19 @@
 #include <ecs/components/transform.h>
 
 namespace rse {
+class MaterialShader;
 class Renderable2D;
+class Shader;
+
+// Per-sprite presentation that is not part of the renderable itself. The
+// sprite's UV rectangle still comes from the texture (an atlas region, not the
+// whole page); flip mirrors within that rectangle, and a material replaces the
+// program used for this sprite's draw batch.
+struct SpriteAppearance {
+  bool flip_x{false};
+  bool flip_y{false};
+  MaterialShader* material{nullptr};
+};
 
 enum class RenderBackend {
   kUnknown,
@@ -56,6 +68,15 @@ class Renderer2D {
   // on submission order.
   virtual void Submit(TransformComponent& position, const Renderable2D* renderable, std::int32_t layer = 0) = 0;
 
+  // The same submission with the sprite's flip and material. Backends that do
+  // not know about appearance fall back to the plain submission, which is what
+  // keeps the interface usable by a fixed-function console backend.
+  virtual void Submit(TransformComponent& position, const Renderable2D* renderable, std::int32_t layer,
+                      const SpriteAppearance& appearance) {
+    (void)appearance;
+    Submit(position, renderable, layer);
+  }
+
   // A flat, untextured quad in world space. Same transform and corner
   // convention as Submit(), but with no texture bound, so the shader falls
   // through to the vertex colour and `color` is used as-is. The editor's grid
@@ -66,6 +87,17 @@ class Renderer2D {
   virtual void End() {}
 
   virtual void Flush() = 0;
+
+  // The program a batch uses when its sprite has no material. The application
+  // still enables the shader before submitting -- existing backends and
+  // callers rely on that -- but a backend that switches to a material needs to
+  // know which program to return to, and which camera uniforms to re-upload
+  // after the switch.
+  virtual void SetSceneShader(Shader* shader) { (void)shader; }
+  virtual void SetCameraUniforms(const glm::mat4& view, const glm::mat4& projection) {
+    (void)view;
+    (void)projection;
+  }
 
   // The colour every frame is cleared to. The open scene owns the background,
   // so core sets this once per frame; a backend that never clears ignores it.

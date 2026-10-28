@@ -1,5 +1,7 @@
 #pragma once
 
+#include <filesystem>
+
 // ---------------------------------------------------------------------------
 // Base class for every dockable editor panel.
 //
@@ -31,6 +33,11 @@ class EditorPanel {
   // browser) drops them and starts again from the new directory; most panels
   // read from the engine every frame and do not care.
   virtual void ProjectChanged() {}
+
+  // Show `path` in this panel. Only the Content Browser implements it today:
+  // the inspector uses it to turn an asset name click into a navigation. A panel
+  // that has no notion of a file ignores it.
+  virtual void RevealAsset(const std::filesystem::path& path) { (void)path; }
 
   // The panel went from hidden to shown. A panel that snapshots the state it
   // edits -- Project Settings' Cancel -- takes the snapshot here, so reopening

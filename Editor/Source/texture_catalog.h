@@ -11,17 +11,20 @@
 #include <core/asset_registry.h>
 
 // ---------------------------------------------------------------------------
-// The textures a sprite can point at.
+// The assets a sprite field can point at.
 //
-// A scene stores a texture *reference*: the asset registry's id for a texture
-// that has been imported, or, for an older or unregistered file, a path
-// relative to the project's asset root. The inspector's picker offers both:
-// every registered texture asset, plus every image file in the project that is
-// not in the registry yet. Choosing an unregistered file registers it first
-// (ImportAssetAt), so the sprite stores a stable id rather than a path.
+// A scene stores an asset *reference*: the registry's id for an imported
+// texture or material, or, for an older or unregistered file, a path. The
+// inspector's pickers offer both: every registered asset of the requested type,
+// plus every file of that type in the project that the registry does not know
+// yet. Choosing an unregistered file registers it first (ImportAssetAt), so the
+// sprite stores a stable id rather than a path.
+//
+// TextureChoice keeps its original name because both pickers use the same row
+// shape; `BuildMaterialCatalog` is the material-typed half.
 // ---------------------------------------------------------------------------
 
-// One row in the picker.
+// One row in a picker.
 struct TextureChoice {
   // What the sprite stores: an asset id. Empty for an unregistered file, which
   // the picker registers before assigning.
@@ -61,6 +64,10 @@ inline bool IsImageFile(const std::filesystem::path& path) {
   return rse::AssetRegistry::TypeForPath(path) == "texture";
 }
 
+inline bool IsMaterialFile(const std::filesystem::path& path) {
+  return rse::AssetRegistry::TypeForPath(path) == "material";
+}
+
 inline bool IsHiddenPath(const std::filesystem::path& path) {
   const std::string name = path.filename().string();
   return !name.empty() && name.front() == '.';
@@ -97,17 +104,17 @@ inline std::string AssetRootRelative(const std::filesystem::path& file, const st
   return relative.generic_string();
 }
 
-// Every texture the inspector can offer. The registry's textures are added
-// first, then the project scan adds the image files the registry does not know
-// yet. Hidden directories are skipped, and the scan only runs when a project is
-// open.
-inline std::vector<TextureChoice> BuildTextureCatalog(const std::filesystem::path& project_directory,
-                                                      const std::string& asset_root) {
+// Every asset of `type` the inspector can offer. The registry's entries are
+// added first, then the project scan adds files of that type the registry does
+// not know yet. Hidden directories are skipped, and the scan only runs when a
+// project is open.
+inline std::vector<TextureChoice> BuildAssetCatalog(const std::filesystem::path& project_directory,
+                                                    const std::string& asset_root, const std::string& type) {
   std::vector<TextureChoice> choices;
   std::set<std::string> known_paths;
 
   for (const rse::AssetRegistry::Asset& asset : rse::AssetRegistry::All()) {
-    if (asset.type != "texture") {
+    if (asset.type != type) {
       continue;
     }
 
@@ -136,7 +143,7 @@ inline std::vector<TextureChoice> BuildTextureCatalog(const std::filesystem::pat
         if (IsHiddenPath(entry.path())) {
           iterator.disable_recursion_pending();
         }
-      } else if (entry.is_regular_file(entry_error) && IsImageFile(entry.path())) {
+      } else if (entry.is_regular_file(entry_error) && rse::AssetRegistry::TypeForPath(entry.path()) == type) {
         const std::string project_path = ProjectRelative(entry.path(), project_directory);
 
         if (!project_path.empty() && known_paths.find(Lowercase(project_path)) == known_paths.end()) {
@@ -166,6 +173,16 @@ inline std::vector<TextureChoice> BuildTextureCatalog(const std::filesystem::pat
   return choices;
 }
 
+inline std::vector<TextureChoice> BuildTextureCatalog(const std::filesystem::path& project_directory,
+                                                      const std::string& asset_root) {
+  return BuildAssetCatalog(project_directory, asset_root, "texture");
+}
+
+inline std::vector<TextureChoice> BuildMaterialCatalog(const std::filesystem::path& project_directory,
+                                                       const std::string& asset_root) {
+  return BuildAssetCatalog(project_directory, asset_root, "material");
+}
+
 inline bool MatchesTextureQuery(const TextureChoice& choice, const std::string& query) {
   if (query.empty()) {
     return true;
@@ -182,8 +199,8 @@ inline bool MatchesTextureQuery(const TextureChoice& choice, const std::string& 
 // an empty string when the file is not registered. This deliberately does not
 // use FindByPath: that helper also matches a bare file name, which would make a
 // root-level image inherit the id of a same-named image in a subdirectory.
-inline std::string RegisteredTextureIdForFile(const std::filesystem::path& file,
-                                              const std::filesystem::path& project_directory) {
+inline std::string RegisteredAssetIdForFile(const std::filesystem::path& file,
+                                            const std::filesystem::path& project_directory, const std::string& type) {
   const std::string project_path = ProjectRelative(file, project_directory);
 
   if (project_path.empty()) {
@@ -193,10 +210,15 @@ inline std::string RegisteredTextureIdForFile(const std::filesystem::path& file,
   const std::string wanted = Lowercase(project_path);
 
   for (const rse::AssetRegistry::Asset& asset : rse::AssetRegistry::All()) {
-    if (asset.type == "texture" && Lowercase(asset.path) == wanted) {
+    if (asset.type == type && Lowercase(asset.path) == wanted) {
       return asset.id;
     }
   }
 
   return {};
+}
+
+inline std::string RegisteredTextureIdForFile(const std::filesystem::path& file,
+                                              const std::filesystem::path& project_directory) {
+  return RegisteredAssetIdForFile(file, project_directory, "texture");
 }

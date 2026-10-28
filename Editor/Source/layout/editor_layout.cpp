@@ -98,6 +98,23 @@ void EditorLayout::Draw() {
     m_select_content_browser = true;
   }
 
+  // An asset name clicked in the inspector asks the browser to show that file.
+  // Revealing before the panels draw means the browser lists the right folder
+  // on this frame and can scroll the row into view.
+  std::filesystem::path reveal;
+
+  if (EditorManager::ConsumeRevealAsset(&reveal)) {
+    for (const std::unique_ptr<EditorPanel>& panel : m_panels) {
+      if (std::string(panel->Id()) != "Content Browser") {
+        continue;
+      }
+
+      ShowPanel("Content Browser");
+      panel->RevealAsset(reveal);
+      break;
+    }
+  }
+
   // The scene target is deliberately *not* reset here. The viewport panel owns
   // it and publishes it whenever it is given the chance to draw, so hiding or
   // collapsing the panel keeps the scene offscreen instead of letting it fall

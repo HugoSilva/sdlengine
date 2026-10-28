@@ -26,6 +26,7 @@
 #include <components/shader.h>
 #include <components/sprite.h>
 #include <core/event_manager.h>
+#include <core/material_manager.h>
 #include <core/project.h>
 #include <core/scene_manager.h>
 #include <core/texture_manager.h>

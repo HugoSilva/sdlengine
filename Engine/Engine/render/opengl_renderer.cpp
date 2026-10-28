@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cstddef>
 
-#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #ifdef EMSCRIPTEN
 #include <SDL3/SDL_opengles2.h>
@@ -11,6 +11,8 @@
 #include <GL/glew.h>
 #endif  // EMSCRIPTEN
 
+#include <components/material_shader.h>
+#include <components/shader.h>
 #include <render/renderable_2d.h>
 
 namespace rse {
@@ -66,6 +68,11 @@ void OpenGLRenderer::Begin() {
 }
 
 void OpenGLRenderer::Submit(TransformComponent& transform, const Renderable2D* renderable, std::int32_t layer) {
+  Submit(transform, renderable, layer, SpriteAppearance{});
+}
+
+void OpenGLRenderer::Submit(TransformComponent& transform, const Renderable2D* renderable, std::int32_t layer,
+                            const SpriteAppearance& appearance) {
   if (renderable == nullptr) return;
 
   SpriteDraw draw;
@@ -76,6 +83,9 @@ void OpenGLRenderer::Submit(TransformComponent& transform, const Renderable2D* r
   draw.scale = transform.scale;
   draw.color = renderable->GetColor();
   draw.texture = renderable->GetTId();
+  draw.material = appearance.material;
+  draw.flip_x = appearance.flip_x;
+  draw.flip_y = appearance.flip_y;
   draw.layer = layer;
   draw.depth = transform.position.z;
   m_builder.Add(draw);
@@ -111,15 +121,33 @@ void OpenGLRenderer::Flush() {
   m_stats.indices = batch_stats.indices;
   m_stats.draw_calls = batch_stats.batches;
 
-  // The application owns the shader and enables it before submitting the
-  // frame; enabling a renderer-private program here would discard the camera
-  // uniforms the app just uploaded. The renderer only binds textures and draws.
+  // The application owns the scene shader and enables it before submitting the
+  // frame. A sprite with a material needs a different program for its batch, so
+  // the renderer switches and then re-uploads the camera uniforms to the new
+  // program; the scene shader is restored before returning, because the next
+  // frame's UI and debug geometry expect it.
   glBindVertexArray(m_vao);
   glActiveTexture(GL_TEXTURE0);
 
   const auto& batches = m_builder.GetBatches();
   const auto& vertices = m_builder.GetVertices();
   const auto& indices = m_builder.GetIndices();
+
+  Shader* active_shader = m_scene_shader;
+  ApplyFrameUniforms(active_shader);
+
+  const auto select_shader = [this, &active_shader](const SpriteBatch& batch) {
+    Shader* next = m_scene_shader;
+
+    if (batch.material != nullptr && batch.material->GetShader() != nullptr) {
+      next = batch.material->GetShader();
+    }
+
+    if (next != active_shader) {
+      active_shader = next;
+      ApplyFrameUniforms(active_shader);
+    }
+  };
 
 #ifdef EMSCRIPTEN
   // WebGL2 has no base-vertex draw, so give each batch its own upload and keep
@@ -143,6 +171,7 @@ void OpenGLRenderer::Flush() {
     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(index_bytes),
                     indices.data() + batch.first_index);
 
+    select_shader(batch);
     DrawBatch(batch, 0, 0);
   }
 #else
@@ -170,9 +199,17 @@ void OpenGLRenderer::Flush() {
   }
 
   for (const SpriteBatch& batch : batches) {
+    select_shader(batch);
     DrawBatch(batch, static_cast<GLint>(batch.first_vertex), batch.first_index);
   }
 #endif
+
+  // Leave the frame on the scene shader. The UI pass and the next frame both
+  // assume it is current.
+  if (active_shader != m_scene_shader) {
+    active_shader = m_scene_shader;
+    ApplyFrameUniforms(active_shader);
+  }
 
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindVertexArray(0);
@@ -191,6 +228,24 @@ void OpenGLRenderer::DrawBatch(const SpriteBatch& batch, int base_vertex, std::s
   glDrawElementsBaseVertex(GL_TRIANGLES, static_cast<GLsizei>(batch.index_count), GL_UNSIGNED_SHORT, index_offset,
                            base_vertex);
 #endif
+}
+
+void OpenGLRenderer::SetSceneShader(Shader* shader) { m_scene_shader = shader; }
+
+void OpenGLRenderer::SetCameraUniforms(const glm::mat4& view, const glm::mat4& projection) {
+  m_view = view;
+  m_projection = projection;
+}
+
+void OpenGLRenderer::ApplyFrameUniforms(Shader* shader) {
+  if (shader == nullptr) {
+    return;
+  }
+
+  shader->Enable();
+  shader->SetUniform1i("texture0", 0);
+  shader->SetUniformMat4("view", glm::value_ptr(m_view));
+  shader->SetUniformMat4("projection", glm::value_ptr(m_projection));
 }
 
 void OpenGLRenderer::SetClearColor(const glm::vec3& color) { m_clear_color = color; }

@@ -8,6 +8,8 @@
 #include <glm/glm.hpp>
 
 namespace rse {
+class MaterialShader;
+
 // A backend-neutral description of one 2D quad. The renderer consumes these
 // instead of touching a GPU buffer while the ECS is still submitting sprites:
 // that is what lets the batch be sorted, culled and grouped before anything is
@@ -23,6 +25,9 @@ struct SpriteDraw {
   // The backend-neutral texture handle. Zero means "untextured": the quad uses
   // its vertex colour and ignores the sampler.
   std::uint32_t texture{0};
+  MaterialShader* material{nullptr};
+  bool flip_x{false};
+  bool flip_y{false};
   std::int32_t layer{0};
   float depth{0.0f};
   std::uint32_t sequence{0};
@@ -41,6 +46,7 @@ struct SpriteVertex {
 // batch to the start of a scratch buffer first).
 struct SpriteBatch {
   std::uint32_t texture{0};
+  MaterialShader* material{nullptr};
   std::size_t first_vertex{0};
   std::size_t vertex_count{0};
   std::size_t first_index{0};

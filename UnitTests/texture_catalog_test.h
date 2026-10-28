@@ -62,11 +62,55 @@ TEST_F(TextureCatalogTest, RegisteredTextureAssetsAreOfferedById) {
 
 TEST_F(TextureCatalogTest, NonTextureAssetsAreIgnored) {
   Touch("assets/effect.wav");
+  Touch("assets/warm.material");
   Touch("scenes/start.xml");
   AssetRegistry::Add("effect.wav", "sound", "assets/effect.wav");
+  AssetRegistry::Add("warm.material", "material", "assets/warm.material");
   AssetRegistry::Add("start.xml", "prefab", "scenes/start.xml");
 
   EXPECT_TRUE(BuildTextureCatalog(m_directory, "assets").empty());
+}
+
+TEST_F(TextureCatalogTest, MaterialCatalogOffersRegisteredAndUnregisteredMaterials) {
+  Touch("assets/warm.material");
+  Touch("assets/cool.material");
+  Touch("assets/crate.png");
+  const std::string id = AssetRegistry::Add("warm.material", "material", "assets/warm.material");
+
+  const std::vector<TextureChoice> choices = BuildMaterialCatalog(m_directory, "assets");
+
+  ASSERT_EQ(2u, choices.size());
+  EXPECT_EQ("cool.material", choices[0].name);
+  EXPECT_EQ("warm.material", choices[1].name);
+  EXPECT_FALSE(choices[0].registered);
+  EXPECT_TRUE(choices[1].registered);
+  EXPECT_EQ(id, choices[1].reference);
+  EXPECT_EQ("assets/warm.material", choices[1].project_path);
+}
+
+TEST_F(TextureCatalogTest, AFolderOfMaterialsIsNotOfferedAsTextures) {
+  Touch("assets/materials/warm.material");
+  const std::vector<TextureChoice> textures = BuildTextureCatalog(m_directory, "assets");
+  const std::vector<TextureChoice> materials = BuildMaterialCatalog(m_directory, "assets");
+
+  EXPECT_TRUE(textures.empty());
+  ASSERT_EQ(1u, materials.size());
+  EXPECT_EQ("warm.material", materials.front().name);
+}
+
+TEST_F(TextureCatalogTest, RegisteredAssetIdWorksForMaterials) {
+  Touch("assets/warm.material");
+  const std::string id = AssetRegistry::Add("warm.material", "material", "assets/warm.material");
+
+  EXPECT_EQ(id, RegisteredAssetIdForFile(m_directory / "assets" / "warm.material", m_directory, "material"));
+  EXPECT_TRUE(RegisteredAssetIdForFile(m_directory / "assets" / "warm.material", m_directory, "texture").empty());
+}
+
+TEST_F(TextureCatalogTest, MaterialFileClassificationIsExact) {
+  EXPECT_TRUE(IsMaterialFile("assets/warm.material"));
+  EXPECT_TRUE(IsMaterialFile("assets/WARM.MATERIAL"));
+  EXPECT_FALSE(IsMaterialFile("assets/warm.material.xml"));
+  EXPECT_FALSE(IsMaterialFile("assets/crate.png"));
 }
 
 TEST_F(TextureCatalogTest, UnregisteredImagesInTheProjectAreOffered) {

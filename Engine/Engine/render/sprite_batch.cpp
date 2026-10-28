@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <functional>
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -69,22 +70,25 @@ void SpriteBatchBuilder::Build() {
 
   // Layers are the coarse ordering primitive; depth is the fine one inside a
   // layer. Back-to-front depth keeps the existing alpha-blended sprites working
-  // with the depth test still enabled. Texture is the batching key, so it comes
-  // before the submission sequence only when layer and depth are equal.
+  // with the depth test still enabled. Material and texture are the batching
+  // keys, so they come before the submission sequence only when layer and depth
+  // are equal.
   std::sort(m_draws.begin(), m_draws.end(), [](const SpriteDraw& a, const SpriteDraw& b) {
     if (a.layer != b.layer) return a.layer < b.layer;
     if (a.depth != b.depth) return a.depth > b.depth;
+    if (a.material != b.material) return std::less<MaterialShader*>{}(a.material, b.material);
     if (a.texture != b.texture) return a.texture < b.texture;
     return a.sequence < b.sequence;
   });
 
-  const auto close_batch = [this](std::uint32_t texture, std::size_t first_vertex, std::size_t vertex_count,
-                                  std::size_t first_index, std::size_t index_count) {
+  const auto close_batch = [this](std::uint32_t texture, MaterialShader* material, std::size_t first_vertex,
+                                  std::size_t vertex_count, std::size_t first_index, std::size_t index_count) {
     if (vertex_count == 0) return;
-    m_batches.push_back({texture, first_vertex, vertex_count, first_index, index_count});
+    m_batches.push_back({texture, material, first_vertex, vertex_count, first_index, index_count});
   };
 
   std::uint32_t batch_texture = 0;
+  MaterialShader* batch_material = nullptr;
   std::size_t batch_first_vertex = 0;
   std::size_t batch_vertex_count = 0;
   std::size_t batch_first_index = 0;
@@ -98,12 +102,14 @@ void SpriteBatchBuilder::Build() {
       continue;
     }
 
-    if (!batch_open || draw.texture != batch_texture ||
+    if (!batch_open || draw.texture != batch_texture || draw.material != batch_material ||
         batch_vertex_count + 4 > SpriteBatchBuilder::kMaxVerticesPerBatch) {
       if (batch_open) {
-        close_batch(batch_texture, batch_first_vertex, batch_vertex_count, batch_first_index, batch_index_count);
+        close_batch(batch_texture, batch_material, batch_first_vertex, batch_vertex_count, batch_first_index,
+                    batch_index_count);
       }
       batch_texture = draw.texture;
+      batch_material = draw.material;
       batch_first_vertex = m_vertices.size();
       batch_vertex_count = 0;
       batch_first_index = m_indices.size();
@@ -121,8 +127,31 @@ void SpriteBatchBuilder::Build() {
         glm::vec3(model * glm::vec4(draw.size.x, -draw.size.y, 0.0f, 1.0f)),
     };
 
+    // Flip inside the sprite's own UV rectangle, not across the whole texture:
+    // an atlas region mirrored around 0.5 would sample a neighbouring image.
+    std::array<glm::vec2, 4> uv = draw.uv;
+
+    if (draw.flip_x || draw.flip_y) {
+      float min_u = uv[0].x;
+      float max_u = uv[0].x;
+      float min_v = uv[0].y;
+      float max_v = uv[0].y;
+
+      for (const glm::vec2& corner : uv) {
+        min_u = std::min(min_u, corner.x);
+        max_u = std::max(max_u, corner.x);
+        min_v = std::min(min_v, corner.y);
+        max_v = std::max(max_v, corner.y);
+      }
+
+      for (glm::vec2& corner : uv) {
+        if (draw.flip_x) corner.x = min_u + max_u - corner.x;
+        if (draw.flip_y) corner.y = min_v + max_v - corner.y;
+      }
+    }
+
     for (int i = 0; i < 4; ++i) {
-      m_vertices.push_back({positions[i], draw.uv[i], tid, draw.color});
+      m_vertices.push_back({positions[i], uv[i], tid, draw.color});
     }
 
     m_indices.push_back(static_cast<std::uint16_t>(base + 0));
@@ -137,7 +166,8 @@ void SpriteBatchBuilder::Build() {
   }
 
   if (batch_open) {
-    close_batch(batch_texture, batch_first_vertex, batch_vertex_count, batch_first_index, batch_index_count);
+    close_batch(batch_texture, batch_material, batch_first_vertex, batch_vertex_count, batch_first_index,
+                batch_index_count);
   }
 
   m_stats.batches = m_batches.size();

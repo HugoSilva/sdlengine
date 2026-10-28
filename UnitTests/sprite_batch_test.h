@@ -133,6 +133,64 @@ TEST(SpriteBatchTest, UntexturedDrawUsesVertexColourPath) {
   EXPECT_EQ(0xff00ff00u, builder.GetVertices()[0].color);
 }
 
+TEST(SpriteBatchTest, FlipMirrorsUvInsideItsOwnRectangle) {
+  SpriteBatchBuilder builder;
+
+  SpriteDraw draw = MakeDraw(1);
+  draw.uv = {{glm::vec2(0.25f, 0.75f), glm::vec2(0.25f, 0.5f), glm::vec2(0.5f, 0.5f), glm::vec2(0.5f, 0.75f)}};
+  draw.flip_x = true;
+  builder.Add(draw);
+  builder.Build();
+
+  ASSERT_EQ(4u, builder.GetVertices().size());
+  EXPECT_FLOAT_EQ(0.5f, builder.GetVertices()[0].uv.x);
+  EXPECT_FLOAT_EQ(0.5f, builder.GetVertices()[1].uv.x);
+  EXPECT_FLOAT_EQ(0.25f, builder.GetVertices()[2].uv.x);
+  EXPECT_FLOAT_EQ(0.25f, builder.GetVertices()[3].uv.x);
+  // Y is untouched, and the atlas rectangle did not grow into a neighbour.
+  EXPECT_FLOAT_EQ(0.75f, builder.GetVertices()[0].uv.y);
+  EXPECT_FLOAT_EQ(0.5f, builder.GetVertices()[1].uv.y);
+}
+
+TEST(SpriteBatchTest, FlipMirrorsBothAxes) {
+  SpriteBatchBuilder builder;
+
+  SpriteDraw draw = MakeDraw(1);
+  draw.uv = {{glm::vec2(0.0f, 1.0f), glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 0.0f), glm::vec2(1.0f, 1.0f)}};
+  draw.flip_x = true;
+  draw.flip_y = true;
+  builder.Add(draw);
+  builder.Build();
+
+  ASSERT_EQ(4u, builder.GetVertices().size());
+  EXPECT_FLOAT_EQ(1.0f, builder.GetVertices()[0].uv.x);
+  EXPECT_FLOAT_EQ(0.0f, builder.GetVertices()[0].uv.y);
+  EXPECT_FLOAT_EQ(0.0f, builder.GetVertices()[3].uv.x);
+  EXPECT_FLOAT_EQ(0.0f, builder.GetVertices()[3].uv.y);
+}
+
+TEST(SpriteBatchTest, DifferentMaterialsSplitBatchesEvenWithOneTexture) {
+  int first_material = 0;
+  int second_material = 0;
+
+  SpriteBatchBuilder builder;
+  SpriteDraw first = MakeDraw(7);
+  first.material = reinterpret_cast<MaterialShader*>(&first_material);
+  SpriteDraw second = MakeDraw(7);
+  second.material = reinterpret_cast<MaterialShader*>(&second_material);
+
+  builder.Add(first);
+  builder.Add(second);
+  builder.Build();
+
+  ASSERT_EQ(2u, builder.GetBatches().size());
+  EXPECT_NE(builder.GetBatches()[0].material, builder.GetBatches()[1].material);
+  EXPECT_EQ(7u, builder.GetBatches()[0].texture);
+  EXPECT_EQ(7u, builder.GetBatches()[1].texture);
+  EXPECT_EQ(0u, builder.GetBatches()[0].first_index);
+  EXPECT_EQ(6u, builder.GetBatches()[1].first_index);
+}
+
 TEST(SpriteBatchTest, TexturedDrawSetsTextureFlag) {
   SpriteBatchBuilder builder;
   builder.Add(MakeDraw(7));

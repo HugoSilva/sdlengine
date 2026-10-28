@@ -47,6 +47,36 @@ class ContentBrowserPanel : public EditorPanel {
     Refresh();
   }
 
+  void RevealAsset(const std::filesystem::path& path) override {
+    std::error_code error;
+    const std::filesystem::path absolute = std::filesystem::absolute(path, error);
+    const std::filesystem::path target = error ? path : absolute;
+
+    const std::filesystem::path relative = std::filesystem::relative(target, m_root, error);
+
+    if (error || relative.empty() || relative.generic_string().rfind("..", 0) == 0) {
+      Logger::Warning("Cannot reveal a file outside the project: " + target.string());
+      return;
+    }
+
+    const std::filesystem::path directory = target.parent_path();
+
+    if (!std::filesystem::is_directory(directory, error)) {
+      return;
+    }
+
+    m_directory = directory;
+    Refresh();
+
+    for (int index = 0; index < static_cast<int>(m_entries.size()); ++index) {
+      if (SameFile(m_entries[static_cast<std::size_t>(index)], target)) {
+        m_selected = index;
+        m_scroll_to_selected = true;
+        return;
+      }
+    }
+  }
+
   void Draw() override {
     if (!ImGui::Begin(Id(), &visible)) {
       ImGui::End();
@@ -143,6 +173,7 @@ class ContentBrowserPanel : public EditorPanel {
   void Refresh() {
     m_entries.clear();
     m_selected = -1;
+    m_scroll_to_selected = false;
 
     std::error_code error;
     std::filesystem::directory_iterator iterator{m_directory, error};
@@ -234,6 +265,11 @@ class ContentBrowserPanel : public EditorPanel {
 
       if (is_directory) {
         ImGui::PopStyleColor();
+      }
+
+      if (index == m_selected && m_scroll_to_selected) {
+        ImGui::SetScrollHereY(0.5f);
+        m_scroll_to_selected = false;
       }
 
       // Images are the texture picker's drag source. The payload carries the
@@ -477,6 +513,21 @@ class ContentBrowserPanel : public EditorPanel {
     return value;
   }
 
+  // Windows paths compare case-insensitively; equivalent() handles the case
+  // where both files exist, and the absolute-string fallback keeps a reveal
+  // working for a path that is being renamed or was just deleted.
+  static bool SameFile(const std::filesystem::path& a, const std::filesystem::path& b) {
+    std::error_code error;
+    if (std::filesystem::exists(a, error) && std::filesystem::exists(b, error)) {
+      return std::filesystem::equivalent(a, b, error);
+    }
+
+    error.clear();
+    const std::filesystem::path absolute_a = std::filesystem::absolute(a, error);
+    const std::filesystem::path absolute_b = std::filesystem::absolute(b, error);
+    return ToLower((error ? a : absolute_a).generic_string()) == ToLower((error ? b : absolute_b).generic_string());
+  }
+
   std::filesystem::path m_root;
   std::filesystem::path m_directory;
   std::vector<std::filesystem::path> m_entries;
@@ -485,4 +536,5 @@ class ContentBrowserPanel : public EditorPanel {
   std::vector<std::string> m_scenes;
   std::map<std::string, std::unique_ptr<rse::Texture>> m_previews;
   int m_selected{-1};
+  bool m_scroll_to_selected{false};
 };
