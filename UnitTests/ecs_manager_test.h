@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 
+#include <ecs/components/include_list.h>
 #include <ecs/ecs_manager.h>
 #include <ecs/systems/base_system.h>
 
@@ -45,6 +46,22 @@ TEST_F(ECSManagerTest, DisablingSimulationStillRunsTheRenderPhases) {
   EXPECT_EQ(pre_scene->updates, 2);
   EXPECT_EQ(simulation->updates, 1);
   EXPECT_EQ(scene->updates, 2);
+}
+
+TEST_F(ECSManagerTest, AnEntityIsEnabledUntilItIsDisabled) {
+  const uint32_t entity = ECSManager::CreateEntity();
+
+  EXPECT_TRUE(ECSManager::IsEntityEnabled(entity));
+  EXPECT_FALSE(ECSManager::HasComponent<EntityEnabledComponent>(entity));
+
+  ECSManager::SetEntityEnabled(entity, false);
+  ASSERT_TRUE(ECSManager::HasComponent<EntityEnabledComponent>(entity));
+  EXPECT_FALSE(ECSManager::IsEntityEnabled(entity));
+
+  ECSManager::SetEntityEnabled(entity, true);
+  EXPECT_TRUE(ECSManager::IsEntityEnabled(entity));
+
+  ECSManager::DestroyEntity(entity);
 }
 
 TEST_F(ECSManagerTest, TheDefaultUpdateRunsEveryPhase) {
