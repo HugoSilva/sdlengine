@@ -65,7 +65,6 @@ class InspectorPanel : public EditorPanel {
       return;
     }
 
-    DrawEntityHeader();
     DrawBasic();
     DrawTransform();
     DrawSprite();
@@ -90,44 +89,45 @@ class InspectorPanel : public EditorPanel {
     }
   }
 
-  void DrawEntityHeader() {
-    ImGui::AlignTextToFramePadding();
-    ImGui::Text("Entity");
-    ImGui::SameLine();
-    ImGui::TextDisabled("(%u)", EditorManager::GetSelectedEntity());
-
-    if (!EditorManager::ShowComponentWidget<BasicComponent>()) {
-      ImGui::Separator();
-      return;
-    }
-
-    BasicComponent& basic = EditorManager::GetComponent<BasicComponent>();
-
-    char name[128] = "";
-    basic.m_name.copy(name, IM_ARRAYSIZE(name) - 1);
-
-    ImGui::SetNextItemWidth(-1.0f);
-    if (ImGui::InputText("##entityName", name, IM_ARRAYSIZE(name))) {
-      basic.m_name = name;
-    }
-    MarkDirtyIfEdited();
-
-    ImGui::Separator();
-  }
-
   void DrawBasic() {
     if (!EditorManager::ShowComponentWidget<BasicComponent>()) {
       return;
     }
 
     if (ImGui::CollapsingHeader("Basic", ImGuiTreeNodeFlags_DefaultOpen)) {
+      const uint32_t entity = EditorManager::GetSelectedEntity();
       BasicComponent& basic = EditorManager::GetComponent<BasicComponent>();
 
+      // The name used to live in the inspector's entity header. It belongs
+      // with the rest of the entity's own fields, and the Sprite section's
+      // label/value rows are the layout the other components follow.
+      BeginLabeledRow("basic_name", "Name");
+
+      char name[128] = "";
+      basic.m_name.copy(name, IM_ARRAYSIZE(name) - 1);
+      ImGui::SetNextItemWidth(-1.0f);
+
+      if (ImGui::InputText("##name", name, IM_ARRAYSIZE(name))) {
+        basic.m_name = name;
+      }
+      MarkDirtyIfEdited();
+      EndLabeledRow();
+
+      bool enabled = rse::ECSManager::IsEntityEnabled(entity);
+      BeginLabeledRow("basic_enabled", "Enabled");
+      if (ImGui::Checkbox("##enabled", &enabled)) {
+        rse::ECSManager::SetEntityEnabled(entity, enabled);
+      }
+      MarkDirtyIfEdited();
+      EndLabeledRow();
+
       bool is_static = basic.m_is_static;
-      if (ImGui::Checkbox("Static", &is_static)) {
+      BeginLabeledRow("basic_static", "Static");
+      if (ImGui::Checkbox("##static", &is_static)) {
         basic.m_is_static = is_static;
       }
       MarkDirtyIfEdited();
+      EndLabeledRow();
     }
   }
 

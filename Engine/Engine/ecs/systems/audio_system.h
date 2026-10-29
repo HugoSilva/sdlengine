@@ -22,6 +22,18 @@ class AudioSystem : public BaseSystem {
         return;
       }
 
+      // A disabled entity is not in the scene, so a sound it already started
+      // has to stop. Clearing the flag lets autoplay start it again when the
+      // entity is re-enabled. Sound is shared by every entity that names the
+      // same file, so this stops that one track.
+      if (!rse::ECSManager::IsEntityEnabled(entity)) {
+        if (audio.m_autoplay_started) {
+          sound->Stop();
+          audio.m_autoplay_started = false;
+        }
+        return;
+      }
+
       sound->SetVolume(audio.mute ? 0 : std::clamp(audio.volume, 0, 128));
 
       if (audio.autoplay && !audio.m_autoplay_started) {

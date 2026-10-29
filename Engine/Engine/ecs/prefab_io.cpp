@@ -26,7 +26,7 @@ struct SaveEntity {
     registry.snapshot()
         .entities(archive)
         .component<BasicComponent, TransformComponent, SpriteComponent, AudioComponent, RigidBodyComponent,
-                   SpriteAppearanceComponent>(archive);
+                   SpriteAppearanceComponent, EntityEnabledComponent>(archive);
   }
 };
 
@@ -48,6 +48,10 @@ struct LoadEntity {
     // here, each read only from the version that introduced it.
     if (format_version >= 2) {
       loader.component<SpriteAppearanceComponent>(archive);
+    }
+
+    if (format_version >= 3) {
+      loader.component<EntityEnabledComponent>(archive);
     }
   }
 };
@@ -85,6 +89,10 @@ Registry::entity_type CopyEntity(Registry& source, Registry::entity_type entity,
 
   if (source.has<SpriteAppearanceComponent>(entity)) {
     target.assign<SpriteAppearanceComponent>(copy, source.get<SpriteAppearanceComponent>(entity));
+  }
+
+  if (source.has<EntityEnabledComponent>(entity)) {
+    target.assign<EntityEnabledComponent>(copy, source.get<EntityEnabledComponent>(entity));
   }
 
   if (source.has<AudioComponent>(entity)) {

@@ -44,6 +44,12 @@ inline std::optional<EntityBounds> OfEntity(uint32_t entity) {
     return std::nullopt;
   }
 
+  // A disabled entity is not drawn, so it has nothing to frame, outline or
+  // pick. It is still selectable from the hierarchy.
+  if (!rse::ECSManager::IsEntityEnabled(entity)) {
+    return std::nullopt;
+  }
+
   if (!rse::ECSManager::HasComponent<TransformComponent>(entity) ||
       !rse::ECSManager::HasComponent<SpriteComponent>(entity)) {
     return std::nullopt;
@@ -68,6 +74,10 @@ inline std::optional<EntityBounds> OfEntity(uint32_t entity) {
 // a cross for, because there is no rectangle to draw instead.
 inline std::optional<glm::vec2> PositionOf(uint32_t entity) {
   if (entity == static_cast<uint32_t>(entt::null)) {
+    return std::nullopt;
+  }
+
+  if (!rse::ECSManager::IsEntityEnabled(entity)) {
     return std::nullopt;
   }
 

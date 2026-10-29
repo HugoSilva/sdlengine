@@ -23,6 +23,23 @@ void ECSManager::Init() {
   AddSystem(sprite_system);
 }
 
+bool ECSManager::IsEntityEnabled(uint32_t entity) {
+  if (!HasComponent<EntityEnabledComponent>(entity)) {
+    return true;
+  }
+
+  return GetComponent<EntityEnabledComponent>(entity).m_enabled;
+}
+
+void ECSManager::SetEntityEnabled(uint32_t entity, bool enabled) {
+  if (!HasComponent<EntityEnabledComponent>(entity)) {
+    AddComponent<EntityEnabledComponent>(entity, enabled);
+    return;
+  }
+
+  GetComponent<EntityEnabledComponent>(entity).m_enabled = enabled;
+}
+
 void ECSManager::AddSystem(BaseSystem* system, SystemPhase phase) {
   if (phase == SystemPhase::kPreScene) {
     m_pre_scene_systems.push_back(system);

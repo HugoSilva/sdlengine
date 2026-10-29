@@ -61,6 +61,14 @@ class ECSManager {
     return registry.view<Components...>();
   }
 
+  // An entity with no EntityEnabledComponent is enabled: that is what keeps a
+  // scene or prefab written before the component existed fully playable.
+  static bool IsEntityEnabled(uint32_t entity);
+
+  // Adds the component when it is missing and writes the requested state. The
+  // inspector calls this, so toggling Enabled is one edit and one dirty mark.
+  static void SetEntityEnabled(uint32_t entity, bool enabled);
+
   static void AddSystem(BaseSystem* system, SystemPhase phase = SystemPhase::kScene);
 
   // Runs the frame's systems. `run_simulation` is false in the editor while the

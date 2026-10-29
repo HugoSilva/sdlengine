@@ -75,6 +75,41 @@ TEST_F(PhysicsSystemTest, AStaticBodyStaysWhereItWasPut) {
       });
 }
 
+TEST_F(PhysicsSystemTest, ADisabledBodyIsNotSimulatedUntilItIsEnabledAgain) {
+  const uint32_t entity = CreateBody("faller", 100.f, b2_dynamicBody);
+
+  PhysicsSystem physics;
+  physics.Update(0.f);
+
+  ECSManager::SetEntityEnabled(entity, false);
+  physics.Update(0.f);
+
+  float stopped_y = 0.f;
+  ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
+      [&stopped_y](auto, TransformComponent& transform, RigidBodyComponent&) { stopped_y = transform.position.y; });
+
+  for (int step = 0; step < 60; ++step) {
+    physics.Update(0.f);
+  }
+
+  ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
+      [stopped_y](auto, TransformComponent& transform, RigidBodyComponent& rigid) {
+        EXPECT_TRUE(rigid.m_rigidbody->m_init);
+        EXPECT_FLOAT_EQ(transform.position.y, stopped_y);
+      });
+
+  ECSManager::SetEntityEnabled(entity, true);
+
+  for (int step = 0; step < 60; ++step) {
+    physics.Update(0.f);
+  }
+
+  ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
+      [stopped_y](auto, TransformComponent& transform, RigidBodyComponent&) {
+        EXPECT_LT(transform.position.y, stopped_y);
+      });
+}
+
 // A body outlives the scene it was simulated in: emptying the registry has to
 // destroy the b2Body (the world is still alive), and the next scene has to be
 // able to create its own bodies without either one being freed twice.

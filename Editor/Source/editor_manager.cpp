@@ -28,6 +28,7 @@ void EditorManager::Init() {
 void EditorManager::HandleCreateEntityEvent(const CreateEntity& event) {
   m_selected_entity = rse::ECSManager::CreateEntity();
   rse::ECSManager::AddComponent<BasicComponent>(m_selected_entity);
+  rse::ECSManager::AddComponent<EntityEnabledComponent>(m_selected_entity);
   rse::ECSManager::AddComponent<TransformComponent>(m_selected_entity);
   // Untextured: the editor used to hand every new entity a sample project's
   // image by name, which meant new entities in any other project pointed at a

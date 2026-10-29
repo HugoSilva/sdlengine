@@ -112,7 +112,7 @@ TEST_F(SceneIOTest, SavingWritesTheSceneFile) {
   EXPECT_FALSE(std::filesystem::exists(m_scratch));
 
   const std::string contents = ReadFile(m_file);
-  EXPECT_NE(contents.find("<formatVersion>7</formatVersion>"), std::string::npos);
+  EXPECT_NE(contents.find("<formatVersion>8</formatVersion>"), std::string::npos);
   EXPECT_NE(contents.find("<camera>"), std::string::npos);
   EXPECT_NE(contents.find("<entities>"), std::string::npos);
 }
@@ -140,6 +140,26 @@ TEST_F(SceneIOTest, SavedEntitiesComeBack) {
         EXPECT_FLOAT_EQ(sprite.m_sprite->GetSize().x, 8.f);
         EXPECT_EQ(sprite.m_sprite->GetColor(), 0xff00ff00u);
       });
+}
+
+TEST_F(SceneIOTest, DisabledStateRoundTrips) {
+  const uint32_t entity = CreateSprite("hidden", glm::vec3(1.f, 2.f, 0.f));
+  ECSManager::SetEntityEnabled(entity, false);
+
+  std::string error;
+  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+
+  SceneIO::Clear();
+  ASSERT_TRUE(SceneIO::Load(m_file, &error)) << error;
+
+  ASSERT_EQ(CountEntities(), 1u);
+
+  ECSManager::GetView<BasicComponent>().each([](auto entity, BasicComponent& basic) {
+    EXPECT_EQ(basic.m_name, "hidden");
+    EXPECT_TRUE(ECSManager::HasComponent<EntityEnabledComponent>(entity));
+    EXPECT_FALSE(ECSManager::GetComponent<EntityEnabledComponent>(entity).m_enabled);
+    EXPECT_FALSE(ECSManager::IsEntityEnabled(entity));
+  });
 }
 
 TEST_F(SceneIOTest, AnEmptySceneRoundTrips) {
@@ -688,6 +708,21 @@ TEST_F(SceneIOTest, AV6SceneLoadsFromTheFixture) {
       });
 
   EXPECT_EQ(crates, 1);
+}
+
+// The version 7 fixture is the first file with the sprite appearance group. It
+// predates the enabled group, so every entity in it has to open enabled.
+TEST_F(SceneIOTest, AV7SceneLoadsWithEveryEntityEnabled) {
+  const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "scene_v7.xml";
+
+  std::string error;
+  ASSERT_TRUE(SceneIO::Load(fixture, &error)) << error;
+
+  ASSERT_EQ(CountEntities(), 2u);
+  EXPECT_EQ(ECSManager::GetView<EntityEnabledComponent>().size(), 0u);
+
+  ECSManager::GetView<BasicComponent>().each(
+      [](auto entity, BasicComponent&) { EXPECT_TRUE(ECSManager::IsEntityEnabled(entity)); });
 }
 
 // A version 5 scene names its texture, and the registry maps that name onto the

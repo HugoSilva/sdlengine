@@ -12,9 +12,28 @@ class PhysicsSystem : public BaseSystem {
 
     rse::ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
         [&, this](auto entity, TransformComponent& transform, RigidBodyComponent& rigid) {
+          if (rigid.m_rigidbody == nullptr) {
+            return;
+          }
+
+          // An entity that is not enabled still owns its body, but the body
+          // must leave the simulation: otherwise other entities would keep
+          // colliding with something that is not in the scene.
+          if (!rse::ECSManager::IsEntityEnabled(entity)) {
+            if (rigid.m_rigidbody->m_init) {
+              // Keep the last simulated position on the transform, then take
+              // the body out of the world's simulation.
+              rigid.m_rigidbody->Update(transform.position);
+              rigid.m_rigidbody->SetEnabled(false);
+            }
+            return;
+          }
+
           if (!rigid.m_rigidbody->m_init) {
             rigid.m_rigidbody->Init(m_world);
           }
+
+          rigid.m_rigidbody->SetEnabled(true);
           rigid.m_rigidbody->Update(transform.position);
         });
   }

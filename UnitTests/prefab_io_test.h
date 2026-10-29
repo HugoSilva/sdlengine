@@ -100,7 +100,7 @@ TEST_F(PrefabIOTest, SavingWritesThePrefabFile) {
 
   const std::string contents = ReadFile(m_file);
 
-  EXPECT_NE(contents.find("<formatVersion>2</formatVersion>"), std::string::npos);
+  EXPECT_NE(contents.find("<formatVersion>3</formatVersion>"), std::string::npos);
 
   // One entity, not a scene: no camera, and the entity block has the same
   // component shape a scene's <entities> has.
@@ -133,6 +133,22 @@ TEST_F(PrefabIOTest, APlacedEntityComesBackWithItsValues) {
         EXPECT_FLOAT_EQ(sprite.m_sprite->GetSize().x, 8.f);
         EXPECT_EQ(sprite.m_sprite->GetColor(), 0xff00ff00u);
       });
+}
+
+TEST_F(PrefabIOTest, DisabledStateIsCopiedWithThePrefab) {
+  const uint32_t crate = CreateSprite("crate", glm::vec3(1.f, 2.f, 0.f));
+  ECSManager::SetEntityEnabled(crate, false);
+
+  std::string error;
+  ASSERT_TRUE(PrefabIO::Save(m_file, crate, &error)) << error;
+
+  SceneIO::Clear();
+  const uint32_t placed = PrefabIO::Instantiate(m_file, &error);
+  ASSERT_NE(placed, kNullEntity) << error;
+
+  ASSERT_TRUE(ECSManager::HasComponent<EntityEnabledComponent>(placed));
+  EXPECT_FALSE(ECSManager::GetComponent<EntityEnabledComponent>(placed).m_enabled);
+  EXPECT_FALSE(ECSManager::IsEntityEnabled(placed));
 }
 
 TEST_F(PrefabIOTest, ASpriteAppearanceIsCopiedWithThePrefab) {
@@ -283,11 +299,15 @@ TEST_F(PrefabIOTest, AMissingPrefabLeavesTheSceneAlone) {
 
 TEST_F(PrefabIOTest, ANewerPrefabIsRefusedWithoutTouchingTheScene) {
   CreateSprite("keep", glm::vec3(1.f, 2.f, 0.f));
-  WriteFile("<cereal><formatVersion>3</formatVersion><entity><value0>0</value0></entity></cereal>");
+
+  // One past what this build writes. The body is deliberately incomplete: the
+  // version check has to reject the file before any of it is parsed.
+  const std::string newer = std::to_string(PrefabIO::kFormatVersion + 1);
+  WriteFile("<cereal><formatVersion>" + newer + "</formatVersion><entity><value0>0</value0></entity></cereal>");
 
   std::string error;
   EXPECT_EQ(PrefabIO::Instantiate(m_file, &error), kNullEntity);
-  EXPECT_NE(error.find("3"), std::string::npos);
+  EXPECT_NE(error.find(newer), std::string::npos);
   EXPECT_NE(error.find("newer"), std::string::npos);
   EXPECT_EQ(CountEntities(), 1u);
 }
@@ -393,6 +413,10 @@ TEST_F(PrefabIOTest, APrefabV2FixtureLoads) {
   EXPECT_TRUE(appearance.flip_x);
   EXPECT_FALSE(appearance.flip_y);
   EXPECT_EQ(appearance.material, "mat_warm");
+
+  // Version 2 predates the enabled group: a prefab that has none is enabled.
+  EXPECT_FALSE(ECSManager::HasComponent<EntityEnabledComponent>(crate));
+  EXPECT_TRUE(ECSManager::IsEntityEnabled(crate));
 
   const BasicComponent& basic = ECSManager::GetComponent<BasicComponent>(crate);
   EXPECT_EQ(basic.m_name, "crate");

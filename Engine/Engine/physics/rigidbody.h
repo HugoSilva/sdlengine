@@ -27,6 +27,13 @@ class Rigidbody {
 
   void Init(b2World* world);
   void Update(glm::vec3& position);
+
+  // A disabled body stops colliding and simulating, rather than merely being
+  // skipped by PhysicsSystem while it keeps pushing other bodies around. A
+  // body that has not been initialised yet has nothing to toggle; enabling it
+  // later lets PhysicsSystem create it on the next update.
+  void SetEnabled(bool enabled);
+
   // TODO lazy public variable need to fix this in the future
   bool m_init{false};
 
