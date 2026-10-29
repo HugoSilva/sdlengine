@@ -47,6 +47,14 @@ void Rigidbody::Init(b2World* world) {
   m_init = true;
 }
 
+void Rigidbody::SetEnabled(bool enabled) {
+  if (m_body == nullptr) {
+    return;
+  }
+
+  m_body->SetEnabled(enabled);
+}
+
 void Rigidbody::Update(glm::vec3& position) {
   // TODO remove this from the update there should be a editor mode which should reset init to false
   if (m_body->GetType() != m_body_type) {

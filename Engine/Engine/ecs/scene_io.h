@@ -26,7 +26,7 @@ class SceneIO {
   // The scene format this build writes, and the newest it can read. Files in
   // [kFirstFormatVersion, kFormatVersion] are read -- older ones through the
   // gates in LoadEntities -- and anything newer is refused.
-  static constexpr int kFormatVersion{7};
+  static constexpr int kFormatVersion{8};
 
   // The oldest scene file this build still understands. Version 2 changed what
   // a sprite stores for its texture -- a name instead of the texture itself --
@@ -40,7 +40,9 @@ class SceneIO {
   // known asset id resolves as a name through the asset registry, then as a
   // path. That fallback is what keeps a version 5 scene opening unchanged.
   // Version 7 appended the sprite appearance group (flip and material); a
-  // version 6 scene simply has no such group and gets the defaults.
+  // version 6 scene simply has no such group and gets the defaults. Version 8
+  // appended the entity enabled state; a version 7 scene has no such group and
+  // every entity loads enabled.
   static constexpr int kFirstFormatVersion{2};
 
   // What a scene says about the view. The defaults are what the engine framed

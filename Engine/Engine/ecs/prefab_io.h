@@ -20,7 +20,7 @@ namespace rse {
 class PrefabIO {
  public:
   // The prefab format this build writes, and the newest it can read.
-  static constexpr int kFormatVersion{2};
+  static constexpr int kFormatVersion{3};
 
   // The oldest prefab format this build still understands.
   static constexpr int kFirstFormatVersion{1};
