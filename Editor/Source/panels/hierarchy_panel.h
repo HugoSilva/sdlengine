@@ -77,9 +77,26 @@ class HierarchyPanel : public EditorPanel {
         flags |= ImGuiTreeNodeFlags_Selected;
       }
 
+      // A disabled entity stays in the list so it can be selected and turned
+      // back on, but it is greyed out and marked: it is not in the scene the
+      // viewport is drawing or the game is running.
+      const bool enabled = rse::ECSManager::IsEntityEnabled(entity_id);
+
+      if (!enabled) {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+      }
+
       // The id is shown next to the name because it is the only way to tell
       // two same-named entities apart while debugging.
-      ImGui::TreeNodeEx("##entity", flags, "%s  (%u)", basic.m_name.c_str(), entity_id);
+      if (enabled) {
+        ImGui::TreeNodeEx("##entity", flags, "%s  (%u)", basic.m_name.c_str(), entity_id);
+      } else {
+        ImGui::TreeNodeEx("##entity", flags, "%s  (%u)  (disabled)", basic.m_name.c_str(), entity_id);
+      }
+
+      if (!enabled) {
+        ImGui::PopStyleColor();
+      }
 
       if (ImGui::IsItemClicked()) {
         clicked = entity_id;
