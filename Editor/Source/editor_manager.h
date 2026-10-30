@@ -7,7 +7,7 @@
 #include "editor_settings.h"
 #define INVALID_ENTITY_ID entt::null
 
-enum class Components { kAudio, kRigidbody, kSprite };
+enum class Components { kAudio, kRigidbody, kSprite, kTransform };
 
 class EditorManager {
  public:
@@ -22,6 +22,9 @@ class EditorManager {
     Components component;
   };
   struct RemoveComponent {
+    Components component;
+  };
+  struct ResetComponent {
     Components component;
   };
 
@@ -122,6 +125,7 @@ class EditorManager {
   static void HandleDestroyEntityEvent(const DestroyEntity& event);
   static void HandleAddComponentEvent(const AddComponent& event);
   static void HandleRemoveComponentEvent(const RemoveComponent& event);
+  static void HandleResetComponentEvent(const ResetComponent& event);
 
  private:
   static uint32_t m_selected_entity;

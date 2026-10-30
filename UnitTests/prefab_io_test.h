@@ -100,7 +100,7 @@ TEST_F(PrefabIOTest, SavingWritesThePrefabFile) {
 
   const std::string contents = ReadFile(m_file);
 
-  EXPECT_NE(contents.find("<formatVersion>3</formatVersion>"), std::string::npos);
+  EXPECT_NE(contents.find("<formatVersion>4</formatVersion>"), std::string::npos);
 
   // One entity, not a scene: no camera, and the entity block has the same
   // component shape a scene's <entities> has.
@@ -149,6 +149,24 @@ TEST_F(PrefabIOTest, DisabledStateIsCopiedWithThePrefab) {
   ASSERT_TRUE(ECSManager::HasComponent<EntityEnabledComponent>(placed));
   EXPECT_FALSE(ECSManager::GetComponent<EntityEnabledComponent>(placed).m_enabled);
   EXPECT_FALSE(ECSManager::IsEntityEnabled(placed));
+}
+
+TEST_F(PrefabIOTest, DisabledComponentStateIsCopiedWithThePrefab) {
+  const uint32_t crate = CreateSprite("crate", glm::vec3(1.f, 2.f, 0.f));
+  ECSManager::SetComponentEnabled<SpriteComponent>(crate, false);
+  ECSManager::SetComponentEnabled<AudioComponent>(crate, false);
+
+  std::string error;
+  ASSERT_TRUE(PrefabIO::Save(m_file, crate, &error)) << error;
+
+  SceneIO::Clear();
+  const uint32_t placed = PrefabIO::Instantiate(m_file, &error);
+  ASSERT_NE(placed, kNullEntity) << error;
+
+  ASSERT_TRUE(ECSManager::HasComponent<DisabledComponentsComponent>(placed));
+  EXPECT_FALSE(ECSManager::IsComponentEnabled<SpriteComponent>(placed));
+  EXPECT_FALSE(ECSManager::IsComponentEnabled<AudioComponent>(placed));
+  EXPECT_TRUE(ECSManager::IsComponentEnabled<RigidBodyComponent>(placed));
 }
 
 TEST_F(PrefabIOTest, ASpriteAppearanceIsCopiedWithThePrefab) {
@@ -420,6 +438,22 @@ TEST_F(PrefabIOTest, APrefabV2FixtureLoads) {
 
   const BasicComponent& basic = ECSManager::GetComponent<BasicComponent>(crate);
   EXPECT_EQ(basic.m_name, "crate");
+}
+
+// The checked-in version 3 file: the last prefab format before the disabled
+// component mask. It has no mask group, so every component loads enabled.
+TEST_F(PrefabIOTest, APrefabV3FixtureLoadsWithEveryComponentEnabled) {
+  const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "prefab_v3.xml";
+
+  std::string error;
+  const uint32_t crate = PrefabIO::Instantiate(fixture, &error);
+  ASSERT_NE(crate, kNullEntity) << error;
+  ASSERT_EQ(CountEntities(), 1u);
+
+  EXPECT_FALSE(ECSManager::HasComponent<DisabledComponentsComponent>(crate));
+  EXPECT_TRUE(ECSManager::IsComponentEnabled<SpriteComponent>(crate));
+  EXPECT_TRUE(ECSManager::IsComponentEnabled<AudioComponent>(crate));
+  EXPECT_TRUE(ECSManager::IsComponentEnabled<RigidBodyComponent>(crate));
 }
 
 }  // namespace

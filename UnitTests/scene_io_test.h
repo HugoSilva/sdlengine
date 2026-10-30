@@ -112,7 +112,7 @@ TEST_F(SceneIOTest, SavingWritesTheSceneFile) {
   EXPECT_FALSE(std::filesystem::exists(m_scratch));
 
   const std::string contents = ReadFile(m_file);
-  EXPECT_NE(contents.find("<formatVersion>8</formatVersion>"), std::string::npos);
+  EXPECT_NE(contents.find("<formatVersion>9</formatVersion>"), std::string::npos);
   EXPECT_NE(contents.find("<camera>"), std::string::npos);
   EXPECT_NE(contents.find("<entities>"), std::string::npos);
 }
@@ -159,6 +159,31 @@ TEST_F(SceneIOTest, DisabledStateRoundTrips) {
     EXPECT_TRUE(ECSManager::HasComponent<EntityEnabledComponent>(entity));
     EXPECT_FALSE(ECSManager::GetComponent<EntityEnabledComponent>(entity).m_enabled);
     EXPECT_FALSE(ECSManager::IsEntityEnabled(entity));
+  });
+}
+
+TEST_F(SceneIOTest, DisabledComponentStateRoundTrips) {
+  const uint32_t entity = CreateAudioEntity("hidden", glm::vec3(1.f, 2.f, 0.f), "effect.wav", 64, false, false);
+  ECSManager::AddComponent<RigidBodyComponent>(entity, new Rigidbody(glm::vec2(1.f, 2.f), glm::vec2(8.f, 8.f)));
+
+  ECSManager::SetComponentEnabled<SpriteComponent>(entity, false);
+  ECSManager::SetComponentEnabled<AudioComponent>(entity, false);
+  ECSManager::SetComponentEnabled<RigidBodyComponent>(entity, false);
+
+  std::string error;
+  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+
+  SceneIO::Clear();
+  ASSERT_TRUE(SceneIO::Load(m_file, &error)) << error;
+
+  ASSERT_EQ(CountEntities(), 1u);
+
+  ECSManager::GetView<BasicComponent>().each([](auto entity, BasicComponent& basic) {
+    EXPECT_EQ(basic.m_name, "hidden");
+    ASSERT_TRUE(ECSManager::HasComponent<DisabledComponentsComponent>(entity));
+    EXPECT_FALSE(ECSManager::IsComponentEnabled<SpriteComponent>(entity));
+    EXPECT_FALSE(ECSManager::IsComponentEnabled<AudioComponent>(entity));
+    EXPECT_FALSE(ECSManager::IsComponentEnabled<RigidBodyComponent>(entity));
   });
 }
 
@@ -723,6 +748,22 @@ TEST_F(SceneIOTest, AV7SceneLoadsWithEveryEntityEnabled) {
 
   ECSManager::GetView<BasicComponent>().each(
       [](auto entity, BasicComponent&) { EXPECT_TRUE(ECSManager::IsEntityEnabled(entity)); });
+}
+
+TEST_F(SceneIOTest, AV8SceneLoadsWithEveryComponentEnabled) {
+  const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "scene_v8.xml";
+
+  std::string error;
+  ASSERT_TRUE(SceneIO::Load(fixture, &error)) << error;
+
+  ASSERT_EQ(CountEntities(), 2u);
+  EXPECT_EQ(ECSManager::GetView<DisabledComponentsComponent>().size(), 0u);
+
+  ECSManager::GetView<BasicComponent>().each([](auto entity, BasicComponent&) {
+    EXPECT_TRUE(ECSManager::IsComponentEnabled<SpriteComponent>(entity));
+    EXPECT_TRUE(ECSManager::IsComponentEnabled<AudioComponent>(entity));
+    EXPECT_TRUE(ECSManager::IsComponentEnabled<RigidBodyComponent>(entity));
+  });
 }
 
 // A version 5 scene names its texture, and the registry maps that name onto the

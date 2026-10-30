@@ -16,10 +16,11 @@ class PhysicsSystem : public BaseSystem {
             return;
           }
 
-          // An entity that is not enabled still owns its body, but the body
-          // must leave the simulation: otherwise other entities would keep
-          // colliding with something that is not in the scene.
-          if (!rse::ECSManager::IsEntityEnabled(entity)) {
+          // An entity or rigid body that is not enabled still owns its body,
+          // but the body must leave the simulation: otherwise other entities
+          // would keep colliding with something that is not in the scene.
+          if (!rse::ECSManager::IsEntityEnabled(entity) ||
+              !rse::ECSManager::IsComponentEnabled<RigidBodyComponent>(entity)) {
             if (rigid.m_rigidbody->m_init) {
               // Keep the last simulated position on the transform, then take
               // the body out of the world's simulation.

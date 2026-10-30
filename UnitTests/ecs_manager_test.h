@@ -64,6 +64,49 @@ TEST_F(ECSManagerTest, AnEntityIsEnabledUntilItIsDisabled) {
   ECSManager::DestroyEntity(entity);
 }
 
+TEST_F(ECSManagerTest, AComponentIsEnabledUntilItIsDisabled) {
+  const uint32_t entity = ECSManager::CreateEntity();
+  ECSManager::AddComponent<SpriteComponent>(entity, static_cast<rse::Sprite*>(nullptr));
+
+  EXPECT_TRUE(ECSManager::IsComponentEnabled<SpriteComponent>(entity));
+  EXPECT_FALSE(ECSManager::HasComponent<DisabledComponentsComponent>(entity));
+
+  ECSManager::SetComponentEnabled<SpriteComponent>(entity, false);
+  ASSERT_TRUE(ECSManager::HasComponent<DisabledComponentsComponent>(entity));
+  EXPECT_FALSE(ECSManager::IsComponentEnabled<SpriteComponent>(entity));
+
+  // One component's bit does not switch the others off.
+  EXPECT_TRUE(ECSManager::IsComponentEnabled<AudioComponent>(entity));
+  EXPECT_TRUE(ECSManager::IsComponentEnabled<RigidBodyComponent>(entity));
+
+  ECSManager::SetComponentEnabled<SpriteComponent>(entity, true);
+  EXPECT_TRUE(ECSManager::IsComponentEnabled<SpriteComponent>(entity));
+  EXPECT_FALSE(ECSManager::HasComponent<DisabledComponentsComponent>(entity));
+
+  ECSManager::DestroyEntity(entity);
+}
+
+TEST_F(ECSManagerTest, DisablingTwoComponentsKeepsTheMaskUntilBothAreBack) {
+  const uint32_t entity = ECSManager::CreateEntity();
+
+  ECSManager::SetComponentEnabled<SpriteComponent>(entity, false);
+  ECSManager::SetComponentEnabled<AudioComponent>(entity, false);
+
+  ASSERT_TRUE(ECSManager::HasComponent<DisabledComponentsComponent>(entity));
+  EXPECT_FALSE(ECSManager::IsComponentEnabled<SpriteComponent>(entity));
+  EXPECT_FALSE(ECSManager::IsComponentEnabled<AudioComponent>(entity));
+
+  ECSManager::SetComponentEnabled<SpriteComponent>(entity, true);
+  EXPECT_TRUE(ECSManager::HasComponent<DisabledComponentsComponent>(entity));
+  EXPECT_TRUE(ECSManager::IsComponentEnabled<SpriteComponent>(entity));
+  EXPECT_FALSE(ECSManager::IsComponentEnabled<AudioComponent>(entity));
+
+  ECSManager::SetComponentEnabled<AudioComponent>(entity, true);
+  EXPECT_FALSE(ECSManager::HasComponent<DisabledComponentsComponent>(entity));
+
+  ECSManager::DestroyEntity(entity);
+}
+
 TEST_F(ECSManagerTest, TheDefaultUpdateRunsEveryPhase) {
   CountingSystem* simulation = new CountingSystem();
   CountingSystem* scene = new CountingSystem();
