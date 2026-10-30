@@ -74,7 +74,7 @@ Two rules keep the additive case honest:
 
 | Milestone | Manifest | Scene | Prefab | Assets |
 |---|---|---|---|---|
-| today | 3 | 8 | 3 | 1 |
+| today | 3 | 9 | 4 | 1 |
 | #54 | 1 | 1 | -- | -- |
 | #47 | 1 | **2** | -- | -- |
 | #48 | 1 | **3** | -- | -- |
@@ -86,6 +86,7 @@ Two rules keep the additive case honest:
 | #46c | **3** | 6 | 1 | 1 |
 | #74 | 3 | **7** | **2** | 1 |
 | #76 | 3 | **8** | **3** | 1 |
+| #78 | 3 | **9** | **4** | 1 |
 
 Every row above is shipped behaviour: the migration policy itself, the first
 breaking change made under it, the additive changes made after it, prefabs, the
@@ -395,9 +396,13 @@ that writes data, never a pointer, so saving and loading is a round trip:
 - `EntityEnabledComponent` -- whether the entity takes part in the scene. A
   missing group means enabled, which is what every entity written before
   version 8 gets.
+- `DisabledComponentsComponent` -- which optional components are switched off
+  on the entity. The group stores a bit mask for the sprite, audio and
+  rigid-body components. A missing group means every component is enabled,
+  which is what every entity written before version 9 gets.
 
-The seven component groups above are written in that order and read in that
-order, after the scene's camera. Anything added later is appended as an eighth
+The eight component groups above are written in that order and read in that
+order, after the scene's camera. Anything added later is appended as a ninth
 group, read only from the version that introduced it; see [Versions](#versions).
 
 A scene also stores its **camera**, which is scene-root data rather than a
@@ -484,17 +489,21 @@ Version 7 appended the sprite appearance group. A version 6 file simply has no
 group, so every loaded sprite has flip off, no material and the scene shader; the
 defaults are the look it already had. Version 8 appended the entity enabled
 group. A version 7 file has no such group, so every entity loads enabled: that
-is the behaviour it had when it was written. The example above is a version 2
-file, which is why it has neither the camera nor the audio and rigid-body groups,
-and names its texture; a current file has all of them and stores ids.
-`UnitTests/fixtures/scene_v2.xml` through `scene_v7.xml` are the files that pin
-the additive versions, and `scene_v6.xml` is the last pre-appearance file,
-paired with `assets_v1.xml`.
+is the behaviour it had when it was written. Version 9 appended the disabled
+component mask. A version 8 file has no such group, so every component loads
+enabled: that is the behaviour it had when it was written. The example above is
+a version 2 file, which is why it has neither the camera nor the audio and
+rigid-body groups, and names its texture; a current file has all of them and
+stores ids. `UnitTests/fixtures/scene_v2.xml` through `scene_v8.xml` are the
+files that pin the additive versions, and `scene_v6.xml` is the last
+pre-appearance file, paired with `assets_v1.xml`.
 
 A disabled entity is still part of the file and the open scene: it keeps its
 components and can be re-enabled from the inspector. The renderer, physics and
 audio systems skip it, and the hierarchy draws it greyed out rather than hiding
-it, so it remains reachable.
+it, so it remains reachable. A disabled component works the same way: the
+component and its data stay on the entity, the matching system skips it, and
+the inspector can switch it back on.
 
 A rigid body is stored as its **inputs**, by value: position, size, density,
 friction and the body type by name (`static`, `kinematic`, `dynamic`). A
@@ -524,10 +533,12 @@ file is a `formatVersion` header and one `<entity>`:
 `<entities>`: the same `valueN` names and the same component groups in the same
 order. A prefab therefore stores everything a scene stores for an entity --
 name, transform, sprite, audio settings, rigid-body inputs, the sprite's
-appearance and its enabled state -- and a component group appended to scenes
-later is a prefab group the moment it is appended here too. A prefab's format
-version moves independently of a scene's; version 3 appended the enabled group,
-so a version 2 prefab still loads with its entity enabled.
+appearance, its enabled state and its disabled component mask -- and a
+component group appended to scenes later is a prefab group the moment it is
+appended here too. A prefab's format version moves independently of a scene's;
+version 3 appended the enabled group, so a version 2 prefab still loads with
+its entity enabled. Version 4 appended the disabled component mask, so a
+version 3 prefab still loads with every component enabled.
 
 The entity ids in the file are **not restored**. `PrefabIO::Instantiate` reads
 the whole file into a scratch registry first, then copies each entity into the
@@ -556,10 +567,12 @@ Prefabs live in the project's `prefabs/` directory. They are not listed in
 found by path -- through the editor today, and through the content browser when
 it learns about prefabs. Saving one still has to happen inside the project
 directory, for the same reason a scene does. Format 1 is the first prefab
-version; format 2 appended the sprite appearance group. A version 1 prefab still
-loads with flip off and no material, and `UnitTests/fixtures/prefab_v1.xml` and
-`prefab_v2.xml` pin both shapes. A file newer than the build is refused before
-the open scene is touched, like every other format.
+version; format 2 appended the sprite appearance group, format 3 appended the
+entity enabled state and format 4 appended the disabled component mask. A
+version 1 prefab still loads with flip off and no material, and
+`UnitTests/fixtures/prefab_v1.xml` through `prefab_v3.xml` pin the additive
+shapes. A file newer than the build is refused before the open scene is
+touched, like every other format.
 
 A prefab's texture, sound and material references mean what they mean in a
 scene -- an asset id, or a name/path that falls back through the registry -- so

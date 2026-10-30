@@ -136,7 +136,7 @@ class InspectorPanel : public EditorPanel {
       return;
     }
 
-    if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
+    if (DrawComponentHeader("transform", "Transform", Components::kTransform, false)) {
       TransformComponent& transform = EditorManager::GetComponent<TransformComponent>();
 
       ImGui::InputFloat3("Position", glm::value_ptr(transform.position), "%.2f");
@@ -153,7 +153,7 @@ class InspectorPanel : public EditorPanel {
       return;
     }
 
-    if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen)) {
+    if (DrawComponentHeaderWithEnabled<SpriteComponent>("sprite", "Sprite", Components::kSprite, true)) {
       SpriteComponent& component = EditorManager::GetComponent<SpriteComponent>();
 
       if (component.m_sprite == nullptr) {
@@ -172,8 +172,6 @@ class InspectorPanel : public EditorPanel {
         DrawSpriteFlip(sprite);
         DrawSpriteMaterial(sprite);
       }
-
-      DrawRemoveComponentButton(Components::kSprite, "Remove Sprite");
     }
   }
 
@@ -835,7 +833,7 @@ class InspectorPanel : public EditorPanel {
       return;
     }
 
-    if (ImGui::CollapsingHeader("Audio", ImGuiTreeNodeFlags_DefaultOpen)) {
+    if (DrawComponentHeaderWithEnabled<AudioComponent>("audio", "Audio", Components::kAudio, true)) {
       AudioComponent& component = EditorManager::GetComponent<AudioComponent>();
 
       if (component.m_sound == nullptr) {
@@ -853,8 +851,6 @@ class InspectorPanel : public EditorPanel {
       MarkDirtyIfEdited();
       ImGui::Checkbox("Autoplay", &component.autoplay);
       MarkDirtyIfEdited();
-
-      DrawRemoveComponentButton(Components::kAudio, "Remove Audio");
     }
   }
 
@@ -863,7 +859,7 @@ class InspectorPanel : public EditorPanel {
       return;
     }
 
-    if (ImGui::CollapsingHeader("Rigidbody", ImGuiTreeNodeFlags_DefaultOpen)) {
+    if (DrawComponentHeaderWithEnabled<RigidBodyComponent>("rigidbody", "Rigidbody", Components::kRigidbody, true)) {
       RigidBodyComponent& component = EditorManager::GetComponent<RigidBodyComponent>();
       Rigidbody* rigidbody = component.m_rigidbody.get();
 
@@ -886,16 +882,98 @@ class InspectorPanel : public EditorPanel {
         }
         MarkDirtyIfEdited();
       }
-
-      DrawRemoveComponentButton(Components::kRigidbody, "Remove Rigidbody");
     }
   }
 
-  void DrawRemoveComponentButton(Components component, const char* label) {
-    ImGui::Spacing();
-    if (ImGui::SmallButton(label)) {
-      EventManager::GetEventDispatcher()->trigger<EditorManager::RemoveComponent>(component);
+  // A component header with the collapse arrow, its name and the right-side
+  // options button. The enabled variants add the checkbox before the name; a
+  // required component uses the plain form and only offers Reset.
+  bool DrawComponentHeader(const char* id, const char* name, Components component, bool can_remove) {
+    ImGui::PushID(id);
+    ImGui::SetNextItemAllowOverlap();
+
+    const bool open = ImGui::TreeNodeEx("##header",
+                                        ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen |
+                                            ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_SpanAvailWidth,
+                                        "");
+    ImGui::SameLine();
+    DrawComponentHeaderName(name, true);
+    const bool removed = DrawComponentOptions(component, can_remove);
+    ImGui::PopID();
+    return open && !removed;
+  }
+
+  template <typename Component>
+  bool DrawComponentHeaderWithEnabled(const char* id, const char* name, Components component, bool can_remove) {
+    const uint32_t entity = EditorManager::GetSelectedEntity();
+
+    ImGui::PushID(id);
+    ImGui::SetNextItemAllowOverlap();
+
+    const bool open = ImGui::TreeNodeEx("##header",
+                                        ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_DefaultOpen |
+                                            ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_SpanAvailWidth,
+                                        "");
+    ImGui::SameLine();
+
+    bool enabled = rse::ECSManager::IsComponentEnabled<Component>(entity);
+    if (ImGui::Checkbox("##enabled", &enabled)) {
+      rse::ECSManager::SetComponentEnabled<Component>(entity, enabled);
+      SceneManager::MarkDirty();
     }
+
+    ImGui::SameLine();
+    DrawComponentHeaderName(name, enabled);
+    const bool removed = DrawComponentOptions(component, can_remove);
+    ImGui::PopID();
+    return open && !removed;
+  }
+
+  static void DrawComponentHeaderName(const char* name, bool enabled) {
+    if (!enabled) {
+      ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+    }
+
+    ImGui::TextUnformatted(name);
+
+    if (!enabled) {
+      ImGui::PopStyleColor();
+    }
+  }
+
+  bool DrawComponentOptions(Components component, bool can_remove) {
+    bool removed = false;
+    const float button_width = ImGui::CalcTextSize("...").x + ImGui::GetStyle().FramePadding.x * 2.0f;
+    const float button_x = ImGui::GetWindowContentRegionMax().x - button_width;
+
+    if (button_x > ImGui::GetCursorPosX()) {
+      ImGui::SameLine(button_x);
+    } else {
+      ImGui::SameLine();
+    }
+
+    if (ImGui::SmallButton("...")) {
+      ImGui::OpenPopup("##options");
+    }
+
+    if (ImGui::IsItemHovered()) {
+      ImGui::SetTooltip("More options");
+    }
+
+    if (ImGui::BeginPopup("##options")) {
+      if (ImGui::MenuItem("Reset Component")) {
+        EventManager::GetEventDispatcher()->trigger<EditorManager::ResetComponent>(component);
+      }
+
+      if (can_remove && ImGui::MenuItem("Remove Component")) {
+        EventManager::GetEventDispatcher()->trigger<EditorManager::RemoveComponent>(component);
+        removed = true;
+      }
+
+      ImGui::EndPopup();
+    }
+
+    return removed;
   }
 
   void DrawAddComponentMenu() {

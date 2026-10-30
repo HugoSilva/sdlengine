@@ -2,6 +2,31 @@
 
 #include <utils/logger.h>
 
+namespace {
+AudioComponent CreateDefaultAudioComponent() { return AudioComponent{rse::SoundManager::GetSound("eff")}; }
+
+// A rigid body is rebuilt from the same inputs the Add Component path uses:
+// the current transform and sprite size, with the body's own defaults.
+Rigidbody* CreateDefaultRigidbody(uint32_t entity) {
+  glm::vec2 position{0.f, 0.f};
+  glm::vec2 size{0.f, 0.f};
+
+  if (rse::ECSManager::HasComponent<TransformComponent>(entity)) {
+    position = rse::ECSManager::GetComponent<TransformComponent>(entity).position;
+  }
+
+  if (rse::ECSManager::HasComponent<SpriteComponent>(entity)) {
+    const SpriteComponent& sprite = rse::ECSManager::GetComponent<SpriteComponent>(entity);
+
+    if (sprite.m_sprite != nullptr) {
+      size = sprite.m_sprite->GetSize();
+    }
+  }
+
+  return new Rigidbody(position, size);
+}
+}  // namespace
+
 uint32_t EditorManager::m_selected_entity{INVALID_ENTITY_ID};
 rse::Framebuffer* EditorManager::m_scene_target{nullptr};
 EditorSettings EditorManager::m_settings;
@@ -23,6 +48,7 @@ void EditorManager::Init() {
   EventManager::GetEventDispatcher()->sink<DestroyEntity>().connect<&EditorManager::HandleDestroyEntityEvent>();
   EventManager::GetEventDispatcher()->sink<AddComponent>().connect<&EditorManager::HandleAddComponentEvent>();
   EventManager::GetEventDispatcher()->sink<RemoveComponent>().connect<&EditorManager::HandleRemoveComponentEvent>();
+  EventManager::GetEventDispatcher()->sink<ResetComponent>().connect<&EditorManager::HandleResetComponentEvent>();
 }
 
 void EditorManager::HandleCreateEntityEvent(const CreateEntity& event) {
@@ -75,7 +101,8 @@ void EditorManager::HandleAddComponentEvent(const AddComponent& event) {
       if (rse::ECSManager::HasComponent<AudioComponent>(m_selected_entity)) {
         Logger::Error("Already existing audio component");
       } else {
-        rse::ECSManager::AddComponent<AudioComponent>(m_selected_entity, rse::SoundManager::GetSound("eff"));
+        rse::ECSManager::AddComponent<AudioComponent>(m_selected_entity, CreateDefaultAudioComponent());
+        rse::ECSManager::SetComponentEnabled<AudioComponent>(m_selected_entity, true);
         SceneManager::MarkDirty();
       }
       break;
@@ -83,15 +110,8 @@ void EditorManager::HandleAddComponentEvent(const AddComponent& event) {
       if (rse::ECSManager::HasComponent<RigidBodyComponent>(m_selected_entity)) {
         Logger::Error("Already existing rigidbody component");
       } else {
-        glm::vec2 position{0.f, 0.f};
-        glm::vec2 size{0.f, 0.f};
-        if (rse::ECSManager::HasComponent<TransformComponent>(m_selected_entity)) {
-          position = rse::ECSManager::GetComponent<TransformComponent>(m_selected_entity).position;
-        }
-        if (rse::ECSManager::HasComponent<SpriteComponent>(m_selected_entity)) {
-          size = rse::ECSManager::GetComponent<SpriteComponent>(m_selected_entity).m_sprite->GetSize();
-        }
-        rse::ECSManager::AddComponent<RigidBodyComponent>(m_selected_entity, new Rigidbody(position, size));
+        rse::ECSManager::AddComponent<RigidBodyComponent>(m_selected_entity, CreateDefaultRigidbody(m_selected_entity));
+        rse::ECSManager::SetComponentEnabled<RigidBodyComponent>(m_selected_entity, true);
         SceneManager::MarkDirty();
       }
       break;
@@ -101,6 +121,7 @@ void EditorManager::HandleAddComponentEvent(const AddComponent& event) {
       } else {
         rse::ECSManager::AddComponent<SpriteComponent>(m_selected_entity, CreateDefaultSprite());
         rse::ECSManager::AddComponent<SpriteAppearanceComponent>(m_selected_entity);
+        rse::ECSManager::SetComponentEnabled<SpriteComponent>(m_selected_entity, true);
         SceneManager::MarkDirty();
       }
       break;
@@ -125,6 +146,7 @@ void EditorManager::HandleRemoveComponentEvent(const RemoveComponent& event) {
       // Components hold their payload in a shared_ptr, so removing one
       // releases it properly.
       rse::ECSManager::RemoveComponent<AudioComponent>(m_selected_entity);
+      rse::ECSManager::SetComponentEnabled<AudioComponent>(m_selected_entity, true);
       SceneManager::MarkDirty();
       break;
     case Components::kRigidbody:
@@ -133,6 +155,7 @@ void EditorManager::HandleRemoveComponentEvent(const RemoveComponent& event) {
         break;
       }
       rse::ECSManager::RemoveComponent<RigidBodyComponent>(m_selected_entity);
+      rse::ECSManager::SetComponentEnabled<RigidBodyComponent>(m_selected_entity, true);
       SceneManager::MarkDirty();
       break;
     case Components::kSprite:
@@ -144,6 +167,57 @@ void EditorManager::HandleRemoveComponentEvent(const RemoveComponent& event) {
       if (rse::ECSManager::HasComponent<SpriteAppearanceComponent>(m_selected_entity)) {
         rse::ECSManager::RemoveComponent<SpriteAppearanceComponent>(m_selected_entity);
       }
+      rse::ECSManager::SetComponentEnabled<SpriteComponent>(m_selected_entity, true);
+      SceneManager::MarkDirty();
+      break;
+    default:
+      break;
+  }
+}
+
+void EditorManager::HandleResetComponentEvent(const ResetComponent& event) {
+  if (m_selected_entity == INVALID_ENTITY_ID) {
+    return;
+  }
+
+  // Reset restores the component's fields, not its place in the entity: the
+  // enabled bit is deliberately left alone.
+  switch (event.component) {
+    case Components::kTransform:
+      if (!rse::ECSManager::HasComponent<TransformComponent>(m_selected_entity)) {
+        Logger::Error("Missing transform component");
+        break;
+      }
+      rse::ECSManager::GetComponent<TransformComponent>(m_selected_entity) = TransformComponent{};
+      SceneManager::MarkDirty();
+      break;
+    case Components::kSprite:
+      if (!rse::ECSManager::HasComponent<SpriteComponent>(m_selected_entity)) {
+        Logger::Error("Missing sprite component");
+        break;
+      }
+      rse::ECSManager::GetComponent<SpriteComponent>(m_selected_entity).m_sprite.reset(CreateDefaultSprite());
+      if (!rse::ECSManager::HasComponent<SpriteAppearanceComponent>(m_selected_entity)) {
+        rse::ECSManager::AddComponent<SpriteAppearanceComponent>(m_selected_entity);
+      }
+      rse::ECSManager::GetComponent<SpriteAppearanceComponent>(m_selected_entity) = SpriteAppearanceComponent{};
+      SceneManager::MarkDirty();
+      break;
+    case Components::kAudio:
+      if (!rse::ECSManager::HasComponent<AudioComponent>(m_selected_entity)) {
+        Logger::Error("Missing audio component");
+        break;
+      }
+      rse::ECSManager::GetComponent<AudioComponent>(m_selected_entity) = CreateDefaultAudioComponent();
+      SceneManager::MarkDirty();
+      break;
+    case Components::kRigidbody:
+      if (!rse::ECSManager::HasComponent<RigidBodyComponent>(m_selected_entity)) {
+        Logger::Error("Missing rigidbody component");
+        break;
+      }
+      rse::ECSManager::GetComponent<RigidBodyComponent>(m_selected_entity)
+          .m_rigidbody.reset(CreateDefaultRigidbody(m_selected_entity));
       SceneManager::MarkDirty();
       break;
     default:

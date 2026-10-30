@@ -4,6 +4,8 @@
 
 #include <entity/registry.hpp>
 
+#include <ecs/components/disabled_components.h>
+
 class BaseSystem;  // forward declaration for BaseSystem
 
 namespace rse {
@@ -68,6 +70,46 @@ class ECSManager {
   // Adds the component when it is missing and writes the requested state. The
   // inspector calls this, so toggling Enabled is one edit and one dirty mark.
   static void SetEntityEnabled(uint32_t entity, bool enabled);
+
+  // A component with no disabled bit is enabled: that is what keeps a scene or
+  // prefab written before component state existed fully enabled. The bit lives
+  // in DisabledComponentsComponent, which is only present while something on
+  // the entity is off.
+  template <typename Component>
+  static bool IsComponentEnabled(uint32_t entity) {
+    if (!HasComponent<DisabledComponentsComponent>(entity)) {
+      return true;
+    }
+
+    return !GetComponent<DisabledComponentsComponent>(entity).IsDisabled(ComponentDisabledBit<Component>::kValue);
+  }
+
+  // Disabling writes the mask group; enabling clears the bit and drops the
+  // group once nothing is disabled. The inspector calls this, so a checkbox is
+  // one edit and one dirty mark.
+  template <typename Component>
+  static void SetComponentEnabled(uint32_t entity, bool enabled) {
+    if (enabled) {
+      if (!HasComponent<DisabledComponentsComponent>(entity)) {
+        return;
+      }
+
+      DisabledComponentsComponent& state = GetComponent<DisabledComponentsComponent>(entity);
+      state.SetEnabled(ComponentDisabledBit<Component>::kValue, true);
+
+      if (state.m_mask == 0) {
+        RemoveComponent<DisabledComponentsComponent>(entity);
+      }
+
+      return;
+    }
+
+    if (!HasComponent<DisabledComponentsComponent>(entity)) {
+      AddComponent<DisabledComponentsComponent>(entity);
+    }
+
+    GetComponent<DisabledComponentsComponent>(entity).SetEnabled(ComponentDisabledBit<Component>::kValue, false);
+  }
 
   static void AddSystem(BaseSystem* system, SystemPhase phase = SystemPhase::kScene);
 

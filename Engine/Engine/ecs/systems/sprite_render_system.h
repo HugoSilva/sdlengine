@@ -14,7 +14,8 @@ class SpriteRenderSystem : public BaseSystem {
   void Update(const float alpha) {
     rse::ECSManager::GetView<TransformComponent, SpriteComponent>().each(
         [&, this](auto entity, TransformComponent& transform, SpriteComponent& sprite) {
-          if (!rse::ECSManager::IsEntityEnabled(entity)) {
+          if (!rse::ECSManager::IsEntityEnabled(entity) ||
+              !rse::ECSManager::IsComponentEnabled<SpriteComponent>(entity)) {
             return;
           }
 
