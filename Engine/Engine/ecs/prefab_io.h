@@ -19,8 +19,12 @@ namespace rse {
 // prefab component for free.
 class PrefabIO {
  public:
-  // The prefab format this build writes, and the newest it can read.
-  static constexpr int kFormatVersion{4};
+  // The prefab format this build writes, and the newest it can read. Version 5
+  // changed the rigid body's fields the same way scene version 10 did: density
+  // and friction moved into a physics material asset and the body gained a
+  // material reference. A version 4 prefab still loads with no material because
+  // the reader matches fields by name.
+  static constexpr int kFormatVersion{5};
 
   // The oldest prefab format this build still understands.
   static constexpr int kFirstFormatVersion{1};

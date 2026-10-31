@@ -8,6 +8,7 @@
 
 #include <audio/sound_manager.h>
 #include <core/asset_registry.h>
+#include <core/physics_material_manager.h>
 #include <core/project.h>
 #include <core/texture_manager.h>
 #include <ecs/components/include_list.h>
@@ -43,6 +44,7 @@ class SampleProjectTest : public ::testing::Test {
     SceneIO::Clear();
     TextureManager::Clean();
     SoundManager::Clean();
+    PhysicsMaterialManager::Clean();
     AssetRegistry::Clean();
   }
 };
@@ -171,6 +173,23 @@ TEST_F(SampleProjectTest, TheStartupSceneSharesOneTexture) {
 // The sample's second scene is the physics worked example: one static floor and
 // one dynamic crate, both still uninitialised -- a loaded body starts like one
 // added in the editor, and PhysicsSystem builds it on the first update.
+TEST_F(SampleProjectTest, ThePhysicsMaterialAssetLoads) {
+  const AssetRegistry::Asset* asset = AssetRegistry::Find("b7d4e2a19c3f5068");
+  ASSERT_NE(asset, nullptr);
+  EXPECT_EQ(asset->type, "physics_material");
+  EXPECT_EQ(asset->path, "assets/Default.physicsmaterial");
+
+  // The manager's registry preload resolves through the attached project; this
+  // test has no project attached, so it reads the shipped file by its path.
+  const PhysicsMaterialAsset* material =
+      PhysicsMaterialManager::GetOrLoad((kSampleProject / "assets" / "Default.physicsmaterial").string());
+  ASSERT_NE(material, nullptr);
+  EXPECT_EQ(material->name, "Default");
+  EXPECT_FLOAT_EQ(material->material.density, 1.0f);
+  EXPECT_FLOAT_EQ(material->material.friction, 0.3f);
+  EXPECT_FLOAT_EQ(material->material.restitution, 0.0f);
+}
+
 TEST_F(SampleProjectTest, ThePhysicsSceneHasAFloorAndAFallingBody) {
   Project project;
   std::string error;
@@ -186,6 +205,7 @@ TEST_F(SampleProjectTest, ThePhysicsSceneHasAFloorAndAFallingBody) {
   ECSManager::GetView<RigidBodyComponent>().each([&static_bodies, &dynamic_bodies](auto, RigidBodyComponent& rigid) {
     ASSERT_NE(rigid.m_rigidbody, nullptr);
     EXPECT_FALSE(rigid.m_rigidbody->m_init);
+    EXPECT_EQ(rigid.m_rigidbody->GetMaterial(), "b7d4e2a19c3f5068");
 
     if (*rigid.m_rigidbody->GetBodyType() == b2_staticBody) {
       ++static_bodies;
@@ -226,5 +246,6 @@ TEST_F(SampleProjectTest, ThePrefabPlacesTheCrate) {
   ASSERT_NE(rigidbody.m_rigidbody, nullptr);
   EXPECT_FALSE(rigidbody.m_rigidbody->m_init);
   EXPECT_EQ(*rigidbody.m_rigidbody->GetBodyType(), b2_dynamicBody);
+  EXPECT_EQ(rigidbody.m_rigidbody->GetMaterial(), "b7d4e2a19c3f5068");
 }
 }  // namespace

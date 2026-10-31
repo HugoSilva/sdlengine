@@ -6,8 +6,8 @@ Rigidbody* Rigidbody::Clone() const {
   // Init has not run on the copy, so m_world, m_body and m_init keep the
   // values a newly constructed body has: PhysicsSystem builds it later.
   Rigidbody* clone = new Rigidbody(m_position, m_size);
-  clone->m_density = m_density;
-  clone->m_friction = m_friction;
+  clone->m_material = m_material;
+  clone->m_material_values = m_material_values;
   clone->m_body_type = m_body_type;
   return clone;
 }
@@ -20,12 +20,15 @@ Rigidbody::~Rigidbody() {
   }
 }
 
-void Rigidbody::Init(b2World* world) {
+void Rigidbody::Init(b2World* world) { Init(world, rse::PhysicsMaterial{}); }
+
+void Rigidbody::Init(b2World* world, const rse::PhysicsMaterial& material) {
   if (m_body != nullptr) {
     return;
   }
 
   m_world = world;
+  m_material_values = material;
 
   b2BodyDef body_definition;
 
@@ -39,8 +42,9 @@ void Rigidbody::Init(b2World* world) {
 
   b2FixtureDef fixture_def;
   fixture_def.shape = &dynamic_box;
-  fixture_def.density = m_density;
-  fixture_def.friction = m_friction;
+  fixture_def.density = material.density;
+  fixture_def.friction = material.friction;
+  fixture_def.restitution = material.restitution;
 
   m_body->CreateFixture(&fixture_def);
 

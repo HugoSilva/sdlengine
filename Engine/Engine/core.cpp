@@ -6,6 +6,7 @@
 #include <utility>
 
 #include <core/asset_registry.h>
+#include <core/physics_material_manager.h>
 #include <ecs/scene_io.h>
 #include <input/input_map.h>
 #include <platform/sdl_clock.h>
@@ -60,6 +61,7 @@ Core::Core(const std::filesystem::path& project_file)
   // are parsed and compiled after that: a material loaded before there is a
   // context would be cached with no program and never tried again.
   rse::MaterialManager::Init();
+  rse::PhysicsMaterialManager::Init();
 
   rse::ImGuiLayer::Init(m_window->GetWindow(), m_window->GetContext());
 
@@ -131,6 +133,8 @@ bool Core::OpenProject(const std::filesystem::path& project_file, std::string* e
   // project-lifetime behaviour today; its cache is left alone here.
   rse::MaterialManager::Clean();
   rse::MaterialManager::Init();
+  rse::PhysicsMaterialManager::Clean();
+  rse::PhysicsMaterialManager::Init();
 
   if (m_window != nullptr) {
     m_window->SetTitle(m_project.window.title);
@@ -195,6 +199,7 @@ Core::~Core() {
   rse::SoundManager::Clean();
   rse::FontManager::Clean();
   rse::MaterialManager::Clean();
+  rse::PhysicsMaterialManager::Clean();
   rse::TextureManager::Clean();
   PhysicsManager::Clean();
 

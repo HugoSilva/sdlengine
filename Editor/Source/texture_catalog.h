@@ -68,6 +68,10 @@ inline bool IsMaterialFile(const std::filesystem::path& path) {
   return rse::AssetRegistry::TypeForPath(path) == "material";
 }
 
+inline bool IsPhysicsMaterialFile(const std::filesystem::path& path) {
+  return rse::AssetRegistry::TypeForPath(path) == "physics_material";
+}
+
 inline bool IsHiddenPath(const std::filesystem::path& path) {
   const std::string name = path.filename().string();
   return !name.empty() && name.front() == '.';
@@ -181,6 +185,11 @@ inline std::vector<TextureChoice> BuildTextureCatalog(const std::filesystem::pat
 inline std::vector<TextureChoice> BuildMaterialCatalog(const std::filesystem::path& project_directory,
                                                        const std::string& asset_root) {
   return BuildAssetCatalog(project_directory, asset_root, "material");
+}
+
+inline std::vector<TextureChoice> BuildPhysicsMaterialCatalog(const std::filesystem::path& project_directory,
+                                                              const std::string& asset_root) {
+  return BuildAssetCatalog(project_directory, asset_root, "physics_material");
 }
 
 inline bool MatchesTextureQuery(const TextureChoice& choice, const std::string& query) {

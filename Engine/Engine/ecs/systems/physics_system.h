@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base_system.h"
+#include <core/physics_material_manager.h>
 #include <ecs/ecs_manager.h>
 
 class PhysicsSystem : public BaseSystem {
@@ -31,7 +32,9 @@ class PhysicsSystem : public BaseSystem {
           }
 
           if (!rigid.m_rigidbody->m_init) {
-            rigid.m_rigidbody->Init(m_world);
+            const rse::PhysicsMaterialAsset* material =
+                rse::PhysicsMaterialManager::GetOrLoad(rigid.m_rigidbody->GetMaterial());
+            rigid.m_rigidbody->Init(m_world, material != nullptr ? material->material : rse::PhysicsMaterial{});
           }
 
           rigid.m_rigidbody->SetEnabled(true);

@@ -88,6 +88,31 @@ TEST_F(TextureCatalogTest, MaterialCatalogOffersRegisteredAndUnregisteredMateria
   EXPECT_EQ("assets/warm.material", choices[1].project_path);
 }
 
+TEST_F(TextureCatalogTest, PhysicsMaterialCatalogOffersRegisteredAndUnregisteredMaterials) {
+  Touch("assets/ice.physicsmaterial");
+  Touch("assets/stone.physicsmaterial");
+  Touch("assets/warm.material");
+  const std::string id = AssetRegistry::Add("ice.physicsmaterial", "physics_material", "assets/ice.physicsmaterial");
+
+  const std::vector<TextureChoice> choices = BuildPhysicsMaterialCatalog(m_directory, "assets");
+
+  ASSERT_EQ(2u, choices.size());
+  EXPECT_EQ("ice.physicsmaterial", choices[0].name);
+  EXPECT_EQ("stone.physicsmaterial", choices[1].name);
+  EXPECT_TRUE(choices[0].registered);
+  EXPECT_FALSE(choices[1].registered);
+  EXPECT_EQ(id, choices[0].reference);
+  EXPECT_EQ("assets/ice.physicsmaterial", choices[0].project_path);
+}
+
+TEST_F(TextureCatalogTest, PhysicsMaterialFileClassificationIsExact) {
+  EXPECT_TRUE(IsPhysicsMaterialFile("assets/ice.physicsmaterial"));
+  EXPECT_TRUE(IsPhysicsMaterialFile("assets/ICE.PHYSICSMATERIAL"));
+  EXPECT_FALSE(IsPhysicsMaterialFile("assets/ice.physicsmaterial.xml"));
+  EXPECT_FALSE(IsPhysicsMaterialFile("assets/warm.material"));
+  EXPECT_FALSE(IsPhysicsMaterialFile("assets/crate.png"));
+}
+
 TEST_F(TextureCatalogTest, AFolderOfMaterialsIsNotOfferedAsTextures) {
   Touch("assets/materials/warm.material");
   const std::vector<TextureChoice> textures = BuildTextureCatalog(m_directory, "assets");

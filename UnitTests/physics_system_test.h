@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <gtest/gtest.h>
 
 #include <ecs/components/include_list.h>
@@ -18,7 +20,10 @@ using namespace rse;
 
 class PhysicsSystemTest : public ::testing::Test {
  protected:
-  void TearDown() override { SceneIO::Clear(); }
+  void TearDown() override {
+    SceneIO::Clear();
+    PhysicsMaterialManager::Clean();
+  }
 
   static uint32_t CreateBody(const char* name, float y, b2BodyType type) {
     const uint32_t entity = ECSManager::CreateEntity();
@@ -41,6 +46,42 @@ TEST_F(PhysicsSystemTest, ABodyIsNotSimulatedUntilTheFirstUpdate) {
         EXPECT_FALSE(rigid.m_rigidbody->m_init);
         EXPECT_FLOAT_EQ(transform.position.y, 100.f);
       });
+}
+
+TEST_F(PhysicsSystemTest, ABodyWithNoMaterialUsesTheDefaults) {
+  CreateBody("faller", 100.f, b2_dynamicBody);
+
+  PhysicsSystem physics;
+  physics.Update(0.f);
+
+  ECSManager::GetView<RigidBodyComponent>().each([](auto, RigidBodyComponent& rigid) {
+    ASSERT_NE(rigid.m_rigidbody, nullptr);
+    EXPECT_FLOAT_EQ(rigid.m_rigidbody->GetMaterialValues().density, PhysicsMaterial::kDefaultDensity);
+    EXPECT_FLOAT_EQ(rigid.m_rigidbody->GetMaterialValues().friction, PhysicsMaterial::kDefaultFriction);
+    EXPECT_FLOAT_EQ(rigid.m_rigidbody->GetMaterialValues().restitution, PhysicsMaterial::kDefaultRestitution);
+  });
+}
+
+TEST_F(PhysicsSystemTest, ABodyUsesTheMaterialItReferences) {
+  auto material = std::make_unique<PhysicsMaterialAsset>();
+  material->id = "0123456789abcdef";
+  material->name = "Ice";
+  material->material.density = 0.9f;
+  material->material.friction = 0.05f;
+  material->material.restitution = 0.1f;
+  PhysicsMaterialManager::Add(std::move(material));
+
+  const uint32_t entity = CreateBody("faller", 100.f, b2_dynamicBody);
+  RigidBodyComponent& rigid = ECSManager::GetComponent<RigidBodyComponent>(entity);
+  ASSERT_NE(rigid.m_rigidbody, nullptr);
+  rigid.m_rigidbody->SetMaterial("0123456789abcdef");
+
+  PhysicsSystem physics;
+  physics.Update(0.f);
+
+  EXPECT_FLOAT_EQ(rigid.m_rigidbody->GetMaterialValues().density, 0.9f);
+  EXPECT_FLOAT_EQ(rigid.m_rigidbody->GetMaterialValues().friction, 0.05f);
+  EXPECT_FLOAT_EQ(rigid.m_rigidbody->GetMaterialValues().restitution, 0.1f);
 }
 
 TEST_F(PhysicsSystemTest, ADynamicBodyFalls) {

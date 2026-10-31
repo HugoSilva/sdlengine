@@ -26,7 +26,7 @@ class SceneIO {
   // The scene format this build writes, and the newest it can read. Files in
   // [kFirstFormatVersion, kFormatVersion] are read -- older ones through the
   // gates in LoadEntities -- and anything newer is refused.
-  static constexpr int kFormatVersion{9};
+  static constexpr int kFormatVersion{10};
 
   // The oldest scene file this build still understands. Version 2 changed what
   // a sprite stores for its texture -- a name instead of the texture itself --
@@ -44,7 +44,10 @@ class SceneIO {
   // appended the entity enabled state; a version 7 scene has no such group and
   // every entity loads enabled. Version 9 appended the disabled component
   // mask; a version 8 scene has no such group and every component loads
-  // enabled.
+  // enabled. Version 10 changed the rigid body's fields: density and friction
+  // moved into a physics material asset and the body gained a material
+  // reference. The reader matches fields by name, so a version 9 file still
+  // loads -- the removed nodes are ignored and the body has no material.
   static constexpr int kFirstFormatVersion{2};
 
   // What a scene says about the view. The defaults are what the engine framed

@@ -10,6 +10,8 @@
 #include "material_file_test.h"
 #include "material_manager_test.h"
 #include "ortho_view_test.h"
+#include "physics_material_file_test.h"
+#include "physics_material_manager_test.h"
 #include "physics_system_test.h"
 #include "prefab_io_test.h"
 #include "project_commands_test.h"
