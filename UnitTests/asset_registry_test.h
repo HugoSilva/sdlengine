@@ -185,6 +185,8 @@ TEST_F(AssetRegistryTest, TypeForPathNamesTheFilesTheRegistryKnows) {
   EXPECT_EQ(AssetRegistry::TypeForPath("effect.wav"), "sound");
   EXPECT_EQ(AssetRegistry::TypeForPath("menu.ogg"), "sound");
   EXPECT_EQ(AssetRegistry::TypeForPath("main.ttf"), "font");
+  EXPECT_EQ(AssetRegistry::TypeForPath("ice.physicsmaterial"), "physics_material");
+  EXPECT_EQ(AssetRegistry::TypeForPath("ICE.PHYSICSMATERIAL"), "physics_material");
   EXPECT_EQ(AssetRegistry::TypeForPath("crate.xml"), "prefab");
   EXPECT_EQ(AssetRegistry::TypeForPath("readme.txt"), "");
 }

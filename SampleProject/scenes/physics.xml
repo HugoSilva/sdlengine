@@ -134,9 +134,8 @@
 							<x>640</x>
 							<y>16</y>
 						</Size>
-						<Density>1</Density>
-						<Friction>0.30000001192092896</Friction>
 						<BodyType>static</BodyType>
+						<Material>b7d4e2a19c3f5068</Material>
 					</data>
 				</ptr_wrapper>
 			</Rigidbody>
@@ -155,9 +154,8 @@
 							<x>40</x>
 							<y>40</y>
 						</Size>
-						<Density>1</Density>
-						<Friction>0.30000001192092896</Friction>
 						<BodyType>dynamic</BodyType>
+						<Material>b7d4e2a19c3f5068</Material>
 					</data>
 				</ptr_wrapper>
 			</Rigidbody>

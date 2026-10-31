@@ -15,6 +15,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <components/material_shader.h>
+#include <core/physics_material_manager.h>
 #include <layout/editor_panel.h>
 #include <utils/logger.h>
 
@@ -51,6 +52,9 @@ class InspectorPanel : public EditorPanel {
     m_material_catalog.clear();
     m_material_edit_entity = INVALID_ENTITY_ID;
     m_material_query.clear();
+    m_physics_material_catalog.clear();
+    m_physics_material_edit_entity = INVALID_ENTITY_ID;
+    m_physics_material_query.clear();
   }
 
   void Draw() override {
@@ -866,23 +870,275 @@ class InspectorPanel : public EditorPanel {
       if (rigidbody == nullptr) {
         ImGui::TextDisabled("No rigidbody assigned.");
       } else {
-        ImGui::InputFloat("Density", rigidbody->GetDensity());
-        MarkDirtyIfEdited();
-        ImGui::InputFloat("Friction", rigidbody->GetFriction());
-        MarkDirtyIfEdited();
+        BeginLabeledRow("rigidbody_body_type", "Body Type");
 
         // Combo wants an int, so convert instead of aliasing the enum
         // pointer as an int pointer.
-        static const char* items[] = {"b2_staticBody", "b2_kinematicBody", "b2_dynamicBody"};
+        static const char* items[] = {"Static", "Kinematic", "Dynamic"};
         b2BodyType* body_type = rigidbody->GetBodyType();
         int type = static_cast<int>(*body_type);
+        ImGui::SetNextItemWidth(-1.0f);
 
-        if (ImGui::Combo("Body Type", &type, items, IM_ARRAYSIZE(items))) {
+        if (ImGui::Combo("##body_type", &type, items, IM_ARRAYSIZE(items))) {
           *body_type = static_cast<b2BodyType>(type);
+          SceneManager::MarkDirty();
         }
-        MarkDirtyIfEdited();
+
+        EndLabeledRow();
+
+        DrawRigidbodyMaterial(rigidbody);
       }
     }
+  }
+
+  // The material field mirrors the sprite's: clicking the name reveals the
+  // asset, and the arrow opens a searchable picker. The body stores an asset
+  // reference, not a PhysicsMaterial value, so a later edit to the asset is
+  // picked up the next time the body is created.
+  void DrawRigidbodyMaterial(Rigidbody* rigidbody) {
+    const uint32_t entity = EditorManager::GetSelectedEntity();
+    const std::string reference = rigidbody->GetMaterial();
+
+    std::string current_name;
+    std::string current_path;
+
+    if (!reference.empty()) {
+      if (const rse::PhysicsMaterialAsset* material = rse::PhysicsMaterialManager::GetOrLoad(reference)) {
+        current_name = material->name;
+        current_path = material->path;
+      }
+
+      if (current_name.empty()) {
+        current_name = reference;
+      }
+    }
+
+    if (m_physics_material_edit_entity != entity) {
+      m_physics_material_edit_entity = entity;
+      m_physics_material_query.clear();
+      m_physics_material_catalog.clear();
+    }
+
+    BeginLabeledRow("rigidbody_material", "Material");
+
+    char buffer[256];
+    std::snprintf(buffer, sizeof(buffer), "%s", current_name.empty() ? "" : current_name.c_str());
+
+    const float button_width = ImGui::GetFrameHeight();
+    const float spacing = ImGui::GetStyle().ItemSpacing.x;
+    ImGui::SetNextItemWidth(std::max(1.0f, ImGui::GetContentRegionAvail().x - button_width - spacing));
+
+    ImGui::InputTextWithHint("##physics_material", "(none)", buffer, IM_ARRAYSIZE(buffer),
+                             ImGuiInputTextFlags_ReadOnly);
+    const bool clicked = ImGui::IsItemClicked();
+    const ImVec2 field_min = ImGui::GetItemRectMin();
+    const ImVec2 field_max = ImGui::GetItemRectMax();
+
+    bool open_picker = false;
+
+    ImGui::SameLine();
+    if (ImGui::ArrowButton("##physics_material_list", ImGuiDir_Down)) {
+      m_physics_material_query.clear();
+      open_picker = true;
+    }
+
+    EndLabeledRow();
+
+    if (clicked) {
+      RevealPhysicsMaterial(reference, current_path);
+    }
+
+    // Match the row's PushID scope: the popup is opened and begun here, outside
+    // the table, or the two IDs do not name the same popup.
+    if (open_picker) {
+      OpenPhysicsMaterialPicker(reference);
+    }
+
+    if (ImGui::IsPopupOpen(kPhysicsMaterialPickerPopup)) {
+      PositionAssetPickerPopup(field_min, field_max);
+    }
+
+    if (ImGui::BeginPopup(kPhysicsMaterialPickerPopup)) {
+      DrawPhysicsMaterialPickerPopup(entity, reference);
+      ImGui::EndPopup();
+    }
+  }
+
+  void OpenPhysicsMaterialPicker(const std::string& reference) {
+    if (!ImGui::IsPopupOpen(kPhysicsMaterialPickerPopup)) {
+      RefreshPhysicsMaterialCatalog();
+      m_physics_material_highlight = 0;
+
+      if (m_physics_material_query.empty() && !reference.empty()) {
+        for (std::size_t index = 0; index < m_physics_material_catalog.size(); ++index) {
+          if (ChoiceMatchesReference(m_physics_material_catalog[index], reference)) {
+            m_physics_material_highlight = static_cast<int>(index);
+            break;
+          }
+        }
+      }
+
+      m_focus_physics_material_search = true;
+    }
+
+    ImGui::OpenPopup(kPhysicsMaterialPickerPopup);
+  }
+
+  void RefreshPhysicsMaterialCatalog() {
+    const rse::Project& project = Core::GetProject();
+    m_physics_material_catalog = BuildPhysicsMaterialCatalog(project.Directory(), project.asset_root);
+  }
+
+  void DrawPhysicsMaterialPickerPopup(uint32_t entity, const std::string& reference) {
+    if (m_focus_physics_material_search) {
+      ImGui::SetKeyboardFocusHere();
+      m_focus_physics_material_search = false;
+    }
+
+    char search[256];
+    std::snprintf(search, sizeof(search), "%s", m_physics_material_query.c_str());
+    ImGui::SetNextItemWidth(-1.0f);
+
+    if (ImGui::InputTextWithHint("##physics_material_search", "Search physics materials...", search,
+                                 IM_ARRAYSIZE(search), ImGuiInputTextFlags_AutoSelectAll)) {
+      m_physics_material_query = search;
+      m_physics_material_highlight = 0;
+    }
+
+    std::vector<const TextureChoice*> matches;
+
+    for (const TextureChoice& choice : m_physics_material_catalog) {
+      if (MatchesTextureQuery(choice, m_physics_material_query)) {
+        matches.push_back(&choice);
+      }
+    }
+
+    const int count = static_cast<int>(matches.size());
+
+    if (m_physics_material_highlight < 0 || m_physics_material_highlight >= count) {
+      m_physics_material_highlight = count > 0 ? count - 1 : 0;
+    }
+
+    if (count > 0) {
+      if (ImGui::IsKeyPressed(ImGuiKey_DownArrow)) {
+        m_physics_material_highlight = (m_physics_material_highlight + 1) % count;
+      } else if (ImGui::IsKeyPressed(ImGuiKey_UpArrow)) {
+        m_physics_material_highlight = (m_physics_material_highlight + count - 1) % count;
+      }
+    }
+
+    ImGui::Separator();
+
+    if (ImGui::Selectable("None##physics_material_none", reference.empty())) {
+      AssignPhysicsMaterialReference(entity, {});
+      m_physics_material_query.clear();
+      ImGui::CloseCurrentPopup();
+    }
+
+    for (int index = 0; index < count; ++index) {
+      const TextureChoice& choice = *matches[static_cast<std::size_t>(index)];
+      const bool is_current = ChoiceMatchesReference(choice, reference);
+
+      std::string label = choice.name;
+
+      if (is_current) {
+        label += "  (current)";
+      }
+
+      ImGui::PushID(choice.project_path.c_str());
+
+      if (ImGui::Selectable(label.c_str(), index == m_physics_material_highlight)) {
+        AssignPhysicsMaterialChoice(entity, choice);
+        ImGui::CloseCurrentPopup();
+      }
+
+      if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("%s", choice.project_path.c_str());
+      }
+
+      ImGui::PopID();
+    }
+
+    if (count > 0 && (ImGui::IsKeyPressed(ImGuiKey_Enter) || ImGui::IsKeyPressed(ImGuiKey_KeypadEnter))) {
+      AssignPhysicsMaterialChoice(entity, *matches[static_cast<std::size_t>(m_physics_material_highlight)]);
+      ImGui::CloseCurrentPopup();
+    }
+
+    if (count == 0) {
+      ImGui::TextDisabled(m_physics_material_query.empty() ? "No physics materials in this project."
+                                                           : "No matching physics materials.");
+      ImGui::TextDisabled("Add a .physicsmaterial file and import it with Assets > Import Asset.");
+    }
+  }
+
+  static void AssignPhysicsMaterialReference(uint32_t entity, const std::string& reference) {
+    if (!rse::ECSManager::HasComponent<RigidBodyComponent>(entity)) {
+      return;
+    }
+
+    RigidBodyComponent& component = rse::ECSManager::GetComponent<RigidBodyComponent>(entity);
+
+    if (component.m_rigidbody == nullptr) {
+      return;
+    }
+
+    component.m_rigidbody->SetMaterial(reference);
+    SceneManager::MarkDirty();
+  }
+
+  void AssignPhysicsMaterialChoice(uint32_t entity, const TextureChoice& choice) {
+    std::string reference = choice.reference;
+
+    if (reference.empty()) {
+      const rse::Project& project = Core::GetProject();
+
+      if (!project.IsAttached()) {
+        Logger::Error("Open a project before assigning a physics material.");
+        return;
+      }
+
+      const std::filesystem::path file = project.Directory() / choice.project_path;
+
+      ImportAssetAt(file);
+      reference = RegisteredAssetIdForFile(file, project.Directory(), "physics_material");
+
+      if (reference.empty()) {
+        reference = choice.project_path;
+      }
+    }
+
+    if (reference.empty()) {
+      Logger::Error("Could not resolve the physics material " + choice.project_path);
+      return;
+    }
+
+    AssignPhysicsMaterialReference(entity, reference);
+    m_physics_material_query.clear();
+  }
+
+  void RevealPhysicsMaterial(const std::string& reference, const std::string& known_path) {
+    if (reference.empty()) {
+      return;
+    }
+
+    std::string path = known_path;
+
+    if (path.empty()) {
+      if (const rse::PhysicsMaterialAsset* material = rse::PhysicsMaterialManager::GetOrLoad(reference)) {
+        path = material->path;
+      }
+    }
+
+    if (path.empty()) {
+      path = Core::ResolveProjectPath(reference);
+    }
+
+    if (path.empty() || !std::filesystem::exists(path)) {
+      Logger::Warning("The rigidbody's physics material is not on disk" + (path.empty() ? std::string{} : ": " + path));
+      return;
+    }
+
+    EditorManager::RequestRevealAsset(path);
   }
 
   // A component header with the collapse arrow, its name and the right-side
@@ -997,6 +1253,7 @@ class InspectorPanel : public EditorPanel {
 
   static constexpr const char* kSpritePickerPopup = "sprite_picker";
   static constexpr const char* kMaterialPickerPopup = "material_picker";
+  static constexpr const char* kPhysicsMaterialPickerPopup = "physics_material_picker";
   static constexpr float kLabelColumnWidth{66.0f};
 
   // Each picker keeps its own query, catalog, highlighted row and "focus the
@@ -1013,4 +1270,10 @@ class InspectorPanel : public EditorPanel {
   int m_material_highlight{0};
   bool m_focus_material_search{false};
   uint32_t m_material_edit_entity{INVALID_ENTITY_ID};
+
+  std::string m_physics_material_query;
+  std::vector<TextureChoice> m_physics_material_catalog;
+  int m_physics_material_highlight{0};
+  bool m_focus_physics_material_search{false};
+  uint32_t m_physics_material_edit_entity{INVALID_ENTITY_ID};
 };

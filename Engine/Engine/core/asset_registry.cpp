@@ -442,6 +442,10 @@ std::string AssetRegistry::TypeForPath(const std::filesystem::path& path) {
     return "font";
   }
 
+  if (extension == ".physicsmaterial") {
+    return "physics_material";
+  }
+
   if (extension == ".material") {
     return "material";
   }

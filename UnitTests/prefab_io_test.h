@@ -100,7 +100,7 @@ TEST_F(PrefabIOTest, SavingWritesThePrefabFile) {
 
   const std::string contents = ReadFile(m_file);
 
-  EXPECT_NE(contents.find("<formatVersion>4</formatVersion>"), std::string::npos);
+  EXPECT_NE(contents.find("<formatVersion>5</formatVersion>"), std::string::npos);
 
   // One entity, not a scene: no camera, and the entity block has the same
   // component shape a scene's <entities> has.
@@ -278,8 +278,7 @@ TEST_F(PrefabIOTest, APrefabWithARigidBodyGetsAFreshBody) {
   const uint32_t crate = CreateSprite("crate", glm::vec3(640.f, 400.f, 0.f));
 
   Rigidbody* body = new Rigidbody(glm::vec2(640.f, 400.f), glm::vec2(40.f, 40.f));
-  *body->GetDensity() = 2.5f;
-  *body->GetFriction() = 0.75f;
+  body->SetMaterial("0123456789abcdef");
   *body->GetBodyType() = b2_dynamicBody;
   ECSManager::AddComponent<RigidBodyComponent>(crate, body);
 
@@ -302,8 +301,8 @@ TEST_F(PrefabIOTest, APrefabWithARigidBodyGetsAFreshBody) {
 
   EXPECT_FALSE(first_body->m_init);
   EXPECT_EQ(*first_body->GetBodyType(), b2_dynamicBody);
-  EXPECT_FLOAT_EQ(*first_body->GetDensity(), 2.5f);
-  EXPECT_FLOAT_EQ(*first_body->GetFriction(), 0.75f);
+  EXPECT_EQ(first_body->GetMaterial(), "0123456789abcdef");
+  EXPECT_EQ(second_body->GetMaterial(), "0123456789abcdef");
 }
 
 TEST_F(PrefabIOTest, AMissingPrefabLeavesTheSceneAlone) {
@@ -413,8 +412,12 @@ TEST_F(PrefabIOTest, APrefabV1FixtureLoads) {
   ASSERT_NE(rigidbody.m_rigidbody, nullptr);
   EXPECT_FALSE(rigidbody.m_rigidbody->m_init);
   EXPECT_EQ(*rigidbody.m_rigidbody->GetBodyType(), b2_dynamicBody);
-  EXPECT_FLOAT_EQ(*rigidbody.m_rigidbody->GetDensity(), 2.5f);
-  EXPECT_FLOAT_EQ(*rigidbody.m_rigidbody->GetFriction(), 0.75f);
+
+  // Version 1 stored density and friction on the body. Those nodes are ignored
+  // now, so the body loads with no material and the defaults.
+  EXPECT_TRUE(rigidbody.m_rigidbody->GetMaterial().empty());
+  EXPECT_FLOAT_EQ(rigidbody.m_rigidbody->GetMaterialValues().density, PhysicsMaterial::kDefaultDensity);
+  EXPECT_FLOAT_EQ(rigidbody.m_rigidbody->GetMaterialValues().friction, PhysicsMaterial::kDefaultFriction);
 }
 // The checked-in version 2 file: the first prefab format with the appearance
 // group. It is what a later format change has to keep reading.

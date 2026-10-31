@@ -3,11 +3,13 @@
 A **project** is a directory. Its `project.xml` is the manifest: what the project
 is called, how its window opens, where its assets live and which **scenes** it is
 made of. An `assets.xml` beside it is the asset **registry**: the table that gives
-every texture, sound, font, prefab and material a stable id. A **scene** is a file
-of its own: the entities and components that were open in the editor when it was
-saved. A **prefab** is one entity saved on its own, so it can be placed into any
-scene. A **material** is a pair of shader files a sprite can use instead of the
-scene's default program.
+every texture, sound, font, prefab, material and physics material a stable id. A
+**scene** is a file of its own: the entities and components that were open in
+the editor when it was saved. A **prefab** is one entity saved on its own, so it
+can be placed into any scene. A **material** is a pair of shader files a sprite
+can use instead of the scene's default program. A **physics material** is the
+density, friction and restitution a rigid body's shape uses; it is a separate
+asset from the render material.
 
 Before this split, `project.xml` *was* the scene: a flat list of entities written
 into whatever directory the binary happened to be run from. A project that could
@@ -74,7 +76,7 @@ Two rules keep the additive case honest:
 
 | Milestone | Manifest | Scene | Prefab | Assets |
 |---|---|---|---|---|
-| today | 3 | 9 | 4 | 1 |
+| today | 3 | 10 | 5 | 1 |
 | #54 | 1 | 1 | -- | -- |
 | #47 | 1 | **2** | -- | -- |
 | #48 | 1 | **3** | -- | -- |
@@ -87,6 +89,7 @@ Two rules keep the additive case honest:
 | #74 | 3 | **7** | **2** | 1 |
 | #76 | 3 | **8** | **3** | 1 |
 | #78 | 3 | **9** | **4** | 1 |
+| #80 | 3 | **10** | **5** | 1 |
 
 Every row above is shipped behaviour: the migration policy itself, the first
 breaking change made under it, the additive changes made after it, prefabs, the
@@ -276,7 +279,7 @@ leaves the file alone.
 |---|---|
 | `id` | 16 lowercase hex characters, generated when the asset is imported. A scene or prefab stores this, never the path. |
 | `name` | The display name the editor shows, and what an older scene may still call the asset. It is the file's name, extension included. |
-| `type` | `texture`, `sound`, `font`, `prefab` or `material`, inferred from the extension when the asset is imported. |
+| `type` | `texture`, `sound`, `font`, `prefab`, `material` or `physics_material`, inferred from the extension when the asset is imported. |
 | `path` | Where the file is, relative to the project directory and stored with forward slashes -- the same rule every other project path follows. `Core::ResolveProjectPath` turns it into a path the OS can open. |
 
 The table exists to make a **rename** an entry update rather than a scene edit.
@@ -391,7 +394,7 @@ that writes data, never a pointer, so saving and loading is a round trip:
 - `TransformComponent` -- position, rotation, scale.
 - `SpriteComponent` -- size, colour, texture reference.
 - `AudioComponent` -- sound name, volume, mute, loop, autoplay.
-- `RigidBodyComponent` -- position, size, density, friction, body type.
+- `RigidBodyComponent` -- position, size, body type, physics material reference.
 - `SpriteAppearanceComponent` -- flip X, flip Y, material reference.
 - `EntityEnabledComponent` -- whether the entity takes part in the scene. A
   missing group means enabled, which is what every entity written before
@@ -491,12 +494,17 @@ defaults are the look it already had. Version 8 appended the entity enabled
 group. A version 7 file has no such group, so every entity loads enabled: that
 is the behaviour it had when it was written. Version 9 appended the disabled
 component mask. A version 8 file has no such group, so every component loads
-enabled: that is the behaviour it had when it was written. The example above is
-a version 2 file, which is why it has neither the camera nor the audio and
+enabled: that is the behaviour it had when it was written. Version 10 changed
+the rigid body's fields: density and friction moved into a physics material
+asset and the body gained a material reference. The body is still read by field
+name, so a version 9 file opens -- its `<Density>` and `<Friction>` nodes are
+ignored and its body has no material, which uses the defaults. The example above
+is a version 2 file, which is why it has neither the camera nor the audio and
 rigid-body groups, and names its texture; a current file has all of them and
 stores ids. `UnitTests/fixtures/scene_v2.xml` through `scene_v8.xml` are the
 files that pin the additive versions, and `scene_v6.xml` is the last
-pre-appearance file, paired with `assets_v1.xml`.
+pre-appearance file, paired with `assets_v1.xml`. The version 4 fixture still
+stores density and friction, so it also pins the version 10 field change.
 
 A disabled entity is still part of the file and the open scene: it keeps its
 components and can be re-enabled from the inspector. The renderer, physics and
@@ -505,13 +513,15 @@ it, so it remains reachable. A disabled component works the same way: the
 component and its data stay on the entity, the matching system skips it, and
 the inspector can switch it back on.
 
-A rigid body is stored as its **inputs**, by value: position, size, density,
-friction and the body type by name (`static`, `kinematic`, `dynamic`). A
+A rigid body is stored as its **inputs**: position, size, the body type by name
+(`static`, `kinematic`, `dynamic`) and a physics material reference. The
+reference is resolved when the body is created, not while the scene is read. A
 `b2Body` is a simulation object that belongs to a world, not data, so it is not
 in the file at all: neither is "initialised". A loaded body therefore starts in
 the same state as one added in the editor, and `PhysicsSystem` creates the
 `b2Body` on its first update. A body is per entity, so there is no manager to
-resolve it against -- unlike a texture or a sound.
+resolve the body itself against -- unlike a texture or a sound; the physics
+material manager resolves the reference instead.
 
 ## Prefab files
 
@@ -538,7 +548,11 @@ component group appended to scenes later is a prefab group the moment it is
 appended here too. A prefab's format version moves independently of a scene's;
 version 3 appended the enabled group, so a version 2 prefab still loads with
 its entity enabled. Version 4 appended the disabled component mask, so a
-version 3 prefab still loads with every component enabled.
+version 3 prefab still loads with every component enabled. Version 5 changed
+the rigid body's fields with scene version 10: density and friction moved into
+a physics material asset and the body gained a material reference. A version 4
+prefab still loads; its removed density and friction nodes are ignored and its
+body has no material.
 
 The entity ids in the file are **not restored**. `PrefabIO::Instantiate` reads
 the whole file into a scratch registry first, then copies each entity into the
@@ -568,15 +582,16 @@ found by path -- through the editor today, and through the content browser when
 it learns about prefabs. Saving one still has to happen inside the project
 directory, for the same reason a scene does. Format 1 is the first prefab
 version; format 2 appended the sprite appearance group, format 3 appended the
-entity enabled state and format 4 appended the disabled component mask. A
-version 1 prefab still loads with flip off and no material, and
-`UnitTests/fixtures/prefab_v1.xml` through `prefab_v3.xml` pin the additive
-shapes. A file newer than the build is refused before the open scene is
-touched, like every other format.
+entity enabled state, format 4 appended the disabled component mask and format
+5 changed the rigid body's fields. A version 1 prefab still loads with flip off
+and no material, and `UnitTests/fixtures/prefab_v1.xml` through
+`prefab_v3.xml` pin the additive shapes. A file newer than the build is refused
+before the open scene is touched, like every other format.
 
-A prefab's texture, sound and material references mean what they mean in a
-scene -- an asset id, or a name/path that falls back through the registry -- so
-the prefab format did not move when scene version 6 changed the meaning. A
+A prefab's texture, sound, material and physics material references mean what
+they mean in a scene -- an asset id, or a name/path that falls back through the
+registry -- so the prefab format did not move when scene version 6 changed the
+meaning. A
 prefab written by this build stores ids; an older prefab that names its files
 still loads, through the same fallback, and is rewritten with ids the next time
 it is saved.
@@ -617,6 +632,56 @@ A material file is written to a scratch path and renamed into place, like a
 scene. The editor's Sprite inspector lists `.material` files that are registered
 or simply present in the project: the Material field's arrow opens a searchable
 picker, and clicking the field reveals the file in the Content Browser.
+
+## Physics material files
+
+A physics material is the fixture-level surface data a rigid body's shape uses:
+density, friction and restitution. It is a project asset like a texture, but a
+different asset from a render `.material` -- one holds three numbers, the other
+names two shader files. Importing a `.physicsmaterial` file adds a registry
+entry of type `physics_material`, and a rigid body stores the entry's id. Its
+format is independent of scenes and prefabs:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<cereal>
+	<physicsMaterial>
+		<formatVersion>1</formatVersion>
+		<name>Default</name>
+		<density>1</density>
+		<friction>0.30000001192092896</friction>
+		<restitution>0</restitution>
+	</physicsMaterial>
+</cereal>
+```
+
+| Field | Meaning |
+|---|---|
+| `formatVersion` | Physics material format. Version 1 is the first; newer files are refused and an older one below 1 is not a physics material at all. |
+| `name` | The name the inspector shows. Empty is allowed; the manager then uses the asset name or the file stem. |
+| `density` | Mass per unit area of the fixture. A static body ignores it; a dynamic body's mass comes from it. |
+| `friction` | Coulomb friction of the fixture, used when two shapes touch. |
+| `restitution` | How much of the incoming velocity a collision returns: 0 is inelastic, 1 is a perfectly elastic bounce. |
+
+A rigid body stores a **physics material reference**, not a copy of the values:
+an asset id, or a name/path that resolves through the registry. `PhysicsSystem`
+resolves the reference once, when it creates the body on the first update, and
+copies the material's three values into the `b2Fixture`. An empty reference is
+the `PhysicsMaterial` defaults -- density 1, friction 0.3, restitution 0 -- so a
+body with no material still simulates. A missing or unreadable file logs one
+warning and uses the same defaults rather than leaving the body without a
+fixture.
+
+The values are fixture data, so editing a physics material changes bodies the
+next time they are created; it does not retroactively change a body that is
+already simulating. Body Type stays on the rigid body: it says how the body
+moves, while the material says what its surface is like.
+
+A physics material file is written to a scratch path and renamed into place,
+like a scene. The editor's Rigidbody inspector lists `.physicsmaterial` files
+that are registered or simply present in the project: the Material field's
+arrow opens a searchable picker, and clicking the field reveals the file in the
+Content Browser.
 
 ## The editor's project commands
 
@@ -718,12 +783,14 @@ the box:
 ```
 SampleProject/
   project.xml
-  assets.xml        the asset registry: tex3.png and effect.wav, with their ids
+  assets.xml        the asset registry: tex3.png, effect.wav and the physics material, with their ids
   assets/
     Default.vert
     Default.frag
     Warm.material     a sample material using Warm.frag
     Warm.frag
+    Default.physicsmaterial
+                      the density, friction and restitution the physics bodies use
     tex3.png
     effect.wav
   prefabs/
@@ -743,10 +810,11 @@ project scan has something to offer; selecting it imports the file and gives the
 sprite a warm cast, which is the worked example of the material rule.
 
 `physics.xml` is the second scene, listed in the manifest, and the worked example
-of the rigid-body rule: the floor is a static body, the crate a dynamic one. Both
-store their inputs; neither stores a `b2Body`, so the crate starts falling as
-soon as the scene is played. While the editor is stopped, the crate sits at its
-authored position; Stop puts it back there.
+of the rigid-body rule: the floor is a static body, the crate a dynamic one, and
+both reference `Default.physicsmaterial`. They store their inputs and the
+material id; neither stores a `b2Body`, so the crate starts falling as soon as
+the scene is played. While the editor is stopped, the crate sits at its authored
+position; Stop puts it back there.
 
 Both sample scenes carry the default camera and background, so the sample looks
 the way it always did; editing the background in the editor's Editor Settings

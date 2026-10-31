@@ -27,6 +27,12 @@
 				<type>sound</type>
 				<path>assets/effect.wav</path>
 			</value3>
+			<value6>
+				<id>b7d4e2a19c3f5068</id>
+				<name>Default.physicsmaterial</name>
+				<type>physics_material</type>
+				<path>assets/Default.physicsmaterial</path>
+			</value6>
 		</asset>
 	</assets>
 </cereal>

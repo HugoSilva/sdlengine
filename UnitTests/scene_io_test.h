@@ -112,7 +112,7 @@ TEST_F(SceneIOTest, SavingWritesTheSceneFile) {
   EXPECT_FALSE(std::filesystem::exists(m_scratch));
 
   const std::string contents = ReadFile(m_file);
-  EXPECT_NE(contents.find("<formatVersion>9</formatVersion>"), std::string::npos);
+  EXPECT_NE(contents.find("<formatVersion>10</formatVersion>"), std::string::npos);
   EXPECT_NE(contents.find("<camera>"), std::string::npos);
   EXPECT_NE(contents.find("<entities>"), std::string::npos);
 }
@@ -419,8 +419,7 @@ TEST_F(SceneIOTest, ARigidBodyComponentRoundTrips) {
 
   const uint32_t crate = CreateSprite("crate", glm::vec3(640.f, 400.f, 0.f));
   Rigidbody* crate_body = new Rigidbody(glm::vec2(640.f, 400.f), glm::vec2(40.f, 40.f));
-  *crate_body->GetDensity() = 2.5f;
-  *crate_body->GetFriction() = 0.75f;
+  crate_body->SetMaterial("0123456789abcdef");
   *crate_body->GetBodyType() = b2_dynamicBody;
   ECSManager::AddComponent<RigidBodyComponent>(crate, crate_body);
 
@@ -445,12 +444,10 @@ TEST_F(SceneIOTest, ARigidBodyComponentRoundTrips) {
 
         if (basic.m_name == "floor") {
           EXPECT_EQ(*rigid.m_rigidbody->GetBodyType(), b2_staticBody);
-          EXPECT_FLOAT_EQ(*rigid.m_rigidbody->GetDensity(), 1.0f);
-          EXPECT_FLOAT_EQ(*rigid.m_rigidbody->GetFriction(), 0.3f);
+          EXPECT_TRUE(rigid.m_rigidbody->GetMaterial().empty());
         } else if (basic.m_name == "crate") {
           EXPECT_EQ(*rigid.m_rigidbody->GetBodyType(), b2_dynamicBody);
-          EXPECT_FLOAT_EQ(*rigid.m_rigidbody->GetDensity(), 2.5f);
-          EXPECT_FLOAT_EQ(*rigid.m_rigidbody->GetFriction(), 0.75f);
+          EXPECT_EQ(rigid.m_rigidbody->GetMaterial(), "0123456789abcdef");
         } else {
           ADD_FAILURE() << "unexpected entity " << basic.m_name;
         }
@@ -648,6 +645,13 @@ TEST_F(SceneIOTest, AV4SceneLoadsFromTheFixture) {
         ++bodies;
         ASSERT_NE(rigid.m_rigidbody, nullptr);
         EXPECT_FALSE(rigid.m_rigidbody->m_init);
+
+        // Version 4 stores density and friction on the body. The reader ignores
+        // those removed nodes, so the body comes back with no material and the
+        // defaults rather than the old values.
+        EXPECT_TRUE(rigid.m_rigidbody->GetMaterial().empty());
+        EXPECT_FLOAT_EQ(rigid.m_rigidbody->GetMaterialValues().density, PhysicsMaterial::kDefaultDensity);
+        EXPECT_FLOAT_EQ(rigid.m_rigidbody->GetMaterialValues().friction, PhysicsMaterial::kDefaultFriction);
 
         if (basic.m_name == "floor") {
           EXPECT_EQ(*rigid.m_rigidbody->GetBodyType(), b2_staticBody);

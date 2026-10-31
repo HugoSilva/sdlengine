@@ -186,6 +186,12 @@ bool SceneReferencesAsset(const std::string& id) {
     }
   });
 
+  rse::ECSManager::GetView<RigidBodyComponent>().each([&referenced, &id](auto, RigidBodyComponent& component) {
+    if (component.m_rigidbody != nullptr && component.m_rigidbody->GetMaterial() == id) {
+      referenced = true;
+    }
+  });
+
   return referenced;
 }
 

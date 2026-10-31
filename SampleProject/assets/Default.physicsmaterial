@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cereal>
+	<physicsMaterial>
+		<formatVersion>1</formatVersion>
+		<name>Default</name>
+		<density>1</density>
+		<friction>0.30000001192092896</friction>
+		<restitution>0</restitution>
+	</physicsMaterial>
+</cereal>
