@@ -86,12 +86,10 @@ class HierarchyPanel : public EditorPanel {
         ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
       }
 
-      // The id is shown next to the name because it is the only way to tell
-      // two same-named entities apart while debugging.
       if (enabled) {
-        ImGui::TreeNodeEx("##entity", flags, "%s  (%u)", basic.m_name.c_str(), entity_id);
+        ImGui::TreeNodeEx("##entity", flags, "%s", basic.m_name.c_str());
       } else {
-        ImGui::TreeNodeEx("##entity", flags, "%s  (%u)  (disabled)", basic.m_name.c_str(), entity_id);
+        ImGui::TreeNodeEx("##entity", flags, "%s  (disabled)", basic.m_name.c_str());
       }
 
       if (!enabled) {

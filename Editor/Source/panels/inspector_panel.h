@@ -143,12 +143,25 @@ class InspectorPanel : public EditorPanel {
     if (DrawComponentHeader("transform", "Transform", Components::kTransform, false)) {
       TransformComponent& transform = EditorManager::GetComponent<TransformComponent>();
 
-      ImGui::InputFloat3("Position", glm::value_ptr(transform.position), "%.2f");
+      // The transform uses the same label/value rows as the other components,
+      // so its labels line up with them instead of trailing the fields.
+      BeginLabeledRow("transform_position", "Position");
+      ImGui::SetNextItemWidth(-1.0f);
+      ImGui::InputFloat3("##position", glm::value_ptr(transform.position), "%.2f");
       MarkDirtyIfEdited();
-      ImGui::InputFloat3("Rotation", glm::value_ptr(transform.rotation), "%.2f");
+      EndLabeledRow();
+
+      BeginLabeledRow("transform_rotation", "Rotation");
+      ImGui::SetNextItemWidth(-1.0f);
+      ImGui::InputFloat3("##rotation", glm::value_ptr(transform.rotation), "%.2f");
       MarkDirtyIfEdited();
-      ImGui::InputFloat3("Scale", glm::value_ptr(transform.scale), "%.2f");
+      EndLabeledRow();
+
+      BeginLabeledRow("transform_scale", "Scale");
+      ImGui::SetNextItemWidth(-1.0f);
+      ImGui::InputFloat3("##scale", glm::value_ptr(transform.scale), "%.2f");
       MarkDirtyIfEdited();
+      EndLabeledRow();
     }
   }
 
