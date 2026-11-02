@@ -272,18 +272,23 @@ class ContentBrowserPanel : public EditorPanel {
         m_scroll_to_selected = false;
       }
 
-      // Images are the texture picker's drag source. The payload carries the
-      // absolute path: the inspector resolves it against the registry and the
-      // project root, so it does not have to know which folder is open here.
-      if (!is_directory && IsImageFile(path)) {
+      // Images and sounds are drag sources for the inspector's asset fields.
+      // The payload carries the absolute path: the inspector resolves it
+      // against the registry and the project root, so it does not have to know
+      // which folder is open here.
+      const bool is_image = !is_directory && IsImageFile(path);
+      const bool is_sound = !is_directory && IsAudioFile(path);
+
+      if (is_image || is_sound) {
         if (ImGui::BeginDragDropSource()) {
           std::error_code absolute_error;
           const std::string absolute = std::filesystem::absolute(path, absolute_error).string();
-          TextureDragPayload payload;
+          AssetDragPayload payload;
 
           if (!absolute_error && absolute.size() < sizeof(payload.path)) {
             std::snprintf(payload.path, sizeof(payload.path), "%s", absolute.c_str());
-            ImGui::SetDragDropPayload(kTextureDragDropPayload, &payload, sizeof(payload));
+            ImGui::SetDragDropPayload(is_image ? kTextureDragDropPayload : kSoundDragDropPayload, &payload,
+                                      sizeof(payload));
             ImGui::Text("%s", name.c_str());
           }
 

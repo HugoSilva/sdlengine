@@ -55,6 +55,9 @@ class InspectorPanel : public EditorPanel {
     m_physics_material_catalog.clear();
     m_physics_material_edit_entity = INVALID_ENTITY_ID;
     m_physics_material_query.clear();
+    m_audio_catalog.clear();
+    m_audio_edit_entity = INVALID_ENTITY_ID;
+    m_audio_query.clear();
   }
 
   void Draw() override {
@@ -853,22 +856,316 @@ class InspectorPanel : public EditorPanel {
     if (DrawComponentHeaderWithEnabled<AudioComponent>("audio", "Audio", Components::kAudio, true)) {
       AudioComponent& component = EditorManager::GetComponent<AudioComponent>();
 
-      if (component.m_sound == nullptr) {
-        ImGui::TextDisabled("No sound assigned.");
-      } else {
-        const std::string file_name = component.m_sound->GetFileName();
-        ImGui::LabelText("File", "%s", file_name.empty() ? "(none)" : file_name.c_str());
+      DrawAudioFile(component);
+
+      BeginLabeledRow("audio_volume", "Volume");
+      ImGui::SetNextItemWidth(-1.0f);
+      ImGui::SliderInt("##volume", &component.volume, 0, rse::SoundManager::kMaxVolume);
+      MarkDirtyIfEdited();
+      EndLabeledRow();
+
+      BeginLabeledRow("audio_mute", "Mute");
+      ImGui::Checkbox("##mute", &component.mute);
+      MarkDirtyIfEdited();
+      EndLabeledRow();
+
+      BeginLabeledRow("audio_loop", "Loop");
+      ImGui::Checkbox("##loop", &component.loop);
+      MarkDirtyIfEdited();
+      EndLabeledRow();
+
+      BeginLabeledRow("audio_autoplay", "Autoplay");
+      ImGui::Checkbox("##autoplay", &component.autoplay);
+      MarkDirtyIfEdited();
+      EndLabeledRow();
+    }
+  }
+
+  // The sound field mirrors the sprite's: a read-only field for the current
+  // sound, an arrow that opens a searchable picker, click-to-reveal in the
+  // Content Browser, and a drop target for audio files dragged from it.
+  void DrawAudioFile(AudioComponent& component) {
+    const uint32_t entity = EditorManager::GetSelectedEntity();
+    const std::string current_name = component.m_sound == nullptr ? std::string{} : component.m_sound->GetName();
+    const std::string reference = CurrentSoundReference(component);
+
+    if (m_audio_edit_entity != entity) {
+      m_audio_edit_entity = entity;
+      m_audio_query.clear();
+      m_audio_catalog.clear();
+    }
+
+    BeginLabeledRow("audio_file", "File");
+
+    char buffer[256];
+    std::snprintf(buffer, sizeof(buffer), "%s", current_name.c_str());
+
+    const float button_width = ImGui::GetFrameHeight();
+    const float spacing = ImGui::GetStyle().ItemSpacing.x;
+    ImGui::SetNextItemWidth(std::max(1.0f, ImGui::GetContentRegionAvail().x - button_width - spacing));
+
+    ImGui::InputTextWithHint("##audio", "(none)", buffer, IM_ARRAYSIZE(buffer), ImGuiInputTextFlags_ReadOnly);
+    const bool clicked = ImGui::IsItemClicked();
+    const ImVec2 field_min = ImGui::GetItemRectMin();
+    const ImVec2 field_max = ImGui::GetItemRectMax();
+
+    if (ImGui::BeginDragDropTarget()) {
+      if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(kSoundDragDropPayload)) {
+        if (payload->DataSize == static_cast<int>(sizeof(AssetDragPayload))) {
+          const AssetDragPayload* dropped = static_cast<const AssetDragPayload*>(payload->Data);
+          AssignDroppedSound(component, std::filesystem::path{dropped->path});
+        }
+      }
+      ImGui::EndDragDropTarget();
+    }
+
+    bool open_picker = false;
+
+    ImGui::SameLine();
+    if (ImGui::ArrowButton("##audio_list", ImGuiDir_Down)) {
+      m_audio_query.clear();
+      open_picker = true;
+    }
+
+    EndLabeledRow();
+
+    if (clicked) {
+      RevealSound(component);
+    }
+
+    // Match the row's PushID scope: the popup is opened and begun here, outside
+    // the table, or the two IDs do not name the same popup.
+    if (open_picker) {
+      OpenAudioPicker(reference);
+    }
+
+    if (ImGui::IsPopupOpen(kAudioPickerPopup)) {
+      PositionAssetPickerPopup(field_min, field_max);
+    }
+
+    if (ImGui::BeginPopup(kAudioPickerPopup)) {
+      DrawAudioPickerPopup(component, reference);
+      ImGui::EndPopup();
+    }
+  }
+
+  static std::string CurrentSoundReference(const AudioComponent& component) {
+    if (component.m_sound == nullptr) {
+      return {};
+    }
+
+    const std::string asset_id = component.m_sound->GetAssetId();
+    return asset_id.empty() ? component.m_sound->GetName() : asset_id;
+  }
+
+  void OpenAudioPicker(const std::string& reference) {
+    if (!ImGui::IsPopupOpen(kAudioPickerPopup)) {
+      RefreshAudioCatalog();
+      m_audio_highlight = 0;
+
+      if (m_audio_query.empty() && !reference.empty()) {
+        for (std::size_t index = 0; index < m_audio_catalog.size(); ++index) {
+          if (ChoiceMatchesReference(m_audio_catalog[index], reference)) {
+            m_audio_highlight = static_cast<int>(index);
+            break;
+          }
+        }
       }
 
-      ImGui::SliderInt("Volume", &component.volume, 0, 128);
-      MarkDirtyIfEdited();
-      ImGui::Checkbox("Mute", &component.mute);
-      MarkDirtyIfEdited();
-      ImGui::Checkbox("Loop", &component.loop);
-      MarkDirtyIfEdited();
-      ImGui::Checkbox("Autoplay", &component.autoplay);
-      MarkDirtyIfEdited();
+      m_focus_audio_search = true;
     }
+
+    ImGui::OpenPopup(kAudioPickerPopup);
+  }
+
+  void RefreshAudioCatalog() {
+    const rse::Project& project = Core::GetProject();
+    m_audio_catalog = BuildSoundCatalog(project.Directory(), project.asset_root);
+  }
+
+  void DrawAudioPickerPopup(AudioComponent& component, const std::string& reference) {
+    if (m_focus_audio_search) {
+      ImGui::SetKeyboardFocusHere();
+      m_focus_audio_search = false;
+    }
+
+    char search[256];
+    std::snprintf(search, sizeof(search), "%s", m_audio_query.c_str());
+    ImGui::SetNextItemWidth(-1.0f);
+
+    if (ImGui::InputTextWithHint("##audio_search", "Search sounds...", search, IM_ARRAYSIZE(search),
+                                 ImGuiInputTextFlags_AutoSelectAll)) {
+      m_audio_query = search;
+      m_audio_highlight = 0;
+    }
+
+    std::vector<const TextureChoice*> matches;
+
+    for (const TextureChoice& choice : m_audio_catalog) {
+      if (MatchesTextureQuery(choice, m_audio_query)) {
+        matches.push_back(&choice);
+      }
+    }
+
+    const int count = static_cast<int>(matches.size());
+
+    if (m_audio_highlight < 0 || m_audio_highlight >= count) {
+      m_audio_highlight = count > 0 ? count - 1 : 0;
+    }
+
+    if (count > 0) {
+      if (ImGui::IsKeyPressed(ImGuiKey_DownArrow)) {
+        m_audio_highlight = (m_audio_highlight + 1) % count;
+      } else if (ImGui::IsKeyPressed(ImGuiKey_UpArrow)) {
+        m_audio_highlight = (m_audio_highlight + count - 1) % count;
+      }
+    }
+
+    ImGui::Separator();
+
+    if (ImGui::Selectable("None##audio_none", component.m_sound == nullptr)) {
+      component.m_sound.reset();
+      m_audio_query.clear();
+      SceneManager::MarkDirty();
+      ImGui::CloseCurrentPopup();
+    }
+
+    for (int index = 0; index < count; ++index) {
+      const TextureChoice& choice = *matches[static_cast<std::size_t>(index)];
+      const bool is_current = ChoiceMatchesReference(choice, reference);
+
+      std::string label = choice.name;
+
+      if (is_current) {
+        label += "  (current)";
+      }
+
+      ImGui::PushID(choice.project_path.c_str());
+
+      if (ImGui::Selectable(label.c_str(), index == m_audio_highlight)) {
+        AssignAudioChoice(component, choice);
+        ImGui::CloseCurrentPopup();
+      }
+
+      if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("%s", choice.project_path.c_str());
+      }
+
+      ImGui::PopID();
+    }
+
+    if (count > 0 && (ImGui::IsKeyPressed(ImGuiKey_Enter) || ImGui::IsKeyPressed(ImGuiKey_KeypadEnter))) {
+      AssignAudioChoice(component, *matches[static_cast<std::size_t>(m_audio_highlight)]);
+      ImGui::CloseCurrentPopup();
+    }
+
+    if (count == 0) {
+      ImGui::TextDisabled(m_audio_query.empty() ? "No sounds in this project." : "No matching sounds.");
+      ImGui::TextDisabled("Drag an audio file from the Content Browser, or import one with Assets > Import Asset.");
+    }
+  }
+
+  static void AssignSound(AudioComponent& component, const std::string& reference) {
+    component.m_sound = BorrowSound(rse::SoundManager::GetOrLoad(reference));
+    SceneManager::MarkDirty();
+  }
+
+  void AssignAudioChoice(AudioComponent& component, const TextureChoice& choice) {
+    std::string reference = choice.reference;
+
+    if (reference.empty()) {
+      const rse::Project& project = Core::GetProject();
+
+      if (!project.IsAttached()) {
+        Logger::Error("Open a project before assigning a sound.");
+        return;
+      }
+
+      const std::filesystem::path file = project.Directory() / choice.project_path;
+
+      // Choosing a file the registry does not know yet is an import: the
+      // component then stores an id, exactly as it would after Assets > Import.
+      ImportAssetAt(file);
+      reference = RegisteredAssetIdForFile(file, project.Directory(), "sound");
+
+      if (reference.empty()) {
+        reference = choice.asset_root_path;
+      }
+    }
+
+    if (reference.empty()) {
+      Logger::Error("Could not resolve the sound " + choice.project_path);
+      return;
+    }
+
+    AssignSound(component, reference);
+    m_audio_query.clear();
+  }
+
+  void AssignDroppedSound(AudioComponent& component, const std::filesystem::path& file) {
+    const rse::Project& project = Core::GetProject();
+
+    if (!project.IsAttached()) {
+      Logger::Warning("Open a project before assigning a sound.");
+      return;
+    }
+
+    std::error_code absolute_error;
+    const std::filesystem::path absolute = std::filesystem::absolute(file, absolute_error);
+    const std::filesystem::path resolved = absolute_error ? file : absolute;
+
+    if (!IsAudioFile(resolved)) {
+      Logger::Warning("Only audio files can be dropped on the sound field: " + resolved.string());
+      return;
+    }
+
+    std::string reference = RegisteredAssetIdForFile(resolved, project.Directory(), "sound");
+
+    if (reference.empty()) {
+      ImportAssetAt(resolved);
+      reference = RegisteredAssetIdForFile(resolved, project.Directory(), "sound");
+    }
+
+    if (reference.empty()) {
+      reference = AssetRootRelative(resolved, project.Directory(), project.asset_root);
+    }
+
+    if (reference.empty()) {
+      Logger::Error("A sound has to live inside the project: " + resolved.string());
+      return;
+    }
+
+    AssignSound(component, reference);
+    m_audio_query.clear();
+  }
+
+  // Clicking the sound's name is a navigation request, not an edit. A registered
+  // sound reveals its registry path; an older one reveals the file it was
+  // loaded from.
+  void RevealSound(const AudioComponent& component) {
+    if (component.m_sound == nullptr) {
+      return;
+    }
+
+    std::string path;
+    const std::string asset_id = component.m_sound->GetAssetId();
+
+    if (!asset_id.empty()) {
+      if (const rse::AssetRegistry::Asset* asset = rse::AssetRegistry::Find(asset_id)) {
+        path = Core::ResolveProjectPath(asset->path);
+      }
+    }
+
+    if (path.empty()) {
+      path = component.m_sound->GetFileName();
+    }
+
+    if (path.empty() || !std::filesystem::exists(path)) {
+      Logger::Warning("The audio component's sound is not on disk" + (path.empty() ? std::string{} : ": " + path));
+      return;
+    }
+
+    EditorManager::RequestRevealAsset(path);
   }
 
   void DrawRigidbody() {
@@ -1267,6 +1564,7 @@ class InspectorPanel : public EditorPanel {
   static constexpr const char* kSpritePickerPopup = "sprite_picker";
   static constexpr const char* kMaterialPickerPopup = "material_picker";
   static constexpr const char* kPhysicsMaterialPickerPopup = "physics_material_picker";
+  static constexpr const char* kAudioPickerPopup = "audio_picker";
   static constexpr float kLabelColumnWidth{66.0f};
 
   // Each picker keeps its own query, catalog, highlighted row and "focus the
@@ -1289,4 +1587,10 @@ class InspectorPanel : public EditorPanel {
   int m_physics_material_highlight{0};
   bool m_focus_physics_material_search{false};
   uint32_t m_physics_material_edit_entity{INVALID_ENTITY_ID};
+
+  std::string m_audio_query;
+  std::vector<TextureChoice> m_audio_catalog;
+  int m_audio_highlight{0};
+  bool m_focus_audio_search{false};
+  uint32_t m_audio_edit_entity{INVALID_ENTITY_ID};
 };

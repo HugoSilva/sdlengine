@@ -11,17 +11,18 @@
 #include <core/asset_registry.h>
 
 // ---------------------------------------------------------------------------
-// The assets a sprite field can point at.
+// The assets an inspector asset field can point at.
 //
 // A scene stores an asset *reference*: the registry's id for an imported
-// texture or material, or, for an older or unregistered file, a path. The
-// inspector's pickers offer both: every registered asset of the requested type,
-// plus every file of that type in the project that the registry does not know
-// yet. Choosing an unregistered file registers it first (ImportAssetAt), so the
-// sprite stores a stable id rather than a path.
+// texture, material or sound, or, for an older or unregistered file, a path.
+// The inspector's pickers offer both: every registered asset of the requested
+// type, plus every file of that type in the project that the registry does not
+// know yet. Choosing an unregistered file registers it first (ImportAssetAt),
+// so the component stores a stable id rather than a path.
 //
-// TextureChoice keeps its original name because both pickers use the same row
-// shape; `BuildMaterialCatalog` is the material-typed half.
+// TextureChoice keeps its original name because every picker uses the same row
+// shape; BuildMaterialCatalog, BuildPhysicsMaterialCatalog and BuildSoundCatalog
+// are the type-specific wrappers.
 // ---------------------------------------------------------------------------
 
 // One row in a picker.
@@ -48,11 +49,15 @@ struct TextureChoice {
 // The drag-and-drop payload the content browser sends and the inspector
 // accepts. ImGui copies the bytes of a payload, so this is a fixed buffer
 // rather than a std::string.
-struct TextureDragPayload {
+struct AssetDragPayload {
   char path[1024]{};
 };
 
+// The sprite field and its drop target still use the texture name.
+using TextureDragPayload = AssetDragPayload;
+
 inline constexpr const char* kTextureDragDropPayload = "RSE_TEXTURE";
+inline constexpr const char* kSoundDragDropPayload = "RSE_SOUND";
 
 inline std::string Lowercase(std::string value) {
   std::transform(value.begin(), value.end(), value.begin(),
@@ -62,6 +67,10 @@ inline std::string Lowercase(std::string value) {
 
 inline bool IsImageFile(const std::filesystem::path& path) {
   return rse::AssetRegistry::TypeForPath(path) == "texture";
+}
+
+inline bool IsAudioFile(const std::filesystem::path& path) {
+  return rse::AssetRegistry::TypeForPath(path) == "sound";
 }
 
 inline bool IsMaterialFile(const std::filesystem::path& path) {
@@ -180,6 +189,11 @@ inline std::vector<TextureChoice> BuildAssetCatalog(const std::filesystem::path&
 inline std::vector<TextureChoice> BuildTextureCatalog(const std::filesystem::path& project_directory,
                                                       const std::string& asset_root) {
   return BuildAssetCatalog(project_directory, asset_root, "texture");
+}
+
+inline std::vector<TextureChoice> BuildSoundCatalog(const std::filesystem::path& project_directory,
+                                                    const std::string& asset_root) {
+  return BuildAssetCatalog(project_directory, asset_root, "sound");
 }
 
 inline std::vector<TextureChoice> BuildMaterialCatalog(const std::filesystem::path& project_directory,

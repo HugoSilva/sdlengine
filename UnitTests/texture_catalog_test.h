@@ -71,6 +71,41 @@ TEST_F(TextureCatalogTest, NonTextureAssetsAreIgnored) {
   EXPECT_TRUE(BuildTextureCatalog(m_directory, "assets").empty());
 }
 
+TEST_F(TextureCatalogTest, SoundCatalogOffersRegisteredAndUnregisteredSounds) {
+  Touch("assets/effect.wav");
+  Touch("assets/theme.ogg");
+  Touch("assets/crate.png");
+  const std::string id = AssetRegistry::Add("effect.wav", "sound", "assets/effect.wav");
+
+  const std::vector<TextureChoice> choices = BuildSoundCatalog(m_directory, "assets");
+
+  ASSERT_EQ(2u, choices.size());
+  EXPECT_EQ("effect.wav", choices[0].name);
+  EXPECT_EQ("theme.ogg", choices[1].name);
+  EXPECT_TRUE(choices[0].registered);
+  EXPECT_FALSE(choices[1].registered);
+  EXPECT_EQ(id, choices[0].reference);
+  EXPECT_EQ("assets/effect.wav", choices[0].project_path);
+}
+
+TEST_F(TextureCatalogTest, SoundFileClassificationIsExact) {
+  EXPECT_TRUE(IsAudioFile("assets/effect.wav"));
+  EXPECT_TRUE(IsAudioFile("assets/theme.ogg"));
+  EXPECT_TRUE(IsAudioFile("assets/voice.mp3"));
+  EXPECT_TRUE(IsAudioFile("assets/music.flac"));
+  EXPECT_TRUE(IsAudioFile("assets/EFFECT.WAV"));
+  EXPECT_FALSE(IsAudioFile("assets/effect.wav.xml"));
+  EXPECT_FALSE(IsAudioFile("assets/crate.png"));
+}
+
+TEST_F(TextureCatalogTest, RegisteredAssetIdWorksForSounds) {
+  Touch("assets/effect.wav");
+  const std::string id = AssetRegistry::Add("effect.wav", "sound", "assets/effect.wav");
+
+  EXPECT_EQ(id, RegisteredAssetIdForFile(m_directory / "assets" / "effect.wav", m_directory, "sound"));
+  EXPECT_TRUE(RegisteredAssetIdForFile(m_directory / "assets" / "effect.wav", m_directory, "texture").empty());
+}
+
 TEST_F(TextureCatalogTest, MaterialCatalogOffersRegisteredAndUnregisteredMaterials) {
   Touch("assets/warm.material");
   Touch("assets/cool.material");
