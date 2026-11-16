@@ -26,6 +26,7 @@ bool Core::m_running = true;
 rse::Renderer2D* Core::m_renderer;
 rse::Window* Core::m_window;
 rse::Project Core::m_project;
+Core::FrameStats Core::s_frame_stats;
 
 namespace {
 // The engine's own copy of a resource, next to the binary.
@@ -245,6 +246,10 @@ void Core::Run() {
   m_now = m_clock->NowMilliseconds();
   m_delta_time = (m_now - m_last) / 1000.0f;
   m_last = m_now;
+
+  s_frame_stats.delta_time = m_delta_time;
+  s_frame_stats.delta_ms = m_delta_time * 1000.0f;
+  s_frame_stats.fps = static_cast<float>(m_frames_per_second);
 
   rse::InputManager::Update();
 

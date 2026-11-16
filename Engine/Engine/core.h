@@ -65,6 +65,18 @@ class Core {
   // has none. Mutable because the editor edits the scene list through it.
   static rse::Project& GetProject() { return m_project; }
 
+  // What the last frame cost, as the loop measured it. One definition of "frame
+  // time" for the whole process: the editor's performance panel reads this
+  // instead of timing the frame itself, so a readout and a benchmark number
+  // cannot disagree.
+  struct FrameStats {
+    float delta_time{0.0f};  // seconds
+    float delta_ms{0.0f};
+    float fps{0.0f};  // averaged over the last whole second
+  };
+
+  static FrameStats GetFrameStats() { return s_frame_stats; }
+
   // Opens a project at runtime: loads the manifest, retitles and resizes the
   // window, points SceneManager at the project directory and opens the startup
   // scene. A manifest that cannot be read changes nothing; a startup scene that
@@ -143,4 +155,5 @@ class Core {
   static rse::Renderer2D* m_renderer;
   static rse::Window* m_window;
   static rse::Project m_project;
+  static FrameStats s_frame_stats;
 };

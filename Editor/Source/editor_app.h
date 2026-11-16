@@ -5,6 +5,7 @@
 class EditorCamera;
 class EditorLayout;
 class RenderSystem;
+class BenchmarkRenderSystem;
 
 // The editor's application: the window, the editor camera, the docked panels
 // and the systems the editor adds to the engine's own.
@@ -41,6 +42,7 @@ class EditorApp : public Core {
   EditorLayout* m_layout{nullptr};
   EditorCamera* m_camera{nullptr};
   RenderSystem* m_render{nullptr};
+  BenchmarkRenderSystem* m_benchmark{nullptr};
   rse::Shader* m_shader{nullptr};
   std::string m_title;
   // The manifest the panels were last told about; empty while no project is
