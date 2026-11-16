@@ -11,10 +11,12 @@
 #include <panels/editor_settings_panel.h>
 #include <panels/hierarchy_panel.h>
 #include <panels/inspector_panel.h>
+#include <panels/performance_panel.h>
 #include <panels/project_settings_panel.h>
 #include <panels/viewport_panel.h>
 #include <render/grid_render_system.h>
 #include <render/window.h>
+#include <systems/benchmark_render_system.h>
 #include <systems/render_system.h>
 
 namespace {
@@ -60,12 +62,18 @@ void EditorApp::Init() {
   m_layout->AddPanel(std::make_unique<EditorSettingsPanel>());
   m_layout->AddPanel(std::make_unique<ProjectSettingsPanel>());
 
+  // The benchmark submits through the same renderer the scene does; the panel
+  // owns its switch, so measuring never requires a special scene.
+  m_benchmark = new BenchmarkRenderSystem(Core::GetRenderer());
+  m_layout->AddPanel(std::make_unique<PerformancePanel>(m_benchmark));
+
   m_render = new RenderSystem(m_layout);
   ECSManager::AddSystem(m_render);
 
   // The grid is submitted into the scene pass before the sprites are, which is
   // what puts it underneath them.
   ECSManager::AddSystem(new GridRenderSystem(Core::GetRenderer(), m_camera), rse::SystemPhase::kPreScene);
+  ECSManager::AddSystem(m_benchmark, rse::SystemPhase::kPreScene);
 
 #ifdef EMSCRIPTEN
 #else

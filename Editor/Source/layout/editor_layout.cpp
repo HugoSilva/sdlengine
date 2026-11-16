@@ -17,7 +17,7 @@ constexpr const char* kDockSpaceId = "RSE_DockSpace";
 
 // Bumped when the default layout changes in a way everybody should see. An
 // older editor.cfg rebuilds the layout once; imgui.ini takes over from there.
-constexpr int kLayoutVersion = 1;
+constexpr int kLayoutVersion = 2;
 
 // The host window is never visible: it just carries the dock space, so it
 // has no title bar and no background of its own.
