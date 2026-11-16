@@ -27,7 +27,7 @@ class PhysicsSystem : public BaseSystem {
             if (rigid.m_rigidbody->m_init) {
               // Keep the last simulated position on the transform, then take
               // the body out of the world's simulation.
-              rigid.m_rigidbody->Update(transform.position);
+              rigid.m_rigidbody->Update(transform.position, transform.rotation);
               rigid.m_rigidbody->SetEnabled(false);
             }
             return;
@@ -40,7 +40,7 @@ class PhysicsSystem : public BaseSystem {
           }
 
           rigid.m_rigidbody->SetEnabled(true);
-          rigid.m_rigidbody->Update(transform.position);
+          rigid.m_rigidbody->Update(transform.position, transform.rotation);
         });
   }
 

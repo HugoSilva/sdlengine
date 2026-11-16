@@ -56,6 +56,7 @@ class SpriteRenderSystem : public BaseSystem {
 
         if (body != nullptr && body->m_init) {
           draw.position = glm::vec3(glm::mix(body->GetPreviousPosition(), body->GetCurrentPosition(), interp), 0.0f);
+          draw.rotation.z = glm::mix(body->GetPreviousRotation(), body->GetCurrentRotation(), interp);
         }
       }
 

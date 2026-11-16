@@ -53,6 +53,8 @@ void Rigidbody::Init(b2World* world, const rse::PhysicsMaterial& material) {
   // origin.
   m_current_position = m_position;
   m_previous_position = m_position;
+  m_current_rotation = 0.0f;
+  m_previous_rotation = 0.0f;
 
   m_init = true;
 }
@@ -65,20 +67,27 @@ void Rigidbody::SetEnabled(bool enabled) {
   m_body->SetEnabled(enabled);
 }
 
-void Rigidbody::Update(glm::vec3& position) {
+void Rigidbody::Update(glm::vec3& position, glm::vec3& rotation) {
   // TODO remove this from the update there should be a editor mode which should reset init to false
   if (m_body->GetType() != m_body_type) {
     m_body->SetType(m_body_type);
   }
 
-  // The step has just run: the position the last frame drew becomes the start
-  // of the interpolation window, and the body's is its end.
+  // The step has just run: the pose the last frame drew becomes the start of
+  // the interpolation window, and the body's is its end.
   m_previous_position = m_current_position;
+  m_previous_rotation = m_current_rotation;
 
   const b2Vec2 body_position = m_body->GetPosition();
   m_current_position = glm::vec2(body_position.x, body_position.y);
 
+  // Box2D works in radians and a transform stores degrees. The angle is not
+  // wrapped to a full turn, so a body that keeps spinning gives an angle that
+  // keeps growing and interpolation never jumps.
+  m_current_rotation = glm::degrees(m_body->GetAngle());
+
   position = glm::vec3(m_current_position, 0.f);
+  rotation.z = m_current_rotation;
 }
 
 std::string Rigidbody::BodyTypeName(b2BodyType type) {
