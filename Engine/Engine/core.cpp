@@ -22,7 +22,6 @@ static void DispatchLoop(void* fp) {
 }
 #endif
 
-bool Core::m_running = true;
 rse::Renderer2D* Core::m_renderer;
 rse::Window* Core::m_window;
 rse::Project Core::m_project;
@@ -54,7 +53,6 @@ Core::Core(const std::filesystem::path& project_file)
   rse::FontManager::Init();
   rse::TextureManager::Init();
   rse::InputManager::Init();
-  PhysicsManager::Init();
 
   m_renderer = new rse::OpenGLRenderer(m_window->GetWindow());
 
@@ -202,7 +200,6 @@ Core::~Core() {
   rse::MaterialManager::Clean();
   rse::PhysicsMaterialManager::Clean();
   rse::TextureManager::Clean();
-  PhysicsManager::Clean();
 
   // Must happen while the GL context and the SDL window are still alive.
   rse::ImGuiLayer::Shutdown();
@@ -229,7 +226,6 @@ void Core::Start() {
     emscripten_set_main_loop_arg(DispatchLoop, &fGameLoop, 0, 1);
 #else
     }
-    m_running = false;
 #endif
   } catch (...) {
     Logger::Error("Failed to start the application");

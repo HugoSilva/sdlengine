@@ -35,7 +35,6 @@
 #include <ecs/systems/base_system.h>
 #include <input/input_manager.h>
 #include <physics/collider.h>
-#include <physics/physics_manager.h>
 #include <physics/rigidbody.h>
 #include <render/camera.h>
 #include <render/font.h>
@@ -56,7 +55,6 @@ class Clock;
 class Core {
  public:
   void Start();
-  static bool GetRunning() { return m_running; }
   static rse::Renderer2D* GetRenderer() { return m_renderer; }
   static rse::Window* GetWindow() { return m_window; }
 
@@ -150,7 +148,6 @@ class Core {
   float m_delta_accumulator = 0.0f;
   int m_frames = 0;
   unsigned int m_frames_per_second;
-  static bool m_running;
   static rse::Renderer2D* m_renderer;
   static rse::Window* m_window;
   static rse::Project m_project;
