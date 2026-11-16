@@ -30,7 +30,6 @@
 #include <core/project.h>
 #include <core/scene_manager.h>
 #include <core/texture_manager.h>
-#include <core/thread_manager.h>
 #include <ecs/components/include_list.h>
 #include <ecs/ecs_manager.h>
 #include <ecs/systems/base_system.h>

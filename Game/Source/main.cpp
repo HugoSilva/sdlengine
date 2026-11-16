@@ -42,12 +42,6 @@ class Game : public Core {
     m_camera->SetZoom(scene_camera.zoom);
 
     rse::FontManager::Add(new rse::Font("Arial", Core::ResolveResource("arial.ttf"), 24));
-
-#ifdef EMSCRIPTEN
-#else
-    ThreadManager::Init();
-    ThreadManager::Start();
-#endif
   }
 
   void Update(float delta_time) override { m_camera->Update(delta_time); }
