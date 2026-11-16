@@ -48,6 +48,12 @@ void Rigidbody::Init(b2World* world, const rse::PhysicsMaterial& material) {
 
   m_body->CreateFixture(&fixture_def);
 
+  // The body starts where the scene put it. Both ends of the interpolation
+  // window start there too, so the first frame does not slide in from the
+  // origin.
+  m_current_position = m_position;
+  m_previous_position = m_position;
+
   m_init = true;
 }
 
@@ -64,8 +70,15 @@ void Rigidbody::Update(glm::vec3& position) {
   if (m_body->GetType() != m_body_type) {
     m_body->SetType(m_body_type);
   }
-  b2Vec2 body_position = m_body->GetPosition();
-  position = glm::vec3(body_position.x, body_position.y, 0.f);
+
+  // The step has just run: the position the last frame drew becomes the start
+  // of the interpolation window, and the body's is its end.
+  m_previous_position = m_current_position;
+
+  const b2Vec2 body_position = m_body->GetPosition();
+  m_current_position = glm::vec2(body_position.x, body_position.y);
+
+  position = glm::vec3(m_current_position, 0.f);
 }
 
 std::string Rigidbody::BodyTypeName(b2BodyType type) {

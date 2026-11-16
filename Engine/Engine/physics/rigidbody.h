@@ -32,6 +32,15 @@ class Rigidbody {
   void Init(b2World* world, const rse::PhysicsMaterial& material);
   void Update(glm::vec3& position);
 
+  // The body's position at the end of the last step, and at the end of the one
+  // before it. Render systems mix the two by the frame's alpha: the simulation
+  // advances in fixed steps, and without this the picture would move in bursts
+  // on a display faster than the step rate.
+  //
+  // Before the first step both are the position the scene was authored with.
+  const glm::vec2& GetPreviousPosition() const { return m_previous_position; }
+  const glm::vec2& GetCurrentPosition() const { return m_current_position; }
+
   // A disabled body stops colliding and simulating, rather than merely being
   // skipped by PhysicsSystem while it keeps pushing other bodies around. A
   // body that has not been initialised yet has nothing to toggle; enabling it
@@ -109,6 +118,11 @@ class Rigidbody {
   std::string m_material;
   glm::vec2 m_position{0.f, 0.f};
   glm::vec2 m_size{0.f, 0.f};
+
+  // Interpolation state, not saved: it describes the last two steps, which a
+  // scene file does not contain.
+  glm::vec2 m_previous_position{0.f, 0.f};
+  glm::vec2 m_current_position{0.f, 0.f};
 
   b2BodyType m_body_type{b2_staticBody};
 };
