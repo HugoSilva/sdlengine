@@ -281,9 +281,24 @@ void Core::Run() {
   // runtime changes it on the very next frame.
   m_renderer->SetClearColor(rse::SceneIO::GetCamera().background);
 
+  // The simulation runs before anything is submitted, in whole fixed steps: a
+  // frame may owe none (a display faster than the simulation rate), one, or
+  // several (after a hitch), and each is the same slice of simulated time. What
+  // is left over is the alpha the render systems interpolate with, so the fixed
+  // rate does not show up as stutter.
+  const bool simulate = SceneLogicEnabled();
+  const int steps = simulate ? m_timestep.Advance(m_delta_time) : 0;
+
+  for (int step = 0; step < steps; ++step) {
+    rse::ECSManager::UpdateSimulation(m_timestep.Step());
+  }
+
+  // A stopped scene draws what it contains, not a mix of two steps that never
+  // ran.
+  const float alpha = simulate ? m_timestep.Alpha() : 1.0f;
+
   m_renderer->Begin();
-  // TODO need to split this up for normal systems and render systems
-  rse::ECSManager::Update(m_delta_time, SceneLogicEnabled());
+  rse::ECSManager::Update(alpha);
   m_renderer->End();
   m_renderer->Flush();
 

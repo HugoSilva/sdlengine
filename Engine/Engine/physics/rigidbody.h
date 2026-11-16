@@ -30,7 +30,21 @@ class Rigidbody {
   // fixture values into the body; the plain overload uses the defaults.
   void Init(b2World* world);
   void Init(b2World* world, const rse::PhysicsMaterial& material);
-  void Update(glm::vec3& position);
+  void Update(glm::vec3& position, glm::vec3& rotation);
+
+  // The body's position at the end of the last step, and at the end of the one
+  // before it. Render systems mix the two by the frame's alpha: the simulation
+  // advances in fixed steps, and without this the picture would move in bursts
+  // on a display faster than the step rate.
+  //
+  // Before the first step both are the position the scene was authored with.
+  const glm::vec2& GetPreviousPosition() const { return m_previous_position; }
+  const glm::vec2& GetCurrentPosition() const { return m_current_position; }
+
+  // The same window for the angle, in degrees. Box2D reports an angle that is
+  // not wrapped to a full turn, so mixing the two is a plain lerp.
+  float GetPreviousRotation() const { return m_previous_rotation; }
+  float GetCurrentRotation() const { return m_current_rotation; }
 
   // A disabled body stops colliding and simulating, rather than merely being
   // skipped by PhysicsSystem while it keeps pushing other bodies around. A
@@ -109,6 +123,13 @@ class Rigidbody {
   std::string m_material;
   glm::vec2 m_position{0.f, 0.f};
   glm::vec2 m_size{0.f, 0.f};
+
+  // Interpolation state, not saved: it describes the last two steps, which a
+  // scene file does not contain.
+  glm::vec2 m_previous_position{0.f, 0.f};
+  glm::vec2 m_current_position{0.f, 0.f};
+  float m_previous_rotation{0.f};
+  float m_current_rotation{0.f};
 
   b2BodyType m_body_type{b2_staticBody};
 };

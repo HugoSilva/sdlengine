@@ -8,8 +8,10 @@ class PhysicsSystem : public BaseSystem {
  public:
   PhysicsSystem() : BaseSystem() { m_world = new b2World{m_gravity}; }
 
-  void Update(const float alpha) {
-    m_world->Step(m_time_step, m_velocity_iterations, m_position_iterations);
+  // The step comes from the frame's fixed timestep, not from the frame delta:
+  // Box2D is only stable when the time it advances is constant.
+  void UpdateSimulation(const float step) override {
+    m_world->Step(step, m_velocity_iterations, m_position_iterations);
 
     rse::ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
         [&, this](auto entity, TransformComponent& transform, RigidBodyComponent& rigid) {
@@ -25,7 +27,7 @@ class PhysicsSystem : public BaseSystem {
             if (rigid.m_rigidbody->m_init) {
               // Keep the last simulated position on the transform, then take
               // the body out of the world's simulation.
-              rigid.m_rigidbody->Update(transform.position);
+              rigid.m_rigidbody->Update(transform.position, transform.rotation);
               rigid.m_rigidbody->SetEnabled(false);
             }
             return;
@@ -38,14 +40,13 @@ class PhysicsSystem : public BaseSystem {
           }
 
           rigid.m_rigidbody->SetEnabled(true);
-          rigid.m_rigidbody->Update(transform.position);
+          rigid.m_rigidbody->Update(transform.position, transform.rotation);
         });
   }
 
  private:
   b2Vec2 m_gravity{0.0f, -10.0f};
   b2World* m_world;
-  float m_time_step = 1.0f / 6000.0f;
   int32 m_velocity_iterations = 6;
   int32 m_position_iterations = 2;
 };
