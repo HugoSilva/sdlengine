@@ -74,12 +74,6 @@ void EditorApp::Init() {
   // what puts it underneath them.
   ECSManager::AddSystem(new GridRenderSystem(Core::GetRenderer(), m_camera), rse::SystemPhase::kPreScene);
   ECSManager::AddSystem(m_benchmark, rse::SystemPhase::kPreScene);
-
-#ifdef EMSCRIPTEN
-#else
-  ThreadManager::Init();
-  ThreadManager::Start();
-#endif
 }
 
 void EditorApp::Update(float delta_time) {
