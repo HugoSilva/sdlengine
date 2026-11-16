@@ -69,9 +69,7 @@ inline bool IsImageFile(const std::filesystem::path& path) {
   return rse::AssetRegistry::TypeForPath(path) == "texture";
 }
 
-inline bool IsAudioFile(const std::filesystem::path& path) {
-  return rse::AssetRegistry::TypeForPath(path) == "sound";
-}
+inline bool IsAudioFile(const std::filesystem::path& path) { return rse::AssetRegistry::TypeForPath(path) == "sound"; }
 
 inline bool IsMaterialFile(const std::filesystem::path& path) {
   return rse::AssetRegistry::TypeForPath(path) == "material";
