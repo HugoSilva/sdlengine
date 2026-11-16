@@ -8,6 +8,7 @@
 
 #include <audio/sound_manager.h>
 #include <core/asset_registry.h>
+#include <core/fixed_timestep.h>
 #include <core/physics_material_manager.h>
 #include <core/project.h>
 #include <core/texture_manager.h>
@@ -15,6 +16,7 @@
 #include <ecs/ecs_manager.h>
 #include <ecs/prefab_io.h>
 #include <ecs/scene_io.h>
+#include <ecs/systems/physics_system.h>
 #include <input/input_map.h>
 
 /*
@@ -247,5 +249,43 @@ TEST_F(SampleProjectTest, ThePrefabPlacesTheCrate) {
   EXPECT_FALSE(rigidbody.m_rigidbody->m_init);
   EXPECT_EQ(*rigidbody.m_rigidbody->GetBodyType(), b2_dynamicBody);
   EXPECT_EQ(rigidbody.m_rigidbody->GetMaterial(), "b7d4e2a19c3f5068");
+}
+
+// The physics scene is the demo a person runs first, and the fixed timestep
+// changed how fast it runs by a hundred: this pins that the crate still lands
+// and comes to rest instead of drifting for minutes or tunnelling through the
+// floor.
+TEST_F(SampleProjectTest, ThePhysicsSceneCrateLandsAndRests) {
+  Project project;
+  std::string error;
+
+  ASSERT_TRUE(Project::Load(kSampleProject / "project.xml", project, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(project.Resolve("scenes/physics.xml"), &error)) << error;
+
+  PhysicsSystem physics;
+  FixedTimestep timestep;
+
+  // Ten simulated seconds. The crate starts at y = 400, the floor's top is at
+  // 96 and gravity is 10 units per second squared.
+  for (int step = 0; step < 600; ++step) {
+    physics.UpdateSimulation(timestep.Step());
+  }
+
+  float crate_y = 0.f;
+  int dynamic_bodies = 0;
+
+  ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
+      [&crate_y, &dynamic_bodies](auto, TransformComponent& transform, RigidBodyComponent& rigid) {
+        if (rigid.m_rigidbody != nullptr && *rigid.m_rigidbody->GetBodyType() == b2_dynamicBody) {
+          crate_y = transform.position.y;
+          ++dynamic_bodies;
+        }
+      });
+
+  ASSERT_EQ(dynamic_bodies, 1);
+
+  // The floor's top plus the crate's half height: it is resting on the floor,
+  // not through it and not still falling.
+  EXPECT_NEAR(crate_y, 136.0f, 1.0f);
 }
 }  // namespace
