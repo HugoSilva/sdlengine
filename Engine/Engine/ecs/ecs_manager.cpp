@@ -54,14 +54,14 @@ void ECSManager::AddSystem(BaseSystem* system, SystemPhase phase) {
   m_systems_list.push_back(system);
 }
 
-void ECSManager::Update(float delta, bool run_simulation) {
-  for (unsigned int i = 0; i < m_pre_scene_systems.size(); i++) m_pre_scene_systems[i]->Update(delta);
+void ECSManager::Update(float alpha) {
+  for (unsigned int i = 0; i < m_pre_scene_systems.size(); i++) m_pre_scene_systems[i]->Update(alpha);
 
-  if (run_simulation) {
-    for (unsigned int i = 0; i < m_simulation_systems.size(); i++) m_simulation_systems[i]->Update(delta);
-  }
+  for (unsigned int i = 0; i < m_systems_list.size(); i++) m_systems_list[i]->Update(alpha);
+}
 
-  for (unsigned int i = 0; i < m_systems_list.size(); i++) m_systems_list[i]->Update(delta);
+void ECSManager::UpdateSimulation(float step) {
+  for (unsigned int i = 0; i < m_simulation_systems.size(); i++) m_simulation_systems[i]->UpdateSimulation(step);
 }
 
 void ECSManager::UpdateUi() {

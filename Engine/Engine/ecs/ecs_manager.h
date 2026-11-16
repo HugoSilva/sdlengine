@@ -113,10 +113,15 @@ class ECSManager {
 
   static void AddSystem(BaseSystem* system, SystemPhase phase = SystemPhase::kScene);
 
-  // Runs the frame's systems. `run_simulation` is false in the editor while the
-  // scene is stopped or paused: pre-scene and scene render systems still run,
-  // so the scene keeps drawing, but physics and audio wait.
-  static void Update(float delta, bool run_simulation = true);
+  // Runs the frame's drawing phases -- pre-scene, then scene -- with the
+  // frame's interpolation alpha. Simulation is not run here: it advances in
+  // fixed steps, through UpdateSimulation, before this is called.
+  static void Update(float alpha);
+
+  // Runs the simulation phase once, advancing by `step` seconds. Core calls
+  // this zero or more times per frame, however many whole steps the frame owes,
+  // and only while the scene is playing.
+  static void UpdateSimulation(float step);
   static void UpdateUi();
   static void Clean();
 

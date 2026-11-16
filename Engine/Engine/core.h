@@ -26,6 +26,7 @@
 #include <components/shader.h>
 #include <components/sprite.h>
 #include <core/event_manager.h>
+#include <core/fixed_timestep.h>
 #include <core/material_manager.h>
 #include <core/project.h>
 #include <core/scene_manager.h>
@@ -147,6 +148,11 @@ class Core {
   float m_delta_time = 0.0;
   float m_delta_accumulator = 0.0f;
   int m_frames = 0;
+
+  // Simulation advances at a fixed rate whatever the frame rate: this is what
+  // decides how many steps a frame owes and how far into the next one the frame
+  // ended (the alpha the render systems interpolate with).
+  rse::FixedTimestep m_timestep;
   unsigned int m_frames_per_second;
   static rse::Renderer2D* m_renderer;
   static rse::Window* m_window;

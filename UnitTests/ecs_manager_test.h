@@ -20,31 +20,43 @@ class CountingSystem : public BaseSystem {
   int updates{0};
 };
 
+// Counts simulation steps, which is a different entry point from Update: the
+// frame's render phases get an interpolation alpha, the simulation gets a step.
+class SimulationCountingSystem : public BaseSystem {
+ public:
+  void UpdateSimulation(const float step) override { ++steps; }
+
+  int steps{0};
+};
+
 class ECSManagerTest : public ::testing::Test {
  protected:
   void SetUp() override { ECSManager::Clean(); }
   void TearDown() override { ECSManager::Clean(); }
 };
 
-TEST_F(ECSManagerTest, DisablingSimulationStillRunsTheRenderPhases) {
+TEST_F(ECSManagerTest, TheRenderPhasesRunWithoutASimulationStep) {
   CountingSystem* pre_scene = new CountingSystem();
-  CountingSystem* simulation = new CountingSystem();
+  SimulationCountingSystem* simulation = new SimulationCountingSystem();
   CountingSystem* scene = new CountingSystem();
 
   ECSManager::AddSystem(pre_scene, SystemPhase::kPreScene);
   ECSManager::AddSystem(simulation, SystemPhase::kSimulation);
   ECSManager::AddSystem(scene, SystemPhase::kScene);
 
-  ECSManager::Update(0.f, false);
+  // A stopped scene: Core still draws it, but owes it no simulation step.
+  ECSManager::Update(1.0f);
 
   EXPECT_EQ(pre_scene->updates, 1);
-  EXPECT_EQ(simulation->updates, 0);
+  EXPECT_EQ(simulation->steps, 0);
   EXPECT_EQ(scene->updates, 1);
 
-  ECSManager::Update(0.f, true);
+  // A playing scene: one step, then the frame that draws it.
+  ECSManager::UpdateSimulation(1.0f / 60.0f);
+  ECSManager::Update(0.0f);
 
   EXPECT_EQ(pre_scene->updates, 2);
-  EXPECT_EQ(simulation->updates, 1);
+  EXPECT_EQ(simulation->steps, 1);
   EXPECT_EQ(scene->updates, 2);
 }
 
@@ -107,16 +119,25 @@ TEST_F(ECSManagerTest, DisablingTwoComponentsKeepsTheMaskUntilBothAreBack) {
   ECSManager::DestroyEntity(entity);
 }
 
-TEST_F(ECSManagerTest, TheDefaultUpdateRunsEveryPhase) {
-  CountingSystem* simulation = new CountingSystem();
+TEST_F(ECSManagerTest, UpdateRunsTheRenderPhasesButNotTheSimulation) {
+  CountingSystem* pre_scene = new CountingSystem();
+  SimulationCountingSystem* simulation = new SimulationCountingSystem();
   CountingSystem* scene = new CountingSystem();
 
+  ECSManager::AddSystem(pre_scene, SystemPhase::kPreScene);
   ECSManager::AddSystem(simulation, SystemPhase::kSimulation);
   ECSManager::AddSystem(scene);
 
   ECSManager::Update(0.f);
 
-  EXPECT_EQ(simulation->updates, 1);
+  EXPECT_EQ(pre_scene->updates, 1);
+  EXPECT_EQ(simulation->steps, 0);
+  EXPECT_EQ(scene->updates, 1);
+
+  ECSManager::UpdateSimulation(1.0f / 60.0f);
+
+  EXPECT_EQ(simulation->steps, 1);
+  EXPECT_EQ(pre_scene->updates, 1);
   EXPECT_EQ(scene->updates, 1);
 }
 }  // namespace
