@@ -4,6 +4,7 @@
 #include <string>
 
 #include <SDL3/SDL.h>
+#include <glm/glm.hpp>
 
 namespace rse {
 class Window {
@@ -31,6 +32,11 @@ class Window {
   // resized since the last frame).
   void BindDefaultFramebuffer();
 
+  // The size the back buffer was last set to, in device pixels. BindDefaultFramebuffer
+  // refreshes it from the window, so this is what the frame is actually drawn
+  // into -- not what was requested when the window was created.
+  glm::ivec2 GetDrawableSize() const { return m_drawable_size; }
+
  private:
   SDL_Event m_window_event;
   SDL_Window* m_window;
@@ -39,5 +45,6 @@ class Window {
   std::string m_title;
   int m_width, m_height;
   bool m_vsync{true};
+  glm::ivec2 m_drawable_size{0, 0};
 };
 }  // namespace rse

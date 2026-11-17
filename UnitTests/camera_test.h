@@ -72,4 +72,57 @@ TEST_F(CameraTest, SetZoomShowsLessWorld) {
   EXPECT_NEAR(top_right.x, 1.0f, 1e-4f);
   EXPECT_NEAR(top_right.y, 1.0f, 1e-4f);
 }
+
+TEST_F(CameraTest, TheProjectionTakesTheShapeOfTheTarget) {
+  Camera camera{glm::vec3(640.0f, 360.0f, 0.0f)};
+
+  // At zoom 1 the frame is 720 world units tall whatever the target, so a 4:3
+  // target is 960 wide: 480 units either side of the centre, not 640. This is
+  // the resize behaviour: more world, not stretched world.
+  camera.SetTargetSize(glm::ivec2{800, 600});
+
+  const glm::vec4 right_edge = Project(camera, glm::vec2(640.0f + 480.0f, 360.0f));
+  EXPECT_NEAR(right_edge.x, 1.0f, 1e-4f);
+
+  const glm::vec4 top_edge = Project(camera, glm::vec2(640.0f, 360.0f + 360.0f));
+  EXPECT_NEAR(top_edge.y, 1.0f, 1e-4f);
+}
+
+TEST_F(CameraTest, ATargetWithNoSizeKeepsTheFraming) {
+  Camera camera{glm::vec3(640.0f, 360.0f, 0.0f)};
+
+  // Nothing has been bound yet, so the camera has no shape to adopt. Collapsing
+  // the projection to a zero rectangle would draw nothing at all.
+  camera.SetTargetSize(glm::ivec2{0, 0});
+  camera.SetTargetSize(glm::ivec2{-4, 600});
+
+  const glm::vec4 top_right = Project(camera, glm::vec2(1280.0f, 720.0f));
+  EXPECT_NEAR(top_right.x, 1.0f, 1e-4f);
+  EXPECT_NEAR(top_right.y, 1.0f, 1e-4f);
+}
+
+TEST_F(CameraTest, MovingTheCameraLeavesTheProjectionAlone) {
+  Camera camera{glm::vec3(640.0f, 360.0f, 0.0f)};
+  const glm::mat4 before = camera.GetProjection();
+
+  camera.SetPosition(glm::vec3(100.0f, 200.0f, 0.0f));
+
+  // The projection is centred at the origin and the view carries the position,
+  // so walking used to re-derive this matrix for nothing, every frame.
+  EXPECT_TRUE(camera.GetProjection() == before);
+}
+
+TEST_F(CameraTest, MovingWithTheKeyboardMovesTheView) {
+  Camera camera{glm::vec3(640.0f, 360.0f, 0.0f)};
+  const glm::mat4 at_start = camera.GetViewMatrix();
+
+  camera.ProcessKeyboard(kRight, 1.0f);
+
+  EXPECT_FALSE(camera.GetViewMatrix() == at_start);
+
+  // The camera moved +x, so what used to be the middle of the frame is now to
+  // its left.
+  const glm::vec4 centre = Project(camera, glm::vec2(640.0f, 360.0f));
+  EXPECT_LT(centre.x, 0.0f);
+}
 }  // namespace
