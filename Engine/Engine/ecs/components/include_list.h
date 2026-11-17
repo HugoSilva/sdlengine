@@ -8,3 +8,4 @@
 #include "sprite.h"
 #include "sprite_appearance.h"
 #include "transform.h"
+#include "uuid.h"

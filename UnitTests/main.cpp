@@ -26,6 +26,7 @@
 #include "texture_atlas_test.h"
 #include "texture_catalog_test.h"
 #include "texture_manager_test.h"
+#include "uuid_test.h"
 
 using namespace std;
 

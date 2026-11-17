@@ -60,6 +60,24 @@ TEST_F(ECSManagerTest, TheRenderPhasesRunWithoutASimulationStep) {
   EXPECT_EQ(scene->updates, 2);
 }
 
+TEST_F(ECSManagerTest, ANewEntityIsGivenAnIdentity) {
+  const uint32_t first = ECSManager::CreateEntity();
+  const uint32_t second = ECSManager::CreateEntity();
+
+  ASSERT_TRUE(ECSManager::HasComponent<UuidComponent>(first));
+  ASSERT_TRUE(ECSManager::HasComponent<UuidComponent>(second));
+
+  const Uuid& first_id = ECSManager::GetComponent<UuidComponent>(first).m_uuid;
+  const Uuid& second_id = ECSManager::GetComponent<UuidComponent>(second).m_uuid;
+
+  EXPECT_FALSE(first_id.IsNil());
+  EXPECT_FALSE(second_id.IsNil());
+  EXPECT_NE(first_id, second_id);
+
+  ECSManager::DestroyEntity(first);
+  ECSManager::DestroyEntity(second);
+}
+
 TEST_F(ECSManagerTest, AnEntityIsEnabledUntilItIsDisabled) {
   const uint32_t entity = ECSManager::CreateEntity();
 

@@ -23,6 +23,12 @@ void ECSManager::Init() {
   AddSystem(sprite_system);
 }
 
+uint32_t ECSManager::CreateEntity() {
+  const uint32_t entity = registry.create();
+  registry.assign<UuidComponent>(entity, Uuid::Generate());
+  return entity;
+}
+
 bool ECSManager::IsEntityEnabled(uint32_t entity) {
   if (!HasComponent<EntityEnabledComponent>(entity)) {
     return true;

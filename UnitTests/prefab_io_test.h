@@ -109,6 +109,35 @@ TEST_F(PrefabIOTest, SavingWritesThePrefabFile) {
   EXPECT_NE(contents.find("<Name>crate</Name>"), std::string::npos);
 }
 
+// A prefab file names no identity: the format did not move for this, and every
+// placement is a new entity, so it gets a new uuid rather than the source's.
+TEST_F(PrefabIOTest, EveryPlacedCopyGetsItsOwnIdentity) {
+  const uint32_t crate = CreateSprite("crate", glm::vec3(1.f, 2.f, 0.f));
+  const std::string source_id = ECSManager::GetComponent<UuidComponent>(crate).m_uuid.ToString();
+
+  std::string error;
+  ASSERT_TRUE(PrefabIO::Save(m_file, crate, &error)) << error;
+
+  const std::string contents = ReadFile(m_file);
+  EXPECT_EQ(contents.find(source_id), std::string::npos);
+  EXPECT_NE(contents.find("<formatVersion>5</formatVersion>"), std::string::npos);
+
+  SceneIO::Clear();
+
+  const uint32_t first = PrefabIO::Instantiate(m_file, &error);
+  ASSERT_NE(first, kNullEntity) << error;
+
+  const uint32_t second = PrefabIO::Instantiate(m_file, &error);
+  ASSERT_NE(second, kNullEntity) << error;
+
+  const std::string first_id = ECSManager::GetComponent<UuidComponent>(first).m_uuid.ToString();
+  const std::string second_id = ECSManager::GetComponent<UuidComponent>(second).m_uuid.ToString();
+
+  EXPECT_NE(first_id, second_id);
+  EXPECT_NE(first_id, source_id);
+  EXPECT_NE(second_id, source_id);
+}
+
 TEST_F(PrefabIOTest, APlacedEntityComesBackWithItsValues) {
   const uint32_t crate = CreateSprite("crate", glm::vec3(12.5f, 34.25f, 0.f));
 
