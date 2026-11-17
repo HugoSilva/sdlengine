@@ -124,6 +124,12 @@ void Project::Migrate(Project& project, int from_version) {
   project.audio.music = std::clamp(project.audio.music, 0, 128);
   project.audio.sfx = std::clamp(project.audio.sfx, 0, 128);
 
+  // A cap is frames per second, and a manifest can be hand-edited: a negative
+  // one is no cap, and anything past a thousand is not a frame rate a display
+  // has. Clamping keeps a typo from sleeping for a negative time or for
+  // microseconds.
+  project.frame_pacing.frame_cap = std::clamp(project.frame_pacing.frame_cap, 0, 1000);
+
   // A version that changes the meaning of existing data gets one block per
   // version, oldest first, each gated on the version it upgrades *from*:
   //

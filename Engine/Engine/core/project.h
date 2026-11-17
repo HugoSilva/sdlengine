@@ -26,7 +26,7 @@ struct Project {
   // is readable when its version is in [kFirstFormatVersion, kFormatVersion]:
   // older files are migrated forward by Migrate(), newer ones are refused
   // because this build cannot know what they mean.
-  static constexpr int kFormatVersion{3};
+  static constexpr int kFormatVersion{4};
 
   // The oldest manifest this build still understands. It only moves when a
   // migration stops being possible at all, not when a version is added.
@@ -73,6 +73,24 @@ struct Project {
     }
   };
 
+  // How the loop paces its frames. Version 4 appended it; a version 3 manifest
+  // opens with VSync on and no cap, which is what a window wants by default:
+  // the driver presents in step with the display instead of drawing frames
+  // nobody will see.
+  //
+  // A cap is the other half. 0 means uncapped; any other value is a ceiling in
+  // frames per second, which is what makes a benchmark repeatable and what lets
+  // a game run at 60 on a 144 Hz display without spinning.
+  struct FramePacing {
+    bool vsync{true};
+    int frame_cap{0};
+
+    template <typename Archive>
+    void serialize(Archive& archive) {
+      archive(cereal::make_nvp("vsync", vsync), cereal::make_nvp("frameCap", frame_cap));
+    }
+  };
+
   int format_version{kFormatVersion};
   std::string name{"Untitled"};
   std::string engine_version{kEngineVersion};
@@ -82,6 +100,7 @@ struct Project {
   std::vector<std::string> scenes{"scenes/start.xml"};
   Audio audio;
   std::vector<InputBinding> input;
+  FramePacing frame_pacing;
 
   // Reads `file` into `project`. `project` is left untouched and false is
   // returned, with `error` filled in, when the file is missing, unreadable,
@@ -126,6 +145,10 @@ struct Project {
 
     if (format_version >= 3) {
       archive(cereal::make_nvp("input", input));
+    }
+
+    if (format_version >= 4) {
+      archive(cereal::make_nvp("framePacing", frame_pacing));
     }
   }
 

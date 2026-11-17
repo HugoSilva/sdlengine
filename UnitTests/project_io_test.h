@@ -58,6 +58,8 @@ class ProjectIOTest : public ::testing::Test {
     project.audio.music = 80;
     project.audio.sfx = 60;
     project.input = {{"editor.save", "F5"}, {"game.up", "W"}};
+    project.frame_pacing.vsync = false;
+    project.frame_pacing.frame_cap = 144;
     return project;
   }
 
@@ -78,6 +80,11 @@ TEST_F(ProjectIOTest, DefaultsDescribeAFreshProject) {
   ASSERT_EQ(project.scenes.size(), 1u);
   EXPECT_EQ(project.scenes.front(), "scenes/start.xml");
   EXPECT_FALSE(project.IsAttached());
+
+  // The defaults are what a fresh window wants: in step with the display, no
+  // artificial ceiling.
+  EXPECT_TRUE(project.frame_pacing.vsync);
+  EXPECT_EQ(project.frame_pacing.frame_cap, 0);
 }
 
 TEST_F(ProjectIOTest, SaveWritesTheManifestAndLeavesNoScratchFile) {
@@ -118,6 +125,8 @@ TEST_F(ProjectIOTest, RoundTripPreservesEveryField) {
   EXPECT_EQ(actual.input.at(0).key, expected.input.at(0).key);
   EXPECT_EQ(actual.input.at(1).action, expected.input.at(1).action);
   EXPECT_EQ(actual.input.at(1).key, expected.input.at(1).key);
+  EXPECT_EQ(actual.frame_pacing.vsync, expected.frame_pacing.vsync);
+  EXPECT_EQ(actual.frame_pacing.frame_cap, expected.frame_pacing.frame_cap);
   EXPECT_TRUE(actual.IsAttached());
   EXPECT_EQ(actual.File(), expected.File());
 }
@@ -277,6 +286,51 @@ TEST_F(ProjectIOTest, AV2ManifestHasAudioButNoInputOverrides) {
   EXPECT_EQ(project.audio.music, 32);
   EXPECT_EQ(project.audio.sfx, 16);
   EXPECT_TRUE(project.input.empty());
+}
+
+TEST_F(ProjectIOTest, AFrameCapOutsideTheAllowedRangeIsClamped) {
+  Project project = MakeProject();
+  project.frame_pacing.frame_cap = 5000;
+
+  std::string error;
+  ASSERT_TRUE(project.Save(&error)) << error;
+
+  Project loaded;
+  ASSERT_TRUE(Project::Load(m_file, loaded, &error)) << error;
+  EXPECT_EQ(loaded.frame_pacing.frame_cap, 1000);
+
+  // A negative cap is not a rate either: it reads as "no cap", which is what a
+  // zero means.
+  project.frame_pacing.frame_cap = -3;
+  ASSERT_TRUE(project.Save(&error)) << error;
+  ASSERT_TRUE(Project::Load(m_file, loaded, &error)) << error;
+  EXPECT_EQ(loaded.frame_pacing.frame_cap, 0);
+}
+
+// Version 4 appended the pacing section. A version 3 manifest has none, and it
+// opens with the same defaults a fresh project has: VSync on, no cap.
+TEST_F(ProjectIOTest, AV3ManifestHasNoPacingSectionAndOpensWithVSyncOn) {
+  WriteManifest(
+      "<cereal><project>"
+      "<formatVersion>3</formatVersion>"
+      "<name>Three</name>"
+      "<engineVersion>0.13</engineVersion>"
+      "<assetRoot>assets</assetRoot>"
+      "<window><title>Three</title><width>800</width><height>600</height></window>"
+      "<startupScene>scenes/start.xml</startupScene>"
+      "<scene size=\"dynamic\"><value0>scenes/start.xml</value0></scene>"
+      "<audio><master>128</master><music>128</music><sfx>128</sfx></audio>"
+      "<input size=\"dynamic\"><value0><action>editor.save</action><key>F5</key></value0></input>"
+      "</project></cereal>");
+
+  Project project;
+  std::string error;
+
+  ASSERT_TRUE(Project::Load(m_file, project, &error)) << error;
+
+  EXPECT_EQ(project.format_version, 3);
+  EXPECT_TRUE(project.frame_pacing.vsync);
+  EXPECT_EQ(project.frame_pacing.frame_cap, 0);
 }
 
 TEST_F(ProjectIOTest, SaveWritesTheCurrentFormatVersionNotTheLoadedOne) {

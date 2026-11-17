@@ -44,9 +44,12 @@ same number inverted, and it is reported because it is what people quote.
 
 ## Baseline
 
-Recorded before the performance work began. VSync is off in this build
-(`SDL_GL_SetSwapInterval(0)`), so the frame rate is uncapped and the numbers
-describe the engine's own cost rather than the display's refresh rate.
+Recorded before the performance work began. VSync was hardcoded off in that build
+(`SDL_GL_SetSwapInterval(0)`), so the frame rate was uncapped and the numbers
+describe the engine's own cost rather than the display's refresh rate. Frame
+pacing is a project setting now (manifest version 4) and defaults to VSync on:
+to take a comparable measurement, turn VSync off and leave the frame cap at 0 in
+**Edit > Project Settings > Frame pacing**.
 
 | Date | Commit | Preset | Sprites | Frame (ms) | FPS | Submitted | Culled | Batches | Draw calls | Vertices |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -68,7 +71,8 @@ The renderer work is done when, on the baseline scene above:
   here; they need a scene with many distinct, non-atlased textures.
 - **No ECS.** The grid bypasses the registry on purpose. Per-entity iteration,
   component lookups and material resolution are not in these numbers.
-- **Uncapped.** Without VSync a frame can finish far faster than a display
-  could present it, so frame time is the comparable figure, not FPS.
+- **Pacing.** With VSync on, a frame cannot finish faster than the display shows
+  it, so frame time measures the display rather than the engine. Turn both VSync
+  and the frame cap off in the project settings before recording numbers.
 - **Warm-up.** The first second after enabling the load includes the sprite
   grid rebuild; ignore it.

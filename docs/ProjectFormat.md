@@ -90,6 +90,7 @@ Two rules keep the additive case honest:
 | #76 | 3 | **8** | **3** | 1 |
 | #78 | 3 | **9** | **4** | 1 |
 | #80 | 3 | **10** | **5** | 1 |
+| #88 | **4** | 10 | 5 | 1 |
 
 Every row above is shipped behaviour: the migration policy itself, the first
 breaking change made under it, the additive changes made after it, prefabs, the
@@ -103,7 +104,7 @@ asset registry, the manifest's audio and input sections, and material shaders.
 <?xml version="1.0" encoding="utf-8"?>
 <cereal>
 	<project>
-		<formatVersion>3</formatVersion>
+		<formatVersion>4</formatVersion>
 		<name>Sample</name>
 		<engineVersion>0.13</engineVersion>
 		<assetRoot>assets</assetRoot>
@@ -168,6 +169,10 @@ asset registry, the manifest's audio and input sections, and material shaders.
 				<key>Up</key>
 			</value10>
 		</input>
+		<framePacing>
+			<vsync>true</vsync>
+			<frameCap>0</frameCap>
+		</framePacing>
 	</project>
 </cereal>
 ```
@@ -183,6 +188,7 @@ asset registry, the manifest's audio and input sections, and material shaders.
 | `scene` | The project's scenes, in order. Each entry is a path relative to the manifest. |
 | `audio/master`, `audio/music`, `audio/sfx` | The project's mix, each 0-128 like `Sound::SetVolume`. Music and effects sit under the master. Version 2 appended the group; a version 1 manifest opens at 128, the volume it played at. |
 | `input` | The project's key bindings: one `action` and `key` per entry. Version 3 appended it. An action the list does not mention keeps the key compiled into `InputMap::Defaults()`; an unknown action is ignored with a warning. |
+| `framePacing/vsync`, `framePacing/frameCap` | How the loop paces frames. Version 4 appended the group; a version 3 manifest opens with VSync on and no cap. `vsync` hands the present to the driver, which blocks until the display has drawn the previous frame; `frameCap` is a ceiling in frames per second, `0` meaning uncapped. A frame that finished early sleeps the remainder; one that overran is never delayed further. |
 
 Every path in the manifest is **relative to the manifest's own directory** and is
 stored with forward slashes, so a project directory can be copied or moved and
@@ -191,6 +197,9 @@ still opens. Backslashes are accepted on the way in and normalised on the way ou
 The audio levels are clamped to 0-128 when the manifest is read. A hand-edited
 200 is a gain above one, not something to pass to the mixer; a negative value is
 silence.
+
+The frame cap is clamped to 0-1000 when the manifest is read: a negative cap is
+no cap, and anything past a thousand is not a frame rate a display has.
 
 `<scene>` is a cereal container: `size="dynamic"` means the count is not stored,
 and the reader counts the `valueN` children. Hand-editing a manifest means keeping

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <cereal>
 	<project>
-		<formatVersion>3</formatVersion>
+		<formatVersion>4</formatVersion>
 		<name>Sample</name>
 		<engineVersion>0.13</engineVersion>
 		<assetRoot>assets</assetRoot>
@@ -78,6 +78,10 @@
 				<key>Up</key>
 			</value13>
 		</input>
+		<framePacing>
+			<vsync>true</vsync>
+			<frameCap>0</frameCap>
+		</framePacing>
 	</project>
 </cereal>
 
