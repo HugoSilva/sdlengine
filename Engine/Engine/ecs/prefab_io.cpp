@@ -7,6 +7,7 @@
 #include <cereal/archives/xml.hpp>
 #include <entity/registry.hpp>
 
+#include <core/uuid.h>
 #include <ecs/components/include_list.h>
 #include <ecs/ecs_manager.h>
 
@@ -66,16 +67,20 @@ void SetError(std::string* error, const std::string& message) {
   }
 }
 
-// Adds a copy of `entity` to `target` with a fresh id and returns that id.
+// Adds a copy of `entity` to `target` with a fresh id and identity and returns
+// that id.
 //
 // The copy is deep where an entity owns something. A sprite is per entity, so
 // the copy gets its own Sprite; the texture inside stays borrowed from
 // TextureManager, which is what sharing a texture name means. A rigid body is
 // per entity and cannot be copied, so it gets a Clone() with the same inputs,
 // uninitialised until PhysicsSystem sees it. A sound is borrowed from
-// SoundManager by design, so the copied handle points at that one sound.
+// SoundManager by design, so the copied handle points at that one sound. A uuid
+// is never copied: one identity names one entity.
 Registry::entity_type CopyEntity(Registry& source, Registry::entity_type entity, Registry& target) {
   const Registry::entity_type copy = target.create();
+
+  target.assign<UuidComponent>(copy, Uuid::Generate());
 
   if (source.has<BasicComponent>(entity)) {
     target.assign<BasicComponent>(copy, source.get<BasicComponent>(entity));
