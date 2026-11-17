@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iterator>
+#include <set>
 #include <string>
 
 #include <gtest/gtest.h>
@@ -112,7 +113,7 @@ TEST_F(SceneIOTest, SavingWritesTheSceneFile) {
   EXPECT_FALSE(std::filesystem::exists(m_scratch));
 
   const std::string contents = ReadFile(m_file);
-  EXPECT_NE(contents.find("<formatVersion>10</formatVersion>"), std::string::npos);
+  EXPECT_NE(contents.find("<formatVersion>11</formatVersion>"), std::string::npos);
   EXPECT_NE(contents.find("<camera>"), std::string::npos);
   EXPECT_NE(contents.find("<entities>"), std::string::npos);
 }
@@ -140,6 +141,81 @@ TEST_F(SceneIOTest, SavedEntitiesComeBack) {
         EXPECT_FLOAT_EQ(sprite.m_sprite->GetSize().x, 8.f);
         EXPECT_EQ(sprite.m_sprite->GetColor(), 0xff00ff00u);
       });
+}
+
+TEST_F(SceneIOTest, EntitiesKeepTheirIdentityAcrossASave) {
+  const uint32_t player = CreateSprite("player", glm::vec3(12.5f, 34.25f, 0.f));
+  const uint32_t crate = CreateSprite("crate", glm::vec3(1.f, 2.f, 0.f));
+
+  const std::string player_id = ECSManager::GetComponent<UuidComponent>(player).m_uuid.ToString();
+  const std::string crate_id = ECSManager::GetComponent<UuidComponent>(crate).m_uuid.ToString();
+
+  ASSERT_NE(player_id, crate_id);
+
+  std::string snapshot;
+  std::string error;
+  ASSERT_TRUE(SceneIO::SaveToString(&snapshot, &error)) << error;
+  EXPECT_NE(snapshot.find(player_id), std::string::npos);
+
+  SceneIO::Clear();
+  ASSERT_TRUE(SceneIO::LoadFromString(snapshot, &error)) << error;
+
+  ASSERT_EQ(CountEntities(), 2u);
+
+  // The identity captured before the save is the one that comes back, and the
+  // two entities still have two names rather than one shared one.
+  std::set<std::string> ids;
+  ECSManager::GetView<UuidComponent>().each(
+      [&ids](auto, UuidComponent& uuid) { EXPECT_TRUE(ids.insert(uuid.m_uuid.ToString()).second); });
+
+  EXPECT_EQ(ids, (std::set<std::string>{player_id, crate_id}));
+}
+
+// A scene from before version 11 has no uuid group at all. It still has to
+// open, and every entity has to come out with a unique identity so anything
+// that starts naming entities has something to name.
+TEST_F(SceneIOTest, AnOlderSceneGivesEveryEntityAGeneratedUuid) {
+  const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "scene_v8.xml";
+
+  std::string error;
+  ASSERT_TRUE(SceneIO::Load(fixture, &error)) << error;
+
+  ASSERT_EQ(CountEntities(), 2u);
+  ASSERT_EQ(ECSManager::GetView<UuidComponent>().size(), 2u);
+
+  std::set<std::string> ids;
+  ECSManager::GetView<UuidComponent>().each([&ids](auto, UuidComponent& uuid) {
+    EXPECT_FALSE(uuid.m_uuid.IsNil());
+    EXPECT_TRUE(ids.insert(uuid.m_uuid.ToString()).second);
+  });
+
+  EXPECT_EQ(ids.size(), 2u);
+}
+
+// A uuid the file stores but the engine cannot read must not take the scene
+// down with it: the entity keeps existing and gets a new name.
+TEST_F(SceneIOTest, AMalformedUuidIsReplacedOnLoad) {
+  const uint32_t entity = CreateSprite("player", glm::vec3(1.f, 2.f, 0.f));
+  const std::string original = ECSManager::GetComponent<UuidComponent>(entity).m_uuid.ToString();
+
+  std::string snapshot;
+  std::string error;
+  ASSERT_TRUE(SceneIO::SaveToString(&snapshot, &error)) << error;
+
+  const std::size_t at = snapshot.find(original);
+  ASSERT_NE(at, std::string::npos);
+  snapshot.replace(at, original.size(), "not-a-uuid");
+
+  SceneIO::Clear();
+  ASSERT_TRUE(SceneIO::LoadFromString(snapshot, &error)) << error;
+
+  ASSERT_EQ(CountEntities(), 1u);
+  ASSERT_EQ(ECSManager::GetView<UuidComponent>().size(), 1u);
+
+  ECSManager::GetView<UuidComponent>().each([&original](auto, UuidComponent& uuid) {
+    EXPECT_FALSE(uuid.m_uuid.IsNil());
+    EXPECT_NE(uuid.m_uuid.ToString(), original);
+  });
 }
 
 TEST_F(SceneIOTest, DisabledStateRoundTrips) {

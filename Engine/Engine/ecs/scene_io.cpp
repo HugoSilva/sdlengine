@@ -7,6 +7,7 @@
 
 #include <cereal/archives/xml.hpp>
 
+#include <core/uuid.h>
 #include <ecs/components/include_list.h>
 #include <ecs/ecs_manager.h>
 
@@ -28,7 +29,8 @@ struct SaveEntities {
     registry.snapshot()
         .entities(archive)
         .component<BasicComponent, TransformComponent, SpriteComponent, AudioComponent, RigidBodyComponent,
-                   SpriteAppearanceComponent, EntityEnabledComponent, DisabledComponentsComponent>(archive);
+                   SpriteAppearanceComponent, EntityEnabledComponent, DisabledComponentsComponent, UuidComponent>(
+            archive);
   }
 };
 
@@ -68,6 +70,10 @@ struct LoadEntities {
     if (format_version >= 9) {
       loader.component<DisabledComponentsComponent>(archive);
     }
+
+    if (format_version >= 11) {
+      loader.component<UuidComponent>(archive);
+    }
   }
 };
 
@@ -75,6 +81,18 @@ void SetError(std::string* error, const std::string& message) {
   if (error != nullptr) {
     *error = message;
   }
+}
+
+// Gives every entity that arrived without an identity a fresh one. Scenes
+// written before version 11 have no uuid group, and a hand-edited file may
+// name some entities and not others; after this pass the open scene has the
+// same contract whatever its file said: every entity is named.
+void AssignMissingUuids(entt::DefaultRegistry& registry) {
+  registry.each([&registry](entt::DefaultRegistry::entity_type entity) {
+    if (!registry.has<UuidComponent>(entity)) {
+      registry.assign<UuidComponent>(entity, Uuid::Generate());
+    }
+  });
 }
 
 // One writer for both destinations: the file functions and the in-memory
@@ -138,6 +156,8 @@ bool ReadScene(Archive& archive, entt::DefaultRegistry& registry, const std::str
 
     LoadEntities entities{registry, format_version};
     archive(cereal::make_nvp("entities", entities));
+
+    AssignMissingUuids(registry);
   } catch (const std::exception& exception) {
     if (cleared) {
       SceneIO::Clear();
