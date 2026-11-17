@@ -55,10 +55,13 @@ bool Window::Init() {
   }
 #endif
 
+  // In step with the display until the project says otherwise: the manifest is
+  // read before the window exists, and Core applies its setting right after
+  // Init, so this only covers the moment in between.
+  SetVSync(true);
+
   // TODO show cursor and window focus
   // SDL_HideCursor();
-  // TODO Fix this, I had to Disabled VSync to test performance in release mode
-  SDL_GL_SetSwapInterval(0);
 
   glViewport(0, 0, m_width, m_height);
   glEnable(GL_DEPTH_TEST);
@@ -89,6 +92,16 @@ bool Window::GetRunning() {
 void Window::SetTitle(const std::string& title) {
   m_title = title;
   SDL_SetWindowTitle(m_window, m_title.c_str());
+}
+
+void Window::SetVSync(bool enabled) {
+  m_vsync = enabled;
+
+  // SDL reports the request rather than the result: a driver may ignore it.
+  // Saying so once is better than a person wondering why the fan is loud.
+  if (!SDL_GL_SetSwapInterval(enabled ? 1 : 0)) {
+    Logger::Warning(std::string("Could not set VSync: ") + SDL_GetError());
+  }
 }
 
 void Window::BindDefaultFramebuffer() {

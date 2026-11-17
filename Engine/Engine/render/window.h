@@ -20,6 +20,12 @@ class Window {
   // open project and to mark unsaved work.
   void SetTitle(const std::string& title);
 
+  // Hands presentation to the driver (on) or lets the loop present as fast as
+  // it can (off). The project decides; the window starts in step with the
+  // display, so nothing tears while a project is still being read.
+  void SetVSync(bool enabled);
+  bool GetVSync() const { return m_vsync; }
+
   // Makes the window's back buffer the render target again and resets the
   // GL viewport to the current pixel size (the window may have been
   // resized since the last frame).
@@ -32,5 +38,6 @@ class Window {
 
   std::string m_title;
   int m_width, m_height;
+  bool m_vsync{true};
 };
 }  // namespace rse

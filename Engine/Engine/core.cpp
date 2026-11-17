@@ -1,8 +1,10 @@
 #include "core.h"
 
+#include <chrono>
 #include <filesystem>
 #include <functional>
 #include <imgui.h>
+#include <thread>
 #include <utility>
 
 #include <core/asset_registry.h>
@@ -44,6 +46,12 @@ Core::Core(const std::filesystem::path& project_file)
       new rse::Window(project_loaded ? m_project.window.title.c_str() : "RockSlide Engine",
                       project_loaded ? m_project.window.width : 1280, project_loaded ? m_project.window.height : 720);
   m_window->Init();
+
+  // Frame pacing belongs to the project, not to the window: the manifest was
+  // read before the window existed, so this is where its choice is applied. A
+  // project that predates the setting opens with VSync on, not with the loop
+  // running as fast as the GPU can go.
+  m_window->SetVSync(m_project.frame_pacing.vsync);
 
   // Scene paths resolve against the project directory; without a project they
   // resolve against the working directory, as they always did.
@@ -239,6 +247,10 @@ void Core::Start() {
 }
 
 void Core::Run() {
+  // The frame's own clock, for pacing: m_now below is the engine's millisecond
+  // tick, which is too coarse to sleep a 60 Hz frame's remainder accurately.
+  const auto frame_start = std::chrono::steady_clock::now();
+
   m_now = m_clock->NowMilliseconds();
   m_delta_time = (m_now - m_last) / 1000.0f;
   m_last = m_now;
@@ -316,5 +328,21 @@ void Core::Run() {
     m_frames = 0;
     m_delta_accumulator = 0.f;
     Tick();
+  }
+
+  // The frame cap, applied at the end of the frame it paces. Only a frame that
+  // finished early sleeps: a slow frame is not made slower still, because the
+  // cap is a ceiling and not a schedule. Without a cap the loop presents as fast
+  // as the GPU will let it, which is what pinned a core before VSync was a
+  // setting.
+  const int cap = m_project.frame_pacing.frame_cap;
+
+  if (cap > 0) {
+    const auto target = std::chrono::duration<double>(1.0 / static_cast<double>(cap));
+    const auto spent = std::chrono::steady_clock::now() - frame_start;
+
+    if (spent < target) {
+      std::this_thread::sleep_for(target - spent);
+    }
   }
 }
