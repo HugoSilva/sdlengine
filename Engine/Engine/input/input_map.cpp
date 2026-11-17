@@ -236,11 +236,14 @@ bool InputMap::IsPressed(const Binding& binding) {
     return false;
   }
 
-  const bool ctrl = InputManager::IsKeyPressed(SDL_SCANCODE_LCTRL) || InputManager::IsKeyPressed(SDL_SCANCODE_RCTRL);
-  const bool shift = InputManager::IsKeyPressed(SDL_SCANCODE_LSHIFT) || InputManager::IsKeyPressed(SDL_SCANCODE_RSHIFT);
-  const bool alt = InputManager::IsKeyPressed(SDL_SCANCODE_LALT) || InputManager::IsKeyPressed(SDL_SCANCODE_RALT);
+  // Held, not "pressed this frame": an action a person holds down -- walking,
+  // panning -- has to keep firing, and the editor's shortcuts are read from the
+  // same table.
+  const bool ctrl = InputManager::IsKeyDown(SDL_SCANCODE_LCTRL) || InputManager::IsKeyDown(SDL_SCANCODE_RCTRL);
+  const bool shift = InputManager::IsKeyDown(SDL_SCANCODE_LSHIFT) || InputManager::IsKeyDown(SDL_SCANCODE_RSHIFT);
+  const bool alt = InputManager::IsKeyDown(SDL_SCANCODE_LALT) || InputManager::IsKeyDown(SDL_SCANCODE_RALT);
 
-  return InputManager::IsKeyPressed(binding.scancode) && binding.Matches(binding.scancode, ctrl, shift, alt);
+  return InputManager::IsKeyDown(binding.scancode) && binding.Matches(binding.scancode, ctrl, shift, alt);
 }
 
 bool InputMap::IsActionPressed(const std::string& action) { return IsPressed(Get(action)); }

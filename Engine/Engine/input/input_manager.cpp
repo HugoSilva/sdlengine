@@ -22,6 +22,11 @@ void InputManager::Init() {
 }
 
 void InputManager::Update() {
+  // The press and release latches mean "since the last frame": clear them
+  // before the queue is drained, so a key pressed during this drain is reported
+  // for this frame only.
+  Keyboard::BeginFrame();
+
   SDL_Event event;
   // Cannot be called outside of the main thread
   // Drain the whole queue: polling a single event per frame makes the UI
@@ -89,7 +94,7 @@ void InputManager::HandleControllerAxis(SDL_GamepadAxisEvent event) {
   // TODO Add controller support
 }
 
-const bool InputManager::IsKeyDown(int key) {
+bool InputManager::IsKeyDown(int key) {
   if (s_locked) {
     return false;
   }
@@ -97,19 +102,19 @@ const bool InputManager::IsKeyDown(int key) {
   return Keyboard::IsKeyDown(key);
 }
 
-const bool InputManager::IsKeyUp(int key) {
-  if (s_locked) {
-    return false;
-  }
-
-  return Keyboard::IsKeyUp(key);
-}
-
-const bool InputManager::IsKeyPressed(SDL_Scancode key) {
+bool InputManager::IsKeyPressed(int key) {
   if (s_locked) {
     return false;
   }
 
   return Keyboard::IsKeyPressed(key);
+}
+
+bool InputManager::IsKeyReleased(int key) {
+  if (s_locked) {
+    return false;
+  }
+
+  return Keyboard::IsKeyReleased(key);
 }
 }  // namespace rse

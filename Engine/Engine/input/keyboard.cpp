@@ -1,45 +1,71 @@
 #include "keyboard.h"
 
+#include <algorithm>
+#include <iterator>
+
 namespace rse {
 bool Keyboard::s_keys[SDL_SCANCODE_COUNT] = {0};
-bool Keyboard::s_keys_down[SDL_SCANCODE_COUNT] = {0};
-bool Keyboard::s_keys_up[SDL_SCANCODE_COUNT] = {0};
+bool Keyboard::s_pressed[SDL_SCANCODE_COUNT] = {0};
+bool Keyboard::s_released[SDL_SCANCODE_COUNT] = {0};
+
+namespace {
+bool InRange(int key) { return key >= 0 && key < SDL_SCANCODE_COUNT; }
+}  // namespace
 
 void Keyboard::KeyCallback(SDL_KeyboardEvent event) {
-  SDL_Scancode key = event.scancode;
-  if (key < 0) return;
+  const int key = event.scancode;
 
-  if (event.down && s_keys[key] == false) {
-    s_keys_down[key] = true;
-    s_keys_up[key] = false;
+  if (!InRange(key)) {
+    return;
   }
 
-  if (!event.down && s_keys[key] == true) {
-    s_keys_down[key] = false;
-    s_keys_up[key] = true;
+  if (event.down) {
+    // SDL reports a held key again and again (its own repeat); only the first
+    // event of a hold is a press.
+    if (!s_keys[key]) {
+      s_pressed[key] = true;
+    }
+
+    s_keys[key] = true;
+    return;
   }
 
-  s_keys[key] = event.down;
+  // A key-up for a key this system never saw go down (the window lost focus and
+  // the release happened elsewhere) is not a release of anything.
+  if (s_keys[key]) {
+    s_released[key] = true;
+  }
+
+  s_keys[key] = false;
 }
 
-const bool Keyboard::IsKeyDown(int key) {
-  if (key < 0 || key >= SDL_SCANCODE_COUNT) {
-    return false;
-  }
-  return s_keys_down[key];
+void Keyboard::BeginFrame() {
+  // Only the edges: a key that is still down is still down.
+  std::fill(std::begin(s_pressed), std::end(s_pressed), false);
+  std::fill(std::begin(s_released), std::end(s_released), false);
 }
 
-const bool Keyboard::IsKeyUp(int key) {
-  if (key < 0 || key >= SDL_SCANCODE_COUNT) {
+bool Keyboard::IsKeyDown(int key) {
+  if (!InRange(key)) {
     return false;
   }
-  return s_keys_up[key];
-}
 
-const bool Keyboard::IsKeyPressed(int key) {
-  if (key < 0 || key >= SDL_SCANCODE_COUNT) {
-    return false;
-  }
   return s_keys[key];
+}
+
+bool Keyboard::IsKeyPressed(int key) {
+  if (!InRange(key)) {
+    return false;
+  }
+
+  return s_pressed[key];
+}
+
+bool Keyboard::IsKeyReleased(int key) {
+  if (!InRange(key)) {
+    return false;
+  }
+
+  return s_released[key];
 }
 }  // namespace rse
