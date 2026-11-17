@@ -76,7 +76,7 @@ Two rules keep the additive case honest:
 
 | Milestone | Manifest | Scene | Prefab | Assets |
 |---|---|---|---|---|
-| today | 3 | 10 | 5 | 1 |
+| today | 4 | 11 | 5 | 1 |
 | #54 | 1 | 1 | -- | -- |
 | #47 | 1 | **2** | -- | -- |
 | #48 | 1 | **3** | -- | -- |
@@ -91,6 +91,7 @@ Two rules keep the additive case honest:
 | #78 | 3 | **9** | **4** | 1 |
 | #80 | 3 | **10** | **5** | 1 |
 | #88 | **4** | 10 | 5 | 1 |
+| #94 | 4 | **11** | 5 | 1 |
 
 Every row above is shipped behaviour: the migration policy itself, the first
 breaking change made under it, the additive changes made after it, prefabs, the
@@ -412,9 +413,14 @@ that writes data, never a pointer, so saving and loading is a round trip:
   on the entity. The group stores a bit mask for the sprite, audio and
   rigid-body components. A missing group means every component is enabled,
   which is what every entity written before version 9 gets.
+- `UuidComponent` -- the entity's stable identity, written as the canonical
+  36-character uuid text. Version 11 appended the group. A missing group means
+  the entity has no identity yet, which is what every entity written before
+  version 11 gets: one is generated as the scene loads, so two entities never
+  share one.
 
-The eight component groups above are written in that order and read in that
-order, after the scene's camera. Anything added later is appended as a ninth
+The nine component groups above are written in that order and read in that
+order, after the scene's camera. Anything added later is appended as a tenth
 group, read only from the version that introduced it; see [Versions](#versions).
 
 A scene also stores its **camera**, which is scene-root data rather than a
