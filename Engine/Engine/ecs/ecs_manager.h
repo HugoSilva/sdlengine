@@ -29,7 +29,10 @@ class ECSManager {
 
   static void Init();
 
-  static uint32_t CreateEntity() { return registry.create(); }
+  // Creates an entity with a fresh identity. Everything that makes an entity
+  // goes through here -- the editor, a prefab placement, a test -- so every
+  // entity in a scene has a UuidComponent whether its file wrote one or not.
+  static uint32_t CreateEntity();
 
   static void DestroyEntity(uint32_t entity) { registry.destroy(entity); }
 
