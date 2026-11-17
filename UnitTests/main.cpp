@@ -8,6 +8,7 @@
 #include "editor_settings_test.h"
 #include "fixed_timestep_test.h"
 #include "input_map_test.h"
+#include "keyboard_test.h"
 #include "material_file_test.h"
 #include "material_manager_test.h"
 #include "ortho_view_test.h"
