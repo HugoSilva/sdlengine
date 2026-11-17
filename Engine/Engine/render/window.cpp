@@ -64,6 +64,7 @@ bool Window::Init() {
   // SDL_HideCursor();
 
   glViewport(0, 0, m_width, m_height);
+  m_drawable_size = {m_width, m_height};
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LEQUAL);
 
@@ -111,5 +112,6 @@ void Window::BindDefaultFramebuffer() {
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glViewport(0, 0, width, height);
+  m_drawable_size = {width, height};
 }
 }  // namespace rse

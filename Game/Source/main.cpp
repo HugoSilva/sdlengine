@@ -50,7 +50,10 @@ class Game : public Core {
     m_shader->Enable();
     // The batched renderer binds every batch to texture unit 0.
     m_shader->SetUniform1i("texture0", 0);
-    m_camera->Render(m_shader);
+
+    // The projection is shaped to the target Core just bound, whose size the
+    // renderer recorded; the camera no longer asks GL for the viewport.
+    m_camera->Render(m_shader, Core::GetRenderer()->GetViewportSize());
 
     Core::GetRenderer()->SetSceneShader(m_shader);
     Core::GetRenderer()->SetCameraUniforms(m_camera->GetViewMatrix(), m_camera->GetProjection());

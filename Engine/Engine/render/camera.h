@@ -23,8 +23,22 @@ class Camera {
 
   void Setup();
   void Update(float delta_time);
-  void Render(Shader* shader);
-  glm::mat4 GetViewMatrix();
+
+  // Uploads the frame's view and projection for a target of `target_size`
+  // device pixels. The size comes from the caller -- Core has just bound the
+  // target -- rather than from glGetIntegerv(GL_VIEWPORT): the query asks the
+  // driver for a value the caller decided a moment ago.
+  void Render(Shader* shader, const glm::ivec2& target_size);
+
+  // Sizes the projection for a target of this size. Render() calls it every
+  // frame and only the first call with a new size does any work; exposing it
+  // lets a caller (or a test) frame a target without a shader in hand. A size
+  // with a zero axis keeps the current framing.
+  void SetTargetSize(const glm::ivec2& target_size);
+
+  // Kept up to date as the camera moves: lookAt over a camera that has not
+  // moved is the same matrix it was last frame.
+  const glm::mat4& GetViewMatrix() const { return m_view; }
   void ProcessKeyboard(CameraMovement direction, float delta_time);
   void ProcessMouseMovement(float x_offset, float y_offset, bool constrain_pitch = true);
   void ProcessMouseScroll(float y_offset);
@@ -43,14 +57,14 @@ class Camera {
 
   // The world rectangle this camera sees. The projection is centred at the
   // origin and the view matrix carries the position, so the culling rectangle
-  // is centred on the camera's XY position. Render() keeps m_target_size up to
-  // date from the current framebuffer.
+  // is centred on the camera's XY position. Render() records the target size.
   inline OrthoView GetView() const {
     return MakeOrthoView(glm::vec2(m_position.x, m_position.y), m_zoom, m_target_size, m_reference_size);
   }
 
  private:
   void UpdateCameraVectors();
+  void UpdateViewMatrix();
   void UpdateOrthoProjection();
 
   glm::vec3 m_position{glm::vec3(0.0f, 0.0f, 0.0f)};
@@ -58,6 +72,7 @@ class Camera {
   glm::vec3 m_front{glm::vec3(0.0f, 0.0f, -1.0f)};
   glm::vec3 m_up;
   glm::vec3 m_right;
+  glm::mat4 m_view{1.0f};
   glm::mat4 m_projection;
   float m_yaw{-90.f}, m_pitch{0.f};
   float m_movement_speed{10.f}, m_mouse_sensitivity{0.25f}, m_zoom{1.f};

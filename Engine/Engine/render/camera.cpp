@@ -3,13 +3,6 @@
 #include <algorithm>
 #include <cmath>
 
-#ifdef EMSCRIPTEN
-#define GL_GLEXT_PROTOTYPES
-#include <SDL3/SDL_opengles2.h>
-#else
-#include <GL/glew.h>
-#endif  // EMSCRIPTEN
-
 #include "ortho_view.h"
 #include <components/shader.h>
 #include <input/input_map.h>
@@ -35,6 +28,8 @@ void Camera::Setup() {
   m_up = glm::normalize(glm::cross(m_right, m_front));
   // updateCameraVectors();
 
+  UpdateViewMatrix();
+
   // TODO Implement perspective support
   // TODO Add support for multiple resolutions
   UpdateOrthoProjection();
@@ -52,11 +47,32 @@ void Camera::UpdateOrthoProjection() {
 
 void Camera::SetPosition(const glm::vec3& position) {
   m_position = position;
-  UpdateOrthoProjection();
+
+  // Only the view moves. The projection is centred at the origin and the view
+  // matrix carries the position, so this used to re-derive a matrix that could
+  // not have changed -- once per frame while the player walked.
+  UpdateViewMatrix();
 }
 
 void Camera::SetZoom(float zoom) {
   m_zoom = zoom;
+  UpdateOrthoProjection();
+}
+
+void Camera::SetTargetSize(const glm::ivec2& target_size) {
+  // Nothing has been bound yet: keep the framing rather than collapse the
+  // projection to a zero-sized rectangle.
+  if (target_size.x <= 0 || target_size.y <= 0) {
+    return;
+  }
+
+  const glm::vec2 size(target_size);
+
+  if (size == m_target_size) {
+    return;
+  }
+
+  m_target_size = size;
   UpdateOrthoProjection();
 }
 
@@ -101,27 +117,19 @@ void Camera::Update(float delta_time) {
   ProcessMouseMovement(static_cast<float>(x_pos), static_cast<float>(y_pos));
 }
 
-void Camera::Render(Shader* shader) {
+void Camera::Render(Shader* shader, const glm::ivec2& target_size) {
   // Size the projection to the target that is actually bound. The window is
   // resizable, and an ortho rectangle of the wrong shape is exactly what
-  // stretches the scene when it is.
-  int viewport[4] = {0, 0, 0, 0};
-  glGetIntegerv(GL_VIEWPORT, viewport);
+  // stretches the scene when it is. The caller knows the size -- it is the one
+  // the target was bound with -- so this no longer asks GL for the viewport,
+  // which is a per-frame query the driver is allowed to answer by waiting.
+  SetTargetSize(target_size);
 
-  if (viewport[2] > 0 && viewport[3] > 0) {
-    const glm::vec2 target_size(static_cast<float>(viewport[2]), static_cast<float>(viewport[3]));
-    if (target_size != m_target_size) {
-      m_target_size = target_size;
-      UpdateOrthoProjection();
-    }
-  }
-
-  glm::mat4 view = GetViewMatrix();
-  shader->SetUniformMat4("view", glm::value_ptr(view));
+  shader->SetUniformMat4("view", glm::value_ptr(m_view));
   shader->SetUniformMat4("projection", glm::value_ptr(m_projection));
 }
 
-glm::mat4 Camera::GetViewMatrix() { return glm::lookAt(m_position, m_position + m_front, m_up); }
+void Camera::UpdateViewMatrix() { m_view = glm::lookAt(m_position, m_position + m_front, m_up); }
 
 void Camera::ProcessKeyboard(CameraMovement direction, float delta_time) {
   float velocity = m_movement_speed * delta_time;
@@ -141,6 +149,8 @@ void Camera::ProcessKeyboard(CameraMovement direction, float delta_time) {
   if (direction == kRight) {
     m_position += m_right * velocity;
   }
+
+  UpdateViewMatrix();
 }
 
 void Camera::ProcessMouseMovement(float x_offset, float y_offset, bool constrain_pitch) {
@@ -177,5 +187,7 @@ void Camera::UpdateCameraVectors() {
       glm::cross(m_front, m_world_up));  // Normalize the vectors, because their length gets closer to 0 the
                                          // more you look up or down which results in slower movement.
   m_up = glm::normalize(glm::cross(m_right, m_front));
+
+  UpdateViewMatrix();
 }
 }  // namespace rse

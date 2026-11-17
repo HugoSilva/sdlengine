@@ -111,5 +111,17 @@ class Renderer2D {
   virtual Renderer2DStats GetStats() const { return {}; }
   virtual RenderBackend GetBackend() const { return RenderBackend::kUnknown; }
   virtual RenderCapabilities GetCapabilities() const { return {}; }
+
+  // The size of the target this frame draws into, in device pixels. Core records
+  // it when it binds the target -- the window's back buffer or the editor's
+  // framebuffer -- so a camera can shape its projection to the frame without
+  // asking GL for the viewport: that query returns a value the caller has just
+  // decided, and a driver may answer it by waiting for the frame in flight.
+  // (0, 0) until a target has been bound.
+  void SetViewportSize(const glm::ivec2& size) { m_viewport_size = size; }
+  glm::ivec2 GetViewportSize() const { return m_viewport_size; }
+
+ private:
+  glm::ivec2 m_viewport_size{0, 0};
 };
 }  // namespace rse

@@ -277,8 +277,10 @@ void Core::Run() {
   rse::Framebuffer* scene_target = GetSceneTarget();
   if (scene_target != nullptr) {
     scene_target->Bind();
+    m_renderer->SetViewportSize({scene_target->GetWidth(), scene_target->GetHeight()});
   } else {
     m_window->BindDefaultFramebuffer();
+    m_renderer->SetViewportSize(m_window->GetDrawableSize());
   }
 
   // The scene's shader uniforms are uploaded *after* the target is bound and
