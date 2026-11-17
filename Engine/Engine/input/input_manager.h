@@ -8,9 +8,11 @@ class InputManager {
   static void Init();
   static void Update();
 
-  static const bool IsKeyDown(int key);
-  static const bool IsKeyUp(int key);
-  static const bool IsKeyPressed(SDL_Scancode key);
+  // The keyboard, through the UI lock: while the UI owns the keyboard, nothing
+  // else sees a key.
+  static bool IsKeyDown(int key);
+  static bool IsKeyPressed(int key);
+  static bool IsKeyReleased(int key);
   inline static const void Lock() { s_locked = true; }
   inline static const void Unlock() { s_locked = false; }
 
