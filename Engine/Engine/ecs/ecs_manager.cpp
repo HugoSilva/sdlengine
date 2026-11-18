@@ -2,6 +2,7 @@
 
 #include <core.h>
 
+#include <core/scene_manager.h>
 #include <ecs/components/include_list.h>
 #include <ecs/entity.h>
 #include <ecs/scene.h>
@@ -11,14 +12,13 @@
 #include <ecs/systems/sprite_render_system.h>
 
 namespace rse {
-Scene ECSManager::m_scene;
 std::vector<BaseSystem*> ECSManager::m_systems_list;
 std::vector<BaseSystem*> ECSManager::m_pre_scene_systems;
 std::vector<BaseSystem*> ECSManager::m_simulation_systems;
 
-Scene& ECSManager::ActiveScene() { return m_scene; }
+Scene& ECSManager::ActiveScene() { return SceneManager::ActiveScene(); }
 
-entt::DefaultRegistry& ECSManager::Registry() { return m_scene.m_registry; }
+entt::DefaultRegistry& ECSManager::Registry() { return ActiveScene().Registry(); }
 
 void ECSManager::Init() {
   AudioSystem* audio_system = new AudioSystem();
@@ -29,7 +29,7 @@ void ECSManager::Init() {
   AddSystem(sprite_system);
 }
 
-uint32_t ECSManager::CreateEntity() { return m_scene.CreateEntity().Handle(); }
+uint32_t ECSManager::CreateEntity() { return ActiveScene().CreateEntity().Handle(); }
 
 void ECSManager::SetEntityEnabled(uint32_t entity, bool enabled) {
   if (!HasComponent<EntityEnabledComponent>(entity)) {
@@ -55,14 +55,14 @@ void ECSManager::AddSystem(BaseSystem* system, SystemPhase phase) {
 }
 
 void ECSManager::Update(float alpha) {
-  for (unsigned int i = 0; i < m_pre_scene_systems.size(); i++) m_pre_scene_systems[i]->Update(m_scene, alpha);
+  for (unsigned int i = 0; i < m_pre_scene_systems.size(); i++) m_pre_scene_systems[i]->Update(ActiveScene(), alpha);
 
-  for (unsigned int i = 0; i < m_systems_list.size(); i++) m_systems_list[i]->Update(m_scene, alpha);
+  for (unsigned int i = 0; i < m_systems_list.size(); i++) m_systems_list[i]->Update(ActiveScene(), alpha);
 }
 
 void ECSManager::UpdateSimulation(float step) {
   for (unsigned int i = 0; i < m_simulation_systems.size(); i++)
-    m_simulation_systems[i]->UpdateSimulation(m_scene, step);
+    m_simulation_systems[i]->UpdateSimulation(ActiveScene(), step);
 }
 
 void ECSManager::UpdateUi() {
@@ -71,11 +71,11 @@ void ECSManager::UpdateUi() {
   // just keeps the two functions from disagreeing. The simulation phase is
   // walked too: a system that draws settings for its own logic still has UI
   // while the scene is stopped.
-  for (unsigned int i = 0; i < m_pre_scene_systems.size(); i++) m_pre_scene_systems[i]->RenderUi(m_scene);
+  for (unsigned int i = 0; i < m_pre_scene_systems.size(); i++) m_pre_scene_systems[i]->RenderUi(ActiveScene());
 
-  for (unsigned int i = 0; i < m_simulation_systems.size(); i++) m_simulation_systems[i]->RenderUi(m_scene);
+  for (unsigned int i = 0; i < m_simulation_systems.size(); i++) m_simulation_systems[i]->RenderUi(ActiveScene());
 
-  for (unsigned int i = 0; i < m_systems_list.size(); i++) m_systems_list[i]->RenderUi(m_scene);
+  for (unsigned int i = 0; i < m_systems_list.size(); i++) m_systems_list[i]->RenderUi(ActiveScene());
 }
 
 void ECSManager::Clean() {

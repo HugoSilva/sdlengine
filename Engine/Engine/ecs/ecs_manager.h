@@ -26,9 +26,9 @@ class ECSManager {
 
   static void Init();
 
-  // The scene the engine is working on. There is one while the editor and game
-  // share a world; PR 2.5 moves ownership to SceneManager and PR 2.6 deletes
-  // this accessor.
+  // The scene the engine is working on: SceneManager's active scene, which is
+  // the play copy while a session runs and the open scene otherwise. Temporary
+  // until the systems and the editor take the scene from SceneManager directly.
   static Scene& ActiveScene();
 
   // The active scene's registry, for the code that still takes one: scene IO,
@@ -132,10 +132,6 @@ class ECSManager {
   static void Clean();
 
  private:
-  // One active scene for now. PR 2.5 hands this to SceneManager; until then
-  // this is the world every static method above forwards to.
-  static Scene m_scene;
-
   static std::vector<BaseSystem*> m_systems_list;
   static std::vector<BaseSystem*> m_pre_scene_systems;
   static std::vector<BaseSystem*> m_simulation_systems;

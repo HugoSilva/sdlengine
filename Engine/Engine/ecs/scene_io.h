@@ -3,16 +3,16 @@
 #include <filesystem>
 #include <string>
 
-#include <cereal/cereal.hpp>
-#include <glm/glm.hpp>
-
 namespace rse {
+class Scene;
+
 // Reads and writes a scene file: the entities of one scene, the camera it is
 // framed with, and the format version that says how to read them.
 //
 // A scene file holds data only. What a scene *does* lives in the ECS systems;
 // which scene is open, and where its file is, is SceneManager's business. The
-// functions return false and fill `error` rather than throwing or logging, so
+// functions take the scene they read or write rather than reaching for the open
+// one, and return false and fill `error` rather than throwing or logging, so
 // the caller decides what a failure means to it.
 //
 // Component groups are written in a fixed order and **appended**, never
@@ -53,51 +53,24 @@ class SceneIO {
   // playing exactly as it did.
   static constexpr int kFirstFormatVersion{2};
 
-  // What a scene says about the view. The defaults are what the engine framed
-  // before a scene could say: the middle of the reference rectangle, zoom 1,
-  // and the magenta the renderer cleared to.
-  struct SceneCamera {
-    glm::vec2 position{640.0f, 360.0f};
-    float zoom{1.0f};
-    glm::vec3 background{1.0f, 0.0f, 1.0f};
+  // Writes `scene`'s registry and camera to `file`. The file is written to a
+  // scratch path and renamed into place once the archive has closed, so a failed
+  // save cannot destroy the previous scene file.
+  static bool Save(rse::Scene& scene, const std::filesystem::path& file, std::string* error);
 
-    template <typename Archive>
-    void serialize(Archive& archive) {
-      archive(cereal::make_nvp("Position", position), cereal::make_nvp("Zoom", zoom),
-              cereal::make_nvp("Background", background));
-    }
-  };
+  // Replaces `scene`'s registry and camera with the contents of `file`. The
+  // format version is read before the scene is touched, so an unreadable file
+  // leaves the scene alone. A failure after that point leaves an empty scene
+  // rather than half of the old one and half of the new one.
+  static bool Load(rse::Scene& scene, const std::filesystem::path& file, std::string* error);
 
-  // Writes the registry and the scene camera to `file`. The file is written to
-  // a scratch path and renamed into place once the archive has closed, so a
-  // failed save cannot destroy the previous scene file.
-  static bool Save(const std::filesystem::path& file, std::string* error);
-
-  // Replaces the registry and the scene camera with the contents of `file`. The
-  // format version is read before the registry is touched, so an unreadable
-  // file leaves the open scene alone. A failure after that point leaves an
-  // empty scene rather than half of the old one and half of the new one.
-  static bool Load(const std::filesystem::path& file, std::string* error);
-
-  // The same payload as Save/Load, held in memory. This is what the editor's
-  // play session snapshots the open scene with, so starting and stopping play
-  // never writes a project file. The version checks and the load contract are
-  // the file functions' own; an error names the source as <snapshot>.
-  static bool SaveToString(std::string* contents, std::string* error);
-  static bool LoadFromString(const std::string& contents, std::string* error);
-
-  // Empties the registry and returns the camera to its defaults.
-  static void Clear();
-
-  // The camera of the open scene: the game reads it after a load to frame its
-  // own camera, and the editor edits the background through it. It is the one
-  // stored value, so a background change is a scene change and is saved with
-  // the scene.
-  static SceneCamera& GetCamera() { return m_camera; }
+  // The same payload as Save/Load, held in memory. The version checks and the
+  // load contract are the file functions' own; an error names the source as
+  // <snapshot>.
+  static bool SaveToString(rse::Scene& scene, std::string* contents, std::string* error);
+  static bool LoadFromString(rse::Scene& scene, const std::string& contents, std::string* error);
 
  private:
   SceneIO() {}
-
-  static SceneCamera m_camera;
 };
 }  // namespace rse

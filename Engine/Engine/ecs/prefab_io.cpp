@@ -10,6 +10,7 @@
 #include <core/uuid.h>
 #include <ecs/components/include_list.h>
 #include <ecs/ecs_manager.h>
+#include <ecs/entity_copy.h>
 
 namespace rse {
 namespace {
@@ -66,60 +67,6 @@ void SetError(std::string* error, const std::string& message) {
     *error = message;
   }
 }
-
-// Adds a copy of `entity` to `target` with a fresh id and identity and returns
-// that id.
-//
-// The copy is deep where an entity owns something. A sprite is per entity, so
-// the copy gets its own Sprite; the texture inside stays borrowed from
-// TextureManager, which is what sharing a texture name means. A rigid body is
-// per entity and cannot be copied, so it gets a Clone() with the same inputs,
-// uninitialised until PhysicsSystem sees it. A sound is borrowed from
-// SoundManager by design, so the copied handle points at that one sound. A uuid
-// is never copied: one identity names one entity.
-Registry::entity_type CopyEntity(Registry& source, Registry::entity_type entity, Registry& target) {
-  const Registry::entity_type copy = target.create();
-
-  target.assign<UuidComponent>(copy, Uuid::Generate());
-
-  if (source.has<BasicComponent>(entity)) {
-    target.assign<BasicComponent>(copy, source.get<BasicComponent>(entity));
-  }
-
-  if (source.has<TransformComponent>(entity)) {
-    target.assign<TransformComponent>(copy, source.get<TransformComponent>(entity));
-  }
-
-  if (source.has<SpriteComponent>(entity)) {
-    const SpriteComponent& sprite = source.get<SpriteComponent>(entity);
-    Sprite* sprite_copy = sprite.m_sprite == nullptr ? nullptr : new Sprite{*sprite.m_sprite};
-    target.assign<SpriteComponent>(copy, SpriteComponent{sprite_copy});
-  }
-
-  if (source.has<SpriteAppearanceComponent>(entity)) {
-    target.assign<SpriteAppearanceComponent>(copy, source.get<SpriteAppearanceComponent>(entity));
-  }
-
-  if (source.has<EntityEnabledComponent>(entity)) {
-    target.assign<EntityEnabledComponent>(copy, source.get<EntityEnabledComponent>(entity));
-  }
-
-  if (source.has<DisabledComponentsComponent>(entity)) {
-    target.assign<DisabledComponentsComponent>(copy, source.get<DisabledComponentsComponent>(entity));
-  }
-
-  if (source.has<AudioComponent>(entity)) {
-    target.assign<AudioComponent>(copy, source.get<AudioComponent>(entity));
-  }
-
-  if (source.has<RigidBodyComponent>(entity)) {
-    const RigidBodyComponent& rigidbody = source.get<RigidBodyComponent>(entity);
-    Rigidbody* body_copy = rigidbody.m_rigidbody == nullptr ? nullptr : rigidbody.m_rigidbody->Clone();
-    target.assign<RigidBodyComponent>(copy, RigidBodyComponent{body_copy});
-  }
-
-  return copy;
-}
 }  // namespace
 
 bool PrefabIO::Save(const std::filesystem::path& file, uint32_t entity, std::string* error) {
@@ -134,7 +81,7 @@ bool PrefabIO::Save(const std::filesystem::path& file, uint32_t entity, std::str
   // registry first. The copy is independent of the scene and the scene itself
   // is only read.
   entt::DefaultRegistry scratch;
-  CopyEntity(ECSManager::Registry(), entity, scratch);
+  CopyEntity(ECSManager::Registry(), entity, scratch, Uuid::Generate());
 
   std::filesystem::path scratch_file{file};
   scratch_file += ".tmp";
@@ -242,7 +189,7 @@ uint32_t PrefabIO::Instantiate(const std::filesystem::path& file, std::string* e
   uint32_t first = entt::null;
 
   scratch.each([&first, &scratch, &scene](Registry::entity_type entity) {
-    const Registry::entity_type copy = CopyEntity(scratch, entity, scene);
+    const Registry::entity_type copy = CopyEntity(scratch, entity, scene, Uuid::Generate());
 
     if (first == entt::null) {
       first = copy;

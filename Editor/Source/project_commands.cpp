@@ -727,7 +727,7 @@ void RenameSceneAt(const std::filesystem::path& scene, const std::string& name) 
     // renamed file is a separate decision -- Scenes > <name> does it -- and the
     // entities of the scene that is no longer open go with it.
     SceneManager::Init(project.Directory());
-    rse::SceneIO::Clear();
+    SceneManager::ActiveScene().Clear();
   }
 
   Logger::Log("Renamed scene " + manifest_path + " to " + new_manifest_path);
@@ -848,9 +848,9 @@ void NewProjectAt(const std::filesystem::path& directory) {
   }
 
   // An empty first scene, written where the manifest will look for it.
-  rse::SceneIO::Clear();
+  SceneManager::ActiveScene().Clear();
 
-  if (!rse::SceneIO::Save(directory / "scenes" / "start.xml", &error)) {
+  if (!rse::SceneIO::Save(SceneManager::ActiveScene(), directory / "scenes" / "start.xml", &error)) {
     Logger::Error("Failed to write the new project's first scene: " + error);
     return;
   }
@@ -916,7 +916,7 @@ void SaveSceneAsAt(const std::filesystem::path& file) {
 
   std::string error;
 
-  if (!rse::SceneIO::Save(file, &error)) {
+  if (!rse::SceneIO::Save(SceneManager::ActiveScene(), file, &error)) {
     Logger::Error("Failed to save the scene: " + error);
     return;
   }

@@ -22,7 +22,7 @@ using namespace rse;
 class PhysicsSystemTest : public ::testing::Test {
  protected:
   void TearDown() override {
-    SceneIO::Clear();
+    ECSManager::ActiveScene().Clear();
     PhysicsMaterialManager::Clean();
   }
 
@@ -214,7 +214,7 @@ TEST_F(PhysicsSystemTest, ClearingTheRegistryFreesTheBodyItSimulated) {
     physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
   }
 
-  SceneIO::Clear();
+  ECSManager::ActiveScene().Clear();
   EXPECT_EQ(ECSManager::GetView<RigidBodyComponent>().size(), 0u);
 
   CreateBody("second", 200.f, b2_dynamicBody);
@@ -268,7 +268,7 @@ TEST_F(PhysicsSystemTest, OneSecondOfFallIsTheSameAtEveryFrameRate) {
   constexpr float kDropInOneSecond = 5.0f;  // gravity is 10 units per second squared
 
   for (float rate : {60.0f, 144.0f, 240.0f}) {
-    SceneIO::Clear();
+    ECSManager::ActiveScene().Clear();
 
     const uint32_t entity = CreateBody("faller", start_y, b2_dynamicBody);
 
@@ -292,6 +292,6 @@ TEST_F(PhysicsSystemTest, OneSecondOfFallIsTheSameAtEveryFrameRate) {
     EXPECT_NEAR(dropped, kDropInOneSecond, 0.25f) << "at " << rate << " Hz";
   }
 
-  SceneIO::Clear();
+  ECSManager::ActiveScene().Clear();
 }
 }  // namespace

@@ -4,7 +4,9 @@
 #include <cstdint>
 #include <memory>
 
+#include <cereal/cereal.hpp>
 #include <entity/registry.hpp>
+#include <glm/glm.hpp>
 
 #include <ecs/components/disabled_components.h>
 
@@ -31,6 +33,23 @@ class Entity;
 // and become invalid with it.
 class Scene {
  public:
+  // What the scene says about the view. The defaults are what the engine framed
+  // before a scene could say: the middle of the reference rectangle, zoom 1,
+  // and the magenta the renderer cleared to. The camera is scene-root data --
+  // there is one per scene -- so a copy carries its own and a play session that
+  // moves the view cannot touch the open scene's.
+  struct Camera {
+    glm::vec2 position{640.0f, 360.0f};
+    float zoom{1.0f};
+    glm::vec3 background{1.0f, 0.0f, 1.0f};
+
+    template <typename Archive>
+    void serialize(Archive& archive) {
+      archive(cereal::make_nvp("Position", position), cereal::make_nvp("Zoom", zoom),
+              cereal::make_nvp("Background", background));
+    }
+  };
+
   Scene();
   ~Scene();
   Scene(const Scene&) = delete;
@@ -79,11 +98,27 @@ class Scene {
     return !m_registry.get<DisabledComponentsComponent>(entity).IsDisabled(ComponentDisabledBit<Component>::kValue);
   }
 
-  // Destroys every entity, keeping the scene object. The camera and the file a
-  // scene manager is holding are not part of this type; the physics world stays
-  // alive, empty, so bodies are destroyed before it and the scene can be filled
-  // again without rebuilding it.
+  // Destroys every entity and puts the camera back to its defaults, keeping the
+  // scene object. The physics world stays alive, empty, so bodies are destroyed
+  // before it and the scene can be filled again without rebuilding it. Which
+  // file the scene came from is SceneManager's business, not the scene's.
   void Clear();
+
+  // The view the scene is framed with. It is the scene's, so a play session's
+  // copy pans and zooms on its own, and the editor's background edit is a scene
+  // change that saves with the scene.
+  Camera& GetCamera() { return m_camera; }
+  const Camera& GetCamera() const { return m_camera; }
+
+  // Fills this scene with a copy of `source`: its camera, then every entity
+  // with the uuid it has there. What an entity owns is copied rather than
+  // shared -- a Sprite, a Rigidbody -- so writing through one scene never
+  // changes the other. The bodies are clones, so they belong to this scene's
+  // world and are built in it the first time PhysicsSystem sees them.
+  //
+  // This is what a play session starts from: the open scene stays untouched
+  // while the copy is simulated, and Stop throws the copy away.
+  void CopyFrom(const Scene& source);
 
   // The world the scene's rigid bodies are built in and stepped by. Every scene
   // has its own, so a body created in one is not visible to another, and the
@@ -104,5 +139,7 @@ class Scene {
   std::unique_ptr<b2World> m_world;
 
   entt::DefaultRegistry m_registry;
+
+  Camera m_camera;
 };
 }  // namespace rse
