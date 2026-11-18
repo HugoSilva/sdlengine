@@ -41,5 +41,8 @@ bool Scene::IsEntityEnabled(uint32_t entity) const {
   return m_registry.get<EntityEnabledComponent>(entity).m_enabled;
 }
 
-void Scene::Clear() { m_registry.reset(); }
+void Scene::Clear() {
+  m_registry.reset();
+  m_camera = Camera{};
+}
 }  // namespace rse

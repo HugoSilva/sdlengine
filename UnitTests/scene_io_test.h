@@ -37,11 +37,11 @@ class SceneIOTest : public ::testing::Test {
     m_scratch = std::filesystem::path{m_file}.concat(".tmp");
 
     AssetRegistry::Clean();
-    SceneIO::Clear();
+    ECSManager::ActiveScene().Clear();
   }
 
   void TearDown() override {
-    SceneIO::Clear();
+    ECSManager::ActiveScene().Clear();
     TextureManager::Clean();
     SoundManager::Clean();
     AssetRegistry::Clean();
@@ -107,7 +107,7 @@ class SceneIOTest : public ::testing::Test {
 TEST_F(SceneIOTest, SavingWritesTheSceneFile) {
   std::string error;
 
-  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Save(ECSManager::ActiveScene(), m_file, &error)) << error;
 
   EXPECT_TRUE(std::filesystem::exists(m_file));
   EXPECT_FALSE(std::filesystem::exists(m_scratch));
@@ -122,12 +122,12 @@ TEST_F(SceneIOTest, SavedEntitiesComeBack) {
   CreateSprite("player", glm::vec3(12.5f, 34.25f, 0.f));
 
   std::string error;
-  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Save(ECSManager::ActiveScene(), m_file, &error)) << error;
 
-  SceneIO::Clear();
+  ECSManager::ActiveScene().Clear();
   ASSERT_EQ(CountEntities(), 0u);
 
-  ASSERT_TRUE(SceneIO::Load(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), m_file, &error)) << error;
   ASSERT_EQ(CountEntities(), 1u);
 
   ECSManager::GetView<BasicComponent, TransformComponent, SpriteComponent>().each(
@@ -154,11 +154,11 @@ TEST_F(SceneIOTest, EntitiesKeepTheirIdentityAcrossASave) {
 
   std::string snapshot;
   std::string error;
-  ASSERT_TRUE(SceneIO::SaveToString(&snapshot, &error)) << error;
+  ASSERT_TRUE(SceneIO::SaveToString(ECSManager::ActiveScene(), &snapshot, &error)) << error;
   EXPECT_NE(snapshot.find(player_id), std::string::npos);
 
-  SceneIO::Clear();
-  ASSERT_TRUE(SceneIO::LoadFromString(snapshot, &error)) << error;
+  ECSManager::ActiveScene().Clear();
+  ASSERT_TRUE(SceneIO::LoadFromString(ECSManager::ActiveScene(), snapshot, &error)) << error;
 
   ASSERT_EQ(CountEntities(), 2u);
 
@@ -178,7 +178,7 @@ TEST_F(SceneIOTest, AnOlderSceneGivesEveryEntityAGeneratedUuid) {
   const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "scene_v8.xml";
 
   std::string error;
-  ASSERT_TRUE(SceneIO::Load(fixture, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), fixture, &error)) << error;
 
   ASSERT_EQ(CountEntities(), 2u);
   ASSERT_EQ(ECSManager::GetView<UuidComponent>().size(), 2u);
@@ -200,14 +200,14 @@ TEST_F(SceneIOTest, AMalformedUuidIsReplacedOnLoad) {
 
   std::string snapshot;
   std::string error;
-  ASSERT_TRUE(SceneIO::SaveToString(&snapshot, &error)) << error;
+  ASSERT_TRUE(SceneIO::SaveToString(ECSManager::ActiveScene(), &snapshot, &error)) << error;
 
   const std::size_t at = snapshot.find(original);
   ASSERT_NE(at, std::string::npos);
   snapshot.replace(at, original.size(), "not-a-uuid");
 
-  SceneIO::Clear();
-  ASSERT_TRUE(SceneIO::LoadFromString(snapshot, &error)) << error;
+  ECSManager::ActiveScene().Clear();
+  ASSERT_TRUE(SceneIO::LoadFromString(ECSManager::ActiveScene(), snapshot, &error)) << error;
 
   ASSERT_EQ(CountEntities(), 1u);
   ASSERT_EQ(ECSManager::GetView<UuidComponent>().size(), 1u);
@@ -223,10 +223,10 @@ TEST_F(SceneIOTest, DisabledStateRoundTrips) {
   ECSManager::SetEntityEnabled(entity, false);
 
   std::string error;
-  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Save(ECSManager::ActiveScene(), m_file, &error)) << error;
 
-  SceneIO::Clear();
-  ASSERT_TRUE(SceneIO::Load(m_file, &error)) << error;
+  ECSManager::ActiveScene().Clear();
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), m_file, &error)) << error;
 
   ASSERT_EQ(CountEntities(), 1u);
 
@@ -247,10 +247,10 @@ TEST_F(SceneIOTest, DisabledComponentStateRoundTrips) {
   ECSManager::SetComponentEnabled<RigidBodyComponent>(entity, false);
 
   std::string error;
-  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Save(ECSManager::ActiveScene(), m_file, &error)) << error;
 
-  SceneIO::Clear();
-  ASSERT_TRUE(SceneIO::Load(m_file, &error)) << error;
+  ECSManager::ActiveScene().Clear();
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), m_file, &error)) << error;
 
   ASSERT_EQ(CountEntities(), 1u);
 
@@ -265,8 +265,8 @@ TEST_F(SceneIOTest, DisabledComponentStateRoundTrips) {
 
 TEST_F(SceneIOTest, AnEmptySceneRoundTrips) {
   std::string error;
-  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
-  ASSERT_TRUE(SceneIO::Load(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Save(ECSManager::ActiveScene(), m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), m_file, &error)) << error;
 
   EXPECT_EQ(CountEntities(), 0u);
 }
@@ -276,10 +276,10 @@ TEST_F(SceneIOTest, LoadingTwiceDoesNotDuplicateEntities) {
   CreateSprite("two", glm::vec3(3.f, 4.f, 0.f));
 
   std::string error;
-  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Save(ECSManager::ActiveScene(), m_file, &error)) << error;
 
-  ASSERT_TRUE(SceneIO::Load(m_file, &error)) << error;
-  ASSERT_TRUE(SceneIO::Load(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), m_file, &error)) << error;
 
   EXPECT_EQ(CountEntities(), 2u);
 }
@@ -289,11 +289,11 @@ TEST_F(SceneIOTest, SavingAfterLoadingProducesTheSameFile) {
   CreateTexturedSprite("two", glm::vec3(3.f, 4.f, 0.f), "shared.png", 0xff00ff00u);
 
   std::string error;
-  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Save(ECSManager::ActiveScene(), m_file, &error)) << error;
   const std::string first_write = ReadFile(m_file);
 
-  ASSERT_TRUE(SceneIO::Load(m_file, &error)) << error;
-  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Save(ECSManager::ActiveScene(), m_file, &error)) << error;
 
   EXPECT_EQ(ReadFile(m_file), first_write);
 }
@@ -301,7 +301,7 @@ TEST_F(SceneIOTest, SavingAfterLoadingProducesTheSameFile) {
 TEST_F(SceneIOTest, LoadWithoutAFileReportsFailure) {
   std::string error;
 
-  EXPECT_NO_THROW({ EXPECT_FALSE(SceneIO::Load(m_file, &error)); });
+  EXPECT_NO_THROW({ EXPECT_FALSE(SceneIO::Load(ECSManager::ActiveScene(), m_file, &error)); });
   EXPECT_NE(error.find("not found"), std::string::npos);
 }
 
@@ -310,7 +310,7 @@ TEST_F(SceneIOTest, LoadOfAnEmptyFileReportsFailure) {
 
   std::string error;
 
-  EXPECT_NO_THROW({ EXPECT_FALSE(SceneIO::Load(m_file, &error)); });
+  EXPECT_NO_THROW({ EXPECT_FALSE(SceneIO::Load(ECSManager::ActiveScene(), m_file, &error)); });
   EXPECT_FALSE(error.empty());
 }
 
@@ -319,7 +319,7 @@ TEST_F(SceneIOTest, LoadOfAMalformedFileReportsFailure) {
 
   std::string error;
 
-  EXPECT_NO_THROW({ EXPECT_FALSE(SceneIO::Load(m_file, &error)); });
+  EXPECT_NO_THROW({ EXPECT_FALSE(SceneIO::Load(ECSManager::ActiveScene(), m_file, &error)); });
   EXPECT_FALSE(error.empty());
 }
 
@@ -329,7 +329,7 @@ TEST_F(SceneIOTest, AnUnknownFormatVersionIsRefusedWithoutTouchingTheScene) {
 
   std::string error;
 
-  EXPECT_FALSE(SceneIO::Load(m_file, &error));
+  EXPECT_FALSE(SceneIO::Load(ECSManager::ActiveScene(), m_file, &error));
   EXPECT_NE(error.find("99"), std::string::npos);
   EXPECT_NE(error.find("newer"), std::string::npos);
 
@@ -341,7 +341,7 @@ TEST_F(SceneIOTest, ASceneStoresTheTextureByName) {
   CreateTexturedSprite("crate", glm::vec3(1.f, 2.f, 0.f), "crate.png", 0xffff0000u);
 
   std::string error;
-  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Save(ECSManager::ActiveScene(), m_file, &error)) << error;
 
   const std::string contents = ReadFile(m_file);
 
@@ -354,15 +354,15 @@ TEST_F(SceneIOTest, SpritesThatShareATextureNameShareOneTexture) {
   CreateTexturedSprite("right", glm::vec3(16.f, 0.f, 0.f), "shared.png", 0xffff0000u);
 
   std::string error;
-  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Save(ECSManager::ActiveScene(), m_file, &error)) << error;
 
   // Empty the manager as well as the registry, so what the load creates is
   // visible: two sprites naming one image have to end up with one texture.
-  SceneIO::Clear();
+  ECSManager::ActiveScene().Clear();
   TextureManager::Clean();
   ASSERT_EQ(TextureManager::Count(), 0u);
 
-  ASSERT_TRUE(SceneIO::Load(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), m_file, &error)) << error;
 
   EXPECT_EQ(TextureManager::Count(), 1u);
   EXPECT_NE(TextureManager::Get("shared.png"), nullptr);
@@ -382,12 +382,12 @@ TEST_F(SceneIOTest, AnUntexturedSpriteComesBackWithoutATexture) {
   CreateSprite("plain", glm::vec3(1.f, 2.f, 0.f));
 
   std::string error;
-  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Save(ECSManager::ActiveScene(), m_file, &error)) << error;
 
-  SceneIO::Clear();
+  ECSManager::ActiveScene().Clear();
   TextureManager::Clean();
 
-  ASSERT_TRUE(SceneIO::Load(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), m_file, &error)) << error;
 
   EXPECT_EQ(TextureManager::Count(), 0u);
 
@@ -402,13 +402,13 @@ TEST_F(SceneIOTest, AnAudioComponentRoundTrips) {
   CreateAudioEntity("speaker", glm::vec3(1.f, 2.f, 0.f), "effect.wav", 64, true, false);
 
   std::string error;
-  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Save(ECSManager::ActiveScene(), m_file, &error)) << error;
 
-  SceneIO::Clear();
+  ECSManager::ActiveScene().Clear();
   TextureManager::Clean();
   SoundManager::Clean();
 
-  ASSERT_TRUE(SceneIO::Load(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), m_file, &error)) << error;
 
   EXPECT_EQ(CountEntities(), 1u);
   EXPECT_EQ(SoundManager::Count(), 1u);
@@ -438,12 +438,12 @@ TEST_F(SceneIOTest, EntitiesThatShareASoundShareOneSound) {
   CreateAudioEntity("right", glm::vec3(16.f, 0.f, 0.f), "shared.wav", 32, false, false);
 
   std::string error;
-  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Save(ECSManager::ActiveScene(), m_file, &error)) << error;
 
-  SceneIO::Clear();
+  ECSManager::ActiveScene().Clear();
   SoundManager::Clean();
 
-  ASSERT_TRUE(SceneIO::Load(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), m_file, &error)) << error;
 
   // One decoded sound for two entities, and the volume each entity authored is
   // still its own -- the reason the settings live on the component.
@@ -473,12 +473,12 @@ TEST_F(SceneIOTest, AMissingSoundKeepsItsName) {
   CreateAudioEntity("speaker", glm::vec3(1.f, 2.f, 0.f), "this_file_does_not_exist.wav", 128, false, true);
 
   std::string error;
-  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Save(ECSManager::ActiveScene(), m_file, &error)) << error;
 
-  SceneIO::Clear();
+  ECSManager::ActiveScene().Clear();
   SoundManager::Clean();
 
-  ASSERT_TRUE(SceneIO::Load(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), m_file, &error)) << error;
 
   ECSManager::GetView<AudioComponent>().each([](auto, AudioComponent& audio) {
     ASSERT_NE(audio.m_sound, nullptr);
@@ -500,11 +500,11 @@ TEST_F(SceneIOTest, ARigidBodyComponentRoundTrips) {
   ECSManager::AddComponent<RigidBodyComponent>(crate, crate_body);
 
   std::string error;
-  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Save(ECSManager::ActiveScene(), m_file, &error)) << error;
 
-  SceneIO::Clear();
+  ECSManager::ActiveScene().Clear();
 
-  ASSERT_TRUE(SceneIO::Load(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), m_file, &error)) << error;
 
   EXPECT_EQ(CountEntities(), 2u);
 
@@ -544,11 +544,11 @@ TEST_F(SceneIOTest, ASpriteAppearanceRoundTrips) {
   ECSManager::AddComponent<SpriteAppearanceComponent>(entity, appearance);
 
   std::string error;
-  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Save(ECSManager::ActiveScene(), m_file, &error)) << error;
 
-  SceneIO::Clear();
+  ECSManager::ActiveScene().Clear();
   ASSERT_EQ(CountEntities(), 0u);
-  ASSERT_TRUE(SceneIO::Load(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), m_file, &error)) << error;
 
   ASSERT_TRUE(ECSManager::HasComponent<SpriteAppearanceComponent>(entity));
   const SpriteAppearanceComponent& loaded = ECSManager::GetComponent<SpriteAppearanceComponent>(entity);
@@ -560,40 +560,40 @@ TEST_F(SceneIOTest, ASpriteAppearanceRoundTrips) {
 TEST_F(SceneIOTest, ASceneCameraRoundTrips) {
   const std::filesystem::path second_file = m_directory / "second.xml";
 
-  SceneIO::GetCamera().position = glm::vec2(320.f, 180.f);
-  SceneIO::GetCamera().zoom = 2.f;
-  SceneIO::GetCamera().background = glm::vec3(0.2f, 0.4f, 0.8f);
+  ECSManager::ActiveScene().GetCamera().position = glm::vec2(320.f, 180.f);
+  ECSManager::ActiveScene().GetCamera().zoom = 2.f;
+  ECSManager::ActiveScene().GetCamera().background = glm::vec3(0.2f, 0.4f, 0.8f);
 
   CreateSprite("hero", glm::vec3(320.f, 180.f, 0.f));
 
   std::string error;
-  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Save(ECSManager::ActiveScene(), m_file, &error)) << error;
 
   // A different scene, with a different camera.
-  SceneIO::GetCamera().position = glm::vec2(1000.f, 100.f);
-  SceneIO::GetCamera().zoom = 0.5f;
-  SceneIO::GetCamera().background = glm::vec3(0.f, 0.f, 0.f);
+  ECSManager::ActiveScene().GetCamera().position = glm::vec2(1000.f, 100.f);
+  ECSManager::ActiveScene().GetCamera().zoom = 0.5f;
+  ECSManager::ActiveScene().GetCamera().background = glm::vec3(0.f, 0.f, 0.f);
 
-  ASSERT_TRUE(SceneIO::Save(second_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Save(ECSManager::ActiveScene(), second_file, &error)) << error;
 
-  SceneIO::Clear();
-  ASSERT_TRUE(SceneIO::Load(m_file, &error)) << error;
+  ECSManager::ActiveScene().Clear();
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), m_file, &error)) << error;
 
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().position.x, 320.f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().position.y, 180.f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().zoom, 2.f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.r, 0.2f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.g, 0.4f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.b, 0.8f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().position.x, 320.f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().position.y, 180.f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().zoom, 2.f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().background.r, 0.2f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().background.g, 0.4f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().background.b, 0.8f);
 
-  ASSERT_TRUE(SceneIO::Load(second_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), second_file, &error)) << error;
 
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().position.x, 1000.f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().position.y, 100.f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().zoom, 0.5f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.r, 0.f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.g, 0.f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.b, 0.f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().position.x, 1000.f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().position.y, 100.f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().zoom, 0.5f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().background.r, 0.f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().background.g, 0.f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().background.b, 0.f);
 }
 
 // Version 2 changed what a sprite stores for its texture: a name instead of
@@ -608,7 +608,7 @@ TEST_F(SceneIOTest, AV1SceneIsRefusedAsOlderThanThisBuild) {
 
   std::string error;
 
-  EXPECT_FALSE(SceneIO::Load(fixture, &error));
+  EXPECT_FALSE(SceneIO::Load(ECSManager::ActiveScene(), fixture, &error));
   EXPECT_NE(error.find("older"), std::string::npos) << error;
   EXPECT_NE(error.find("version 1"), std::string::npos) << error;
 
@@ -623,7 +623,7 @@ TEST_F(SceneIOTest, AV2SceneLoadsFromTheFixture) {
   const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "scene_v2.xml";
 
   std::string error;
-  ASSERT_TRUE(SceneIO::Load(fixture, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), fixture, &error)) << error;
 
   ASSERT_EQ(CountEntities(), 2u);
   EXPECT_EQ(TextureManager::Count(), 1u);
@@ -670,7 +670,7 @@ TEST_F(SceneIOTest, AV3SceneLoadsFromTheFixture) {
   const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "scene_v3.xml";
 
   std::string error;
-  ASSERT_TRUE(SceneIO::Load(fixture, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), fixture, &error)) << error;
 
   ASSERT_EQ(CountEntities(), 3u);
   EXPECT_EQ(TextureManager::Count(), 1u);
@@ -707,7 +707,7 @@ TEST_F(SceneIOTest, AV4SceneLoadsFromTheFixture) {
   const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "scene_v4.xml";
 
   std::string error;
-  ASSERT_TRUE(SceneIO::Load(fixture, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), fixture, &error)) << error;
 
   ASSERT_EQ(CountEntities(), 3u);
   EXPECT_EQ(TextureManager::Count(), 1u);
@@ -747,14 +747,14 @@ TEST_F(SceneIOTest, AVersion4SceneKeepsTheDefaultCamera) {
   const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "scene_v4.xml";
 
   std::string error;
-  ASSERT_TRUE(SceneIO::Load(fixture, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), fixture, &error)) << error;
 
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().position.x, 640.f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().position.y, 360.f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().zoom, 1.f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.r, 1.f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.g, 0.f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.b, 1.f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().position.x, 640.f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().position.y, 360.f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().zoom, 1.f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().background.r, 1.f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().background.g, 0.f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().background.b, 1.f);
 }
 
 // The version 5 fixture is the first file with a camera node, and the shape a
@@ -763,16 +763,16 @@ TEST_F(SceneIOTest, AV5SceneLoadsFromTheFixture) {
   const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "scene_v5.xml";
 
   std::string error;
-  ASSERT_TRUE(SceneIO::Load(fixture, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), fixture, &error)) << error;
 
   ASSERT_EQ(CountEntities(), 1u);
 
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().position.x, 320.f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().position.y, 180.f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().zoom, 2.f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.r, 0.2f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.g, 0.4f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.b, 0.8f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().position.x, 320.f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().position.y, 180.f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().zoom, 2.f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().background.r, 0.2f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().background.g, 0.4f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().background.b, 0.8f);
 }
 
 // A version 6 scene stores an asset *id*, not a name: the registry the fixture
@@ -784,7 +784,7 @@ TEST_F(SceneIOTest, AV6SceneLoadsFromTheFixture) {
 
   std::string error;
   ASSERT_TRUE(AssetRegistry::Load(registry, &error)) << error;
-  ASSERT_TRUE(SceneIO::Load(fixture, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), fixture, &error)) << error;
 
   ASSERT_EQ(CountEntities(), 2u);
 
@@ -821,7 +821,7 @@ TEST_F(SceneIOTest, AV7SceneLoadsWithEveryEntityEnabled) {
   const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "scene_v7.xml";
 
   std::string error;
-  ASSERT_TRUE(SceneIO::Load(fixture, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), fixture, &error)) << error;
 
   ASSERT_EQ(CountEntities(), 2u);
   EXPECT_EQ(ECSManager::GetView<EntityEnabledComponent>().size(), 0u);
@@ -834,7 +834,7 @@ TEST_F(SceneIOTest, AV8SceneLoadsWithEveryComponentEnabled) {
   const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "scene_v8.xml";
 
   std::string error;
-  ASSERT_TRUE(SceneIO::Load(fixture, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), fixture, &error)) << error;
 
   ASSERT_EQ(CountEntities(), 2u);
   EXPECT_EQ(ECSManager::GetView<DisabledComponentsComponent>().size(), 0u);
@@ -856,7 +856,7 @@ TEST_F(SceneIOTest, AV5SceneMigratesNamesToIds) {
   const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "scene_v2.xml";
 
   std::string error;
-  ASSERT_TRUE(SceneIO::Load(fixture, &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), fixture, &error)) << error;
 
   int textured = 0;
 
@@ -871,7 +871,7 @@ TEST_F(SceneIOTest, AV5SceneMigratesNamesToIds) {
 
   EXPECT_EQ(textured, 1);
 
-  ASSERT_TRUE(SceneIO::Save(m_file, &error)) << error;
+  ASSERT_TRUE(SceneIO::Save(ECSManager::ActiveScene(), m_file, &error)) << error;
 
   const std::string contents = ReadFile(m_file);
   EXPECT_EQ(contents.find("<Texture>shared.png</Texture>"), std::string::npos);
@@ -883,7 +883,7 @@ TEST_F(SceneIOTest, AVersionZeroSceneIsNotASceneFile) {
 
   std::string error;
 
-  EXPECT_FALSE(SceneIO::Load(m_file, &error));
+  EXPECT_FALSE(SceneIO::Load(ECSManager::ActiveScene(), m_file, &error));
   EXPECT_NE(error.find("not a scene file"), std::string::npos);
 }
 
@@ -893,7 +893,7 @@ TEST_F(SceneIOTest, AnUnwritablePathReportsFailureWithoutLeavingAScratchFile) {
 
   std::string error;
 
-  EXPECT_FALSE(SceneIO::Save(missing, &error));
+  EXPECT_FALSE(SceneIO::Save(ECSManager::ActiveScene(), missing, &error));
   EXPECT_FALSE(error.empty());
   EXPECT_FALSE(std::filesystem::exists(missing_scratch));
 }
@@ -901,14 +901,14 @@ TEST_F(SceneIOTest, AnUnwritablePathReportsFailureWithoutLeavingAScratchFile) {
 TEST_F(SceneIOTest, AStringSnapshotRoundTrips) {
   CreateSprite("snapshot", glm::vec3(4.5f, 6.25f, 0.f));
 
-  SceneIO::GetCamera().position = glm::vec2(10.f, 20.f);
-  SceneIO::GetCamera().zoom = 2.0f;
-  SceneIO::GetCamera().background = glm::vec3(0.25f, 0.5f, 0.75f);
+  ECSManager::ActiveScene().GetCamera().position = glm::vec2(10.f, 20.f);
+  ECSManager::ActiveScene().GetCamera().zoom = 2.0f;
+  ECSManager::ActiveScene().GetCamera().background = glm::vec3(0.25f, 0.5f, 0.75f);
 
   std::string snapshot;
   std::string error;
 
-  ASSERT_TRUE(SceneIO::SaveToString(&snapshot, &error)) << error;
+  ASSERT_TRUE(SceneIO::SaveToString(ECSManager::ActiveScene(), &snapshot, &error)) << error;
   EXPECT_FALSE(snapshot.empty());
   EXPECT_FALSE(std::filesystem::exists(m_file));
 
@@ -916,9 +916,9 @@ TEST_F(SceneIOTest, AStringSnapshotRoundTrips) {
   ECSManager::GetView<TransformComponent>().each(
       [](auto, TransformComponent& transform) { transform.position = glm::vec3(99.f, 99.f, 0.f); });
   CreateSprite("made-during-play", glm::vec3(0.f));
-  SceneIO::GetCamera().zoom = 0.5f;
+  ECSManager::ActiveScene().GetCamera().zoom = 0.5f;
 
-  ASSERT_TRUE(SceneIO::LoadFromString(snapshot, &error)) << error;
+  ASSERT_TRUE(SceneIO::LoadFromString(ECSManager::ActiveScene(), snapshot, &error)) << error;
 
   ASSERT_EQ(CountEntities(), 1u);
 
@@ -929,10 +929,10 @@ TEST_F(SceneIOTest, AStringSnapshotRoundTrips) {
         EXPECT_FLOAT_EQ(transform.position.y, 6.25f);
       });
 
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().position.x, 10.f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().position.y, 20.f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().zoom, 2.0f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().background.z, 0.75f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().position.x, 10.f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().position.y, 20.f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().zoom, 2.0f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().background.z, 0.75f);
 }
 
 TEST_F(SceneIOTest, AnInvalidStringSnapshotLeavesTheSceneAlone) {
@@ -940,7 +940,8 @@ TEST_F(SceneIOTest, AnInvalidStringSnapshotLeavesTheSceneAlone) {
 
   std::string error;
 
-  EXPECT_FALSE(SceneIO::LoadFromString("<cereal><formatVersion>0</formatVersion></cereal>", &error));
+  EXPECT_FALSE(
+      SceneIO::LoadFromString(ECSManager::ActiveScene(), "<cereal><formatVersion>0</formatVersion></cereal>", &error));
   EXPECT_NE(error.find("not a scene file"), std::string::npos);
   EXPECT_NE(error.find("<snapshot>"), std::string::npos);
 
@@ -952,7 +953,8 @@ TEST_F(SceneIOTest, AnInvalidStringSnapshotLeavesTheSceneAlone) {
 TEST_F(SceneIOTest, ANewerStringSnapshotIsRefused) {
   std::string error;
 
-  EXPECT_FALSE(SceneIO::LoadFromString("<cereal><formatVersion>99</formatVersion></cereal>", &error));
+  EXPECT_FALSE(
+      SceneIO::LoadFromString(ECSManager::ActiveScene(), "<cereal><formatVersion>99</formatVersion></cereal>", &error));
   EXPECT_NE(error.find("newer than this build supports"), std::string::npos);
   EXPECT_EQ(CountEntities(), 0u);
 }

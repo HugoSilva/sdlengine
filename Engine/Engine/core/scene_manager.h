@@ -36,10 +36,13 @@ class SceneManager {
   static rse::Scene& OpenScene();
 
   // Opens a scene and makes it the active one. A relative path resolves
-  // against the project directory. On failure the active scene is unchanged.
+  // against the project directory. A file whose header cannot be read leaves
+  // the open scene alone; a failure part-way through leaves it empty rather
+  // than half of the old one and half of the new one.
   static bool Open(const std::filesystem::path& scene, std::string* error);
 
-  // Saves the active scene back to its own file.
+  // Saves the open scene back to its own file. Refused while a play session is
+  // active: the open scene is not the one being simulated.
   static bool Save(std::string* error);
 
   // Replaces the open scene with an empty one, written to `scene`.

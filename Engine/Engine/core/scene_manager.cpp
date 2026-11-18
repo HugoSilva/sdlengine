@@ -42,7 +42,7 @@ bool SceneManager::Open(const std::filesystem::path& scene, std::string* error) 
 
   const std::filesystem::path resolved = Resolve(scene);
 
-  if (!rse::SceneIO::Load(resolved, error)) {
+  if (!rse::SceneIO::Load(m_scene, resolved, error)) {
     return false;
   }
 
@@ -66,7 +66,7 @@ bool SceneManager::Save(std::string* error) {
     return false;
   }
 
-  if (!rse::SceneIO::Save(m_active_scene, error)) {
+  if (!rse::SceneIO::Save(m_scene, m_active_scene, error)) {
     return false;
   }
 
@@ -86,9 +86,9 @@ bool SceneManager::Create(const std::filesystem::path& scene, std::string* error
     std::filesystem::create_directories(resolved.parent_path(), error_code);
   }
 
-  rse::SceneIO::Clear();
+  m_scene.Clear();
 
-  if (!rse::SceneIO::Save(resolved, error)) {
+  if (!rse::SceneIO::Save(m_scene, resolved, error)) {
     return false;
   }
 
@@ -125,7 +125,7 @@ bool SceneManager::Play(std::string* error) {
   // edits are part of the state Play starts from, so Stop returns to exactly
   // what the user was looking at when they pressed Play.
   std::string snapshot;
-  if (!rse::SceneIO::SaveToString(&snapshot, error)) {
+  if (!rse::SceneIO::SaveToString(m_scene, &snapshot, error)) {
     return false;
   }
 
@@ -162,7 +162,7 @@ bool SceneManager::Stop(std::string* error) {
   // start its own sounds when it is played again.
   rse::SoundManager::StopAll();
 
-  const bool restored = rse::SceneIO::LoadFromString(m_snapshot, error);
+  const bool restored = rse::SceneIO::LoadFromString(m_scene, m_snapshot, error);
 
   m_snapshot.clear();
   m_play_state = PlayState::kStopped;

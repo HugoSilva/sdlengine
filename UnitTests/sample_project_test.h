@@ -43,7 +43,7 @@ class SampleProjectTest : public ::testing::Test {
   void SetUp() override { AssetRegistry::Init(kSampleProject); }
 
   void TearDown() override {
-    SceneIO::Clear();
+    ECSManager::ActiveScene().Clear();
     TextureManager::Clean();
     SoundManager::Clean();
     PhysicsMaterialManager::Clean();
@@ -125,12 +125,12 @@ TEST_F(SampleProjectTest, EveryListedSceneLoads) {
     const std::filesystem::path file = project.Resolve(scene);
     ASSERT_TRUE(std::filesystem::exists(file)) << file;
 
-    SceneIO::Clear();
-    ASSERT_TRUE(SceneIO::Load(file, &error)) << file << ": " << error;
+    ECSManager::ActiveScene().Clear();
+    ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), file, &error)) << file << ": " << error;
     EXPECT_GT(CountEntities(), 0u) << file;
   }
 
-  SceneIO::Clear();
+  ECSManager::ActiveScene().Clear();
 }
 
 TEST_F(SampleProjectTest, AssetRootExists) {
@@ -149,7 +149,7 @@ TEST_F(SampleProjectTest, TheStartupSceneSharesOneTexture) {
   std::string error;
 
   ASSERT_TRUE(Project::Load(kSampleProject / "project.xml", project, &error)) << error;
-  ASSERT_TRUE(SceneIO::Load(project.Resolve(project.startup_scene), &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), project.Resolve(project.startup_scene), &error)) << error;
 
   EXPECT_EQ(TextureManager::Count(), 1u);
 
@@ -197,7 +197,7 @@ TEST_F(SampleProjectTest, ThePhysicsSceneHasAFloorAndAFallingBody) {
   std::string error;
 
   ASSERT_TRUE(Project::Load(kSampleProject / "project.xml", project, &error)) << error;
-  ASSERT_TRUE(SceneIO::Load(project.Resolve("scenes/physics.xml"), &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), project.Resolve("scenes/physics.xml"), &error)) << error;
 
   EXPECT_EQ(ECSManager::GetView<RigidBodyComponent>().size(), 2u);
 
@@ -260,7 +260,7 @@ TEST_F(SampleProjectTest, ThePhysicsSceneCrateLandsAndRests) {
   std::string error;
 
   ASSERT_TRUE(Project::Load(kSampleProject / "project.xml", project, &error)) << error;
-  ASSERT_TRUE(SceneIO::Load(project.Resolve("scenes/physics.xml"), &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), project.Resolve("scenes/physics.xml"), &error)) << error;
 
   PhysicsSystem physics;
   FixedTimestep timestep;

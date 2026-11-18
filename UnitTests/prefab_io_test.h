@@ -38,11 +38,11 @@ class PrefabIOTest : public ::testing::Test {
     m_file = m_directory / "crate.xml";
     m_scratch = std::filesystem::path{m_file}.concat(".tmp");
 
-    SceneIO::Clear();
+    ECSManager::ActiveScene().Clear();
   }
 
   void TearDown() override {
-    SceneIO::Clear();
+    ECSManager::ActiveScene().Clear();
     TextureManager::Clean();
     SoundManager::Clean();
     std::filesystem::remove_all(m_directory);
@@ -122,7 +122,7 @@ TEST_F(PrefabIOTest, EveryPlacedCopyGetsItsOwnIdentity) {
   EXPECT_EQ(contents.find(source_id), std::string::npos);
   EXPECT_NE(contents.find("<formatVersion>5</formatVersion>"), std::string::npos);
 
-  SceneIO::Clear();
+  ECSManager::ActiveScene().Clear();
 
   const uint32_t first = PrefabIO::Instantiate(m_file, &error);
   ASSERT_NE(first, kNullEntity) << error;
@@ -144,7 +144,7 @@ TEST_F(PrefabIOTest, APlacedEntityComesBackWithItsValues) {
   std::string error;
   ASSERT_TRUE(PrefabIO::Save(m_file, crate, &error)) << error;
 
-  SceneIO::Clear();
+  ECSManager::ActiveScene().Clear();
   ASSERT_EQ(CountEntities(), 0u);
 
   const uint32_t placed = PrefabIO::Instantiate(m_file, &error);
@@ -171,7 +171,7 @@ TEST_F(PrefabIOTest, DisabledStateIsCopiedWithThePrefab) {
   std::string error;
   ASSERT_TRUE(PrefabIO::Save(m_file, crate, &error)) << error;
 
-  SceneIO::Clear();
+  ECSManager::ActiveScene().Clear();
   const uint32_t placed = PrefabIO::Instantiate(m_file, &error);
   ASSERT_NE(placed, kNullEntity) << error;
 
@@ -188,7 +188,7 @@ TEST_F(PrefabIOTest, DisabledComponentStateIsCopiedWithThePrefab) {
   std::string error;
   ASSERT_TRUE(PrefabIO::Save(m_file, crate, &error)) << error;
 
-  SceneIO::Clear();
+  ECSManager::ActiveScene().Clear();
   const uint32_t placed = PrefabIO::Instantiate(m_file, &error);
   ASSERT_NE(placed, kNullEntity) << error;
 
@@ -209,7 +209,7 @@ TEST_F(PrefabIOTest, ASpriteAppearanceIsCopiedWithThePrefab) {
   std::string error;
   ASSERT_TRUE(PrefabIO::Save(m_file, crate, &error)) << error;
 
-  SceneIO::Clear();
+  ECSManager::ActiveScene().Clear();
   ASSERT_EQ(CountEntities(), 0u);
 
   const uint32_t placed = PrefabIO::Instantiate(m_file, &error);
@@ -271,7 +271,7 @@ TEST_F(PrefabIOTest, TwoInstantiationsAreIndependent) {
   std::string error;
   ASSERT_TRUE(PrefabIO::Save(m_file, source, &error)) << error;
 
-  SceneIO::Clear();
+  ECSManager::ActiveScene().Clear();
   TextureManager::Clean();
 
   const uint32_t first = PrefabIO::Instantiate(m_file, &error);
@@ -314,7 +314,7 @@ TEST_F(PrefabIOTest, APrefabWithARigidBodyGetsAFreshBody) {
   std::string error;
   ASSERT_TRUE(PrefabIO::Save(m_file, crate, &error)) << error;
 
-  SceneIO::Clear();
+  ECSManager::ActiveScene().Clear();
 
   const uint32_t first = PrefabIO::Instantiate(m_file, &error);
   ASSERT_NE(first, kNullEntity) << error;

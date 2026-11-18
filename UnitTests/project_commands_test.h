@@ -40,7 +40,7 @@ class ProjectCommandsTest : public ::testing::Test {
 
     Core::GetProject() = Project{};
     SceneManager::Clean();
-    SceneIO::Clear();
+    ECSManager::ActiveScene().Clear();
     AssetRegistry::Clean();
     CancelPending();
   }
@@ -48,7 +48,7 @@ class ProjectCommandsTest : public ::testing::Test {
   void TearDown() override {
     Core::GetProject() = Project{};
     SceneManager::Clean();
-    SceneIO::Clear();
+    ECSManager::ActiveScene().Clear();
     AssetRegistry::Clean();
     TextureManager::Clean();
     SoundManager::Clean();
@@ -108,8 +108,8 @@ TEST_F(ProjectCommandsTest, SaveProjectWritesTheOpenScene) {
   ASSERT_TRUE(Core::SaveProject(&error)) << error;
   EXPECT_FALSE(SceneManager::IsDirty());
 
-  SceneIO::Clear();
-  ASSERT_TRUE(SceneIO::Load(SceneManager::GetActiveScene(), &error)) << error;
+  ECSManager::ActiveScene().Clear();
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), SceneManager::GetActiveScene(), &error)) << error;
   EXPECT_EQ(CountEntities(), 1u);
 }
 
@@ -541,8 +541,8 @@ TEST_F(ProjectCommandsTest, CreateSceneAtRefusesASceneTheManifestAlreadyLists) {
   EXPECT_EQ(SceneManager::GetActiveSceneName(), "start");
 
   // The file is untouched: one entity, not an empty scene.
-  SceneIO::Clear();
-  ASSERT_TRUE(SceneIO::Load(start, &error)) << error;
+  ECSManager::ActiveScene().Clear();
+  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), start, &error)) << error;
   EXPECT_EQ(CountEntities(), 1u);
 }
 

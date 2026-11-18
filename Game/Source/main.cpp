@@ -37,7 +37,7 @@ class Game : public Core {
 
     // The scene says where its camera looks, and the game applies that once,
     // when it starts: the arrow keys still move the camera afterwards.
-    const rse::SceneIO::SceneCamera& scene_camera = rse::SceneIO::GetCamera();
+    const rse::Scene::Camera& scene_camera = SceneManager::ActiveScene().GetCamera();
     m_camera = new rse::Camera(glm::vec3(scene_camera.position, 0.0f));
     m_camera->SetZoom(scene_camera.zoom);
 

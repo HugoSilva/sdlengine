@@ -42,7 +42,7 @@ class EditorSettingsPanel : public EditorPanel {
 
     ImGui::Separator();
 
-    rse::SceneIO::SceneCamera& camera = rse::SceneIO::GetCamera();
+    rse::Scene::Camera& camera = SceneManager::ActiveScene().GetCamera();
     float background[3] = {camera.background.r, camera.background.g, camera.background.b};
 
     if (ImGui::ColorEdit3("Background", background)) {

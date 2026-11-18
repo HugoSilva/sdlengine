@@ -28,13 +28,13 @@ class SceneManagerTest : public ::testing::Test {
     std::filesystem::create_directories(m_directory);
 
     SoundManager::Clean();
-    SceneIO::Clear();
+    ECSManager::ActiveScene().Clear();
     SceneManager::Init(m_directory);
   }
 
   void TearDown() override {
     SceneManager::Clean();
-    SceneIO::Clear();
+    ECSManager::ActiveScene().Clear();
     SoundManager::Clean();
     std::filesystem::remove_all(m_directory);
   }
@@ -72,7 +72,7 @@ TEST_F(SceneManagerTest, PlayCapturesAndStopRestores) {
   // The scene runs forward: the player moved and an entity appeared.
   ECSManager::GetComponent<TransformComponent>(player).position = glm::vec3(9.f, 10.f, 0.f);
   const uint32_t transient = CreateEntity("transient", glm::vec3(5.f, 5.f, 0.f));
-  SceneIO::GetCamera().zoom = 3.0f;
+  ECSManager::ActiveScene().GetCamera().zoom = 3.0f;
 
   ASSERT_TRUE(SceneManager::Stop(&error)) << error;
   EXPECT_EQ(SceneManager::GetPlayState(), SceneManager::PlayState::kStopped);
@@ -84,7 +84,7 @@ TEST_F(SceneManagerTest, PlayCapturesAndStopRestores) {
   const TransformComponent& transform = ECSManager::GetComponent<TransformComponent>(player);
   EXPECT_FLOAT_EQ(transform.position.x, 1.f);
   EXPECT_FLOAT_EQ(transform.position.y, 2.f);
-  EXPECT_FLOAT_EQ(SceneIO::GetCamera().zoom, 1.0f);
+  EXPECT_FLOAT_EQ(ECSManager::ActiveScene().GetCamera().zoom, 1.0f);
 }
 
 TEST_F(SceneManagerTest, PauseHoldsAndResumeContinues) {
@@ -189,7 +189,7 @@ TEST_F(SceneManagerTest, OpeningASceneDiscardsTheSession) {
 
   // A scene switch leaves the old scene behind rather than restoring it, so the
   // session is dropped before the new file is read.
-  ASSERT_TRUE(SceneIO::Save(second, &error)) << error;
+  ASSERT_TRUE(SceneIO::Save(ECSManager::ActiveScene(), second, &error)) << error;
   ASSERT_TRUE(SceneManager::Open(second, &error)) << error;
 
   EXPECT_EQ(SceneManager::GetPlayState(), SceneManager::PlayState::kStopped);

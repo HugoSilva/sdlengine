@@ -9,7 +9,6 @@
 
 #include <core/uuid.h>
 #include <ecs/components/include_list.h>
-#include <ecs/ecs_manager.h>
 #include <ecs/scene.h>
 
 namespace rse {
@@ -100,21 +99,21 @@ void AssignMissingUuids(entt::DefaultRegistry& registry) {
 // snapshot have to produce the same payload, or a scene would load differently
 // depending on which route it travelled.
 template <typename Archive>
-void WriteScene(Archive& archive, entt::DefaultRegistry& registry) {
+void WriteScene(Archive& archive, rse::Scene& scene) {
   const int format_version{SceneIO::kFormatVersion};
   archive(cereal::make_nvp("formatVersion", format_version));
 
   // The camera is scene-root data, written before the entities it frames.
-  archive(cereal::make_nvp("camera", SceneIO::GetCamera()));
+  archive(cereal::make_nvp("camera", scene.GetCamera()));
 
-  SaveEntities entities{registry};
+  SaveEntities entities{scene.Registry()};
   archive(cereal::make_nvp("entities", entities));
 }
 
 // One reader for both sources. `source` is what an error names: a path, or
 // <snapshot> for the play session.
 template <typename Archive>
-bool ReadScene(Archive& archive, entt::DefaultRegistry& registry, const std::string& source, std::string* error) {
+bool ReadScene(Archive& archive, rse::Scene& scene, const std::string& source, std::string* error) {
   int format_version{0};
   bool cleared = false;
 
@@ -146,29 +145,29 @@ bool ReadScene(Archive& archive, entt::DefaultRegistry& registry, const std::str
 
     // The header was readable, so this really is a scene file: replacing the
     // open scene is now the right thing to do.
-    SceneIO::Clear();
+    scene.Clear();
     cleared = true;
 
     // Version 5 added the camera node. An older scene has none, so the value
     // Clear() left is the default framing, which is what it was drawn with.
     if (format_version >= 5) {
-      archive(cereal::make_nvp("camera", SceneIO::GetCamera()));
+      archive(cereal::make_nvp("camera", scene.GetCamera()));
     }
 
-    LoadEntities entities{registry, format_version};
+    LoadEntities entities{scene.Registry(), format_version};
     archive(cereal::make_nvp("entities", entities));
 
-    AssignMissingUuids(registry);
+    AssignMissingUuids(scene.Registry());
   } catch (const std::exception& exception) {
     if (cleared) {
-      SceneIO::Clear();
+      scene.Clear();
     }
 
     SetError(error, exception.what());
     return false;
   } catch (...) {
     if (cleared) {
-      SceneIO::Clear();
+      scene.Clear();
     }
 
     SetError(error, "unknown error");
@@ -179,9 +178,7 @@ bool ReadScene(Archive& archive, entt::DefaultRegistry& registry, const std::str
 }
 }  // namespace
 
-SceneIO::SceneCamera SceneIO::m_camera;
-
-bool SceneIO::Save(const std::filesystem::path& file, std::string* error) {
+bool SceneIO::Save(rse::Scene& scene, const std::filesystem::path& file, std::string* error) {
   std::filesystem::path scratch{file};
   scratch += ".tmp";
 
@@ -197,7 +194,7 @@ bool SceneIO::Save(const std::filesystem::path& file, std::string* error) {
 
   try {
     cereal::XMLOutputArchive archive{stream};
-    WriteScene(archive, ECSManager::Registry());
+    WriteScene(archive, scene);
   } catch (const std::exception& exception) {
     message = exception.what();
     succeeded = false;
@@ -227,7 +224,7 @@ bool SceneIO::Save(const std::filesystem::path& file, std::string* error) {
   return true;
 }
 
-bool SceneIO::Load(const std::filesystem::path& file, std::string* error) {
+bool SceneIO::Load(rse::Scene& scene, const std::filesystem::path& file, std::string* error) {
   std::ifstream stream{file};
 
   if (!stream.is_open()) {
@@ -237,7 +234,7 @@ bool SceneIO::Load(const std::filesystem::path& file, std::string* error) {
 
   try {
     cereal::XMLInputArchive archive{stream};
-    return ReadScene(archive, ECSManager::Registry(), file.string(), error);
+    return ReadScene(archive, scene, file.string(), error);
   } catch (const std::exception& exception) {
     SetError(error, exception.what());
     return false;
@@ -247,7 +244,7 @@ bool SceneIO::Load(const std::filesystem::path& file, std::string* error) {
   }
 }
 
-bool SceneIO::SaveToString(std::string* contents, std::string* error) {
+bool SceneIO::SaveToString(rse::Scene& scene, std::string* contents, std::string* error) {
   if (contents == nullptr) {
     SetError(error, "no string to save the scene into");
     return false;
@@ -260,7 +257,7 @@ bool SceneIO::SaveToString(std::string* contents, std::string* error) {
     // tags: take the string after the archive is gone.
     {
       cereal::XMLOutputArchive archive{stream};
-      WriteScene(archive, ECSManager::Registry());
+      WriteScene(archive, scene);
     }
 
     *contents = stream.str();
@@ -275,12 +272,12 @@ bool SceneIO::SaveToString(std::string* contents, std::string* error) {
   return true;
 }
 
-bool SceneIO::LoadFromString(const std::string& contents, std::string* error) {
+bool SceneIO::LoadFromString(rse::Scene& scene, const std::string& contents, std::string* error) {
   std::istringstream stream{contents};
 
   try {
     cereal::XMLInputArchive archive{stream};
-    return ReadScene(archive, ECSManager::Registry(), "<snapshot>", error);
+    return ReadScene(archive, scene, "<snapshot>", error);
   } catch (const std::exception& exception) {
     SetError(error, exception.what());
     return false;
@@ -288,10 +285,5 @@ bool SceneIO::LoadFromString(const std::string& contents, std::string* error) {
     SetError(error, "unknown error");
     return false;
   }
-}
-
-void SceneIO::Clear() {
-  ECSManager::ActiveScene().Clear();
-  m_camera = SceneCamera{};
 }
 }  // namespace rse
