@@ -4,6 +4,7 @@
 
 #include <ecs/components/include_list.h>
 #include <ecs/ecs_manager.h>
+#include <ecs/entity.h>
 #include <ecs/systems/base_system.h>
 
 /*
@@ -29,10 +30,26 @@ class SimulationCountingSystem : public BaseSystem {
   int steps{0};
 };
 
+// Reads the scene it is handed, so a test can tell which world a system ran on
+// rather than assuming it is the active one.
+class CountingEntitiesSystem : public BaseSystem {
+ public:
+  void Update(rse::Scene& scene, const float) override { count = scene.EntityCount(); }
+
+  std::size_t count{0};
+};
+
 class ECSManagerTest : public ::testing::Test {
  protected:
-  void SetUp() override { ECSManager::Clean(); }
-  void TearDown() override { ECSManager::Clean(); }
+  void SetUp() override {
+    ECSManager::Clean();
+    ECSManager::ActiveScene().Clear();
+  }
+
+  void TearDown() override {
+    ECSManager::Clean();
+    ECSManager::ActiveScene().Clear();
+  }
 };
 
 TEST_F(ECSManagerTest, TheRenderPhasesRunWithoutASimulationStep) {
@@ -58,6 +75,21 @@ TEST_F(ECSManagerTest, TheRenderPhasesRunWithoutASimulationStep) {
   EXPECT_EQ(pre_scene->updates, 2);
   EXPECT_EQ(simulation->steps, 1);
   EXPECT_EQ(scene->updates, 2);
+}
+
+// The active scene is what ECSManager runs systems on, but a system is written
+// against whichever scene it is given: that is what will let a play session run
+// a copy while the editor keeps the saved one.
+TEST_F(ECSManagerTest, ASystemRunsAgainstTheSceneItIsGiven) {
+  Scene other;
+  other.CreateEntity();
+  other.CreateEntity();
+
+  CountingEntitiesSystem system;
+  system.Update(other, 1.0f);
+
+  EXPECT_EQ(system.count, 2u);
+  EXPECT_EQ(ECSManager::ActiveScene().EntityCount(), 0u);
 }
 
 TEST_F(ECSManagerTest, ANewEntityIsGivenAnIdentity) {

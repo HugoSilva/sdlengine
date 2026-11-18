@@ -32,8 +32,8 @@ class ECSManager {
   static Scene& ActiveScene();
 
   // The active scene's registry, for the code that still takes one: scene IO,
-  // prefab IO and the systems walking components. Temporary, for the same
-  // reason as ActiveScene().
+  // prefab IO and the editor's ids. The systems now walk the scene they are
+  // handed. Temporary, for the same reason as ActiveScene().
   static entt::DefaultRegistry& Registry();
 
   // Creates an entity with a fresh identity. Everything that makes an entity
