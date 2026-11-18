@@ -10,6 +10,7 @@
 #include <core/uuid.h>
 #include <ecs/components/include_list.h>
 #include <ecs/ecs_manager.h>
+#include <ecs/scene.h>
 
 namespace rse {
 namespace {
@@ -196,7 +197,7 @@ bool SceneIO::Save(const std::filesystem::path& file, std::string* error) {
 
   try {
     cereal::XMLOutputArchive archive{stream};
-    WriteScene(archive, ECSManager::registry);
+    WriteScene(archive, ECSManager::Registry());
   } catch (const std::exception& exception) {
     message = exception.what();
     succeeded = false;
@@ -236,7 +237,7 @@ bool SceneIO::Load(const std::filesystem::path& file, std::string* error) {
 
   try {
     cereal::XMLInputArchive archive{stream};
-    return ReadScene(archive, ECSManager::registry, file.string(), error);
+    return ReadScene(archive, ECSManager::Registry(), file.string(), error);
   } catch (const std::exception& exception) {
     SetError(error, exception.what());
     return false;
@@ -259,7 +260,7 @@ bool SceneIO::SaveToString(std::string* contents, std::string* error) {
     // tags: take the string after the archive is gone.
     {
       cereal::XMLOutputArchive archive{stream};
-      WriteScene(archive, ECSManager::registry);
+      WriteScene(archive, ECSManager::Registry());
     }
 
     *contents = stream.str();
@@ -279,7 +280,7 @@ bool SceneIO::LoadFromString(const std::string& contents, std::string* error) {
 
   try {
     cereal::XMLInputArchive archive{stream};
-    return ReadScene(archive, ECSManager::registry, "<snapshot>", error);
+    return ReadScene(archive, ECSManager::Registry(), "<snapshot>", error);
   } catch (const std::exception& exception) {
     SetError(error, exception.what());
     return false;
@@ -290,7 +291,7 @@ bool SceneIO::LoadFromString(const std::string& contents, std::string* error) {
 }
 
 void SceneIO::Clear() {
-  ECSManager::registry.reset();
+  ECSManager::ActiveScene().Clear();
   m_camera = SceneCamera{};
 }
 }  // namespace rse

@@ -3,16 +3,22 @@
 #include <core.h>
 
 #include <ecs/components/include_list.h>
+#include <ecs/entity.h>
+#include <ecs/scene.h>
 #include <ecs/systems/audio_system.h>
 #include <ecs/systems/base_system.h>
 #include <ecs/systems/physics_system.h>
 #include <ecs/systems/sprite_render_system.h>
 
 namespace rse {
-entt::DefaultRegistry ECSManager::registry;
+Scene ECSManager::m_scene;
 std::vector<BaseSystem*> ECSManager::m_systems_list;
 std::vector<BaseSystem*> ECSManager::m_pre_scene_systems;
 std::vector<BaseSystem*> ECSManager::m_simulation_systems;
+
+Scene& ECSManager::ActiveScene() { return m_scene; }
+
+entt::DefaultRegistry& ECSManager::Registry() { return m_scene.m_registry; }
 
 void ECSManager::Init() {
   AudioSystem* audio_system = new AudioSystem();
@@ -23,11 +29,7 @@ void ECSManager::Init() {
   AddSystem(sprite_system);
 }
 
-uint32_t ECSManager::CreateEntity() {
-  const uint32_t entity = registry.create();
-  registry.assign<UuidComponent>(entity, Uuid::Generate());
-  return entity;
-}
+uint32_t ECSManager::CreateEntity() { return m_scene.CreateEntity().Handle(); }
 
 bool ECSManager::IsEntityEnabled(uint32_t entity) {
   if (!HasComponent<EntityEnabledComponent>(entity)) {

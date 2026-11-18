@@ -11,7 +11,7 @@
 #include <ecs/systems/physics_system.h>
 
 /*
-Physics runs headless: PhysicsSystem owns its own b2World, so a test can step it
+Physics runs headless: the active scene owns the b2World, so a test can step it
 without a renderer. The first update is what creates each b2Body, which is also
 the path a loaded scene takes -- a component that came back from a file has no
 body until then.
@@ -47,6 +47,22 @@ TEST_F(PhysicsSystemTest, ABodyIsNotSimulatedUntilTheFirstUpdate) {
         EXPECT_FALSE(rigid.m_rigidbody->m_init);
         EXPECT_FLOAT_EQ(transform.position.y, 100.f);
       });
+}
+
+// The system builds each body in the active scene's world; that world is what
+// it steps, and the scene outlives the entities so the bodies have a world to
+// be destroyed from.
+TEST_F(PhysicsSystemTest, BodiesAreBuiltInTheActiveSceneWorld) {
+  CreateBody("faller", 100.f, b2_dynamicBody);
+
+  b2World* world = ECSManager::ActiveScene().PhysicsWorld();
+  ASSERT_EQ(world->GetBodyCount(), 0);
+
+  PhysicsSystem physics;
+  physics.UpdateSimulation(1.0f / 60.0f);
+
+  EXPECT_EQ(world->GetBodyCount(), 1);
+  EXPECT_EQ(ECSManager::ActiveScene().PhysicsWorld()->GetBodyCount(), 1);
 }
 
 TEST_F(PhysicsSystemTest, ABodyWithNoMaterialUsesTheDefaults) {
