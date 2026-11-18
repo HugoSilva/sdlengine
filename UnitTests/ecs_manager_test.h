@@ -15,7 +15,7 @@ namespace {
 
 class CountingSystem : public BaseSystem {
  public:
-  void Update(const float alpha) override { ++updates; }
+  void Update(rse::Scene&, const float) override { ++updates; }
 
   int updates{0};
 };
@@ -24,7 +24,7 @@ class CountingSystem : public BaseSystem {
 // frame's render phases get an interpolation alpha, the simulation gets a step.
 class SimulationCountingSystem : public BaseSystem {
  public:
-  void UpdateSimulation(const float step) override { ++steps; }
+  void UpdateSimulation(rse::Scene&, const float) override { ++steps; }
 
   int steps{0};
 };

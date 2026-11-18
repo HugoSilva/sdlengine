@@ -16,7 +16,7 @@ class PhysicsSystem : public BaseSystem {
   // world that built it, and the scene owns that world so it outlives the
   // entities. A system that owned a world would either be shared between scenes
   // or leak one per scene.
-  void UpdateSimulation(const float step) override {
+  void UpdateSimulation(rse::Scene&, const float step) override {
     b2World* world = rse::ECSManager::ActiveScene().PhysicsWorld();
     world->Step(step, m_velocity_iterations, m_position_iterations);
 

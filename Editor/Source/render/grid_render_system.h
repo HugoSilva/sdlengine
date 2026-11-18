@@ -17,7 +17,7 @@ class GridRenderSystem : public BaseSystem {
   GridRenderSystem(rse::Renderer2D* renderer, const EditorCamera* camera)
       : BaseSystem(), m_renderer(renderer), m_camera(camera) {}
 
-  void Update(const float alpha) override {
+  void Update(rse::Scene&, const float alpha) override {
     if (m_camera == nullptr) {
       return;
     }

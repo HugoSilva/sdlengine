@@ -6,6 +6,8 @@
 
 #include <entity/registry.hpp>
 
+#include <ecs/components/disabled_components.h>
+
 class b2World;
 
 namespace rse {
@@ -51,6 +53,31 @@ class Scene {
 
   // How many entities are alive in the scene.
   std::size_t EntityCount() const;
+
+  // The entities and components themselves. A system walks components through
+  // this -- registry().view<...>() -- because a view is entt's API and wrapping
+  // it would only add a name. SceneIO and PrefabIO read and write it the same
+  // way. The registry is the scene's, so a view taken from one scene never
+  // sees another's entities.
+  entt::DefaultRegistry& Registry() { return m_registry; }
+  const entt::DefaultRegistry& Registry() const { return m_registry; }
+
+  // An entity with no EntityEnabledComponent is enabled: that is what keeps a
+  // scene or prefab written before the component existed fully playable.
+  bool IsEntityEnabled(uint32_t entity) const;
+
+  // A component with no disabled bit is enabled: that is what keeps a scene or
+  // prefab written before component state existed fully enabled. The bit lives
+  // in DisabledComponentsComponent, which is only present while something on
+  // the entity is off.
+  template <typename Component>
+  bool IsComponentEnabled(uint32_t entity) const {
+    if (!m_registry.has<DisabledComponentsComponent>(entity)) {
+      return true;
+    }
+
+    return !m_registry.get<DisabledComponentsComponent>(entity).IsDisabled(ComponentDisabledBit<Component>::kValue);
+  }
 
   // Destroys every entity, keeping the scene object. The camera and the file a
   // scene manager is holding are not part of this type; the physics world stays

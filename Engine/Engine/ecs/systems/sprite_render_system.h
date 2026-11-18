@@ -15,7 +15,7 @@ class SpriteRenderSystem : public BaseSystem {
  public:
   SpriteRenderSystem(rse::Renderer2D* renderer) : BaseSystem(), m_renderer(renderer) {}
 
-  void Update(const float alpha) override {
+  void Update(rse::Scene&, const float alpha) override {
     // The simulation steps whole sixtieths of a second; this is how far the
     // frame is into the next one.
     const float interp = std::clamp(alpha, 0.0f, 1.0f);

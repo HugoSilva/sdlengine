@@ -18,7 +18,7 @@ class AudioSystem : public BaseSystem {
   // stays silent. The work is idempotent, which is what makes running it in
   // fixed steps -- several times a frame, or not at all on a fast display --
   // harmless.
-  void UpdateSimulation(const float step) override {
+  void UpdateSimulation(rse::Scene&, const float step) override {
     (void)step;
     rse::ECSManager::GetView<AudioComponent>().each([](auto entity, AudioComponent& audio) {
       rse::Sound* sound = audio.m_sound.get();
