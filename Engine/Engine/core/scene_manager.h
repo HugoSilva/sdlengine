@@ -3,12 +3,18 @@
 #include <filesystem>
 #include <string>
 
+#include <ecs/scene.h>
+
 // The scene that is open right now.
 //
 // A scene is a file: the entity list SceneIO reads and writes. What a scene
 // *does* is the ECS systems; this class is only the small amount of state
 // around the data -- which file is open, where the project directory is, and
 // whether the open scene has unsaved edits.
+//
+// It also owns the Scene itself. The world used to live in ECSManager, which
+// made "open a different scene" mean "reset the one registry"; owning it here
+// is what lets a play session run a copy while the editor keeps the original.
 class SceneManager {
  public:
   // The editor's play session. A game is always playing and never uses these;
@@ -20,6 +26,14 @@ class SceneManager {
   // open scene.
   static void Init(const std::filesystem::path& project_directory);
   static void Clean();
+
+  // The scene the systems run on and the editor shows. While a play session is
+  // active this is the play copy, so playing never touches the open scene.
+  static rse::Scene& ActiveScene();
+
+  // The open scene itself: what Open, Create and Save read and write. It is the
+  // scene a play session copies, and it does not change when Play starts.
+  static rse::Scene& OpenScene();
 
   // Opens a scene and makes it the active one. A relative path resolves
   // against the project directory. On failure the active scene is unchanged.
@@ -71,6 +85,9 @@ class SceneManager {
   static std::filesystem::path m_project_directory;
   static std::filesystem::path m_active_scene;
   static bool m_dirty;
+
+  // The open scene: the entities the editor edits and the file Open/Save use.
+  static rse::Scene m_scene;
 
   static PlayState m_play_state;
   static std::string m_snapshot;

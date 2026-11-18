@@ -12,6 +12,7 @@ bool SceneManager::m_dirty{false};
 SceneManager::PlayState SceneManager::m_play_state{SceneManager::PlayState::kStopped};
 std::string SceneManager::m_snapshot;
 bool SceneManager::m_dirty_on_play{false};
+rse::Scene SceneManager::m_scene;
 
 void SceneManager::Init(const std::filesystem::path& project_directory) {
   DiscardPlaySession();
@@ -20,6 +21,10 @@ void SceneManager::Init(const std::filesystem::path& project_directory) {
   m_active_scene.clear();
   m_dirty = false;
 }
+
+rse::Scene& SceneManager::ActiveScene() { return m_scene; }
+
+rse::Scene& SceneManager::OpenScene() { return m_scene; }
 
 void SceneManager::Clean() {
   DiscardPlaySession();
