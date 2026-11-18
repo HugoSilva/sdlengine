@@ -2,20 +2,25 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 
 #include <entity/registry.hpp>
+
+class b2World;
 
 namespace rse {
 class ECSManager;
 class Entity;
 
-// The world one scene is made of: every entity and every component it holds.
+// The world one scene is made of: every entity and every component it holds,
+// plus the physics world those entities' bodies live in.
 //
-// The engine still runs on ECSManager's static registry; this type is the
-// destination the rest of Stage 2 moves onto. Owning the registry rather than
-// borrowing a global is what lets two worlds exist at once -- an editor stopped
-// on the saved scene and a play session running a copy -- and gives the physics
-// world a lifetime to hang from.
+// The engine runs on one active Scene, reached through ECSManager until the
+// systems take a scene argument. Owning the registry rather than borrowing a
+// global is what lets two worlds exist at once -- an editor stopped on the saved
+// scene and a play session running a copy -- and gives the physics world a
+// lifetime to hang from: a body belongs to the world that built it, so the
+// entities must die before the world does.
 //
 // A scene is its registry, so it cannot be copied: a copy would be a second
 // world holding the same entity ids, and every handle would name an entity in
@@ -24,7 +29,8 @@ class Entity;
 // and become invalid with it.
 class Scene {
  public:
-  Scene() = default;
+  Scene();
+  ~Scene();
   Scene(const Scene&) = delete;
   Scene& operator=(const Scene&) = delete;
 
@@ -52,6 +58,11 @@ class Scene {
   // again without rebuilding it.
   void Clear();
 
+  // The world the scene's rigid bodies are built in and stepped by. Every scene
+  // has its own, so a body created in one is not visible to another, and the
+  // world outlives every entity the scene owns.
+  b2World* PhysicsWorld() const { return m_world.get(); }
+
  private:
   // Entity reaches the registry through the scene it was made by; nothing
   // outside the pair gets to touch it directly. ECSManager is the temporary
@@ -59,6 +70,11 @@ class Scene {
   // until the systems take a scene argument.
   friend class Entity;
   friend class ECSManager;
+
+  // Declared before the registry so that the registry -- and with it every
+  // Rigidbody, which destroys its body through this world -- is destroyed
+  // first. The world is the last thing to go.
+  std::unique_ptr<b2World> m_world;
 
   entt::DefaultRegistry m_registry;
 };

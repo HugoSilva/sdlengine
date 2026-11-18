@@ -1,10 +1,19 @@
 #include "scene.h"
 
+#include <box2d/box2d.h>
+
 #include <core/uuid.h>
 #include <ecs/components/uuid.h>
 #include <ecs/entity.h>
 
 namespace rse {
+Scene::Scene() : m_world(std::make_unique<b2World>(b2Vec2{0.0f, -10.0f})) {}
+
+// The registry is destroyed before the world even without this: both are
+// members, and the world is declared first. Keeping the destructor here is what
+// lets b2World stay incomplete in the header.
+Scene::~Scene() = default;
+
 Entity Scene::CreateEntity() {
   const uint32_t handle = m_registry.create();
   m_registry.assign<UuidComponent>(handle, Uuid::Generate());

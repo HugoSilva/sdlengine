@@ -1,9 +1,14 @@
 #pragma once
 
+#include <box2d/box2d.h>
 #include <gtest/gtest.h>
 
+#include <ecs/components/basic.h>
+#include <ecs/components/rigid_body.h>
+#include <ecs/components/transform.h>
 #include <ecs/entity.h>
 #include <ecs/scene.h>
+#include <physics/rigidbody.h>
 
 /*
 A scene owns its entities, so the only thing that has to be true is that its
@@ -99,5 +104,56 @@ TEST(SceneTest, ARecycledSlotDoesNotReviveAnOldHandle) {
   EXPECT_NE(second.Handle(), first_handle);
   EXPECT_FALSE(first.IsValid());
   EXPECT_TRUE(scene.Contains(second));
+}
+
+// The physics world belongs to the scene, not to a system: two scenes are two
+// simulations, and a body built in one must not be reachable from the other.
+TEST(SceneTest, EachSceneHasItsOwnPhysicsWorld) {
+  Scene first;
+  Scene second;
+
+  EXPECT_NE(first.PhysicsWorld(), nullptr);
+  EXPECT_NE(first.PhysicsWorld(), second.PhysicsWorld());
+}
+
+// Clearing is what a scene load does before it fills the scene again. The world
+// has to survive it empty, and every body has to be gone from it: a body is
+// destroyed by its Rigidbody, which the registry destroys with the entity.
+TEST(SceneTest, ClearingASceneDestroysItsEntitiesAndBodies) {
+  Scene scene;
+  Entity entity = scene.CreateEntity();
+  entity.AddComponent<TransformComponent>(glm::vec3(0.f), glm::vec3(0.f), glm::vec3(1.f));
+
+  Rigidbody* body = new Rigidbody(glm::vec2(0.f), glm::vec2(8.f, 8.f));
+  body->Init(scene.PhysicsWorld());
+  entity.AddComponent<RigidBodyComponent>(body);
+
+  ASSERT_EQ(scene.PhysicsWorld()->GetBodyCount(), 1);
+
+  scene.Clear();
+
+  EXPECT_EQ(scene.EntityCount(), 0u);
+  EXPECT_FALSE(entity.IsValid());
+  EXPECT_EQ(scene.PhysicsWorld()->GetBodyCount(), 0);
+  EXPECT_NE(scene.PhysicsWorld(), nullptr);
+}
+
+// Destroying a scene destroys its entities -- and through them their bodies --
+// before the world itself. If the order were reversed, Rigidbody's destructor
+// would call DestroyBody on a world that no longer exists.
+TEST(SceneTest, DestroyingASceneDestroysItsBodiesFirst) {
+  {
+    Scene scene;
+    Entity entity = scene.CreateEntity();
+    entity.AddComponent<TransformComponent>(glm::vec3(0.f), glm::vec3(0.f), glm::vec3(1.f));
+
+    Rigidbody* body = new Rigidbody(glm::vec2(0.f), glm::vec2(8.f, 8.f));
+    body->Init(scene.PhysicsWorld());
+    entity.AddComponent<RigidBodyComponent>(body);
+
+    ASSERT_EQ(scene.PhysicsWorld()->GetBodyCount(), 1);
+  }
+
+  SUCCEED();
 }
 }  // namespace
