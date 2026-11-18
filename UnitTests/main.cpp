@@ -6,6 +6,7 @@
 #include "camera_test.h"
 #include "ecs_manager_test.h"
 #include "editor_settings_test.h"
+#include "entity_test.h"
 #include "fixed_timestep_test.h"
 #include "input_map_test.h"
 #include "keyboard_test.h"
