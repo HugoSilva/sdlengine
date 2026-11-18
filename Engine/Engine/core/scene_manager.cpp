@@ -1,7 +1,6 @@
 #include "scene_manager.h"
 
 #include <system_error>
-#include <utility>
 
 #include <audio/sound_manager.h>
 #include <ecs/scene_io.h>
@@ -10,9 +9,9 @@ std::filesystem::path SceneManager::m_project_directory;
 std::filesystem::path SceneManager::m_active_scene;
 bool SceneManager::m_dirty{false};
 SceneManager::PlayState SceneManager::m_play_state{SceneManager::PlayState::kStopped};
-std::string SceneManager::m_snapshot;
 bool SceneManager::m_dirty_on_play{false};
 rse::Scene SceneManager::m_scene;
+rse::Scene SceneManager::m_play_scene;
 
 void SceneManager::Init(const std::filesystem::path& project_directory) {
   DiscardPlaySession();
@@ -22,7 +21,7 @@ void SceneManager::Init(const std::filesystem::path& project_directory) {
   m_dirty = false;
 }
 
-rse::Scene& SceneManager::ActiveScene() { return m_scene; }
+rse::Scene& SceneManager::ActiveScene() { return IsPlayActive() ? m_play_scene : m_scene; }
 
 rse::Scene& SceneManager::OpenScene() { return m_scene; }
 
@@ -35,9 +34,9 @@ void SceneManager::Clean() {
 }
 
 bool SceneManager::Open(const std::filesystem::path& scene, std::string* error) {
-  // The scene that is open -- and any snapshot of it -- is about to be
-  // replaced. There is nothing worth restoring, so the session is dropped
-  // rather than stopped.
+  // The scene that is open -- and any copy of it -- is about to be replaced.
+  // There is nothing worth keeping, so the session is dropped rather than
+  // stopped.
   DiscardPlaySession();
 
   const std::filesystem::path resolved = Resolve(scene);
@@ -111,28 +110,22 @@ void SceneManager::MarkDirty() { m_dirty = true; }
 
 bool SceneManager::IsDirty() { return m_dirty; }
 
-bool SceneManager::Play(std::string* error) {
+void SceneManager::Play() {
   if (m_play_state == PlayState::kPlaying) {
-    return true;
+    return;
   }
 
   if (m_play_state == PlayState::kPaused) {
     Resume();
-    return true;
+    return;
   }
 
-  // The snapshot is taken from the live registry, not from the file: unsaved
-  // edits are part of the state Play starts from, so Stop returns to exactly
-  // what the user was looking at when they pressed Play.
-  std::string snapshot;
-  if (!rse::SceneIO::SaveToString(m_scene, &snapshot, error)) {
-    return false;
-  }
-
-  m_snapshot = std::move(snapshot);
+  // The copy comes from the live scene, not from the file: unsaved edits are
+  // part of the state Play starts from. The open scene is not simulated and is
+  // not written to, so Stop has nothing to restore.
+  m_play_scene.CopyFrom(m_scene);
   m_dirty_on_play = m_dirty;
   m_play_state = PlayState::kPlaying;
-  return true;
 }
 
 void SceneManager::Pause() {
@@ -153,29 +146,24 @@ void SceneManager::Resume() {
   rse::SoundManager::ResumeAll();
 }
 
-bool SceneManager::Stop(std::string* error) {
+void SceneManager::Stop() {
   if (m_play_state == PlayState::kStopped) {
-    return true;
+    return;
   }
 
-  // A paused or playing scene may be making noise; the restored scene will
-  // start its own sounds when it is played again.
+  // A paused or playing scene may be making noise; the open scene will start
+  // its own sounds when it is played again.
   rse::SoundManager::StopAll();
 
-  const bool restored = rse::SceneIO::LoadFromString(m_scene, m_snapshot, error);
-
-  m_snapshot.clear();
+  // Throwing the copy away releases what it owns -- its sprites, its bodies --
+  // and leaves the open scene active again, exactly as Play found it.
+  m_play_scene.Clear();
   m_play_state = PlayState::kStopped;
 
-  // Edits made while playing are gone with the restored snapshot, so the flag
-  // goes back to what it was before Play. A failed restore leaves the live
-  // scene in place, and then its dirty flag is still telling the truth.
-  if (restored) {
-    m_dirty = m_dirty_on_play;
-  }
-
+  // The open scene was never simulated, so nothing it held was lost; the flag
+  // simply goes back to what it was before Play.
+  m_dirty = m_dirty_on_play;
   m_dirty_on_play = false;
-  return restored;
 }
 
 SceneManager::PlayState SceneManager::GetPlayState() { return m_play_state; }
@@ -193,8 +181,8 @@ void SceneManager::DiscardPlaySession() {
     rse::SoundManager::StopAll();
   }
 
+  m_play_scene.Clear();
   m_play_state = PlayState::kStopped;
-  m_snapshot.clear();
   m_dirty_on_play = false;
 }
 

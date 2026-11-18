@@ -25,6 +25,35 @@ Rigidbody* CreateDefaultRigidbody(uint32_t entity) {
 
   return new Rigidbody(position, size);
 }
+
+// A selection is an entt id, which names an entity only inside one registry.
+// The play session runs a copy, so carrying the selection across worlds means
+// carrying the uuid and looking the entity up again.
+rse::Uuid SelectionUuid(uint32_t entity) {
+  if (entity == INVALID_ENTITY_ID || !rse::ECSManager::IsValidEntity(entity) ||
+      !rse::ECSManager::HasComponent<UuidComponent>(entity)) {
+    return rse::Uuid{};
+  }
+
+  return rse::ECSManager::GetComponent<UuidComponent>(entity).m_uuid;
+}
+
+uint32_t FindEntityByUuid(const rse::Uuid& uuid) {
+  if (uuid.IsNil()) {
+    return INVALID_ENTITY_ID;
+  }
+
+  uint32_t found = INVALID_ENTITY_ID;
+
+  rse::ECSManager::Registry().each([&uuid, &found](entt::DefaultRegistry::entity_type entity) {
+    if (rse::ECSManager::HasComponent<UuidComponent>(entity) &&
+        rse::ECSManager::GetComponent<UuidComponent>(entity).m_uuid == uuid) {
+      found = entity;
+    }
+  });
+
+  return found;
+}
 }  // namespace
 
 uint32_t EditorManager::m_selected_entity{INVALID_ENTITY_ID};
@@ -226,23 +255,28 @@ void EditorManager::HandleResetComponentEvent(const ResetComponent& event) {
 }
 
 void EditorManager::PlayScene() {
-  std::string error;
+  const bool starting = !SceneManager::IsPlayActive();
+  const rse::Uuid selection = starting ? SelectionUuid(m_selected_entity) : rse::Uuid{};
 
-  if (!SceneManager::Play(&error)) {
-    Logger::Error("Could not play the scene: " + error);
+  SceneManager::Play();
+
+  // The session runs a copy, whose ids are the copy's: the selection follows
+  // the entity by uuid rather than by the id the open scene handed out.
+  if (starting) {
+    m_selected_entity = FindEntityByUuid(selection);
   }
 }
 
 void EditorManager::PauseScene() { SceneManager::Pause(); }
 
 void EditorManager::StopScene() {
-  std::string error;
+  // The copy's ids mean nothing in the open scene, so the selection is carried
+  // back the same way it came: by uuid.
+  const rse::Uuid selection = SelectionUuid(m_selected_entity);
 
-  if (!SceneManager::Stop(&error)) {
-    Logger::Error("Could not stop the scene: " + error);
-  }
+  SceneManager::Stop();
 
-  ValidateSelection();
+  m_selected_entity = FindEntityByUuid(selection);
 }
 
 void EditorManager::ValidateSelection() {

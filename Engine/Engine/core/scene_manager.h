@@ -58,22 +58,22 @@ class SceneManager {
   static void MarkDirty();
   static bool IsDirty();
 
-  // Play snapshots the open scene and starts its logic. Stop restores that
-  // snapshot exactly -- entities, components, camera and the dirty flag -- and
-  // ends the session. Pause holds the scene where it is; Resume continues it.
-  // All four are no-ops (or failures) from a state they do not apply to, so the
-  // UI can call them without guarding first.
-  static bool Play(std::string* error);
+  // Play copies the open scene and runs the copy. Stop throws the copy away and
+  // makes the open scene active again -- untouched, because it was never
+  // simulated -- and restores the dirty flag Play found. Pause holds the copy
+  // where it is; Resume continues it. All four are no-ops from a state they do
+  // not apply to, so the UI can call them without guarding first.
+  static void Play();
   static void Pause();
   static void Resume();
-  static bool Stop(std::string* error);
+  static void Stop();
 
   static PlayState GetPlayState();
   static bool IsPlaying();
   static bool IsPaused();
 
-  // Playing or paused: the state in which saving is refused and the snapshot
-  // still has to be discarded before the scene is replaced.
+  // Playing or paused: the state in which saving is refused and the play copy
+  // is what ActiveScene() returns.
   static bool IsPlayActive();
 
  private:
@@ -81,8 +81,8 @@ class SceneManager {
 
   static std::filesystem::path Resolve(const std::filesystem::path& scene);
 
-  // The scene is being replaced or torn down, so there is nothing to restore:
-  // stop any sound the session started and forget the snapshot.
+  // The open scene is being replaced or the session is being torn down: stop
+  // any sound the session started and throw the play copy away.
   static void DiscardPlaySession();
 
   static std::filesystem::path m_project_directory;
@@ -92,7 +92,10 @@ class SceneManager {
   // The open scene: the entities the editor edits and the file Open/Save use.
   static rse::Scene m_scene;
 
+  // What ActiveScene() returns while a session runs: a copy of the open scene,
+  // simulated instead of it. Empty while stopped.
+  static rse::Scene m_play_scene;
+
   static PlayState m_play_state;
-  static std::string m_snapshot;
   static bool m_dirty_on_play;
 };
