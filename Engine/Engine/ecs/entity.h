@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <utility>
 
 #include <entity/registry.hpp>
 
@@ -30,6 +31,33 @@ class Entity {
   // Destroys the entity in its scene. Destroying twice, or destroying a
   // default handle, does nothing.
   void Destroy();
+
+  // The components belong to the scene, not to this handle: these reach the
+  // instance the entity owns and add or remove it there. A handle is a value,
+  // so a copy of it names the same components.
+  //
+  // Reaching a component the entity does not have is undefined, exactly as it
+  // is through the registry; HasComponent is the check. AddComponent on an
+  // entity that already has the component is undefined too.
+  template <typename Component, typename... Args>
+  Component& AddComponent(Args&&... arguments) {
+    return m_scene->m_registry.assign<Component>(m_handle, std::forward<Args>(arguments)...);
+  }
+
+  template <typename Component>
+  Component& GetComponent() const {
+    return m_scene->m_registry.get<Component>(m_handle);
+  }
+
+  template <typename Component>
+  bool HasComponent() const {
+    return m_scene->m_registry.has<Component>(m_handle);
+  }
+
+  template <typename Component>
+  void RemoveComponent() {
+    m_scene->m_registry.remove<Component>(m_handle);
+  }
 
   // The entity's stable identity: the uuid written to the scene file and kept
   // by a copy. It is the one name that outlives this handle.
