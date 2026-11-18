@@ -6,6 +6,7 @@
 #include <ecs/components/entity_enabled.h>
 #include <ecs/components/uuid.h>
 #include <ecs/entity.h>
+#include <ecs/entity_copy.h>
 
 namespace rse {
 Scene::Scene() : m_world(std::make_unique<b2World>(b2Vec2{0.0f, -10.0f})) {}
@@ -44,5 +45,22 @@ bool Scene::IsEntityEnabled(uint32_t entity) const {
 void Scene::Clear() {
   m_registry.reset();
   m_camera = Camera{};
+}
+
+void Scene::CopyFrom(const Scene& source) {
+  if (this == &source) {
+    return;
+  }
+
+  Clear();
+
+  m_camera = source.m_camera;
+
+  source.m_registry.each([this, &source](entt::DefaultRegistry::entity_type entity) {
+    const Uuid uuid = source.m_registry.has<UuidComponent>(entity) ? source.m_registry.get<UuidComponent>(entity).m_uuid
+                                                                   : Uuid::Generate();
+
+    CopyEntity(source.m_registry, entity, m_registry, uuid);
+  });
 }
 }  // namespace rse

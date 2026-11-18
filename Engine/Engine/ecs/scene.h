@@ -110,6 +110,16 @@ class Scene {
   Camera& GetCamera() { return m_camera; }
   const Camera& GetCamera() const { return m_camera; }
 
+  // Fills this scene with a copy of `source`: its camera, then every entity
+  // with the uuid it has there. What an entity owns is copied rather than
+  // shared -- a Sprite, a Rigidbody -- so writing through one scene never
+  // changes the other. The bodies are clones, so they belong to this scene's
+  // world and are built in it the first time PhysicsSystem sees them.
+  //
+  // This is what a play session starts from: the open scene stays untouched
+  // while the copy is simulated, and Stop throws the copy away.
+  void CopyFrom(const Scene& source);
+
   // The world the scene's rigid bodies are built in and stepped by. Every scene
   // has its own, so a body created in one is not visible to another, and the
   // world outlives every entity the scene owns.
