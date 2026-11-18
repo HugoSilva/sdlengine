@@ -4,7 +4,7 @@
 
 #include "base_system.h"
 #include <ecs/components/audio.h>
-#include <ecs/ecs_manager.h>
+#include <ecs/scene.h>
 
 // Applies each entity's playback settings to the sound it borrowed, and starts
 // the ones that ask to autoplay. The settings live on the component so they
@@ -18,9 +18,9 @@ class AudioSystem : public BaseSystem {
   // stays silent. The work is idempotent, which is what makes running it in
   // fixed steps -- several times a frame, or not at all on a fast display --
   // harmless.
-  void UpdateSimulation(const float step) override {
+  void UpdateSimulation(rse::Scene& scene, const float step) override {
     (void)step;
-    rse::ECSManager::GetView<AudioComponent>().each([](auto entity, AudioComponent& audio) {
+    scene.Registry().view<AudioComponent>().each([&scene](auto entity, AudioComponent& audio) {
       rse::Sound* sound = audio.m_sound.get();
 
       if (sound == nullptr) {
@@ -31,7 +31,7 @@ class AudioSystem : public BaseSystem {
       // it already started has to stop. Clearing the flag lets autoplay start
       // it again when it is re-enabled. Sound is shared by every entity that
       // names the same file, so this stops that one track.
-      if (!rse::ECSManager::IsEntityEnabled(entity) || !rse::ECSManager::IsComponentEnabled<AudioComponent>(entity)) {
+      if (!scene.IsEntityEnabled(entity) || !scene.IsComponentEnabled<AudioComponent>(entity)) {
         if (audio.m_autoplay_started) {
           sound->Stop();
           audio.m_autoplay_started = false;

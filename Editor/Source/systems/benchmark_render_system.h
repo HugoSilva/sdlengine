@@ -73,7 +73,7 @@ class BenchmarkRenderSystem : public BaseSystem {
 
   std::size_t GetCount() const { return m_transforms.size(); }
 
-  void Update(const float alpha) override {
+  void Update(rse::Scene&, const float alpha) override {
     (void)alpha;
 
     if (!m_enabled || m_renderer == nullptr) {

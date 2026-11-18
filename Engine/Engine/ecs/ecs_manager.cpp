@@ -31,14 +31,6 @@ void ECSManager::Init() {
 
 uint32_t ECSManager::CreateEntity() { return m_scene.CreateEntity().Handle(); }
 
-bool ECSManager::IsEntityEnabled(uint32_t entity) {
-  if (!HasComponent<EntityEnabledComponent>(entity)) {
-    return true;
-  }
-
-  return GetComponent<EntityEnabledComponent>(entity).m_enabled;
-}
-
 void ECSManager::SetEntityEnabled(uint32_t entity, bool enabled) {
   if (!HasComponent<EntityEnabledComponent>(entity)) {
     AddComponent<EntityEnabledComponent>(entity, enabled);
@@ -63,13 +55,14 @@ void ECSManager::AddSystem(BaseSystem* system, SystemPhase phase) {
 }
 
 void ECSManager::Update(float alpha) {
-  for (unsigned int i = 0; i < m_pre_scene_systems.size(); i++) m_pre_scene_systems[i]->Update(alpha);
+  for (unsigned int i = 0; i < m_pre_scene_systems.size(); i++) m_pre_scene_systems[i]->Update(m_scene, alpha);
 
-  for (unsigned int i = 0; i < m_systems_list.size(); i++) m_systems_list[i]->Update(alpha);
+  for (unsigned int i = 0; i < m_systems_list.size(); i++) m_systems_list[i]->Update(m_scene, alpha);
 }
 
 void ECSManager::UpdateSimulation(float step) {
-  for (unsigned int i = 0; i < m_simulation_systems.size(); i++) m_simulation_systems[i]->UpdateSimulation(step);
+  for (unsigned int i = 0; i < m_simulation_systems.size(); i++)
+    m_simulation_systems[i]->UpdateSimulation(m_scene, step);
 }
 
 void ECSManager::UpdateUi() {
@@ -78,11 +71,11 @@ void ECSManager::UpdateUi() {
   // just keeps the two functions from disagreeing. The simulation phase is
   // walked too: a system that draws settings for its own logic still has UI
   // while the scene is stopped.
-  for (unsigned int i = 0; i < m_pre_scene_systems.size(); i++) m_pre_scene_systems[i]->RenderUi();
+  for (unsigned int i = 0; i < m_pre_scene_systems.size(); i++) m_pre_scene_systems[i]->RenderUi(m_scene);
 
-  for (unsigned int i = 0; i < m_simulation_systems.size(); i++) m_simulation_systems[i]->RenderUi();
+  for (unsigned int i = 0; i < m_simulation_systems.size(); i++) m_simulation_systems[i]->RenderUi(m_scene);
 
-  for (unsigned int i = 0; i < m_systems_list.size(); i++) m_systems_list[i]->RenderUi();
+  for (unsigned int i = 0; i < m_systems_list.size(); i++) m_systems_list[i]->RenderUi(m_scene);
 }
 
 void ECSManager::Clean() {

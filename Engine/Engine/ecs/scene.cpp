@@ -3,6 +3,7 @@
 #include <box2d/box2d.h>
 
 #include <core/uuid.h>
+#include <ecs/components/entity_enabled.h>
 #include <ecs/components/uuid.h>
 #include <ecs/entity.h>
 
@@ -31,6 +32,14 @@ void Scene::DestroyEntity(const Entity& entity) {
 bool Scene::Contains(const Entity& entity) const { return entity.m_scene == this && m_registry.valid(entity.m_handle); }
 
 std::size_t Scene::EntityCount() const { return m_registry.alive(); }
+
+bool Scene::IsEntityEnabled(uint32_t entity) const {
+  if (!m_registry.has<EntityEnabledComponent>(entity)) {
+    return true;
+  }
+
+  return m_registry.get<EntityEnabledComponent>(entity).m_enabled;
+}
 
 void Scene::Clear() { m_registry.reset(); }
 }  // namespace rse

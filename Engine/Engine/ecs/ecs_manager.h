@@ -4,13 +4,11 @@
 
 #include <entity/registry.hpp>
 
-#include <ecs/components/disabled_components.h>
+#include <ecs/scene.h>
 
 class BaseSystem;  // forward declaration for BaseSystem
 
 namespace rse {
-class Scene;  // the active world, declared below in ecs/scene.h
-
 // When a system runs relative to everything else.
 //
 // There is no depth to lean on in the 2D scene pass -- every sprite sits at
@@ -34,8 +32,8 @@ class ECSManager {
   static Scene& ActiveScene();
 
   // The active scene's registry, for the code that still takes one: scene IO,
-  // prefab IO and the systems walking components. Temporary, for the same
-  // reason as ActiveScene().
+  // prefab IO and the editor's ids. The systems now walk the scene they are
+  // handed. Temporary, for the same reason as ActiveScene().
   static entt::DefaultRegistry& Registry();
 
   // Creates an entity with a fresh identity. Everything that makes an entity
@@ -77,7 +75,7 @@ class ECSManager {
 
   // An entity with no EntityEnabledComponent is enabled: that is what keeps a
   // scene or prefab written before the component existed fully playable.
-  static bool IsEntityEnabled(uint32_t entity);
+  static bool IsEntityEnabled(uint32_t entity) { return ActiveScene().IsEntityEnabled(entity); }
 
   // Adds the component when it is missing and writes the requested state. The
   // inspector calls this, so toggling Enabled is one edit and one dirty mark.
@@ -89,11 +87,7 @@ class ECSManager {
   // the entity is off.
   template <typename Component>
   static bool IsComponentEnabled(uint32_t entity) {
-    if (!HasComponent<DisabledComponentsComponent>(entity)) {
-      return true;
-    }
-
-    return !GetComponent<DisabledComponentsComponent>(entity).IsDisabled(ComponentDisabledBit<Component>::kValue);
+    return ActiveScene().IsComponentEnabled<Component>(entity);
   }
 
   // Disabling writes the mask group; enabling clears the bit and drops the

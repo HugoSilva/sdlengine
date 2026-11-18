@@ -59,7 +59,7 @@ TEST_F(PhysicsSystemTest, BodiesAreBuiltInTheActiveSceneWorld) {
   ASSERT_EQ(world->GetBodyCount(), 0);
 
   PhysicsSystem physics;
-  physics.UpdateSimulation(1.0f / 60.0f);
+  physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
 
   EXPECT_EQ(world->GetBodyCount(), 1);
   EXPECT_EQ(ECSManager::ActiveScene().PhysicsWorld()->GetBodyCount(), 1);
@@ -69,7 +69,7 @@ TEST_F(PhysicsSystemTest, ABodyWithNoMaterialUsesTheDefaults) {
   CreateBody("faller", 100.f, b2_dynamicBody);
 
   PhysicsSystem physics;
-  physics.UpdateSimulation(1.0f / 60.0f);
+  physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
 
   ECSManager::GetView<RigidBodyComponent>().each([](auto, RigidBodyComponent& rigid) {
     ASSERT_NE(rigid.m_rigidbody, nullptr);
@@ -94,7 +94,7 @@ TEST_F(PhysicsSystemTest, ABodyUsesTheMaterialItReferences) {
   rigid.m_rigidbody->SetMaterial("0123456789abcdef");
 
   PhysicsSystem physics;
-  physics.UpdateSimulation(1.0f / 60.0f);
+  physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
 
   EXPECT_FLOAT_EQ(rigid.m_rigidbody->GetMaterialValues().density, 0.9f);
   EXPECT_FLOAT_EQ(rigid.m_rigidbody->GetMaterialValues().friction, 0.05f);
@@ -107,7 +107,7 @@ TEST_F(PhysicsSystemTest, ADynamicBodyFalls) {
   PhysicsSystem physics;
 
   for (int step = 0; step < 60; ++step) {
-    physics.UpdateSimulation(1.0f / 60.0f);
+    physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
   }
 
   ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
@@ -123,7 +123,7 @@ TEST_F(PhysicsSystemTest, AStaticBodyStaysWhereItWasPut) {
   PhysicsSystem physics;
 
   for (int step = 0; step < 600; ++step) {
-    physics.UpdateSimulation(1.0f / 60.0f);
+    physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
   }
 
   ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
@@ -137,17 +137,17 @@ TEST_F(PhysicsSystemTest, ADisabledBodyIsNotSimulatedUntilItIsEnabledAgain) {
   const uint32_t entity = CreateBody("faller", 100.f, b2_dynamicBody);
 
   PhysicsSystem physics;
-  physics.UpdateSimulation(1.0f / 60.0f);
+  physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
 
   ECSManager::SetEntityEnabled(entity, false);
-  physics.UpdateSimulation(1.0f / 60.0f);
+  physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
 
   float stopped_y = 0.f;
   ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
       [&stopped_y](auto, TransformComponent& transform, RigidBodyComponent&) { stopped_y = transform.position.y; });
 
   for (int step = 0; step < 60; ++step) {
-    physics.UpdateSimulation(1.0f / 60.0f);
+    physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
   }
 
   ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
@@ -159,7 +159,7 @@ TEST_F(PhysicsSystemTest, ADisabledBodyIsNotSimulatedUntilItIsEnabledAgain) {
   ECSManager::SetEntityEnabled(entity, true);
 
   for (int step = 0; step < 60; ++step) {
-    physics.UpdateSimulation(1.0f / 60.0f);
+    physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
   }
 
   ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
@@ -172,17 +172,17 @@ TEST_F(PhysicsSystemTest, ADisabledRigidBodyComponentIsNotSimulatedUntilItIsEnab
   const uint32_t entity = CreateBody("faller", 100.f, b2_dynamicBody);
 
   PhysicsSystem physics;
-  physics.UpdateSimulation(1.0f / 60.0f);
+  physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
 
   ECSManager::SetComponentEnabled<RigidBodyComponent>(entity, false);
-  physics.UpdateSimulation(1.0f / 60.0f);
+  physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
 
   float stopped_y = 0.f;
   ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
       [&stopped_y](auto, TransformComponent& transform, RigidBodyComponent&) { stopped_y = transform.position.y; });
 
   for (int step = 0; step < 60; ++step) {
-    physics.UpdateSimulation(1.0f / 60.0f);
+    physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
   }
 
   ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
@@ -194,7 +194,7 @@ TEST_F(PhysicsSystemTest, ADisabledRigidBodyComponentIsNotSimulatedUntilItIsEnab
   ECSManager::SetComponentEnabled<RigidBodyComponent>(entity, true);
 
   for (int step = 0; step < 60; ++step) {
-    physics.UpdateSimulation(1.0f / 60.0f);
+    physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
   }
 
   ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
@@ -211,7 +211,7 @@ TEST_F(PhysicsSystemTest, ClearingTheRegistryFreesTheBodyItSimulated) {
 
   {
     PhysicsSystem physics;
-    physics.UpdateSimulation(1.0f / 60.0f);
+    physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
   }
 
   SceneIO::Clear();
@@ -222,7 +222,7 @@ TEST_F(PhysicsSystemTest, ClearingTheRegistryFreesTheBodyItSimulated) {
   PhysicsSystem physics;
 
   for (int step = 0; step < 60; ++step) {
-    physics.UpdateSimulation(1.0f / 60.0f);
+    physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
   }
 
   ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
@@ -280,7 +280,7 @@ TEST_F(PhysicsSystemTest, OneSecondOfFallIsTheSameAtEveryFrameRate) {
         const int steps = timestep.Advance(1.0f / rate);
 
         for (int step = 0; step < steps; ++step) {
-          physics.UpdateSimulation(timestep.Step());
+          physics.UpdateSimulation(ECSManager::ActiveScene(), timestep.Step());
         }
       }
     }

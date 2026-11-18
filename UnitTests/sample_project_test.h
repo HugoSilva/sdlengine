@@ -268,7 +268,7 @@ TEST_F(SampleProjectTest, ThePhysicsSceneCrateLandsAndRests) {
   // Ten simulated seconds. The crate starts at y = 400, the floor's top is at
   // 96 and gravity is 10 units per second squared.
   for (int step = 0; step < 600; ++step) {
-    physics.UpdateSimulation(timestep.Step());
+    physics.UpdateSimulation(ECSManager::ActiveScene(), timestep.Step());
   }
 
   float crate_y = 0.f;
