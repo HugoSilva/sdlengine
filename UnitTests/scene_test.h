@@ -1,11 +1,16 @@
 #pragma once
 
+#include <memory>
+
 #include <box2d/box2d.h>
 #include <gtest/gtest.h>
 
+#include <components/sprite.h>
 #include <ecs/components/basic.h>
 #include <ecs/components/rigid_body.h>
+#include <ecs/components/sprite.h>
 #include <ecs/components/transform.h>
+#include <ecs/components/uuid.h>
 #include <ecs/entity.h>
 #include <ecs/scene.h>
 #include <physics/rigidbody.h>
@@ -19,6 +24,20 @@ without noticing would reach whatever entity took the slot next.
 namespace {
 
 using namespace rse;
+
+// The copy's entt id is its own registry's, so a test finds the copy the way
+// anything outside a registry has to: by the uuid it kept.
+uint32_t FindByUuid(const Scene& scene, const Uuid& uuid) {
+  uint32_t found = static_cast<uint32_t>(entt::null);
+
+  scene.Registry().each([&scene, &uuid, &found](entt::DefaultRegistry::entity_type entity) {
+    if (scene.Registry().has<UuidComponent>(entity) && scene.Registry().get<UuidComponent>(entity).m_uuid == uuid) {
+      found = entity;
+    }
+  });
+
+  return found;
+}
 
 TEST(SceneTest, ANewSceneIsEmpty) {
   const Scene scene;
@@ -155,5 +174,116 @@ TEST(SceneTest, DestroyingASceneDestroysItsBodiesFirst) {
   }
 
   SUCCEED();
+}
+
+// A play session is a film of the open scene: the copy has to start from the
+// same framing and the same entities, or what plays is not what was authored.
+TEST(SceneTest, ACopiedSceneStartsWithTheSourceCamera) {
+  Scene source;
+  source.GetCamera().position = glm::vec2(100.f, 200.f);
+  source.GetCamera().zoom = 2.f;
+  source.GetCamera().background = glm::vec3(0.1f, 0.2f, 0.3f);
+
+  Scene copy;
+  copy.CopyFrom(source);
+
+  EXPECT_FLOAT_EQ(copy.GetCamera().position.x, 100.f);
+  EXPECT_FLOAT_EQ(copy.GetCamera().position.y, 200.f);
+  EXPECT_FLOAT_EQ(copy.GetCamera().zoom, 2.f);
+  EXPECT_FLOAT_EQ(copy.GetCamera().background.z, 0.3f);
+
+  // The camera is the copy's: panning during play must not move the authored
+  // scene's framing.
+  copy.GetCamera().zoom = 4.f;
+  EXPECT_FLOAT_EQ(source.GetCamera().zoom, 2.f);
+}
+
+// An entity id names a slot in one registry, so a copy cannot share one. The
+// uuid is the identity both worlds agree on, and the components are values the
+// copy owns.
+TEST(SceneTest, ACopyOwnsItsComponents) {
+  Scene source;
+  Entity original = source.CreateEntity();
+  original.AddComponent<TransformComponent>(glm::vec3(1.f, 2.f, 0.f), glm::vec3(0.f), glm::vec3(1.f));
+  original.AddComponent<SpriteComponent>(new Sprite(glm::vec3(1.f, 2.f, 0.f), glm::vec2(8.f, 8.f), 0xffffffffu));
+
+  Scene copy;
+  copy.CopyFrom(source);
+
+  ASSERT_EQ(copy.EntityCount(), 1u);
+
+  const uint32_t handle = FindByUuid(copy, original.GetUuid());
+  ASSERT_NE(handle, static_cast<uint32_t>(entt::null));
+
+  // Same identity, different world: the handle in the copy must be reached
+  // through the copy's registry.
+  EXPECT_EQ(copy.Registry().get<UuidComponent>(handle).m_uuid, original.GetUuid());
+  EXPECT_FLOAT_EQ(copy.Registry().get<TransformComponent>(handle).position.x, 1.f);
+
+  // Writing through the copy is not writing through the source -- neither the
+  // transform nor the sprite the entity owns.
+  copy.Registry().get<TransformComponent>(handle).position = glm::vec3(9.f, 9.f, 0.f);
+  EXPECT_FLOAT_EQ(original.GetComponent<TransformComponent>().position.x, 1.f);
+
+  EXPECT_NE(copy.Registry().get<SpriteComponent>(handle).m_sprite.get(),
+            original.GetComponent<SpriteComponent>().m_sprite.get());
+  copy.Registry().get<SpriteComponent>(handle).m_sprite->SetColor(0x00000000u);
+  EXPECT_EQ(original.GetComponent<SpriteComponent>().m_sprite->GetColor(), 0xffffffffu);
+}
+
+// A Rigidbody owns a b2Body, and a body belongs to exactly one world. The copy
+// gets a clone with the same inputs, uninitialised, so PhysicsSystem builds it
+// in the copy's world rather than in the source's.
+TEST(SceneTest, ACopiedSceneGivesTheCopyItsOwnBodies) {
+  Scene source;
+  Entity original = source.CreateEntity();
+  original.AddComponent<TransformComponent>(glm::vec3(0.f), glm::vec3(0.f), glm::vec3(1.f));
+
+  Rigidbody* body = new Rigidbody(glm::vec2(0.f), glm::vec2(8.f, 8.f));
+  body->Init(source.PhysicsWorld());
+  original.AddComponent<RigidBodyComponent>(body);
+
+  ASSERT_EQ(source.PhysicsWorld()->GetBodyCount(), 1);
+
+  Scene copy;
+  copy.CopyFrom(source);
+
+  const uint32_t handle = FindByUuid(copy, original.GetUuid());
+  ASSERT_NE(handle, static_cast<uint32_t>(entt::null));
+
+  const std::shared_ptr<Rigidbody>& copied_body = copy.Registry().get<RigidBodyComponent>(handle).m_rigidbody;
+  ASSERT_TRUE(copied_body != nullptr);
+  EXPECT_NE(copied_body.get(), body);
+  EXPECT_FALSE(copied_body->m_init);
+  EXPECT_EQ(copy.PhysicsWorld()->GetBodyCount(), 0);
+
+  // Built in the copy's world, it is the copy's body: clearing one scene leaves
+  // the other's simulation whole.
+  copied_body->Init(copy.PhysicsWorld());
+  EXPECT_EQ(copy.PhysicsWorld()->GetBodyCount(), 1);
+  EXPECT_EQ(source.PhysicsWorld()->GetBodyCount(), 1);
+
+  copy.Clear();
+  EXPECT_EQ(copy.PhysicsWorld()->GetBodyCount(), 0);
+  EXPECT_EQ(source.PhysicsWorld()->GetBodyCount(), 1);
+}
+
+// Copying is a replacement, not an append: what the target held is gone, the
+// way a scene load replaces the open scene.
+TEST(SceneTest, CopyingOverASceneReplacesWhatItHeld) {
+  Scene source;
+  Entity source_entity = source.CreateEntity();
+  source_entity.AddComponent<TransformComponent>(glm::vec3(1.f), glm::vec3(0.f), glm::vec3(1.f));
+
+  Scene target;
+  Entity stale = target.CreateEntity();
+  stale.AddComponent<TransformComponent>(glm::vec3(9.f), glm::vec3(0.f), glm::vec3(1.f));
+  const Uuid stale_uuid = stale.GetUuid();
+
+  target.CopyFrom(source);
+
+  EXPECT_EQ(target.EntityCount(), 1u);
+  EXPECT_EQ(FindByUuid(target, stale_uuid), static_cast<uint32_t>(entt::null));
+  EXPECT_NE(FindByUuid(target, source_entity.GetUuid()), static_cast<uint32_t>(entt::null));
 }
 }  // namespace
