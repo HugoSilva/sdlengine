@@ -6,6 +6,7 @@
 #include <entity/registry.hpp>
 
 namespace rse {
+class ECSManager;
 class Entity;
 
 // The world one scene is made of: every entity and every component it holds.
@@ -45,10 +46,19 @@ class Scene {
   // How many entities are alive in the scene.
   std::size_t EntityCount() const;
 
+  // Destroys every entity, keeping the scene object. The camera and the file a
+  // scene manager is holding are not part of this type; the physics world stays
+  // alive, empty, so bodies are destroyed before it and the scene can be filled
+  // again without rebuilding it.
+  void Clear();
+
  private:
   // Entity reaches the registry through the scene it was made by; nothing
-  // outside the pair gets to touch it directly.
+  // outside the pair gets to touch it directly. ECSManager is the temporary
+  // forwarder that gives the rest of the engine the active scene's registry
+  // until the systems take a scene argument.
   friend class Entity;
+  friend class ECSManager;
 
   entt::DefaultRegistry m_registry;
 };

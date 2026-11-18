@@ -22,4 +22,6 @@ void Scene::DestroyEntity(const Entity& entity) {
 bool Scene::Contains(const Entity& entity) const { return entity.m_scene == this && m_registry.valid(entity.m_handle); }
 
 std::size_t Scene::EntityCount() const { return m_registry.alive(); }
+
+void Scene::Clear() { m_registry.reset(); }
 }  // namespace rse

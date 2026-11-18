@@ -125,7 +125,7 @@ Registry::entity_type CopyEntity(Registry& source, Registry::entity_type entity,
 bool PrefabIO::Save(const std::filesystem::path& file, uint32_t entity, std::string* error) {
   // A selection can outlive the entity it names. Writing a prefab of an entity
   // that is not there would write a file with no entity in it.
-  if (!ECSManager::registry.valid(entity)) {
+  if (!ECSManager::Registry().valid(entity)) {
     SetError(error, "entity does not exist in the open scene");
     return false;
   }
@@ -134,7 +134,7 @@ bool PrefabIO::Save(const std::filesystem::path& file, uint32_t entity, std::str
   // registry first. The copy is independent of the scene and the scene itself
   // is only read.
   entt::DefaultRegistry scratch;
-  CopyEntity(ECSManager::registry, entity, scratch);
+  CopyEntity(ECSManager::Registry(), entity, scratch);
 
   std::filesystem::path scratch_file{file};
   scratch_file += ".tmp";
@@ -238,7 +238,7 @@ uint32_t PrefabIO::Instantiate(const std::filesystem::path& file, std::string* e
 
   // The whole file was read, so the open scene can now be touched. Every entity
   // is copied in with an id the scene hands out -- never the id from the file.
-  Registry& scene = ECSManager::registry;
+  Registry& scene = ECSManager::Registry();
   uint32_t first = entt::null;
 
   scratch.each([&first, &scratch, &scene](Registry::entity_type entity) {

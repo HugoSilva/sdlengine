@@ -9,8 +9,7 @@
 class BaseSystem;  // forward declaration for BaseSystem
 
 namespace rse {
-class SceneIO;   // forward declaration for SceneIO
-class PrefabIO;  // forward declaration for PrefabIO
+class Scene;  // the active world, declared below in ecs/scene.h
 
 // When a system runs relative to everything else.
 //
@@ -29,41 +28,51 @@ class ECSManager {
 
   static void Init();
 
+  // The scene the engine is working on. There is one while the editor and game
+  // share a world; PR 2.5 moves ownership to SceneManager and PR 2.6 deletes
+  // this accessor.
+  static Scene& ActiveScene();
+
+  // The active scene's registry, for the code that still takes one: scene IO,
+  // prefab IO and the systems walking components. Temporary, for the same
+  // reason as ActiveScene().
+  static entt::DefaultRegistry& Registry();
+
   // Creates an entity with a fresh identity. Everything that makes an entity
   // goes through here -- the editor, a prefab placement, a test -- so every
   // entity in a scene has a UuidComponent whether its file wrote one or not.
   static uint32_t CreateEntity();
 
-  static void DestroyEntity(uint32_t entity) { registry.destroy(entity); }
+  static void DestroyEntity(uint32_t entity) { Registry().destroy(entity); }
 
   // Whether an id still names a live entity. Selection outlives a scene
   // restore, and the restore may have removed an entity that was created while
   // the scene was playing.
-  static bool IsValidEntity(uint32_t entity) { return registry.valid(entity); }
+  static bool IsValidEntity(uint32_t entity) { return Registry().valid(entity); }
 
   template <typename... Components, typename... TArgs>
   static void AddComponent(uint32_t entity, TArgs... arguments) {
-    registry.assign<Components...>(entity, arguments...);
+    Registry().assign<Components...>(entity, arguments...);
   }
 
   template <typename Component>
   static void RemoveComponent(uint32_t entity) {
-    registry.remove<Component>(entity);
+    Registry().remove<Component>(entity);
   }
 
   template <typename... Components>
   static bool HasComponent(uint32_t entity) {
-    return registry.has<Components...>(entity);
+    return Registry().has<Components...>(entity);
   }
 
   template <typename Component>
   static Component& GetComponent(uint32_t entity) {
-    return registry.get<Component>(entity);
+    return Registry().get<Component>(entity);
   }
 
   template <typename... Components>
   static entt::View<uint32_t, Components...> GetView() {
-    return registry.view<Components...>();
+    return Registry().view<Components...>();
   }
 
   // An entity with no EntityEnabledComponent is enabled: that is what keeps a
@@ -129,17 +138,10 @@ class ECSManager {
   static void Clean();
 
  private:
-  // SceneIO reads and writes the registry as a whole; it is the only thing
-  // that should touch the buffer behind it directly.
-  friend class SceneIO;
+  // One active scene for now. PR 2.5 hands this to SceneManager; until then
+  // this is the world every static method above forwards to.
+  static Scene m_scene;
 
-  // PrefabIO reads one entity out of the registry and adds a copy of one back
-  // into it. The copy code lives there rather than here because only a prefab
-  // knows that a placed entity owns new sprites and bodies instead of sharing
-  // them.
-  friend class PrefabIO;
-
-  static entt::DefaultRegistry registry;
   static std::vector<BaseSystem*> m_systems_list;
   static std::vector<BaseSystem*> m_pre_scene_systems;
   static std::vector<BaseSystem*> m_simulation_systems;
