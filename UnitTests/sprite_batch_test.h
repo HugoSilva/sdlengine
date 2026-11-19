@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 
+#include <components/material_shader.h>
 #include <render/sprite_batch.h>
 
 namespace {
@@ -234,17 +235,17 @@ TEST(SpriteBatchTest, FlipMirrorsBothAxes) {
 }
 
 TEST(SpriteBatchTest, DifferentMaterialsSplitBatchesEvenWithOneTexture) {
-  int first_material = 0;
-  int second_material = 0;
+  MaterialShader first{"first", "First", "", nullptr};
+  MaterialShader second{"second", "Second", "", nullptr};
 
   SpriteBatchBuilder builder;
-  SpriteDraw first = MakeDraw(7);
-  first.material = reinterpret_cast<MaterialShader*>(&first_material);
-  SpriteDraw second = MakeDraw(7);
-  second.material = reinterpret_cast<MaterialShader*>(&second_material);
+  SpriteDraw first_draw = MakeDraw(7);
+  first_draw.material = &first;
+  SpriteDraw second_draw = MakeDraw(7);
+  second_draw.material = &second;
 
-  builder.Add(first);
-  builder.Add(second);
+  builder.Add(first_draw);
+  builder.Add(second_draw);
   builder.Build();
 
   ASSERT_EQ(2u, builder.GetBatches().size());
@@ -253,6 +254,20 @@ TEST(SpriteBatchTest, DifferentMaterialsSplitBatchesEvenWithOneTexture) {
   EXPECT_EQ(7u, builder.GetBatches()[1].textures[0]);
   EXPECT_EQ(0u, builder.GetBatches()[0].first_vertex);
   EXPECT_EQ(4u, builder.GetBatches()[1].first_vertex);
+  // A material that did not compile resolves to no program, which is the
+  // renderer's signal to fall back to the scene shader.
+  EXPECT_EQ(nullptr, builder.GetBatches()[0].shader);
+  EXPECT_EQ(nullptr, builder.GetBatches()[1].shader);
+}
+
+TEST(SpriteBatchTest, NoMaterialResolvesToTheSceneShader) {
+  SpriteBatchBuilder builder;
+  builder.Add(MakeDraw(7));
+  builder.Build();
+
+  ASSERT_EQ(1u, builder.GetBatches().size());
+  EXPECT_EQ(nullptr, builder.GetBatches()[0].material);
+  EXPECT_EQ(nullptr, builder.GetBatches()[0].shader);
 }
 
 TEST(SpriteBatchTest, TexturedDrawSamplesSlotZero) {

@@ -6,6 +6,8 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <components/material_shader.h>
+
 namespace rse {
 namespace {
 // Rotation is optional for 2D sprites, and the common case is a quad that only
@@ -119,6 +121,7 @@ void SpriteBatchBuilder::Build() {
 
     SpriteBatch batch;
     batch.material = material;
+    batch.shader = material == nullptr ? nullptr : material->GetShader();
     batch.first_vertex = first_vertex;
     batch.vertex_count = vertex_count;
     batch.index_count = vertex_count / kVerticesPerQuad * kIndicesPerQuad;

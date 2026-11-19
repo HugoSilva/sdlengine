@@ -12,7 +12,6 @@
 #include <GL/glew.h>
 #endif  // EMSCRIPTEN
 
-#include <components/material_shader.h>
 #include <components/shader.h>
 #include <render/renderable_2d.h>
 
@@ -158,11 +157,7 @@ void OpenGLRenderer::Flush() {
   ApplyFrameUniforms(active_shader);
 
   const auto select_shader = [this, &active_shader](const SpriteBatch& batch) {
-    Shader* next = m_scene_shader;
-
-    if (batch.material != nullptr && batch.material->GetShader() != nullptr) {
-      next = batch.material->GetShader();
-    }
+    Shader* next = batch.shader != nullptr ? batch.shader : m_scene_shader;
 
     if (next != active_shader) {
       active_shader = next;

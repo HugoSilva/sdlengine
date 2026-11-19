@@ -11,6 +11,7 @@
 
 namespace rse {
 class MaterialShader;
+class Shader;
 
 // A backend-neutral description of one 2D quad. The renderer consumes these
 // instead of touching a GPU buffer while the ECS is still submitting sprites:
@@ -51,6 +52,10 @@ struct SpriteVertex {
 // storing an index range per batch.
 struct SpriteBatch {
   MaterialShader* material{nullptr};
+  // The program this batch draws with, resolved from the material when the
+  // batch is built; null means the renderer's scene shader. Resolving it once
+  // keeps the per-frame draw loop from touching the material.
+  Shader* shader{nullptr};
   std::size_t first_vertex{0};
   std::size_t vertex_count{0};
   std::size_t index_count{0};
@@ -80,8 +85,8 @@ class SpriteBatchBuilder {
 
   // How many textures a batch may sample. The renderer lowers this when the
   // context reports fewer units than kMaxTextureSlots; a fixed-function or web
-  // backend can lower it further. Clamped to [1, kMaxTextureSlots], and clearing
-  // the view bounds does not change it.
+  // backend can lower it further. Clamped to [1, kMaxTextureSlots] and kept
+  // across Reset(), because it describes the backend, not the frame.
   void SetMaxTextureSlots(std::size_t slots);
   std::size_t GetMaxTextureSlots() const { return m_max_texture_slots; }
 
