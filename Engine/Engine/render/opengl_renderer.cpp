@@ -37,7 +37,7 @@ OpenGLRenderer::OpenGLRenderer(SDL_Window* window) {
 
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), (const void*)offsetof(SpriteVertex, position));
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), (const void*)offsetof(SpriteVertex, uv));
-  glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), (const void*)offsetof(SpriteVertex, tid));
+  glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), (const void*)offsetof(SpriteVertex, slot));
   glVertexAttribPointer(3, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(SpriteVertex),
                         (const void*)offsetof(SpriteVertex, color));
 
@@ -199,6 +199,7 @@ void OpenGLRenderer::Flush() {
     ApplyFrameUniforms(active_shader);
   }
 
+  glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindVertexArray(0);
 
@@ -207,7 +208,16 @@ void OpenGLRenderer::Flush() {
 }
 
 void OpenGLRenderer::DrawBatch(const SpriteBatch& batch, int base_vertex) {
-  glBindTexture(GL_TEXTURE_2D, batch.texture);
+  if (batch.texture_count == 0) {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+  } else {
+    for (std::size_t slot = 0; slot < batch.texture_count; ++slot) {
+      glActiveTexture(static_cast<GLenum>(GL_TEXTURE0) + static_cast<GLenum>(slot));
+      glBindTexture(GL_TEXTURE_2D, batch.textures[slot]);
+    }
+  }
+
 #ifdef EMSCRIPTEN
   (void)base_vertex;
   glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(batch.index_count), GL_UNSIGNED_SHORT, nullptr);

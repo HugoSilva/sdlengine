@@ -38,7 +38,10 @@ struct SpriteDraw {
 struct SpriteVertex {
   glm::vec3 position;
   glm::vec2 uv;
-  float tid;
+  // The batch's texture unit this vertex samples, or -1 when the quad is
+  // untextured and uses its colour alone. It is a float because the attribute
+  // is declared float in the shader and interpolated to the fragment stage.
+  float slot;
   std::uint32_t color;
 };
 
@@ -47,11 +50,14 @@ struct SpriteVertex {
 // start at zero, so a backend passes first_vertex as the base vertex instead of
 // storing an index range per batch.
 struct SpriteBatch {
-  std::uint32_t texture{0};
   MaterialShader* material{nullptr};
   std::size_t first_vertex{0};
   std::size_t vertex_count{0};
   std::size_t index_count{0};
+  // The textures the batch samples, bound to units 0..texture_count-1. A batch
+  // of untextured quads has none.
+  std::array<std::uint32_t, kMaxTextureSlots> textures{};
+  std::size_t texture_count{0};
 };
 
 struct SpriteBatchStats {

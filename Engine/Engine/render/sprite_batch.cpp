@@ -97,14 +97,23 @@ void SpriteBatchBuilder::Build() {
     return a.sequence < b.sequence;
   });
 
-  const auto close_batch = [this](std::uint32_t texture, MaterialShader* material, std::size_t first_vertex,
+  const auto close_batch = [this](const std::array<std::uint32_t, kMaxTextureSlots>& textures,
+                                  std::size_t texture_count, MaterialShader* material, std::size_t first_vertex,
                                   std::size_t vertex_count) {
     if (vertex_count == 0) return;
-    m_batches.push_back(
-        {texture, material, first_vertex, vertex_count, vertex_count / kVerticesPerQuad * kIndicesPerQuad});
+
+    SpriteBatch batch;
+    batch.material = material;
+    batch.first_vertex = first_vertex;
+    batch.vertex_count = vertex_count;
+    batch.index_count = vertex_count / kVerticesPerQuad * kIndicesPerQuad;
+    batch.textures = textures;
+    batch.texture_count = texture_count;
+    m_batches.push_back(batch);
   };
 
-  std::uint32_t batch_texture = 0;
+  std::array<std::uint32_t, kMaxTextureSlots> batch_textures{};
+  std::size_t batch_texture_count = 0;
   MaterialShader* batch_material = nullptr;
   std::size_t batch_first_vertex = 0;
   std::size_t batch_vertex_count = 0;
@@ -140,19 +149,22 @@ void SpriteBatchBuilder::Build() {
       continue;
     }
 
-    if (!batch_open || draw.texture != batch_texture || draw.material != batch_material ||
+    if (!batch_open || draw.texture != batch_textures[0] || draw.material != batch_material ||
         batch_vertex_count + kVerticesPerQuad > kMaxVertices) {
       if (batch_open) {
-        close_batch(batch_texture, batch_material, batch_first_vertex, batch_vertex_count);
+        close_batch(batch_textures, batch_texture_count, batch_material, batch_first_vertex, batch_vertex_count);
       }
-      batch_texture = draw.texture;
+      batch_textures.fill(0);
+      batch_textures[0] = draw.texture;
+      batch_texture_count = draw.texture == 0 ? 0 : 1;
       batch_material = draw.material;
       batch_first_vertex = m_vertices.size();
       batch_vertex_count = 0;
       batch_open = true;
     }
 
-    const float tid = draw.texture == 0 ? 0.0f : 1.0f;
+    // One texture per batch for now, so a textured quad always samples unit 0.
+    const float slot = draw.texture == 0 ? -1.0f : 0.0f;
 
     // Flip inside the sprite's own UV rectangle, not across the whole texture:
     // an atlas region mirrored around 0.5 would sample a neighbouring image.
@@ -178,14 +190,14 @@ void SpriteBatchBuilder::Build() {
     }
 
     for (int i = 0; i < 4; ++i) {
-      m_vertices.push_back({corners[i], uv[i], tid, draw.color});
+      m_vertices.push_back({corners[i], uv[i], slot, draw.color});
     }
 
     batch_vertex_count += kVerticesPerQuad;
   }
 
   if (batch_open) {
-    close_batch(batch_texture, batch_material, batch_first_vertex, batch_vertex_count);
+    close_batch(batch_textures, batch_texture_count, batch_material, batch_first_vertex, batch_vertex_count);
   }
 
   m_stats.batches = m_batches.size();

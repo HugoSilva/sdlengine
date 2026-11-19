@@ -29,8 +29,10 @@ TEST(SpriteBatchTest, GroupsDrawsByTexture) {
   builder.Build();
 
   ASSERT_EQ(2u, builder.GetBatches().size());
-  EXPECT_EQ(1u, builder.GetBatches()[0].texture);
-  EXPECT_EQ(2u, builder.GetBatches()[1].texture);
+  EXPECT_EQ(1u, builder.GetBatches()[0].textures[0]);
+  EXPECT_EQ(2u, builder.GetBatches()[1].textures[0]);
+  EXPECT_EQ(1u, builder.GetBatches()[0].texture_count);
+  EXPECT_EQ(1u, builder.GetBatches()[1].texture_count);
   EXPECT_EQ(12u, builder.GetVertices().size());
   EXPECT_EQ(18u, builder.GetStats().indices);
   // The second batch starts at the fifth vertex, so a shared vertex buffer has
@@ -192,7 +194,8 @@ TEST(SpriteBatchTest, UntexturedDrawUsesVertexColourPath) {
   builder.Build();
 
   ASSERT_EQ(4u, builder.GetVertices().size());
-  EXPECT_FLOAT_EQ(0.0f, builder.GetVertices()[0].tid);
+  EXPECT_FLOAT_EQ(-1.0f, builder.GetVertices()[0].slot);
+  EXPECT_EQ(0u, builder.GetBatches()[0].texture_count);
   EXPECT_FLOAT_EQ(0.25f, builder.GetVertices()[0].uv.x);
   EXPECT_EQ(0xff00ff00u, builder.GetVertices()[0].color);
 }
@@ -249,19 +252,22 @@ TEST(SpriteBatchTest, DifferentMaterialsSplitBatchesEvenWithOneTexture) {
 
   ASSERT_EQ(2u, builder.GetBatches().size());
   EXPECT_NE(builder.GetBatches()[0].material, builder.GetBatches()[1].material);
-  EXPECT_EQ(7u, builder.GetBatches()[0].texture);
-  EXPECT_EQ(7u, builder.GetBatches()[1].texture);
+  EXPECT_EQ(7u, builder.GetBatches()[0].textures[0]);
+  EXPECT_EQ(7u, builder.GetBatches()[1].textures[0]);
   EXPECT_EQ(0u, builder.GetBatches()[0].first_vertex);
   EXPECT_EQ(4u, builder.GetBatches()[1].first_vertex);
 }
 
-TEST(SpriteBatchTest, TexturedDrawSetsTextureFlag) {
+TEST(SpriteBatchTest, TexturedDrawSamplesSlotZero) {
   SpriteBatchBuilder builder;
   builder.Add(MakeDraw(7));
   builder.Build();
 
   ASSERT_EQ(4u, builder.GetVertices().size());
-  EXPECT_FLOAT_EQ(1.0f, builder.GetVertices()[0].tid);
+  EXPECT_FLOAT_EQ(0.0f, builder.GetVertices()[0].slot);
+  ASSERT_EQ(1u, builder.GetBatches().size());
+  EXPECT_EQ(1u, builder.GetBatches()[0].texture_count);
+  EXPECT_EQ(7u, builder.GetBatches()[0].textures[0]);
 }
 
 }  // namespace
