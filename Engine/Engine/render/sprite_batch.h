@@ -94,7 +94,7 @@ class SpriteBatchBuilder {
   const SpriteBatchStats& GetStats() const { return m_stats; }
 
  private:
-  bool IsVisible(const SpriteDraw& draw, const glm::mat4& model) const;
+  bool IsVisible(const glm::vec3 (&corners)[4]) const;
   glm::mat4 ModelFor(const SpriteDraw& draw) const;
 
   std::vector<SpriteDraw> m_draws;
