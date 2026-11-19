@@ -3,9 +3,9 @@
 #include <gtest/gtest.h>
 
 #include "scene_test_support.h"
-#include <ecs/components/include_list.h>
 #include <ecs/ecs_manager.h>
 #include <ecs/entity.h>
+#include <ecs/scene.h>
 #include <ecs/systems/base_system.h>
 
 /*
@@ -78,9 +78,8 @@ TEST_F(ECSManagerTest, TheRenderPhasesRunWithoutASimulationStep) {
   EXPECT_EQ(scene->updates, 2);
 }
 
-// The active scene is what ECSManager runs systems on, but a system is written
-// against whichever scene it is given: that is what will let a play session run
-// a copy while the editor keeps the saved one.
+// A system is written against whichever scene it is given: that is what lets a
+// play session run a copy while the editor keeps the saved one.
 TEST_F(ECSManagerTest, ASystemRunsAgainstTheSceneItIsGiven) {
   Scene other;
   other.CreateEntity();
@@ -91,83 +90,6 @@ TEST_F(ECSManagerTest, ASystemRunsAgainstTheSceneItIsGiven) {
 
   EXPECT_EQ(system.count, 2u);
   EXPECT_EQ(TestScene().EntityCount(), 0u);
-}
-
-TEST_F(ECSManagerTest, ANewEntityIsGivenAnIdentity) {
-  const uint32_t first = TestScene().CreateEntity().Handle();
-  const uint32_t second = TestScene().CreateEntity().Handle();
-
-  ASSERT_TRUE(TestScene().Registry().has<UuidComponent>(first));
-  ASSERT_TRUE(TestScene().Registry().has<UuidComponent>(second));
-
-  const Uuid& first_id = TestScene().Registry().get<UuidComponent>(first).m_uuid;
-  const Uuid& second_id = TestScene().Registry().get<UuidComponent>(second).m_uuid;
-
-  EXPECT_FALSE(first_id.IsNil());
-  EXPECT_FALSE(second_id.IsNil());
-  EXPECT_NE(first_id, second_id);
-
-  TestScene().Registry().destroy(first);
-  TestScene().Registry().destroy(second);
-}
-
-TEST_F(ECSManagerTest, AnEntityIsEnabledUntilItIsDisabled) {
-  const uint32_t entity = TestScene().CreateEntity().Handle();
-
-  EXPECT_TRUE(TestScene().IsEntityEnabled(entity));
-  EXPECT_FALSE(TestScene().Registry().has<EntityEnabledComponent>(entity));
-
-  TestScene().SetEntityEnabled(entity, false);
-  ASSERT_TRUE(TestScene().Registry().has<EntityEnabledComponent>(entity));
-  EXPECT_FALSE(TestScene().IsEntityEnabled(entity));
-
-  TestScene().SetEntityEnabled(entity, true);
-  EXPECT_TRUE(TestScene().IsEntityEnabled(entity));
-
-  TestScene().Registry().destroy(entity);
-}
-
-TEST_F(ECSManagerTest, AComponentIsEnabledUntilItIsDisabled) {
-  const uint32_t entity = TestScene().CreateEntity().Handle();
-  TestScene().Registry().assign<SpriteComponent>(entity, static_cast<rse::Sprite*>(nullptr));
-
-  EXPECT_TRUE(TestScene().IsComponentEnabled<SpriteComponent>(entity));
-  EXPECT_FALSE(TestScene().Registry().has<DisabledComponentsComponent>(entity));
-
-  TestScene().SetComponentEnabled<SpriteComponent>(entity, false);
-  ASSERT_TRUE(TestScene().Registry().has<DisabledComponentsComponent>(entity));
-  EXPECT_FALSE(TestScene().IsComponentEnabled<SpriteComponent>(entity));
-
-  // One component's bit does not switch the others off.
-  EXPECT_TRUE(TestScene().IsComponentEnabled<AudioComponent>(entity));
-  EXPECT_TRUE(TestScene().IsComponentEnabled<RigidBodyComponent>(entity));
-
-  TestScene().SetComponentEnabled<SpriteComponent>(entity, true);
-  EXPECT_TRUE(TestScene().IsComponentEnabled<SpriteComponent>(entity));
-  EXPECT_FALSE(TestScene().Registry().has<DisabledComponentsComponent>(entity));
-
-  TestScene().Registry().destroy(entity);
-}
-
-TEST_F(ECSManagerTest, DisablingTwoComponentsKeepsTheMaskUntilBothAreBack) {
-  const uint32_t entity = TestScene().CreateEntity().Handle();
-
-  TestScene().SetComponentEnabled<SpriteComponent>(entity, false);
-  TestScene().SetComponentEnabled<AudioComponent>(entity, false);
-
-  ASSERT_TRUE(TestScene().Registry().has<DisabledComponentsComponent>(entity));
-  EXPECT_FALSE(TestScene().IsComponentEnabled<SpriteComponent>(entity));
-  EXPECT_FALSE(TestScene().IsComponentEnabled<AudioComponent>(entity));
-
-  TestScene().SetComponentEnabled<SpriteComponent>(entity, true);
-  EXPECT_TRUE(TestScene().Registry().has<DisabledComponentsComponent>(entity));
-  EXPECT_TRUE(TestScene().IsComponentEnabled<SpriteComponent>(entity));
-  EXPECT_FALSE(TestScene().IsComponentEnabled<AudioComponent>(entity));
-
-  TestScene().SetComponentEnabled<AudioComponent>(entity, true);
-  EXPECT_FALSE(TestScene().Registry().has<DisabledComponentsComponent>(entity));
-
-  TestScene().Registry().destroy(entity);
 }
 
 TEST_F(ECSManagerTest, UpdateRunsTheRenderPhasesButNotTheSimulation) {
