@@ -100,14 +100,15 @@ void SpriteBatchBuilder::Build() {
 
   // Layers are the coarse ordering primitive; depth is the fine one inside a
   // layer. Back-to-front depth keeps the existing alpha-blended sprites working
-  // with the depth test still enabled. Material and texture are the batching
-  // keys, so they come before the submission sequence only when layer and depth
-  // are equal.
+  // with the depth test still enabled. Material is the batch key, so it comes
+  // before the submission sequence when layer and depth are equal. Texture is
+  // deliberately not a key any more: a batch's slot table already holds every
+  // texture it samples, so ordering by texture would only reorder sprites that
+  // overlap at the same depth. Submission order is what an author expects.
   std::sort(m_draws.begin(), m_draws.end(), [](const SpriteDraw& a, const SpriteDraw& b) {
     if (a.layer != b.layer) return a.layer < b.layer;
     if (a.depth != b.depth) return a.depth > b.depth;
     if (a.material != b.material) return std::less<MaterialShader*>{}(a.material, b.material);
-    if (a.texture != b.texture) return a.texture < b.texture;
     return a.sequence < b.sequence;
   });
 

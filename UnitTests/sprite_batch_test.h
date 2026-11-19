@@ -30,8 +30,10 @@ TEST(SpriteBatchTest, GroupsTwoTexturesIntoOneBatch) {
 
   ASSERT_EQ(1u, builder.GetBatches().size());
   EXPECT_EQ(2u, builder.GetBatches()[0].texture_count);
-  EXPECT_EQ(1u, builder.GetBatches()[0].textures[0]);
-  EXPECT_EQ(2u, builder.GetBatches()[0].textures[1]);
+  // The slot table follows submission order: the first texture submitted is
+  // unit 0, whichever texture it is.
+  EXPECT_EQ(2u, builder.GetBatches()[0].textures[0]);
+  EXPECT_EQ(1u, builder.GetBatches()[0].textures[1]);
   EXPECT_EQ(12u, builder.GetVertices().size());
   EXPECT_EQ(18u, builder.GetStats().indices);
   EXPECT_EQ(0u, builder.GetBatches()[0].first_vertex);
@@ -309,9 +311,9 @@ TEST(SpriteBatchTest, ReusesOneSlotForARepeatedTexture) {
   EXPECT_EQ(2u, builder.GetBatches()[0].texture_count);
   EXPECT_EQ(3u, builder.GetBatches()[0].textures[0]);
   EXPECT_EQ(9u, builder.GetBatches()[0].textures[1]);
-  // The sort puts all of texture 3 before all of texture 9.
+  // The first quad of each texture names its own unit; repeats reuse it.
   EXPECT_FLOAT_EQ(0.0f, builder.GetVertices()[0].slot);
-  EXPECT_FLOAT_EQ(1.0f, builder.GetVertices()[4 * kVerticesPerQuad].slot);
+  EXPECT_FLOAT_EQ(1.0f, builder.GetVertices()[kVerticesPerQuad].slot);
 }
 
 TEST(SpriteBatchTest, UntexturedQuadsJoinAFullBatch) {
@@ -325,8 +327,28 @@ TEST(SpriteBatchTest, UntexturedQuadsJoinAFullBatch) {
   ASSERT_EQ(1u, builder.GetBatches().size());
   EXPECT_EQ(kMaxTextureSlots, builder.GetBatches()[0].texture_count);
   // An untextured quad consumes no unit, so it never needs a batch of its own.
-  // Texture 0 sorts first, which is why it is the first vertex.
-  EXPECT_FLOAT_EQ(-1.0f, builder.GetVertices()[0].slot);
+  // It was submitted last, so it is the last vertex of the batch.
+  EXPECT_FLOAT_EQ(-1.0f, builder.GetVertices().back().slot);
+}
+
+TEST(SpriteBatchTest, KeepsSubmissionOrderForEqualDepthSprites) {
+  SpriteBatchBuilder builder;
+  builder.Add(MakeDraw(9, 1.0f));
+  builder.Add(MakeDraw(3, 2.0f));
+  builder.Add(MakeDraw(9, 3.0f));
+  builder.Build();
+
+  ASSERT_EQ(1u, builder.GetBatches().size());
+  EXPECT_EQ(2u, builder.GetBatches()[0].texture_count);
+  // Texture is no longer a sort key, so sprites at the same layer and depth
+  // draw in the order they were submitted: an author's alpha overlaps survive.
+  EXPECT_FLOAT_EQ(0.0f, builder.GetVertices()[0].position.x);
+  EXPECT_FLOAT_EQ(1.0f, builder.GetVertices()[4].position.x);
+  EXPECT_FLOAT_EQ(2.0f, builder.GetVertices()[8].position.x);
+  // The repeated texture reuses the unit it was given the first time.
+  EXPECT_FLOAT_EQ(0.0f, builder.GetVertices()[0].slot);
+  EXPECT_FLOAT_EQ(1.0f, builder.GetVertices()[4].slot);
+  EXPECT_FLOAT_EQ(0.0f, builder.GetVertices()[8].slot);
 }
 
 TEST(SpriteBatchTest, SetMaxTextureSlotsLimitsTheBatchTextures) {
