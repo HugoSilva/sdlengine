@@ -17,6 +17,15 @@
 #include <render/renderable_2d.h>
 
 namespace rse {
+namespace {
+// One sampler uniform per texture unit, as the shaders declare them. Kept as a
+// constant table so a program switch does not build sixteen names per frame.
+constexpr const char* kTextureUniforms[kMaxTextureSlots] = {
+    "texture0", "texture1", "texture2",  "texture3",  "texture4",  "texture5",  "texture6",  "texture7",
+    "texture8", "texture9", "texture10", "texture11", "texture12", "texture13", "texture14", "texture15",
+};
+}  // namespace
+
 OpenGLRenderer::OpenGLRenderer(SDL_Window* window) {
   // The window is part of the constructor because backends need it to create
   // their context; the batched 2D path itself has no SDL dependency.
@@ -240,7 +249,16 @@ void OpenGLRenderer::ApplyFrameUniforms(Shader* shader) {
   }
 
   shader->Enable();
-  shader->SetUniform1i("texture0", 0);
+
+  // The sampler each slot reads from never changes, so one upload per program
+  // covers every frame that uses it. A material shader that samples fewer slots
+  // is left alone rather than logging a miss for every unit it omits.
+  for (std::size_t unit = 0; unit < kMaxTextureSlots; ++unit) {
+    if (shader->HasUniform(kTextureUniforms[unit])) {
+      shader->SetUniform1i(kTextureUniforms[unit], static_cast<int>(unit));
+    }
+  }
+
   shader->SetUniformMat4("view", glm::value_ptr(m_view));
   shader->SetUniformMat4("projection", glm::value_ptr(m_projection));
 }
