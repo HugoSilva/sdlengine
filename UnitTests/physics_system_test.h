@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 
+#include "scene_test_support.h"
 #include <core/fixed_timestep.h>
 #include <ecs/components/include_list.h>
 #include <ecs/ecs_manager.h>
@@ -22,18 +23,18 @@ using namespace rse;
 class PhysicsSystemTest : public ::testing::Test {
  protected:
   void TearDown() override {
-    ECSManager::ActiveScene().Clear();
+    TestScene().Clear();
     PhysicsMaterialManager::Clean();
   }
 
   static uint32_t CreateBody(const char* name, float y, b2BodyType type) {
-    const uint32_t entity = ECSManager::CreateEntity();
-    ECSManager::AddComponent<BasicComponent>(entity, name, false, 0, 0);
-    ECSManager::AddComponent<TransformComponent>(entity, glm::vec3(0.f, y, 0.f), glm::vec3(0.f), glm::vec3(1.f));
+    const uint32_t entity = TestScene().CreateEntity().Handle();
+    TestScene().Registry().assign<BasicComponent>(entity, name, false, 0, 0);
+    TestScene().Registry().assign<TransformComponent>(entity, glm::vec3(0.f, y, 0.f), glm::vec3(0.f), glm::vec3(1.f));
 
     Rigidbody* body = new Rigidbody(glm::vec2(0.f, y), glm::vec2(8.f, 8.f));
     *body->GetBodyType() = type;
-    ECSManager::AddComponent<RigidBodyComponent>(entity, body);
+    TestScene().Registry().assign<RigidBodyComponent>(entity, body);
     return entity;
   }
 };
@@ -41,7 +42,7 @@ class PhysicsSystemTest : public ::testing::Test {
 TEST_F(PhysicsSystemTest, ABodyIsNotSimulatedUntilTheFirstUpdate) {
   CreateBody("faller", 100.f, b2_dynamicBody);
 
-  ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
+  TestScene().Registry().view<TransformComponent, RigidBodyComponent>().each(
       [](auto, TransformComponent& transform, RigidBodyComponent& rigid) {
         ASSERT_NE(rigid.m_rigidbody, nullptr);
         EXPECT_FALSE(rigid.m_rigidbody->m_init);
@@ -55,23 +56,23 @@ TEST_F(PhysicsSystemTest, ABodyIsNotSimulatedUntilTheFirstUpdate) {
 TEST_F(PhysicsSystemTest, BodiesAreBuiltInTheActiveSceneWorld) {
   CreateBody("faller", 100.f, b2_dynamicBody);
 
-  b2World* world = ECSManager::ActiveScene().PhysicsWorld();
+  b2World* world = TestScene().PhysicsWorld();
   ASSERT_EQ(world->GetBodyCount(), 0);
 
   PhysicsSystem physics;
-  physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
+  physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
 
   EXPECT_EQ(world->GetBodyCount(), 1);
-  EXPECT_EQ(ECSManager::ActiveScene().PhysicsWorld()->GetBodyCount(), 1);
+  EXPECT_EQ(TestScene().PhysicsWorld()->GetBodyCount(), 1);
 }
 
 TEST_F(PhysicsSystemTest, ABodyWithNoMaterialUsesTheDefaults) {
   CreateBody("faller", 100.f, b2_dynamicBody);
 
   PhysicsSystem physics;
-  physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
+  physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
 
-  ECSManager::GetView<RigidBodyComponent>().each([](auto, RigidBodyComponent& rigid) {
+  TestScene().Registry().view<RigidBodyComponent>().each([](auto, RigidBodyComponent& rigid) {
     ASSERT_NE(rigid.m_rigidbody, nullptr);
     EXPECT_FLOAT_EQ(rigid.m_rigidbody->GetMaterialValues().density, PhysicsMaterial::kDefaultDensity);
     EXPECT_FLOAT_EQ(rigid.m_rigidbody->GetMaterialValues().friction, PhysicsMaterial::kDefaultFriction);
@@ -89,12 +90,12 @@ TEST_F(PhysicsSystemTest, ABodyUsesTheMaterialItReferences) {
   PhysicsMaterialManager::Add(std::move(material));
 
   const uint32_t entity = CreateBody("faller", 100.f, b2_dynamicBody);
-  RigidBodyComponent& rigid = ECSManager::GetComponent<RigidBodyComponent>(entity);
+  RigidBodyComponent& rigid = TestScene().Registry().get<RigidBodyComponent>(entity);
   ASSERT_NE(rigid.m_rigidbody, nullptr);
   rigid.m_rigidbody->SetMaterial("0123456789abcdef");
 
   PhysicsSystem physics;
-  physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
+  physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
 
   EXPECT_FLOAT_EQ(rigid.m_rigidbody->GetMaterialValues().density, 0.9f);
   EXPECT_FLOAT_EQ(rigid.m_rigidbody->GetMaterialValues().friction, 0.05f);
@@ -107,10 +108,10 @@ TEST_F(PhysicsSystemTest, ADynamicBodyFalls) {
   PhysicsSystem physics;
 
   for (int step = 0; step < 60; ++step) {
-    physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
+    physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
   }
 
-  ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
+  TestScene().Registry().view<TransformComponent, RigidBodyComponent>().each(
       [](auto, TransformComponent& transform, RigidBodyComponent& rigid) {
         EXPECT_TRUE(rigid.m_rigidbody->m_init);
         EXPECT_LT(transform.position.y, 100.f);
@@ -123,10 +124,10 @@ TEST_F(PhysicsSystemTest, AStaticBodyStaysWhereItWasPut) {
   PhysicsSystem physics;
 
   for (int step = 0; step < 600; ++step) {
-    physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
+    physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
   }
 
-  ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
+  TestScene().Registry().view<TransformComponent, RigidBodyComponent>().each(
       [](auto, TransformComponent& transform, RigidBodyComponent& rigid) {
         EXPECT_TRUE(rigid.m_rigidbody->m_init);
         EXPECT_FLOAT_EQ(transform.position.y, 100.f);
@@ -137,32 +138,32 @@ TEST_F(PhysicsSystemTest, ADisabledBodyIsNotSimulatedUntilItIsEnabledAgain) {
   const uint32_t entity = CreateBody("faller", 100.f, b2_dynamicBody);
 
   PhysicsSystem physics;
-  physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
+  physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
 
-  ECSManager::SetEntityEnabled(entity, false);
-  physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
+  TestScene().SetEntityEnabled(entity, false);
+  physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
 
   float stopped_y = 0.f;
-  ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
+  TestScene().Registry().view<TransformComponent, RigidBodyComponent>().each(
       [&stopped_y](auto, TransformComponent& transform, RigidBodyComponent&) { stopped_y = transform.position.y; });
 
   for (int step = 0; step < 60; ++step) {
-    physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
+    physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
   }
 
-  ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
+  TestScene().Registry().view<TransformComponent, RigidBodyComponent>().each(
       [stopped_y](auto, TransformComponent& transform, RigidBodyComponent& rigid) {
         EXPECT_TRUE(rigid.m_rigidbody->m_init);
         EXPECT_FLOAT_EQ(transform.position.y, stopped_y);
       });
 
-  ECSManager::SetEntityEnabled(entity, true);
+  TestScene().SetEntityEnabled(entity, true);
 
   for (int step = 0; step < 60; ++step) {
-    physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
+    physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
   }
 
-  ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
+  TestScene().Registry().view<TransformComponent, RigidBodyComponent>().each(
       [stopped_y](auto, TransformComponent& transform, RigidBodyComponent&) {
         EXPECT_LT(transform.position.y, stopped_y);
       });
@@ -172,32 +173,32 @@ TEST_F(PhysicsSystemTest, ADisabledRigidBodyComponentIsNotSimulatedUntilItIsEnab
   const uint32_t entity = CreateBody("faller", 100.f, b2_dynamicBody);
 
   PhysicsSystem physics;
-  physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
+  physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
 
-  ECSManager::SetComponentEnabled<RigidBodyComponent>(entity, false);
-  physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
+  TestScene().SetComponentEnabled<RigidBodyComponent>(entity, false);
+  physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
 
   float stopped_y = 0.f;
-  ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
+  TestScene().Registry().view<TransformComponent, RigidBodyComponent>().each(
       [&stopped_y](auto, TransformComponent& transform, RigidBodyComponent&) { stopped_y = transform.position.y; });
 
   for (int step = 0; step < 60; ++step) {
-    physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
+    physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
   }
 
-  ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
+  TestScene().Registry().view<TransformComponent, RigidBodyComponent>().each(
       [stopped_y](auto, TransformComponent& transform, RigidBodyComponent& rigid) {
         EXPECT_TRUE(rigid.m_rigidbody->m_init);
         EXPECT_FLOAT_EQ(transform.position.y, stopped_y);
       });
 
-  ECSManager::SetComponentEnabled<RigidBodyComponent>(entity, true);
+  TestScene().SetComponentEnabled<RigidBodyComponent>(entity, true);
 
   for (int step = 0; step < 60; ++step) {
-    physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
+    physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
   }
 
-  ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
+  TestScene().Registry().view<TransformComponent, RigidBodyComponent>().each(
       [stopped_y](auto, TransformComponent& transform, RigidBodyComponent&) {
         EXPECT_LT(transform.position.y, stopped_y);
       });
@@ -211,21 +212,21 @@ TEST_F(PhysicsSystemTest, ClearingTheRegistryFreesTheBodyItSimulated) {
 
   {
     PhysicsSystem physics;
-    physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
+    physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
   }
 
-  ECSManager::ActiveScene().Clear();
-  EXPECT_EQ(ECSManager::GetView<RigidBodyComponent>().size(), 0u);
+  TestScene().Clear();
+  EXPECT_EQ(TestScene().Registry().view<RigidBodyComponent>().size(), 0u);
 
   CreateBody("second", 200.f, b2_dynamicBody);
 
   PhysicsSystem physics;
 
   for (int step = 0; step < 60; ++step) {
-    physics.UpdateSimulation(ECSManager::ActiveScene(), 1.0f / 60.0f);
+    physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
   }
 
-  ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
+  TestScene().Registry().view<TransformComponent, RigidBodyComponent>().each(
       [](auto, TransformComponent& transform, RigidBodyComponent& rigid) {
         EXPECT_TRUE(rigid.m_rigidbody->m_init);
         EXPECT_LT(transform.position.y, 200.f);
@@ -237,7 +238,7 @@ TEST_F(PhysicsSystemTest, ClearingTheRegistryFreesTheBodyItSimulated) {
 // sprite standing upright while its collider turned.
 TEST_F(PhysicsSystemTest, TheBodyAngleReachesTheTransform) {
   const uint32_t entity = CreateBody("crate", 100.f, b2_dynamicBody);
-  RigidBodyComponent& rigid = ECSManager::GetComponent<RigidBodyComponent>(entity);
+  RigidBodyComponent& rigid = TestScene().Registry().get<RigidBodyComponent>(entity);
   ASSERT_NE(rigid.m_rigidbody, nullptr);
 
   // A world of the test's own, so the body's angle can be set without a
@@ -249,14 +250,14 @@ TEST_F(PhysicsSystemTest, TheBodyAngleReachesTheTransform) {
   ASSERT_NE(body, nullptr);
   body->SetTransform(body->GetPosition(), 0.5f);
 
-  TransformComponent& transform = ECSManager::GetComponent<TransformComponent>(entity);
+  TransformComponent& transform = TestScene().Registry().get<TransformComponent>(entity);
   rigid.m_rigidbody->Update(transform.position, transform.rotation);
 
   EXPECT_NEAR(transform.rotation.z, glm::degrees(0.5f), 0.001f);
 
   // The body belongs to the world on this stack frame, so it has to go before
   // the world does.
-  ECSManager::DestroyEntity(entity);
+  TestScene().Registry().destroy(entity);
 }
 
 // The gate for the fixed timestep: one second of wall time drops a body the
@@ -268,7 +269,7 @@ TEST_F(PhysicsSystemTest, OneSecondOfFallIsTheSameAtEveryFrameRate) {
   constexpr float kDropInOneSecond = 5.0f;  // gravity is 10 units per second squared
 
   for (float rate : {60.0f, 144.0f, 240.0f}) {
-    ECSManager::ActiveScene().Clear();
+    TestScene().Clear();
 
     const uint32_t entity = CreateBody("faller", start_y, b2_dynamicBody);
 
@@ -280,18 +281,18 @@ TEST_F(PhysicsSystemTest, OneSecondOfFallIsTheSameAtEveryFrameRate) {
         const int steps = timestep.Advance(1.0f / rate);
 
         for (int step = 0; step < steps; ++step) {
-          physics.UpdateSimulation(ECSManager::ActiveScene(), timestep.Step());
+          physics.UpdateSimulation(TestScene(), timestep.Step());
         }
       }
     }
 
-    const float dropped = start_y - ECSManager::GetComponent<TransformComponent>(entity).position.y;
+    const float dropped = start_y - TestScene().Registry().get<TransformComponent>(entity).position.y;
 
     // A quarter of a unit is well inside one step of the fall, and outside the
     // difference a per-frame step would produce (2.4x).
     EXPECT_NEAR(dropped, kDropInOneSecond, 0.25f) << "at " << rate << " Hz";
   }
 
-  ECSManager::ActiveScene().Clear();
+  TestScene().Clear();
 }
 }  // namespace

@@ -10,6 +10,8 @@
 #include <SDL3/SDL.h>
 #include <entity/entity.hpp>
 
+#include <scene/editor_scene.h>
+
 #ifdef _WIN32
 #include <shellapi.h>
 #endif
@@ -174,19 +176,19 @@ void OnPathChosen(void* userdata, const char* const* filelist, int filter) {
 bool SceneReferencesAsset(const std::string& id) {
   bool referenced = false;
 
-  rse::ECSManager::GetView<SpriteComponent>().each([&referenced, &id](auto, SpriteComponent& component) {
+  EditorScene().Registry().view<SpriteComponent>().each([&referenced, &id](auto, SpriteComponent& component) {
     if (component.m_sprite != nullptr && component.m_sprite->GetTextureAssetId() == id) {
       referenced = true;
     }
   });
 
-  rse::ECSManager::GetView<AudioComponent>().each([&referenced, &id](auto, AudioComponent& component) {
+  EditorScene().Registry().view<AudioComponent>().each([&referenced, &id](auto, AudioComponent& component) {
     if (component.m_sound != nullptr && component.m_sound->GetAssetId() == id) {
       referenced = true;
     }
   });
 
-  rse::ECSManager::GetView<RigidBodyComponent>().each([&referenced, &id](auto, RigidBodyComponent& component) {
+  EditorScene().Registry().view<RigidBodyComponent>().each([&referenced, &id](auto, RigidBodyComponent& component) {
     if (component.m_rigidbody != nullptr && component.m_rigidbody->GetMaterial() == id) {
       referenced = true;
     }
@@ -727,7 +729,7 @@ void RenameSceneAt(const std::filesystem::path& scene, const std::string& name) 
     // renamed file is a separate decision -- Scenes > <name> does it -- and the
     // entities of the scene that is no longer open go with it.
     SceneManager::Init(project.Directory());
-    SceneManager::ActiveScene().Clear();
+    EditorScene().Clear();
   }
 
   Logger::Log("Renamed scene " + manifest_path + " to " + new_manifest_path);
@@ -848,9 +850,9 @@ void NewProjectAt(const std::filesystem::path& directory) {
   }
 
   // An empty first scene, written where the manifest will look for it.
-  SceneManager::ActiveScene().Clear();
+  EditorScene().Clear();
 
-  if (!rse::SceneIO::Save(SceneManager::ActiveScene(), directory / "scenes" / "start.xml", &error)) {
+  if (!rse::SceneIO::Save(EditorScene(), directory / "scenes" / "start.xml", &error)) {
     Logger::Error("Failed to write the new project's first scene: " + error);
     return;
   }
@@ -916,7 +918,7 @@ void SaveSceneAsAt(const std::filesystem::path& file) {
 
   std::string error;
 
-  if (!rse::SceneIO::Save(SceneManager::ActiveScene(), file, &error)) {
+  if (!rse::SceneIO::Save(EditorScene(), file, &error)) {
     Logger::Error("Failed to save the scene: " + error);
     return;
   }
@@ -958,7 +960,7 @@ void CreatePrefabAt(uint32_t entity, const std::filesystem::path& file) {
 
   std::string error;
 
-  if (!rse::PrefabIO::Save(file, entity, &error)) {
+  if (!rse::PrefabIO::Save(EditorScene(), file, entity, &error)) {
     Logger::Error("Failed to save the prefab: " + error);
     return;
   }
@@ -969,7 +971,7 @@ void CreatePrefabAt(uint32_t entity, const std::filesystem::path& file) {
 void InstantiatePrefabAt(const std::filesystem::path& file) {
   std::string error;
 
-  if (rse::PrefabIO::Instantiate(file, &error) == entt::null) {
+  if (rse::PrefabIO::Instantiate(EditorScene(), file, &error) == entt::null) {
     Logger::Error("Failed to instantiate the prefab: " + error);
     return;
   }

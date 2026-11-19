@@ -13,18 +13,18 @@
 class b2World;
 
 namespace rse {
-class ECSManager;
 class Entity;
 
 // The world one scene is made of: every entity and every component it holds,
 // plus the physics world those entities' bodies live in.
 //
-// The engine runs on one active Scene, reached through ECSManager until the
-// systems take a scene argument. Owning the registry rather than borrowing a
-// global is what lets two worlds exist at once -- an editor stopped on the saved
-// scene and a play session running a copy -- and gives the physics world a
-// lifetime to hang from: a body belongs to the world that built it, so the
-// entities must die before the world does.
+// Whoever owns the scene decides which one is active: SceneManager holds the
+// open scene and the play copy, and hands the active one to the systems.
+// Owning the registry rather than borrowing a global is what lets two worlds
+// exist at once -- an editor stopped on the saved scene and a play session
+// running a copy -- and gives the physics world a lifetime to hang from: a body
+// belongs to the world that built it, so the entities must die before the world
+// does.
 //
 // A scene is its registry, so it cannot be copied: a copy would be a second
 // world holding the same entity ids, and every handle would name an entity in
@@ -85,6 +85,11 @@ class Scene {
   // scene or prefab written before the component existed fully playable.
   bool IsEntityEnabled(uint32_t entity) const;
 
+  // Adds the component when it is missing and writes the requested state. This
+  // is what the inspector calls, so toggling Enabled is one edit and one dirty
+  // mark.
+  void SetEntityEnabled(uint32_t entity, bool enabled);
+
   // A component with no disabled bit is enabled: that is what keeps a scene or
   // prefab written before component state existed fully enabled. The bit lives
   // in DisabledComponentsComponent, which is only present while something on
@@ -96,6 +101,33 @@ class Scene {
     }
 
     return !m_registry.get<DisabledComponentsComponent>(entity).IsDisabled(ComponentDisabledBit<Component>::kValue);
+  }
+
+  // Disabling writes the mask group; enabling clears the bit and drops the
+  // group once nothing is disabled. This is what the inspector calls, so a
+  // checkbox is one edit and one dirty mark.
+  template <typename Component>
+  void SetComponentEnabled(uint32_t entity, bool enabled) {
+    if (enabled) {
+      if (!m_registry.has<DisabledComponentsComponent>(entity)) {
+        return;
+      }
+
+      DisabledComponentsComponent& state = m_registry.get<DisabledComponentsComponent>(entity);
+      state.SetEnabled(ComponentDisabledBit<Component>::kValue, true);
+
+      if (state.m_mask == 0) {
+        m_registry.remove<DisabledComponentsComponent>(entity);
+      }
+
+      return;
+    }
+
+    if (!m_registry.has<DisabledComponentsComponent>(entity)) {
+      m_registry.assign<DisabledComponentsComponent>(entity);
+    }
+
+    m_registry.get<DisabledComponentsComponent>(entity).SetEnabled(ComponentDisabledBit<Component>::kValue, false);
   }
 
   // Destroys every entity and puts the camera back to its defaults, keeping the
@@ -127,11 +159,8 @@ class Scene {
 
  private:
   // Entity reaches the registry through the scene it was made by; nothing
-  // outside the pair gets to touch it directly. ECSManager is the temporary
-  // forwarder that gives the rest of the engine the active scene's registry
-  // until the systems take a scene argument.
+  // outside the pair gets to touch it directly.
   friend class Entity;
-  friend class ECSManager;
 
   // Declared before the registry so that the registry -- and with it every
   // Rigidbody, which destroys its body through this world -- is destroyed

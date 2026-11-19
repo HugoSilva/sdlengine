@@ -9,8 +9,8 @@
 
 #include <core/uuid.h>
 #include <ecs/components/include_list.h>
-#include <ecs/ecs_manager.h>
 #include <ecs/entity_copy.h>
+#include <ecs/scene.h>
 
 namespace rse {
 namespace {
@@ -69,10 +69,10 @@ void SetError(std::string* error, const std::string& message) {
 }
 }  // namespace
 
-bool PrefabIO::Save(const std::filesystem::path& file, uint32_t entity, std::string* error) {
+bool PrefabIO::Save(const Scene& scene, const std::filesystem::path& file, uint32_t entity, std::string* error) {
   // A selection can outlive the entity it names. Writing a prefab of an entity
   // that is not there would write a file with no entity in it.
-  if (!ECSManager::Registry().valid(entity)) {
+  if (!scene.Registry().valid(entity)) {
     SetError(error, "entity does not exist in the open scene");
     return false;
   }
@@ -81,7 +81,7 @@ bool PrefabIO::Save(const std::filesystem::path& file, uint32_t entity, std::str
   // registry first. The copy is independent of the scene and the scene itself
   // is only read.
   entt::DefaultRegistry scratch;
-  CopyEntity(ECSManager::Registry(), entity, scratch, Uuid::Generate());
+  CopyEntity(scene.Registry(), entity, scratch, Uuid::Generate());
 
   std::filesystem::path scratch_file{file};
   scratch_file += ".tmp";
@@ -133,7 +133,7 @@ bool PrefabIO::Save(const std::filesystem::path& file, uint32_t entity, std::str
   return true;
 }
 
-uint32_t PrefabIO::Instantiate(const std::filesystem::path& file, std::string* error) {
+uint32_t PrefabIO::Instantiate(Scene& scene, const std::filesystem::path& file, std::string* error) {
   std::ifstream stream{file};
 
   if (!stream.is_open()) {
@@ -183,13 +183,13 @@ uint32_t PrefabIO::Instantiate(const std::filesystem::path& file, std::string* e
     return entt::null;
   }
 
-  // The whole file was read, so the open scene can now be touched. Every entity
-  // is copied in with an id the scene hands out -- never the id from the file.
-  Registry& scene = ECSManager::Registry();
+  // The whole file was read, so the scene can now be touched. Every entity is
+  // copied in with an id the scene hands out -- never the id from the file.
+  Registry& registry = scene.Registry();
   uint32_t first = entt::null;
 
-  scratch.each([&first, &scratch, &scene](Registry::entity_type entity) {
-    const Registry::entity_type copy = CopyEntity(scratch, entity, scene, Uuid::Generate());
+  scratch.each([&first, &scratch, &registry](Registry::entity_type entity) {
+    const Registry::entity_type copy = CopyEntity(scratch, entity, registry, Uuid::Generate());
 
     if (first == entt::null) {
       first = copy;

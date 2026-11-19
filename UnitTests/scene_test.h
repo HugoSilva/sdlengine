@@ -6,7 +6,10 @@
 #include <gtest/gtest.h>
 
 #include <components/sprite.h>
+#include <ecs/components/audio.h>
 #include <ecs/components/basic.h>
+#include <ecs/components/disabled_components.h>
+#include <ecs/components/entity_enabled.h>
 #include <ecs/components/rigid_body.h>
 #include <ecs/components/sprite.h>
 #include <ecs/components/transform.h>
@@ -20,6 +23,9 @@ A scene owns its entities, so the only thing that has to be true is that its
 handles keep naming what they were made for. The failure mode is silent: an id
 is an index into a registry and is recycled, so a handle that survives a destroy
 without noticing would reach whatever entity took the slot next.
+
+The enabled flags are scene-level too: a missing component means enabled, and
+the scene is what writes and reads the mask the systems consult.
 */
 namespace {
 
@@ -285,5 +291,68 @@ TEST(SceneTest, CopyingOverASceneReplacesWhatItHeld) {
   EXPECT_EQ(target.EntityCount(), 1u);
   EXPECT_EQ(FindByUuid(target, stale_uuid), static_cast<uint32_t>(entt::null));
   EXPECT_NE(FindByUuid(target, source_entity.GetUuid()), static_cast<uint32_t>(entt::null));
+}
+
+// An entity with no EntityEnabledComponent is enabled: that is what keeps a
+// scene written before the component existed fully playable. Setting the state
+// adds the component; setting it back leaves it present and true.
+TEST(SceneTest, AnEntityIsEnabledUntilItIsDisabled) {
+  Scene scene;
+  Entity entity = scene.CreateEntity();
+
+  EXPECT_TRUE(scene.IsEntityEnabled(entity.Handle()));
+  EXPECT_FALSE(entity.HasComponent<EntityEnabledComponent>());
+
+  scene.SetEntityEnabled(entity.Handle(), false);
+  ASSERT_TRUE(entity.HasComponent<EntityEnabledComponent>());
+  EXPECT_FALSE(entity.GetComponent<EntityEnabledComponent>().m_enabled);
+  EXPECT_FALSE(scene.IsEntityEnabled(entity.Handle()));
+
+  scene.SetEntityEnabled(entity.Handle(), true);
+  EXPECT_TRUE(scene.IsEntityEnabled(entity.Handle()));
+}
+
+// A component with no disabled bit is enabled. Disabling writes the mask group
+// the systems read; enabling clears the bit and drops the group once nothing is
+// off.
+TEST(SceneTest, AComponentIsEnabledUntilItIsDisabled) {
+  Scene scene;
+  Entity entity = scene.CreateEntity();
+  entity.AddComponent<SpriteComponent>(static_cast<Sprite*>(nullptr));
+
+  EXPECT_TRUE(scene.IsComponentEnabled<SpriteComponent>(entity.Handle()));
+  EXPECT_FALSE(entity.HasComponent<DisabledComponentsComponent>());
+
+  scene.SetComponentEnabled<SpriteComponent>(entity.Handle(), false);
+  ASSERT_TRUE(entity.HasComponent<DisabledComponentsComponent>());
+  EXPECT_FALSE(scene.IsComponentEnabled<SpriteComponent>(entity.Handle()));
+
+  // One component's bit does not switch the others off.
+  EXPECT_TRUE(scene.IsComponentEnabled<AudioComponent>(entity.Handle()));
+  EXPECT_TRUE(scene.IsComponentEnabled<RigidBodyComponent>(entity.Handle()));
+
+  scene.SetComponentEnabled<SpriteComponent>(entity.Handle(), true);
+  EXPECT_TRUE(scene.IsComponentEnabled<SpriteComponent>(entity.Handle()));
+  EXPECT_FALSE(entity.HasComponent<DisabledComponentsComponent>());
+}
+
+TEST(SceneTest, DisablingTwoComponentsKeepsTheMaskUntilBothAreBack) {
+  Scene scene;
+  Entity entity = scene.CreateEntity();
+
+  scene.SetComponentEnabled<SpriteComponent>(entity.Handle(), false);
+  scene.SetComponentEnabled<AudioComponent>(entity.Handle(), false);
+
+  ASSERT_TRUE(entity.HasComponent<DisabledComponentsComponent>());
+  EXPECT_FALSE(scene.IsComponentEnabled<SpriteComponent>(entity.Handle()));
+  EXPECT_FALSE(scene.IsComponentEnabled<AudioComponent>(entity.Handle()));
+
+  scene.SetComponentEnabled<SpriteComponent>(entity.Handle(), true);
+  EXPECT_TRUE(entity.HasComponent<DisabledComponentsComponent>());
+  EXPECT_TRUE(scene.IsComponentEnabled<SpriteComponent>(entity.Handle()));
+  EXPECT_FALSE(scene.IsComponentEnabled<AudioComponent>(entity.Handle()));
+
+  scene.SetComponentEnabled<AudioComponent>(entity.Handle(), true);
+  EXPECT_FALSE(entity.HasComponent<DisabledComponentsComponent>());
 }
 }  // namespace

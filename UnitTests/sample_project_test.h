@@ -6,6 +6,7 @@
 
 #include <gtest/gtest.h>
 
+#include "scene_test_support.h"
 #include <audio/sound_manager.h>
 #include <core/asset_registry.h>
 #include <core/fixed_timestep.h>
@@ -32,7 +33,7 @@ const std::filesystem::path kSampleProject{RSE_SAMPLE_PROJECT_DIR};
 
 uint32_t CountEntities() {
   uint32_t entities = 0;
-  ECSManager::GetView<BasicComponent>().each([&entities](auto, BasicComponent&) { ++entities; });
+  TestScene().Registry().view<BasicComponent>().each([&entities](auto, BasicComponent&) { ++entities; });
   return entities;
 }
 
@@ -43,7 +44,7 @@ class SampleProjectTest : public ::testing::Test {
   void SetUp() override { AssetRegistry::Init(kSampleProject); }
 
   void TearDown() override {
-    ECSManager::ActiveScene().Clear();
+    TestScene().Clear();
     TextureManager::Clean();
     SoundManager::Clean();
     PhysicsMaterialManager::Clean();
@@ -125,12 +126,12 @@ TEST_F(SampleProjectTest, EveryListedSceneLoads) {
     const std::filesystem::path file = project.Resolve(scene);
     ASSERT_TRUE(std::filesystem::exists(file)) << file;
 
-    ECSManager::ActiveScene().Clear();
-    ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), file, &error)) << file << ": " << error;
+    TestScene().Clear();
+    ASSERT_TRUE(SceneIO::Load(TestScene(), file, &error)) << file << ": " << error;
     EXPECT_GT(CountEntities(), 0u) << file;
   }
 
-  ECSManager::ActiveScene().Clear();
+  TestScene().Clear();
 }
 
 TEST_F(SampleProjectTest, AssetRootExists) {
@@ -149,14 +150,14 @@ TEST_F(SampleProjectTest, TheStartupSceneSharesOneTexture) {
   std::string error;
 
   ASSERT_TRUE(Project::Load(kSampleProject / "project.xml", project, &error)) << error;
-  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), project.Resolve(project.startup_scene), &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(TestScene(), project.Resolve(project.startup_scene), &error)) << error;
 
   EXPECT_EQ(TextureManager::Count(), 1u);
 
   std::string shared;
   int sprites = 0;
 
-  ECSManager::GetView<SpriteComponent>().each([&shared, &sprites](auto, SpriteComponent& component) {
+  TestScene().Registry().view<SpriteComponent>().each([&shared, &sprites](auto, SpriteComponent& component) {
     ++sprites;
     ASSERT_NE(component.m_sprite, nullptr);
 
@@ -197,24 +198,25 @@ TEST_F(SampleProjectTest, ThePhysicsSceneHasAFloorAndAFallingBody) {
   std::string error;
 
   ASSERT_TRUE(Project::Load(kSampleProject / "project.xml", project, &error)) << error;
-  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), project.Resolve("scenes/physics.xml"), &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(TestScene(), project.Resolve("scenes/physics.xml"), &error)) << error;
 
-  EXPECT_EQ(ECSManager::GetView<RigidBodyComponent>().size(), 2u);
+  EXPECT_EQ(TestScene().Registry().view<RigidBodyComponent>().size(), 2u);
 
   int static_bodies = 0;
   int dynamic_bodies = 0;
 
-  ECSManager::GetView<RigidBodyComponent>().each([&static_bodies, &dynamic_bodies](auto, RigidBodyComponent& rigid) {
-    ASSERT_NE(rigid.m_rigidbody, nullptr);
-    EXPECT_FALSE(rigid.m_rigidbody->m_init);
-    EXPECT_EQ(rigid.m_rigidbody->GetMaterial(), "b7d4e2a19c3f5068");
+  TestScene().Registry().view<RigidBodyComponent>().each(
+      [&static_bodies, &dynamic_bodies](auto, RigidBodyComponent& rigid) {
+        ASSERT_NE(rigid.m_rigidbody, nullptr);
+        EXPECT_FALSE(rigid.m_rigidbody->m_init);
+        EXPECT_EQ(rigid.m_rigidbody->GetMaterial(), "b7d4e2a19c3f5068");
 
-    if (*rigid.m_rigidbody->GetBodyType() == b2_staticBody) {
-      ++static_bodies;
-    } else if (*rigid.m_rigidbody->GetBodyType() == b2_dynamicBody) {
-      ++dynamic_bodies;
-    }
-  });
+        if (*rigid.m_rigidbody->GetBodyType() == b2_staticBody) {
+          ++static_bodies;
+        } else if (*rigid.m_rigidbody->GetBodyType() == b2_dynamicBody) {
+          ++dynamic_bodies;
+        }
+      });
 
   EXPECT_EQ(static_bodies, 1);
   EXPECT_EQ(dynamic_bodies, 1);
@@ -227,24 +229,24 @@ TEST_F(SampleProjectTest, ThePrefabPlacesTheCrate) {
   std::string error;
   ASSERT_TRUE(Project::Load(kSampleProject / "project.xml", project, &error)) << error;
 
-  const uint32_t crate = rse::PrefabIO::Instantiate(kSampleProject / "prefabs" / "crate.xml", &error);
+  const uint32_t crate = rse::PrefabIO::Instantiate(TestScene(), kSampleProject / "prefabs" / "crate.xml", &error);
   ASSERT_NE(crate, static_cast<uint32_t>(entt::null)) << error;
   ASSERT_EQ(CountEntities(), 1u);
 
-  ASSERT_TRUE(ECSManager::HasComponent<SpriteComponent>(crate));
-  ASSERT_TRUE(ECSManager::HasComponent<RigidBodyComponent>(crate));
+  ASSERT_TRUE(TestScene().Registry().has<SpriteComponent>(crate));
+  ASSERT_TRUE(TestScene().Registry().has<RigidBodyComponent>(crate));
 
-  EXPECT_EQ(ECSManager::GetComponent<BasicComponent>(crate).m_name, "crate");
+  EXPECT_EQ(TestScene().Registry().get<BasicComponent>(crate).m_name, "crate");
 
-  const TransformComponent& transform = ECSManager::GetComponent<TransformComponent>(crate);
+  const TransformComponent& transform = TestScene().Registry().get<TransformComponent>(crate);
   EXPECT_FLOAT_EQ(transform.position.x, 640.f);
   EXPECT_FLOAT_EQ(transform.position.y, 400.f);
 
-  const SpriteComponent& sprite = ECSManager::GetComponent<SpriteComponent>(crate);
+  const SpriteComponent& sprite = TestScene().Registry().get<SpriteComponent>(crate);
   ASSERT_NE(sprite.m_sprite, nullptr);
   EXPECT_EQ(sprite.m_sprite->GetTextureName(), "tex3.png");
 
-  const RigidBodyComponent& rigidbody = ECSManager::GetComponent<RigidBodyComponent>(crate);
+  const RigidBodyComponent& rigidbody = TestScene().Registry().get<RigidBodyComponent>(crate);
   ASSERT_NE(rigidbody.m_rigidbody, nullptr);
   EXPECT_FALSE(rigidbody.m_rigidbody->m_init);
   EXPECT_EQ(*rigidbody.m_rigidbody->GetBodyType(), b2_dynamicBody);
@@ -260,7 +262,7 @@ TEST_F(SampleProjectTest, ThePhysicsSceneCrateLandsAndRests) {
   std::string error;
 
   ASSERT_TRUE(Project::Load(kSampleProject / "project.xml", project, &error)) << error;
-  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), project.Resolve("scenes/physics.xml"), &error)) << error;
+  ASSERT_TRUE(SceneIO::Load(TestScene(), project.Resolve("scenes/physics.xml"), &error)) << error;
 
   PhysicsSystem physics;
   FixedTimestep timestep;
@@ -268,13 +270,13 @@ TEST_F(SampleProjectTest, ThePhysicsSceneCrateLandsAndRests) {
   // Ten simulated seconds. The crate starts at y = 400, the floor's top is at
   // 96 and gravity is 10 units per second squared.
   for (int step = 0; step < 600; ++step) {
-    physics.UpdateSimulation(ECSManager::ActiveScene(), timestep.Step());
+    physics.UpdateSimulation(TestScene(), timestep.Step());
   }
 
   float crate_y = 0.f;
   int dynamic_bodies = 0;
 
-  ECSManager::GetView<TransformComponent, RigidBodyComponent>().each(
+  TestScene().Registry().view<TransformComponent, RigidBodyComponent>().each(
       [&crate_y, &dynamic_bodies](auto, TransformComponent& transform, RigidBodyComponent& rigid) {
         if (rigid.m_rigidbody != nullptr && *rigid.m_rigidbody->GetBodyType() == b2_dynamicBody) {
           crate_y = transform.position.y;

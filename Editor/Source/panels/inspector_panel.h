@@ -17,6 +17,7 @@
 #include <components/material_shader.h>
 #include <core/physics_material_manager.h>
 #include <layout/editor_panel.h>
+#include <scene/editor_scene.h>
 #include <utils/logger.h>
 
 // ---------------------------------------------------------------------------
@@ -120,10 +121,10 @@ class InspectorPanel : public EditorPanel {
       MarkDirtyIfEdited();
       EndLabeledRow();
 
-      bool enabled = rse::ECSManager::IsEntityEnabled(entity);
+      bool enabled = EditorScene().IsEntityEnabled(entity);
       BeginLabeledRow("basic_enabled", "Enabled");
       if (ImGui::Checkbox("##enabled", &enabled)) {
-        rse::ECSManager::SetEntityEnabled(entity, enabled);
+        EditorScene().SetEntityEnabled(entity, enabled);
       }
       MarkDirtyIfEdited();
       EndLabeledRow();
@@ -558,19 +559,19 @@ class InspectorPanel : public EditorPanel {
   }
 
   static SpriteAppearanceComponent* FindAppearance(uint32_t entity) {
-    if (entity == INVALID_ENTITY_ID || !rse::ECSManager::HasComponent<SpriteAppearanceComponent>(entity)) {
+    if (entity == INVALID_ENTITY_ID || !EditorScene().Registry().has<SpriteAppearanceComponent>(entity)) {
       return nullptr;
     }
 
-    return &rse::ECSManager::GetComponent<SpriteAppearanceComponent>(entity);
+    return &EditorScene().Registry().get<SpriteAppearanceComponent>(entity);
   }
 
   static SpriteAppearanceComponent& EnsureAppearance(uint32_t entity) {
-    if (!rse::ECSManager::HasComponent<SpriteAppearanceComponent>(entity)) {
-      rse::ECSManager::AddComponent<SpriteAppearanceComponent>(entity);
+    if (!EditorScene().Registry().has<SpriteAppearanceComponent>(entity)) {
+      EditorScene().Registry().assign<SpriteAppearanceComponent>(entity);
     }
 
-    return rse::ECSManager::GetComponent<SpriteAppearanceComponent>(entity);
+    return EditorScene().Registry().get<SpriteAppearanceComponent>(entity);
   }
 
   static bool ChoiceMatchesReference(const TextureChoice& choice, const std::string& reference) {
@@ -1382,11 +1383,11 @@ class InspectorPanel : public EditorPanel {
   }
 
   static void AssignPhysicsMaterialReference(uint32_t entity, const std::string& reference) {
-    if (!rse::ECSManager::HasComponent<RigidBodyComponent>(entity)) {
+    if (!EditorScene().Registry().has<RigidBodyComponent>(entity)) {
       return;
     }
 
-    RigidBodyComponent& component = rse::ECSManager::GetComponent<RigidBodyComponent>(entity);
+    RigidBodyComponent& component = EditorScene().Registry().get<RigidBodyComponent>(entity);
 
     if (component.m_rigidbody == nullptr) {
       return;
@@ -1482,9 +1483,9 @@ class InspectorPanel : public EditorPanel {
                                         "");
     ImGui::SameLine();
 
-    bool enabled = rse::ECSManager::IsComponentEnabled<Component>(entity);
+    bool enabled = EditorScene().IsComponentEnabled<Component>(entity);
     if (ImGui::Checkbox("##enabled", &enabled)) {
-      rse::ECSManager::SetComponentEnabled<Component>(entity, enabled);
+      EditorScene().SetComponentEnabled<Component>(entity, enabled);
       SceneManager::MarkDirty();
     }
 
