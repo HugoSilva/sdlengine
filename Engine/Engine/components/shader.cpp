@@ -29,7 +29,7 @@ void Shader::Enable() const { glUseProgram(m_shader_id); }
 
 void Shader::Disable() const { glUseProgram(0); }
 
-int Shader::GetUniformLocation(const char* name) {
+int Shader::FindUniformLocation(const char* name) {
   if (name == nullptr) {
     return -1;
   }
@@ -41,14 +41,21 @@ int Shader::GetUniformLocation(const char* name) {
   }
 
   const int location = glGetUniformLocation(m_shader_id, name);
-
-  if (location == -1) {
-    Logger::Error(std::string("Could not find uniform ") + name + " in shader!");
-  }
-
   m_uniform_locations.emplace(name, location);
   return location;
 }
+
+int Shader::GetUniformLocation(const char* name) {
+  const int location = FindUniformLocation(name);
+
+  if (location == -1 && name != nullptr && m_reported_misses.insert(name).second) {
+    Logger::Error(std::string("Could not find uniform ") + name + " in shader!");
+  }
+
+  return location;
+}
+
+bool Shader::HasUniform(const char* name) { return FindUniformLocation(name) != -1; }
 
 void Shader::SetUniform1i(const char* name, int value) { glUniform1i(GetUniformLocation(name), value); }
 

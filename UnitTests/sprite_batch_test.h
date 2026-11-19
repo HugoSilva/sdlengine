@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 
+#include <components/material_shader.h>
 #include <render/sprite_batch.h>
 
 namespace {
@@ -21,27 +22,26 @@ SpriteDraw MakeDraw(std::uint32_t texture, float x = 0.0f, float z = 0.0f, std::
   return draw;
 }
 
-TEST(SpriteBatchTest, GroupsDrawsByTexture) {
+TEST(SpriteBatchTest, GroupsTwoTexturesIntoOneBatch) {
   SpriteBatchBuilder builder;
   builder.Add(MakeDraw(2));
   builder.Add(MakeDraw(1));
   builder.Add(MakeDraw(2));
   builder.Build();
 
-  ASSERT_EQ(2u, builder.GetBatches().size());
-  EXPECT_EQ(1u, builder.GetBatches()[0].texture);
-  EXPECT_EQ(2u, builder.GetBatches()[1].texture);
+  ASSERT_EQ(1u, builder.GetBatches().size());
+  EXPECT_EQ(2u, builder.GetBatches()[0].texture_count);
+  // The slot table follows submission order: the first texture submitted is
+  // unit 0, whichever texture it is.
+  EXPECT_EQ(2u, builder.GetBatches()[0].textures[0]);
+  EXPECT_EQ(1u, builder.GetBatches()[0].textures[1]);
   EXPECT_EQ(12u, builder.GetVertices().size());
   EXPECT_EQ(18u, builder.GetStats().indices);
-  // The second batch starts at the fifth vertex, so a shared vertex buffer has
-  // to draw it with first_vertex as the base vertex.
   EXPECT_EQ(0u, builder.GetBatches()[0].first_vertex);
-  EXPECT_EQ(4u, builder.GetBatches()[1].first_vertex);
-  EXPECT_EQ(6u, builder.GetBatches()[0].index_count);
-  EXPECT_EQ(12u, builder.GetBatches()[1].index_count);
+  EXPECT_EQ(18u, builder.GetBatches()[0].index_count);
   EXPECT_EQ(3u, builder.GetStats().submitted);
   EXPECT_EQ(0u, builder.GetStats().culled);
-  EXPECT_EQ(2u, builder.GetStats().batches);
+  EXPECT_EQ(1u, builder.GetStats().batches);
 }
 
 TEST(SpriteBatchTest, SharedQuadPatternIsLocalToABatch) {
@@ -192,7 +192,8 @@ TEST(SpriteBatchTest, UntexturedDrawUsesVertexColourPath) {
   builder.Build();
 
   ASSERT_EQ(4u, builder.GetVertices().size());
-  EXPECT_FLOAT_EQ(0.0f, builder.GetVertices()[0].tid);
+  EXPECT_FLOAT_EQ(-1.0f, builder.GetVertices()[0].slot);
+  EXPECT_EQ(0u, builder.GetBatches()[0].texture_count);
   EXPECT_FLOAT_EQ(0.25f, builder.GetVertices()[0].uv.x);
   EXPECT_EQ(0xff00ff00u, builder.GetVertices()[0].color);
 }
@@ -234,34 +235,159 @@ TEST(SpriteBatchTest, FlipMirrorsBothAxes) {
 }
 
 TEST(SpriteBatchTest, DifferentMaterialsSplitBatchesEvenWithOneTexture) {
-  int first_material = 0;
-  int second_material = 0;
+  MaterialShader first{"first", "First", "", nullptr};
+  MaterialShader second{"second", "Second", "", nullptr};
 
   SpriteBatchBuilder builder;
-  SpriteDraw first = MakeDraw(7);
-  first.material = reinterpret_cast<MaterialShader*>(&first_material);
-  SpriteDraw second = MakeDraw(7);
-  second.material = reinterpret_cast<MaterialShader*>(&second_material);
+  SpriteDraw first_draw = MakeDraw(7);
+  first_draw.material = &first;
+  SpriteDraw second_draw = MakeDraw(7);
+  second_draw.material = &second;
 
-  builder.Add(first);
-  builder.Add(second);
+  builder.Add(first_draw);
+  builder.Add(second_draw);
   builder.Build();
 
   ASSERT_EQ(2u, builder.GetBatches().size());
   EXPECT_NE(builder.GetBatches()[0].material, builder.GetBatches()[1].material);
-  EXPECT_EQ(7u, builder.GetBatches()[0].texture);
-  EXPECT_EQ(7u, builder.GetBatches()[1].texture);
+  EXPECT_EQ(7u, builder.GetBatches()[0].textures[0]);
+  EXPECT_EQ(7u, builder.GetBatches()[1].textures[0]);
   EXPECT_EQ(0u, builder.GetBatches()[0].first_vertex);
   EXPECT_EQ(4u, builder.GetBatches()[1].first_vertex);
+  // A material that did not compile resolves to no program, which is the
+  // renderer's signal to fall back to the scene shader.
+  EXPECT_EQ(nullptr, builder.GetBatches()[0].shader);
+  EXPECT_EQ(nullptr, builder.GetBatches()[1].shader);
 }
 
-TEST(SpriteBatchTest, TexturedDrawSetsTextureFlag) {
+TEST(SpriteBatchTest, NoMaterialResolvesToTheSceneShader) {
+  SpriteBatchBuilder builder;
+  builder.Add(MakeDraw(7));
+  builder.Build();
+
+  ASSERT_EQ(1u, builder.GetBatches().size());
+  EXPECT_EQ(nullptr, builder.GetBatches()[0].material);
+  EXPECT_EQ(nullptr, builder.GetBatches()[0].shader);
+}
+
+TEST(SpriteBatchTest, TexturedDrawSamplesSlotZero) {
   SpriteBatchBuilder builder;
   builder.Add(MakeDraw(7));
   builder.Build();
 
   ASSERT_EQ(4u, builder.GetVertices().size());
-  EXPECT_FLOAT_EQ(1.0f, builder.GetVertices()[0].tid);
+  EXPECT_FLOAT_EQ(0.0f, builder.GetVertices()[0].slot);
+  ASSERT_EQ(1u, builder.GetBatches().size());
+  EXPECT_EQ(1u, builder.GetBatches()[0].texture_count);
+  EXPECT_EQ(7u, builder.GetBatches()[0].textures[0]);
+}
+
+TEST(SpriteBatchTest, BatchesSixteenTexturesInOneDrawCall) {
+  SpriteBatchBuilder builder;
+  for (std::uint32_t texture = 1; texture <= kMaxTextureSlots; ++texture) {
+    builder.Add(MakeDraw(texture));
+  }
+  builder.Build();
+
+  ASSERT_EQ(1u, builder.GetBatches().size());
+  EXPECT_EQ(kMaxTextureSlots, builder.GetBatches()[0].texture_count);
+
+  // The draw list is sorted by texture, so texture 1 lands in unit 0 and each
+  // following one in the next unit.
+  for (std::size_t slot = 0; slot < kMaxTextureSlots; ++slot) {
+    EXPECT_EQ(static_cast<std::uint32_t>(slot + 1), builder.GetBatches()[0].textures[slot]);
+    EXPECT_FLOAT_EQ(static_cast<float>(slot), builder.GetVertices()[slot * kVerticesPerQuad].slot);
+  }
+}
+
+TEST(SpriteBatchTest, OpensASecondBatchForTheSeventeenthTexture) {
+  SpriteBatchBuilder builder;
+  for (std::uint32_t texture = 1; texture <= kMaxTextureSlots + 1; ++texture) {
+    builder.Add(MakeDraw(texture));
+  }
+  builder.Build();
+
+  ASSERT_EQ(2u, builder.GetBatches().size());
+  EXPECT_EQ(kMaxTextureSlots, builder.GetBatches()[0].texture_count);
+  EXPECT_EQ(1u, builder.GetBatches()[1].texture_count);
+  EXPECT_EQ(static_cast<std::uint32_t>(kMaxTextureSlots + 1), builder.GetBatches()[1].textures[0]);
+  EXPECT_EQ(2u, builder.GetStats().batches);
+}
+
+TEST(SpriteBatchTest, ReusesOneSlotForARepeatedTexture) {
+  SpriteBatchBuilder builder;
+  for (int i = 0; i < 4; ++i) {
+    builder.Add(MakeDraw(3));
+    builder.Add(MakeDraw(9));
+  }
+  builder.Build();
+
+  ASSERT_EQ(1u, builder.GetBatches().size());
+  EXPECT_EQ(2u, builder.GetBatches()[0].texture_count);
+  EXPECT_EQ(3u, builder.GetBatches()[0].textures[0]);
+  EXPECT_EQ(9u, builder.GetBatches()[0].textures[1]);
+  // The first quad of each texture names its own unit; repeats reuse it.
+  EXPECT_FLOAT_EQ(0.0f, builder.GetVertices()[0].slot);
+  EXPECT_FLOAT_EQ(1.0f, builder.GetVertices()[kVerticesPerQuad].slot);
+}
+
+TEST(SpriteBatchTest, UntexturedQuadsJoinAFullBatch) {
+  SpriteBatchBuilder builder;
+  for (std::uint32_t texture = 1; texture <= kMaxTextureSlots; ++texture) {
+    builder.Add(MakeDraw(texture));
+  }
+  builder.Add(MakeDraw(0));
+  builder.Build();
+
+  ASSERT_EQ(1u, builder.GetBatches().size());
+  EXPECT_EQ(kMaxTextureSlots, builder.GetBatches()[0].texture_count);
+  // An untextured quad consumes no unit, so it never needs a batch of its own.
+  // It was submitted last, so it is the last vertex of the batch.
+  EXPECT_FLOAT_EQ(-1.0f, builder.GetVertices().back().slot);
+}
+
+TEST(SpriteBatchTest, KeepsSubmissionOrderForEqualDepthSprites) {
+  SpriteBatchBuilder builder;
+  builder.Add(MakeDraw(9, 1.0f));
+  builder.Add(MakeDraw(3, 2.0f));
+  builder.Add(MakeDraw(9, 3.0f));
+  builder.Build();
+
+  ASSERT_EQ(1u, builder.GetBatches().size());
+  EXPECT_EQ(2u, builder.GetBatches()[0].texture_count);
+  // Texture is no longer a sort key, so sprites at the same layer and depth
+  // draw in the order they were submitted: an author's alpha overlaps survive.
+  EXPECT_FLOAT_EQ(0.0f, builder.GetVertices()[0].position.x);
+  EXPECT_FLOAT_EQ(1.0f, builder.GetVertices()[4].position.x);
+  EXPECT_FLOAT_EQ(2.0f, builder.GetVertices()[8].position.x);
+  // The repeated texture reuses the unit it was given the first time.
+  EXPECT_FLOAT_EQ(0.0f, builder.GetVertices()[0].slot);
+  EXPECT_FLOAT_EQ(1.0f, builder.GetVertices()[4].slot);
+  EXPECT_FLOAT_EQ(0.0f, builder.GetVertices()[8].slot);
+}
+
+TEST(SpriteBatchTest, SetMaxTextureSlotsLimitsTheBatchTextures) {
+  SpriteBatchBuilder builder;
+  builder.SetMaxTextureSlots(4);
+  EXPECT_EQ(4u, builder.GetMaxTextureSlots());
+
+  for (std::uint32_t texture = 1; texture <= 8; ++texture) {
+    builder.Add(MakeDraw(texture));
+  }
+  builder.Build();
+
+  ASSERT_EQ(2u, builder.GetBatches().size());
+  EXPECT_EQ(4u, builder.GetBatches()[0].texture_count);
+  EXPECT_EQ(4u, builder.GetBatches()[1].texture_count);
+  EXPECT_EQ(5u, builder.GetBatches()[1].textures[0]);
+}
+
+TEST(SpriteBatchTest, SetMaxTextureSlotsStaysWithinTheHeaderLimit) {
+  SpriteBatchBuilder builder;
+  builder.SetMaxTextureSlots(1000);
+  EXPECT_EQ(kMaxTextureSlots, builder.GetMaxTextureSlots());
+  builder.SetMaxTextureSlots(0);
+  EXPECT_EQ(1u, builder.GetMaxTextureSlots());
 }
 
 }  // namespace

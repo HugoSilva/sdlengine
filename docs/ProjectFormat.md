@@ -636,10 +636,16 @@ stores the entry's id. Its own format is independent of scenes and prefabs:
 | `vertexShader`, `fragmentShader` | Shader files. A path is resolved against the project directory first, then as an engine resource; a bare `Default.vert` therefore finds the engine's copy. |
 
 The program keeps the same uniform contract as the scene shader: `view`,
-`projection` and `texture0`. The renderer uploads the camera matrices again
-after every material switch, so a material does not have to know about the
-camera. Materials are cached by `MaterialManager`, one per asset, and the
-renderer groups sprites by material and texture into batches. A material that
+`projection` and the sixteen `texture0`..`texture15` samplers, one per texture
+unit. A vertex's `slot` attribute names the unit to sample (or `-1` for an
+untextured quad), so a material shader selects the unit with a `switch`/`if`
+chain rather than indexing a sampler array: GLSL 330 only guarantees indexing by
+a dynamically uniform expression. A material that samples only `texture0` still
+works for single-texture batches, because a batch fills its units from zero. The
+renderer uploads the camera matrices and the sampler units again after every
+material switch, so a material does not have to know about the camera. Materials
+are cached by `MaterialManager`, one per asset, and the renderer groups sprites
+by material into batches of up to sixteen textures. A material that
 cannot be read or compiled is logged once and the sprite falls back to the scene
 shader; a project still opens if a material is missing.
 

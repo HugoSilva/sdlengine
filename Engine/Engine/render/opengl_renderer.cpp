@@ -12,11 +12,19 @@
 #include <GL/glew.h>
 #endif  // EMSCRIPTEN
 
-#include <components/material_shader.h>
 #include <components/shader.h>
 #include <render/renderable_2d.h>
 
 namespace rse {
+namespace {
+// One sampler uniform per texture unit, as the shaders declare them. Kept as a
+// constant table so a program switch does not build sixteen names per frame.
+constexpr const char* kTextureUniforms[kMaxTextureSlots] = {
+    "texture0", "texture1", "texture2",  "texture3",  "texture4",  "texture5",  "texture6",  "texture7",
+    "texture8", "texture9", "texture10", "texture11", "texture12", "texture13", "texture14", "texture15",
+};
+}  // namespace
+
 OpenGLRenderer::OpenGLRenderer(SDL_Window* window) {
   // The window is part of the constructor because backends need it to create
   // their context; the batched 2D path itself has no SDL dependency.
@@ -37,7 +45,7 @@ OpenGLRenderer::OpenGLRenderer(SDL_Window* window) {
 
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), (const void*)offsetof(SpriteVertex, position));
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), (const void*)offsetof(SpriteVertex, uv));
-  glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), (const void*)offsetof(SpriteVertex, tid));
+  glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(SpriteVertex), (const void*)offsetof(SpriteVertex, slot));
   glVertexAttribPointer(3, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(SpriteVertex),
                         (const void*)offsetof(SpriteVertex, color));
 
@@ -59,6 +67,10 @@ OpenGLRenderer::OpenGLRenderer(SDL_Window* window) {
   m_capabilities.max_texture_units = static_cast<std::uint32_t>(std::max(1, texture_units));
   m_capabilities.max_texture_size = static_cast<std::uint32_t>(std::max(0, texture_size));
   m_capabilities.max_batch_vertices = static_cast<std::uint32_t>(kMaxVertices);
+
+  // The builder packets up to sixteen textures, but a context with fewer units
+  // still has to be able to bind every slot the batch names.
+  m_builder.SetMaxTextureSlots(m_capabilities.max_texture_units);
 }
 
 OpenGLRenderer::~OpenGLRenderer() {
@@ -145,11 +157,7 @@ void OpenGLRenderer::Flush() {
   ApplyFrameUniforms(active_shader);
 
   const auto select_shader = [this, &active_shader](const SpriteBatch& batch) {
-    Shader* next = m_scene_shader;
-
-    if (batch.material != nullptr && batch.material->GetShader() != nullptr) {
-      next = batch.material->GetShader();
-    }
+    Shader* next = batch.shader != nullptr ? batch.shader : m_scene_shader;
 
     if (next != active_shader) {
       active_shader = next;
@@ -199,6 +207,7 @@ void OpenGLRenderer::Flush() {
     ApplyFrameUniforms(active_shader);
   }
 
+  glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindVertexArray(0);
 
@@ -207,7 +216,16 @@ void OpenGLRenderer::Flush() {
 }
 
 void OpenGLRenderer::DrawBatch(const SpriteBatch& batch, int base_vertex) {
-  glBindTexture(GL_TEXTURE_2D, batch.texture);
+  if (batch.texture_count == 0) {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+  } else {
+    for (std::size_t slot = 0; slot < batch.texture_count; ++slot) {
+      glActiveTexture(static_cast<GLenum>(GL_TEXTURE0) + static_cast<GLenum>(slot));
+      glBindTexture(GL_TEXTURE_2D, batch.textures[slot]);
+    }
+  }
+
 #ifdef EMSCRIPTEN
   (void)base_vertex;
   glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(batch.index_count), GL_UNSIGNED_SHORT, nullptr);
@@ -230,7 +248,16 @@ void OpenGLRenderer::ApplyFrameUniforms(Shader* shader) {
   }
 
   shader->Enable();
-  shader->SetUniform1i("texture0", 0);
+
+  // The sampler each slot reads from never changes, so one upload per program
+  // covers every frame that uses it. A material shader that samples fewer slots
+  // is left alone rather than logging a miss for every unit it omits.
+  for (std::size_t unit = 0; unit < kMaxTextureSlots; ++unit) {
+    if (shader->HasUniform(kTextureUniforms[unit])) {
+      shader->SetUniform1i(kTextureUniforms[unit], static_cast<int>(unit));
+    }
+  }
+
   shader->SetUniformMat4("view", glm::value_ptr(m_view));
   shader->SetUniformMat4("projection", glm::value_ptr(m_projection));
 }

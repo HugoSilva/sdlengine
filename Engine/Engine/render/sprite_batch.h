@@ -11,6 +11,7 @@
 
 namespace rse {
 class MaterialShader;
+class Shader;
 
 // A backend-neutral description of one 2D quad. The renderer consumes these
 // instead of touching a GPU buffer while the ECS is still submitting sprites:
@@ -38,7 +39,10 @@ struct SpriteDraw {
 struct SpriteVertex {
   glm::vec3 position;
   glm::vec2 uv;
-  float tid;
+  // The batch's texture unit this vertex samples, or -1 when the quad is
+  // untextured and uses its colour alone. It is a float because the attribute
+  // is declared float in the shader and interpolated to the fragment stage.
+  float slot;
   std::uint32_t color;
 };
 
@@ -47,11 +51,18 @@ struct SpriteVertex {
 // start at zero, so a backend passes first_vertex as the base vertex instead of
 // storing an index range per batch.
 struct SpriteBatch {
-  std::uint32_t texture{0};
   MaterialShader* material{nullptr};
+  // The program this batch draws with, resolved from the material when the
+  // batch is built; null means the renderer's scene shader. Resolving it once
+  // keeps the per-frame draw loop from touching the material.
+  Shader* shader{nullptr};
   std::size_t first_vertex{0};
   std::size_t vertex_count{0};
   std::size_t index_count{0};
+  // The textures the batch samples, bound to units 0..texture_count-1. A batch
+  // of untextured quads has none.
+  std::array<std::uint32_t, kMaxTextureSlots> textures{};
+  std::size_t texture_count{0};
 };
 
 struct SpriteBatchStats {
@@ -71,6 +82,13 @@ class SpriteBatchBuilder {
   static void WriteQuadIndices(std::uint16_t* indices, std::size_t quad_count);
 
   void Reset();
+
+  // How many textures a batch may sample. The renderer lowers this when the
+  // context reports fewer units than kMaxTextureSlots; a fixed-function or web
+  // backend can lower it further. Clamped to [1, kMaxTextureSlots] and kept
+  // across Reset(), because it describes the backend, not the frame.
+  void SetMaxTextureSlots(std::size_t slots);
+  std::size_t GetMaxTextureSlots() const { return m_max_texture_slots; }
 
   // The world rectangle the 2D camera can see. An empty view (the default)
   // disables culling, which keeps the editor's first frame and headless tests
@@ -100,6 +118,7 @@ class SpriteBatchBuilder {
   glm::vec2 m_view_min{0.0f};
   glm::vec2 m_view_max{0.0f};
   bool m_has_view_bounds{false};
+  std::size_t m_max_texture_slots{kMaxTextureSlots};
   std::uint32_t m_next_sequence{0};
 };
 }  // namespace rse

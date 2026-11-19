@@ -6,6 +6,8 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <components/material_shader.h>
+
 namespace rse {
 namespace {
 // Rotation is optional for 2D sprites, and the common case is a quad that only
@@ -14,7 +16,21 @@ namespace {
 bool IsUnrotated(const SpriteDraw& draw) {
   return draw.rotation.x == 0.0f && draw.rotation.y == 0.0f && draw.rotation.z == 0.0f;
 }
+
+// The unit a texture is already bound to in this batch, or -1 when the batch
+// does not hold it yet.
+int FindTextureSlot(const std::array<std::uint32_t, kMaxTextureSlots>& textures, std::size_t count,
+                    std::uint32_t texture) {
+  for (std::size_t slot = 0; slot < count; ++slot) {
+    if (textures[slot] == texture) return static_cast<int>(slot);
+  }
+  return -1;
+}
 }  // namespace
+
+void SpriteBatchBuilder::SetMaxTextureSlots(std::size_t slots) {
+  m_max_texture_slots = std::clamp<std::size_t>(slots, 1, kMaxTextureSlots);
+}
 
 void SpriteBatchBuilder::Reset() {
   m_draws.clear();
@@ -86,25 +102,36 @@ void SpriteBatchBuilder::Build() {
 
   // Layers are the coarse ordering primitive; depth is the fine one inside a
   // layer. Back-to-front depth keeps the existing alpha-blended sprites working
-  // with the depth test still enabled. Material and texture are the batching
-  // keys, so they come before the submission sequence only when layer and depth
-  // are equal.
+  // with the depth test still enabled. Material is the batch key, so it comes
+  // before the submission sequence when layer and depth are equal. Texture is
+  // deliberately not a key any more: a batch's slot table already holds every
+  // texture it samples, so ordering by texture would only reorder sprites that
+  // overlap at the same depth. Submission order is what an author expects.
   std::sort(m_draws.begin(), m_draws.end(), [](const SpriteDraw& a, const SpriteDraw& b) {
     if (a.layer != b.layer) return a.layer < b.layer;
     if (a.depth != b.depth) return a.depth > b.depth;
     if (a.material != b.material) return std::less<MaterialShader*>{}(a.material, b.material);
-    if (a.texture != b.texture) return a.texture < b.texture;
     return a.sequence < b.sequence;
   });
 
-  const auto close_batch = [this](std::uint32_t texture, MaterialShader* material, std::size_t first_vertex,
+  const auto close_batch = [this](const std::array<std::uint32_t, kMaxTextureSlots>& textures,
+                                  std::size_t texture_count, MaterialShader* material, std::size_t first_vertex,
                                   std::size_t vertex_count) {
     if (vertex_count == 0) return;
-    m_batches.push_back(
-        {texture, material, first_vertex, vertex_count, vertex_count / kVerticesPerQuad * kIndicesPerQuad});
+
+    SpriteBatch batch;
+    batch.material = material;
+    batch.shader = material == nullptr ? nullptr : material->GetShader();
+    batch.first_vertex = first_vertex;
+    batch.vertex_count = vertex_count;
+    batch.index_count = vertex_count / kVerticesPerQuad * kIndicesPerQuad;
+    batch.textures = textures;
+    batch.texture_count = texture_count;
+    m_batches.push_back(batch);
   };
 
-  std::uint32_t batch_texture = 0;
+  std::array<std::uint32_t, kMaxTextureSlots> batch_textures{};
+  std::size_t batch_texture_count = 0;
   MaterialShader* batch_material = nullptr;
   std::size_t batch_first_vertex = 0;
   std::size_t batch_vertex_count = 0;
@@ -140,19 +167,42 @@ void SpriteBatchBuilder::Build() {
       continue;
     }
 
-    if (!batch_open || draw.texture != batch_texture || draw.material != batch_material ||
-        batch_vertex_count + kVerticesPerQuad > kMaxVertices) {
+    if (!batch_open || draw.material != batch_material || batch_vertex_count + kVerticesPerQuad > kMaxVertices) {
       if (batch_open) {
-        close_batch(batch_texture, batch_material, batch_first_vertex, batch_vertex_count);
+        close_batch(batch_textures, batch_texture_count, batch_material, batch_first_vertex, batch_vertex_count);
       }
-      batch_texture = draw.texture;
+      batch_textures.fill(0);
+      batch_texture_count = 0;
       batch_material = draw.material;
       batch_first_vertex = m_vertices.size();
       batch_vertex_count = 0;
       batch_open = true;
     }
 
-    const float tid = draw.texture == 0 ? 0.0f : 1.0f;
+    // The quad joins the batch when its texture is already bound to a unit, or
+    // when a unit is still free. An untextured quad needs no unit at all, so it
+    // never breaks a batch. A texture that does not fit forces the batch to
+    // close and a new one to start with this quad.
+    int slot = -1;
+
+    if (draw.texture != 0) {
+      slot = FindTextureSlot(batch_textures, batch_texture_count, draw.texture);
+
+      if (slot < 0) {
+        if (batch_texture_count == m_max_texture_slots) {
+          close_batch(batch_textures, batch_texture_count, batch_material, batch_first_vertex, batch_vertex_count);
+          batch_textures.fill(0);
+          batch_texture_count = 0;
+          batch_first_vertex = m_vertices.size();
+          batch_vertex_count = 0;
+        }
+
+        slot = static_cast<int>(batch_texture_count);
+        batch_textures[batch_texture_count++] = draw.texture;
+      }
+    }
+
+    const float vertex_slot = slot < 0 ? -1.0f : static_cast<float>(slot);
 
     // Flip inside the sprite's own UV rectangle, not across the whole texture:
     // an atlas region mirrored around 0.5 would sample a neighbouring image.
@@ -178,14 +228,14 @@ void SpriteBatchBuilder::Build() {
     }
 
     for (int i = 0; i < 4; ++i) {
-      m_vertices.push_back({corners[i], uv[i], tid, draw.color});
+      m_vertices.push_back({corners[i], uv[i], vertex_slot, draw.color});
     }
 
     batch_vertex_count += kVerticesPerQuad;
   }
 
   if (batch_open) {
-    close_batch(batch_texture, batch_material, batch_first_vertex, batch_vertex_count);
+    close_batch(batch_textures, batch_texture_count, batch_material, batch_first_vertex, batch_vertex_count);
   }
 
   m_stats.batches = m_batches.size();
