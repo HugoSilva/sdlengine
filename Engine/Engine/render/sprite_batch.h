@@ -78,6 +78,13 @@ class SpriteBatchBuilder {
 
   void Reset();
 
+  // How many textures a batch may sample. The renderer lowers this when the
+  // context reports fewer units than kMaxTextureSlots; a fixed-function or web
+  // backend can lower it further. Clamped to [1, kMaxTextureSlots], and clearing
+  // the view bounds does not change it.
+  void SetMaxTextureSlots(std::size_t slots);
+  std::size_t GetMaxTextureSlots() const { return m_max_texture_slots; }
+
   // The world rectangle the 2D camera can see. An empty view (the default)
   // disables culling, which keeps the editor's first frame and headless tests
   // independent of a camera.
@@ -106,6 +113,7 @@ class SpriteBatchBuilder {
   glm::vec2 m_view_min{0.0f};
   glm::vec2 m_view_max{0.0f};
   bool m_has_view_bounds{false};
+  std::size_t m_max_texture_slots{kMaxTextureSlots};
   std::uint32_t m_next_sequence{0};
 };
 }  // namespace rse

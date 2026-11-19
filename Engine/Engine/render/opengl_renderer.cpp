@@ -68,6 +68,10 @@ OpenGLRenderer::OpenGLRenderer(SDL_Window* window) {
   m_capabilities.max_texture_units = static_cast<std::uint32_t>(std::max(1, texture_units));
   m_capabilities.max_texture_size = static_cast<std::uint32_t>(std::max(0, texture_size));
   m_capabilities.max_batch_vertices = static_cast<std::uint32_t>(kMaxVertices);
+
+  // The builder packets up to sixteen textures, but a context with fewer units
+  // still has to be able to bind every slot the batch names.
+  m_builder.SetMaxTextureSlots(m_capabilities.max_texture_units);
 }
 
 OpenGLRenderer::~OpenGLRenderer() {

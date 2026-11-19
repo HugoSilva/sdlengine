@@ -14,7 +14,21 @@ namespace {
 bool IsUnrotated(const SpriteDraw& draw) {
   return draw.rotation.x == 0.0f && draw.rotation.y == 0.0f && draw.rotation.z == 0.0f;
 }
+
+// The unit a texture is already bound to in this batch, or -1 when the batch
+// does not hold it yet.
+int FindTextureSlot(const std::array<std::uint32_t, kMaxTextureSlots>& textures, std::size_t count,
+                    std::uint32_t texture) {
+  for (std::size_t slot = 0; slot < count; ++slot) {
+    if (textures[slot] == texture) return static_cast<int>(slot);
+  }
+  return -1;
+}
 }  // namespace
+
+void SpriteBatchBuilder::SetMaxTextureSlots(std::size_t slots) {
+  m_max_texture_slots = std::clamp<std::size_t>(slots, 1, kMaxTextureSlots);
+}
 
 void SpriteBatchBuilder::Reset() {
   m_draws.clear();
@@ -149,22 +163,42 @@ void SpriteBatchBuilder::Build() {
       continue;
     }
 
-    if (!batch_open || draw.texture != batch_textures[0] || draw.material != batch_material ||
-        batch_vertex_count + kVerticesPerQuad > kMaxVertices) {
+    if (!batch_open || draw.material != batch_material || batch_vertex_count + kVerticesPerQuad > kMaxVertices) {
       if (batch_open) {
         close_batch(batch_textures, batch_texture_count, batch_material, batch_first_vertex, batch_vertex_count);
       }
       batch_textures.fill(0);
-      batch_textures[0] = draw.texture;
-      batch_texture_count = draw.texture == 0 ? 0 : 1;
+      batch_texture_count = 0;
       batch_material = draw.material;
       batch_first_vertex = m_vertices.size();
       batch_vertex_count = 0;
       batch_open = true;
     }
 
-    // One texture per batch for now, so a textured quad always samples unit 0.
-    const float slot = draw.texture == 0 ? -1.0f : 0.0f;
+    // The quad joins the batch when its texture is already bound to a unit, or
+    // when a unit is still free. An untextured quad needs no unit at all, so it
+    // never breaks a batch. A texture that does not fit forces the batch to
+    // close and a new one to start with this quad.
+    int slot = -1;
+
+    if (draw.texture != 0) {
+      slot = FindTextureSlot(batch_textures, batch_texture_count, draw.texture);
+
+      if (slot < 0) {
+        if (batch_texture_count == m_max_texture_slots) {
+          close_batch(batch_textures, batch_texture_count, batch_material, batch_first_vertex, batch_vertex_count);
+          batch_textures.fill(0);
+          batch_texture_count = 0;
+          batch_first_vertex = m_vertices.size();
+          batch_vertex_count = 0;
+        }
+
+        slot = static_cast<int>(batch_texture_count);
+        batch_textures[batch_texture_count++] = draw.texture;
+      }
+    }
+
+    const float vertex_slot = slot < 0 ? -1.0f : static_cast<float>(slot);
 
     // Flip inside the sprite's own UV rectangle, not across the whole texture:
     // an atlas region mirrored around 0.5 would sample a neighbouring image.
@@ -190,7 +224,7 @@ void SpriteBatchBuilder::Build() {
     }
 
     for (int i = 0; i < 4; ++i) {
-      m_vertices.push_back({corners[i], uv[i], slot, draw.color});
+      m_vertices.push_back({corners[i], uv[i], vertex_slot, draw.color});
     }
 
     batch_vertex_count += kVerticesPerQuad;
