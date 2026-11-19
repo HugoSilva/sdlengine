@@ -165,11 +165,10 @@ void OpenGLRenderer::Flush() {
   for (const SpriteBatch& batch : batches) {
     const std::size_t vertex_bytes = batch.vertex_count * sizeof(SpriteVertex);
 
+    // Orphan and update: glBufferData hands out fresh storage for the batch, so
+    // the write never waits for the previous draw to stop reading the old one.
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    if (vertex_bytes > m_vbo_capacity) {
-      glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertex_bytes), nullptr, GL_STREAM_DRAW);
-      m_vbo_capacity = vertex_bytes;
-    }
+    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertex_bytes), nullptr, GL_STREAM_DRAW);
     glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(vertex_bytes), vertices.data() + batch.first_vertex);
 
     select_shader(batch);
@@ -182,10 +181,9 @@ void OpenGLRenderer::Flush() {
 
   if (vertex_bytes > 0) {
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    if (vertex_bytes > m_vbo_capacity) {
-      glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertex_bytes), nullptr, GL_STREAM_DRAW);
-      m_vbo_capacity = vertex_bytes;
-    }
+    // Orphan and update: the orphan drops the driver's reference to last frame's
+    // storage, so this frame's writes do not stall on the draws still reading it.
+    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertex_bytes), nullptr, GL_STREAM_DRAW);
     glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(vertex_bytes), vertices.data());
   }
 

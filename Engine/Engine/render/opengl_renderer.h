@@ -1,7 +1,6 @@
 #pragma once
 
 #include <chrono>
-#include <cstddef>
 #include <cstdint>
 
 #include <glm/glm.hpp>
@@ -55,7 +54,6 @@ class OpenGLRenderer : public Renderer2D {
   unsigned int m_vao{0};
   unsigned int m_vbo{0};
   unsigned int m_ibo{0};
-  std::size_t m_vbo_capacity{0};
 
   SpriteBatchBuilder m_builder;
   Renderer2DStats m_stats;
