@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <vector>
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -40,6 +41,14 @@ OpenGLRenderer::OpenGLRenderer(SDL_Window* window) {
   glVertexAttribPointer(3, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(SpriteVertex),
                         (const void*)offsetof(SpriteVertex, color));
 
+  // Every quad's six indices follow the same pattern, so the largest batch's
+  // worth is written once here and never rebuilt. Draws read it from offset zero
+  // and select their own vertices with the base vertex.
+  std::vector<std::uint16_t> indices(kMaxIndices);
+  SpriteBatchBuilder::WriteQuadIndices(indices.data(), kMaxQuads);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(indices.size() * sizeof(std::uint16_t)), indices.data(),
+               GL_STATIC_DRAW);
+
   glBindVertexArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -49,7 +58,7 @@ OpenGLRenderer::OpenGLRenderer(SDL_Window* window) {
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &texture_size);
   m_capabilities.max_texture_units = static_cast<std::uint32_t>(std::max(1, texture_units));
   m_capabilities.max_texture_size = static_cast<std::uint32_t>(std::max(0, texture_size));
-  m_capabilities.max_batch_vertices = static_cast<std::uint32_t>(SpriteBatchBuilder::kMaxVerticesPerBatch);
+  m_capabilities.max_batch_vertices = static_cast<std::uint32_t>(kMaxVertices);
 }
 
 OpenGLRenderer::~OpenGLRenderer() {
@@ -131,7 +140,6 @@ void OpenGLRenderer::Flush() {
 
   const auto& batches = m_builder.GetBatches();
   const auto& vertices = m_builder.GetVertices();
-  const auto& indices = m_builder.GetIndices();
 
   Shader* active_shader = m_scene_shader;
   ApplyFrameUniforms(active_shader);
@@ -150,57 +158,37 @@ void OpenGLRenderer::Flush() {
   };
 
 #ifdef EMSCRIPTEN
-  // WebGL2 has no base-vertex draw, so give each batch its own upload and keep
-  // the 16-bit indices local to that batch.
+  // WebGL2 has no base-vertex draw, so give each batch its own vertex upload and
+  // read the shared index pattern from its start: a batch's indices are exactly
+  // the first index_count entries of the static buffer.
   for (const SpriteBatch& batch : batches) {
     const std::size_t vertex_bytes = batch.vertex_count * sizeof(SpriteVertex);
-    const std::size_t index_bytes = batch.index_count * sizeof(std::uint16_t);
 
+    // Orphan and update: glBufferData hands out fresh storage for the batch, so
+    // the write never waits for the previous draw to stop reading the old one.
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    if (vertex_bytes > m_vbo_capacity) {
-      glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertex_bytes), nullptr, GL_STREAM_DRAW);
-      m_vbo_capacity = vertex_bytes;
-    }
+    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertex_bytes), nullptr, GL_STREAM_DRAW);
     glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(vertex_bytes), vertices.data() + batch.first_vertex);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-    if (index_bytes > m_ibo_capacity) {
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(index_bytes), nullptr, GL_STREAM_DRAW);
-      m_ibo_capacity = index_bytes;
-    }
-    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(index_bytes),
-                    indices.data() + batch.first_index);
-
     select_shader(batch);
-    DrawBatch(batch, 0, 0);
+    DrawBatch(batch, 0);
   }
 #else
-  // One upload for the frame. The batch indices stay 16-bit and local to their
-  // batch, so the draw supplies the batch's first vertex as the base vertex.
+  // One upload for the frame. Each batch is still drawn from index zero of the
+  // shared pattern, with its first vertex as the base vertex.
   const std::size_t vertex_bytes = vertices.size() * sizeof(SpriteVertex);
-  const std::size_t index_bytes = indices.size() * sizeof(std::uint16_t);
 
   if (vertex_bytes > 0) {
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    if (vertex_bytes > m_vbo_capacity) {
-      glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertex_bytes), nullptr, GL_STREAM_DRAW);
-      m_vbo_capacity = vertex_bytes;
-    }
+    // Orphan and update: the orphan drops the driver's reference to last frame's
+    // storage, so this frame's writes do not stall on the draws still reading it.
+    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertex_bytes), nullptr, GL_STREAM_DRAW);
     glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(vertex_bytes), vertices.data());
-  }
-
-  if (index_bytes > 0) {
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-    if (index_bytes > m_ibo_capacity) {
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(index_bytes), nullptr, GL_STREAM_DRAW);
-      m_ibo_capacity = index_bytes;
-    }
-    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(index_bytes), indices.data());
   }
 
   for (const SpriteBatch& batch : batches) {
     select_shader(batch);
-    DrawBatch(batch, static_cast<GLint>(batch.first_vertex), batch.first_index);
+    DrawBatch(batch, static_cast<GLint>(batch.first_vertex));
   }
 #endif
 
@@ -218,14 +206,13 @@ void OpenGLRenderer::Flush() {
   m_stats.cpu_ms = std::chrono::duration<double, std::milli>(elapsed).count();
 }
 
-void OpenGLRenderer::DrawBatch(const SpriteBatch& batch, int base_vertex, std::size_t first_index) {
-  const auto* index_offset = reinterpret_cast<const void*>(first_index * sizeof(std::uint16_t));
+void OpenGLRenderer::DrawBatch(const SpriteBatch& batch, int base_vertex) {
   glBindTexture(GL_TEXTURE_2D, batch.texture);
 #ifdef EMSCRIPTEN
   (void)base_vertex;
-  glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(batch.index_count), GL_UNSIGNED_SHORT, index_offset);
+  glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(batch.index_count), GL_UNSIGNED_SHORT, nullptr);
 #else
-  glDrawElementsBaseVertex(GL_TRIANGLES, static_cast<GLsizei>(batch.index_count), GL_UNSIGNED_SHORT, index_offset,
+  glDrawElementsBaseVertex(GL_TRIANGLES, static_cast<GLsizei>(batch.index_count), GL_UNSIGNED_SHORT, nullptr,
                            base_vertex);
 #endif
 }

@@ -7,13 +7,37 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace rse {
+namespace {
+// Rotation is optional for 2D sprites, and the common case is a quad that only
+// needs a translation and a non-uniform scale. The exact zero test keeps the
+// fast path predictable: anything authored as a rotation takes the matrix path.
+bool IsUnrotated(const SpriteDraw& draw) {
+  return draw.rotation.x == 0.0f && draw.rotation.y == 0.0f && draw.rotation.z == 0.0f;
+}
+}  // namespace
+
 void SpriteBatchBuilder::Reset() {
   m_draws.clear();
   m_vertices.clear();
-  m_indices.clear();
   m_batches.clear();
   m_stats = {};
   m_next_sequence = 0;
+}
+
+void SpriteBatchBuilder::WriteQuadIndices(std::uint16_t* indices, std::size_t quad_count) {
+  std::uint16_t base = 0;
+
+  for (std::size_t quad = 0; quad < quad_count; ++quad) {
+    indices[0] = static_cast<std::uint16_t>(base + 0);
+    indices[1] = static_cast<std::uint16_t>(base + 1);
+    indices[2] = static_cast<std::uint16_t>(base + 2);
+    indices[3] = static_cast<std::uint16_t>(base + 2);
+    indices[4] = static_cast<std::uint16_t>(base + 3);
+    indices[5] = static_cast<std::uint16_t>(base + 0);
+
+    indices += kIndicesPerQuad;
+    base = static_cast<std::uint16_t>(base + kVerticesPerQuad);
+  }
 }
 
 void SpriteBatchBuilder::SetViewBounds(const glm::vec2& min, const glm::vec2& max) {
@@ -39,15 +63,8 @@ glm::mat4 SpriteBatchBuilder::ModelFor(const SpriteDraw& draw) const {
   return model;
 }
 
-bool SpriteBatchBuilder::IsVisible(const SpriteDraw& draw, const glm::mat4& model) const {
+bool SpriteBatchBuilder::IsVisible(const glm::vec3 (&corners)[4]) const {
   if (!m_has_view_bounds) return true;
-
-  const glm::vec4 corners[4] = {
-      model * glm::vec4(-draw.size.x, -draw.size.y, 0.0f, 1.0f),
-      model * glm::vec4(-draw.size.x, draw.size.y, 0.0f, 1.0f),
-      model * glm::vec4(draw.size.x, draw.size.y, 0.0f, 1.0f),
-      model * glm::vec4(draw.size.x, -draw.size.y, 0.0f, 1.0f),
-  };
 
   glm::vec2 min(corners[0].x, corners[0].y);
   glm::vec2 max = min;
@@ -63,7 +80,6 @@ bool SpriteBatchBuilder::IsVisible(const SpriteDraw& draw, const glm::mat4& mode
 
 void SpriteBatchBuilder::Build() {
   m_vertices.clear();
-  m_indices.clear();
   m_batches.clear();
   m_stats = {};
   m_stats.submitted = m_draws.size();
@@ -82,50 +98,61 @@ void SpriteBatchBuilder::Build() {
   });
 
   const auto close_batch = [this](std::uint32_t texture, MaterialShader* material, std::size_t first_vertex,
-                                  std::size_t vertex_count, std::size_t first_index, std::size_t index_count) {
+                                  std::size_t vertex_count) {
     if (vertex_count == 0) return;
-    m_batches.push_back({texture, material, first_vertex, vertex_count, first_index, index_count});
+    m_batches.push_back(
+        {texture, material, first_vertex, vertex_count, vertex_count / kVerticesPerQuad * kIndicesPerQuad});
   };
 
   std::uint32_t batch_texture = 0;
   MaterialShader* batch_material = nullptr;
   std::size_t batch_first_vertex = 0;
   std::size_t batch_vertex_count = 0;
-  std::size_t batch_first_index = 0;
-  std::size_t batch_index_count = 0;
   bool batch_open = false;
 
   for (const SpriteDraw& draw : m_draws) {
-    const glm::mat4 model = ModelFor(draw);
-    if (!IsVisible(draw, model)) {
+    // Corners in world space, in the same order as the sprite's UVs:
+    // lower-left, upper-left, upper-right, lower-right.
+    glm::vec3 corners[4];
+
+    if (IsUnrotated(draw)) {
+      // The fast path: a centre plus the scaled half extents. No matrix is
+      // built, and the quad is already axis aligned so culling uses the same
+      // corners the vertices are written from.
+      const float half_x = draw.size.x * draw.scale.x;
+      const float half_y = draw.size.y * draw.scale.y;
+      const glm::vec3& position = draw.position;
+
+      corners[0] = {position.x - half_x, position.y - half_y, position.z};
+      corners[1] = {position.x - half_x, position.y + half_y, position.z};
+      corners[2] = {position.x + half_x, position.y + half_y, position.z};
+      corners[3] = {position.x + half_x, position.y - half_y, position.z};
+    } else {
+      const glm::mat4 model = ModelFor(draw);
+      corners[0] = glm::vec3(model * glm::vec4(-draw.size.x, -draw.size.y, 0.0f, 1.0f));
+      corners[1] = glm::vec3(model * glm::vec4(-draw.size.x, draw.size.y, 0.0f, 1.0f));
+      corners[2] = glm::vec3(model * glm::vec4(draw.size.x, draw.size.y, 0.0f, 1.0f));
+      corners[3] = glm::vec3(model * glm::vec4(draw.size.x, -draw.size.y, 0.0f, 1.0f));
+    }
+
+    if (!IsVisible(corners)) {
       ++m_stats.culled;
       continue;
     }
 
     if (!batch_open || draw.texture != batch_texture || draw.material != batch_material ||
-        batch_vertex_count + 4 > SpriteBatchBuilder::kMaxVerticesPerBatch) {
+        batch_vertex_count + kVerticesPerQuad > kMaxVertices) {
       if (batch_open) {
-        close_batch(batch_texture, batch_material, batch_first_vertex, batch_vertex_count, batch_first_index,
-                    batch_index_count);
+        close_batch(batch_texture, batch_material, batch_first_vertex, batch_vertex_count);
       }
       batch_texture = draw.texture;
       batch_material = draw.material;
       batch_first_vertex = m_vertices.size();
       batch_vertex_count = 0;
-      batch_first_index = m_indices.size();
-      batch_index_count = 0;
       batch_open = true;
     }
 
-    const std::uint16_t base = static_cast<std::uint16_t>(batch_vertex_count);
     const float tid = draw.texture == 0 ? 0.0f : 1.0f;
-
-    const glm::vec3 positions[4] = {
-        glm::vec3(model * glm::vec4(-draw.size.x, -draw.size.y, 0.0f, 1.0f)),
-        glm::vec3(model * glm::vec4(-draw.size.x, draw.size.y, 0.0f, 1.0f)),
-        glm::vec3(model * glm::vec4(draw.size.x, draw.size.y, 0.0f, 1.0f)),
-        glm::vec3(model * glm::vec4(draw.size.x, -draw.size.y, 0.0f, 1.0f)),
-    };
 
     // Flip inside the sprite's own UV rectangle, not across the whole texture:
     // an atlas region mirrored around 0.5 would sample a neighbouring image.
@@ -151,27 +178,20 @@ void SpriteBatchBuilder::Build() {
     }
 
     for (int i = 0; i < 4; ++i) {
-      m_vertices.push_back({positions[i], uv[i], tid, draw.color});
+      m_vertices.push_back({corners[i], uv[i], tid, draw.color});
     }
 
-    m_indices.push_back(static_cast<std::uint16_t>(base + 0));
-    m_indices.push_back(static_cast<std::uint16_t>(base + 1));
-    m_indices.push_back(static_cast<std::uint16_t>(base + 2));
-    m_indices.push_back(static_cast<std::uint16_t>(base + 2));
-    m_indices.push_back(static_cast<std::uint16_t>(base + 3));
-    m_indices.push_back(static_cast<std::uint16_t>(base + 0));
-
-    batch_vertex_count += 4;
-    batch_index_count += 6;
+    batch_vertex_count += kVerticesPerQuad;
   }
 
   if (batch_open) {
-    close_batch(batch_texture, batch_material, batch_first_vertex, batch_vertex_count, batch_first_index,
-                batch_index_count);
+    close_batch(batch_texture, batch_material, batch_first_vertex, batch_vertex_count);
   }
 
   m_stats.batches = m_batches.size();
   m_stats.vertices = m_vertices.size();
-  m_stats.indices = m_indices.size();
+  // Every batch's index list is the shared quad pattern, so the frame's index
+  // count is the vertex count scaled to six indices per four vertices.
+  m_stats.indices = m_vertices.size() / kVerticesPerQuad * kIndicesPerQuad;
 }
 }  // namespace rse
