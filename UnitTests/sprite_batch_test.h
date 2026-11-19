@@ -96,6 +96,78 @@ TEST(SpriteBatchTest, CullingKeepsSpritesThatTouchTheEdge) {
   EXPECT_EQ(4u, builder.GetVertices().size());
 }
 
+TEST(SpriteBatchTest, UnrotatedQuadScalesTheHalfExtents) {
+  SpriteBatchBuilder builder;
+  SpriteDraw draw = MakeDraw(1);
+  draw.position = glm::vec3(2.0f, 3.0f, 0.5f);
+  draw.size = glm::vec2(1.0f, 2.0f);
+  draw.scale = glm::vec2(2.0f, 3.0f);
+  builder.Add(draw);
+  builder.Build();
+
+  ASSERT_EQ(4u, builder.GetVertices().size());
+  // Half extents are size * scale: (2, 6) around the centre.
+  EXPECT_FLOAT_EQ(0.0f, builder.GetVertices()[0].position.x);
+  EXPECT_FLOAT_EQ(-3.0f, builder.GetVertices()[0].position.y);
+  EXPECT_FLOAT_EQ(0.0f, builder.GetVertices()[1].position.x);
+  EXPECT_FLOAT_EQ(9.0f, builder.GetVertices()[1].position.y);
+  EXPECT_FLOAT_EQ(4.0f, builder.GetVertices()[2].position.x);
+  EXPECT_FLOAT_EQ(9.0f, builder.GetVertices()[2].position.y);
+  EXPECT_FLOAT_EQ(4.0f, builder.GetVertices()[3].position.x);
+  EXPECT_FLOAT_EQ(-3.0f, builder.GetVertices()[3].position.y);
+  for (const SpriteVertex& vertex : builder.GetVertices()) {
+    EXPECT_FLOAT_EQ(0.5f, vertex.position.z);
+  }
+}
+
+TEST(SpriteBatchTest, RotatedQuadTurnsOntoTheOtherAxis) {
+  SpriteBatchBuilder builder;
+  SpriteDraw draw = MakeDraw(1);
+  draw.size = glm::vec2(1.0f);
+  draw.rotation.z = 90.0f;
+  builder.Add(draw);
+  builder.Build();
+
+  ASSERT_EQ(4u, builder.GetVertices().size());
+  // A 90 degree turn about z maps (x, y) to (-y, x), so the lower-left corner
+  // lands where the lower-right one was. cos(90) is only approximately zero, so
+  // compare with a tolerance rather than exactly.
+  EXPECT_NEAR(1.0f, builder.GetVertices()[0].position.x, 1e-4f);
+  EXPECT_NEAR(-1.0f, builder.GetVertices()[0].position.y, 1e-4f);
+  EXPECT_NEAR(-1.0f, builder.GetVertices()[1].position.x, 1e-4f);
+  EXPECT_NEAR(-1.0f, builder.GetVertices()[1].position.y, 1e-4f);
+  EXPECT_NEAR(-1.0f, builder.GetVertices()[2].position.x, 1e-4f);
+  EXPECT_NEAR(1.0f, builder.GetVertices()[2].position.y, 1e-4f);
+  EXPECT_NEAR(1.0f, builder.GetVertices()[3].position.x, 1e-4f);
+  EXPECT_NEAR(1.0f, builder.GetVertices()[3].position.y, 1e-4f);
+}
+
+TEST(SpriteBatchTest, CullsByTheRotatedExtent) {
+  SpriteBatchBuilder builder;
+  builder.SetViewBounds(glm::vec2(-10.0f), glm::vec2(10.0f));
+
+  // A long, thin quad whose centre is outside the view. Unrotated it is far to
+  // the right and invisible; turned 90 degrees it becomes 24 units wide and
+  // reaches into the view, so culling has to use the transformed corners rather
+  // than the sprite's centre.
+  SpriteDraw unrotated = MakeDraw(1, 15.0f);
+  unrotated.size = glm::vec2(1.0f, 12.0f);
+  builder.Add(unrotated);
+
+  SpriteDraw rotated = MakeDraw(1, 15.0f);
+  rotated.size = glm::vec2(1.0f, 12.0f);
+  rotated.rotation.z = 90.0f;
+  builder.Add(rotated);
+
+  builder.Build();
+
+  EXPECT_EQ(1u, builder.GetStats().culled);
+  ASSERT_EQ(4u, builder.GetVertices().size());
+  EXPECT_NEAR(27.0f, builder.GetVertices()[0].position.x, 1e-4f);
+  EXPECT_NEAR(-1.0f, builder.GetVertices()[0].position.y, 1e-4f);
+  EXPECT_NEAR(3.0f, builder.GetVertices()[1].position.x, 1e-4f);
+}
+
 TEST(SpriteBatchTest, SplitsBatchesAtTheSixteenBitVertexLimit) {
   constexpr std::size_t quads_per_batch = SpriteBatchBuilder::kMaxVerticesPerBatch / 4;
   SpriteBatchBuilder builder;
