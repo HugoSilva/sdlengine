@@ -44,9 +44,8 @@ OpenGLRenderer::OpenGLRenderer(SDL_Window* window) {
   // Every quad's six indices follow the same pattern, so the largest batch's
   // worth is written once here and never rebuilt. Draws read it from offset zero
   // and select their own vertices with the base vertex.
-  const std::size_t max_quads = SpriteBatchBuilder::kMaxVerticesPerBatch / SpriteBatchBuilder::kVerticesPerQuad;
-  std::vector<std::uint16_t> indices(max_quads * SpriteBatchBuilder::kIndicesPerQuad);
-  SpriteBatchBuilder::WriteQuadIndices(indices.data(), max_quads);
+  std::vector<std::uint16_t> indices(kMaxIndices);
+  SpriteBatchBuilder::WriteQuadIndices(indices.data(), kMaxQuads);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(indices.size() * sizeof(std::uint16_t)), indices.data(),
                GL_STATIC_DRAW);
 
@@ -59,7 +58,7 @@ OpenGLRenderer::OpenGLRenderer(SDL_Window* window) {
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &texture_size);
   m_capabilities.max_texture_units = static_cast<std::uint32_t>(std::max(1, texture_units));
   m_capabilities.max_texture_size = static_cast<std::uint32_t>(std::max(0, texture_size));
-  m_capabilities.max_batch_vertices = static_cast<std::uint32_t>(SpriteBatchBuilder::kMaxVerticesPerBatch);
+  m_capabilities.max_batch_vertices = static_cast<std::uint32_t>(kMaxVertices);
 }
 
 OpenGLRenderer::~OpenGLRenderer() {

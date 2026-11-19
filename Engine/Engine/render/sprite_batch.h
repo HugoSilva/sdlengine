@@ -7,6 +7,8 @@
 
 #include <glm/glm.hpp>
 
+#include "batch_limits.h"
+
 namespace rse {
 class MaterialShader;
 
@@ -62,13 +64,6 @@ struct SpriteBatchStats {
 
 class SpriteBatchBuilder {
  public:
-  // A batch's indices are 16-bit and local to it, so a vertex index has to
-  // stay below 65,536. The limit is rounded down to a whole quad, and every
-  // quad is four vertices and six indices.
-  static constexpr std::size_t kVerticesPerQuad = 4;
-  static constexpr std::size_t kIndicesPerQuad = 6;
-  static constexpr std::size_t kMaxVerticesPerBatch = 65532;
-
   // Writes every quad's six indices, advanced by four per quad: 0,1,2, 2,3,0.
   // The pattern is the same for every batch, so a backend uploads it once for
   // the largest batch instead of rebuilding it from the frame's vertices.

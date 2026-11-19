@@ -45,7 +45,7 @@ TEST(SpriteBatchTest, GroupsDrawsByTexture) {
 }
 
 TEST(SpriteBatchTest, SharedQuadPatternIsLocalToABatch) {
-  std::vector<std::uint16_t> indices(SpriteBatchBuilder::kIndicesPerQuad * 2);
+  std::vector<std::uint16_t> indices(kIndicesPerQuad * 2);
   SpriteBatchBuilder::WriteQuadIndices(indices.data(), 2);
 
   const std::vector<std::uint16_t> expected = {0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4};
@@ -169,7 +169,7 @@ TEST(SpriteBatchTest, CullsByTheRotatedExtent) {
 }
 
 TEST(SpriteBatchTest, SplitsBatchesAtTheSixteenBitVertexLimit) {
-  constexpr std::size_t quads_per_batch = SpriteBatchBuilder::kMaxVerticesPerBatch / 4;
+  constexpr std::size_t quads_per_batch = kMaxQuads;
   SpriteBatchBuilder builder;
   for (std::size_t i = 0; i < quads_per_batch + 1; ++i) {
     builder.Add(MakeDraw(1));
@@ -177,10 +177,10 @@ TEST(SpriteBatchTest, SplitsBatchesAtTheSixteenBitVertexLimit) {
   builder.Build();
 
   ASSERT_EQ(2u, builder.GetBatches().size());
-  EXPECT_EQ(SpriteBatchBuilder::kMaxVerticesPerBatch, builder.GetBatches()[0].vertex_count);
+  EXPECT_EQ(kMaxVertices, builder.GetBatches()[0].vertex_count);
   EXPECT_EQ(4u, builder.GetBatches()[1].vertex_count);
-  EXPECT_EQ(quads_per_batch * SpriteBatchBuilder::kIndicesPerQuad, builder.GetBatches()[0].index_count);
-  EXPECT_EQ(SpriteBatchBuilder::kIndicesPerQuad, builder.GetBatches()[1].index_count);
+  EXPECT_EQ(quads_per_batch * kIndicesPerQuad, builder.GetBatches()[0].index_count);
+  EXPECT_EQ(kIndicesPerQuad, builder.GetBatches()[1].index_count);
 }
 
 TEST(SpriteBatchTest, UntexturedDrawUsesVertexColourPath) {

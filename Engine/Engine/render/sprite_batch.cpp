@@ -141,7 +141,7 @@ void SpriteBatchBuilder::Build() {
     }
 
     if (!batch_open || draw.texture != batch_texture || draw.material != batch_material ||
-        batch_vertex_count + kVerticesPerQuad > kMaxVerticesPerBatch) {
+        batch_vertex_count + kVerticesPerQuad > kMaxVertices) {
       if (batch_open) {
         close_batch(batch_texture, batch_material, batch_first_vertex, batch_vertex_count);
       }
