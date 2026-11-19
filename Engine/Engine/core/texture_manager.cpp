@@ -101,26 +101,14 @@ void TextureManager::Init() {
 
   std::vector<SDL_Surface*> surfaces = LoadAtlasSurfaces(paths);
 
-  // One unreadable image still sends the whole project down the individual-
-  // texture path; a later change draws only that image on its own.
-  for (SDL_Surface* surface : surfaces) {
-    if (surface == nullptr) {
-      DestroySurfaces(&surfaces);
-      for (const AssetRegistry::Asset* asset : texture_assets) {
-        const std::string path = Core::ResolveProjectPath(asset->path);
-        s_textures.push_back(std::make_unique<Texture>(asset->id, asset->name, path));
-      }
-      return;
-    }
-  }
-
   GLint max_texture_size = 0;
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
   const int max_size = std::min(kAtlasMaxSize, static_cast<int>(max_texture_size));
 
   // The plan says what shares a page and what stands alone. An image that does
   // not fit a page is uploaded on its own instead of taking the atlas away from
-  // every other texture.
+  // every other texture, and a file that failed to load -- a null surface, which
+  // arrives here as a zero size -- does the same.
   AtlasBuilder builder(max_size, kAtlasPadding);
   std::vector<AtlasPlacement> placements;
   placements.reserve(surfaces.size());

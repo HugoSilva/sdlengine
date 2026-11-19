@@ -178,4 +178,22 @@ TEST(TextureAtlasTest, EachPageGrowsToItsOwnContents) {
   EXPECT_EQ(32, builder.GetPageHeight(1));
 }
 
+TEST(TextureAtlasTest, AnImageThatFailedToLoadDoesNotTakeTheAtlasAway) {
+  AtlasBuilder builder(32, 1);
+
+  // A file that could not be read arrives as a zero size. That one image is
+  // left unpacked; the page it would have sat on still exists for the others.
+  const AtlasPlacement missing = builder.Add(0, 0);
+  EXPECT_FALSE(missing.packed);
+  EXPECT_EQ(0u, builder.GetPageCount());
+
+  const AtlasPlacement first = builder.Add(10, 10);
+  const AtlasPlacement second = builder.Add(10, 10);
+  ASSERT_TRUE(first.packed);
+  ASSERT_TRUE(second.packed);
+  EXPECT_EQ(0u, first.page);
+  EXPECT_EQ(0u, second.page);
+  EXPECT_EQ(1u, builder.GetPageCount());
+}
+
 }  // namespace
