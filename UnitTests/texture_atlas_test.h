@@ -109,4 +109,91 @@ TEST(TextureAtlasTest, PageDimensionsArePowersOfTwo) {
   EXPECT_EQ(64, AtlasPacker::NextPowerOfTwo(33));
 }
 
+TEST(TextureAtlasTest, OpensANewPageWhenEveryPageIsFull) {
+  AtlasBuilder builder(32, 0);
+
+  const AtlasPlacement first = builder.Add(32, 32);
+  ASSERT_TRUE(first.packed);
+  EXPECT_EQ(0u, first.page);
+
+  const AtlasPlacement second = builder.Add(32, 32);
+  ASSERT_TRUE(second.packed);
+  EXPECT_EQ(1u, second.page);
+  EXPECT_EQ(0, second.region.x);
+  EXPECT_EQ(0, second.region.y);
+
+  EXPECT_EQ(2u, builder.GetPageCount());
+  EXPECT_EQ(32, builder.GetPageWidth(0));
+  EXPECT_EQ(32, builder.GetPageWidth(1));
+}
+
+TEST(TextureAtlasTest, UsesAnEarlierPageThatStillHasRoom) {
+  AtlasBuilder builder(32, 0);
+
+  // A small image leaves half of the first shelf empty; a full-page image then
+  // opens a second page; the next small one goes back to the first.
+  const AtlasPlacement tiny = builder.Add(16, 16);
+  ASSERT_TRUE(tiny.packed);
+  EXPECT_EQ(0u, tiny.page);
+
+  const AtlasPlacement page_break = builder.Add(32, 32);
+  ASSERT_TRUE(page_break.packed);
+  EXPECT_EQ(1u, page_break.page);
+
+  const AtlasPlacement another = builder.Add(16, 16);
+  ASSERT_TRUE(another.packed);
+  EXPECT_EQ(0u, another.page);
+  EXPECT_EQ(16, another.region.x);
+  EXPECT_EQ(0, another.region.y);
+}
+
+TEST(TextureAtlasTest, AnImageLargerThanAPageIsLeftUnpacked) {
+  AtlasBuilder builder(32, 1);
+
+  EXPECT_FALSE(builder.Add(33, 8).packed);
+  EXPECT_FALSE(builder.Add(8, 33).packed);
+  // A page the image could never fit does not get created.
+  EXPECT_EQ(0u, builder.GetPageCount());
+
+  // The rest of the project still packs.
+  const AtlasPlacement packed = builder.Add(8, 8);
+  ASSERT_TRUE(packed.packed);
+  EXPECT_EQ(0u, packed.page);
+  EXPECT_EQ(1u, builder.GetPageCount());
+}
+
+TEST(TextureAtlasTest, EachPageGrowsToItsOwnContents) {
+  AtlasBuilder builder(32, 0);
+
+  ASSERT_TRUE(builder.Add(32, 8).packed);
+  // Eight wide and thirty-two tall cannot join the first page's shelf, and the
+  // next shelf would overflow, so it starts page 1.
+  const AtlasPlacement tall = builder.Add(8, 32);
+  ASSERT_TRUE(tall.packed);
+  EXPECT_EQ(1u, tall.page);
+
+  EXPECT_EQ(32, builder.GetPageWidth(0));
+  EXPECT_EQ(8, builder.GetPageHeight(0));
+  EXPECT_EQ(8, builder.GetPageWidth(1));
+  EXPECT_EQ(32, builder.GetPageHeight(1));
+}
+
+TEST(TextureAtlasTest, AnImageThatFailedToLoadDoesNotTakeTheAtlasAway) {
+  AtlasBuilder builder(32, 1);
+
+  // A file that could not be read arrives as a zero size. That one image is
+  // left unpacked; the page it would have sat on still exists for the others.
+  const AtlasPlacement missing = builder.Add(0, 0);
+  EXPECT_FALSE(missing.packed);
+  EXPECT_EQ(0u, builder.GetPageCount());
+
+  const AtlasPlacement first = builder.Add(10, 10);
+  const AtlasPlacement second = builder.Add(10, 10);
+  ASSERT_TRUE(first.packed);
+  ASSERT_TRUE(second.packed);
+  EXPECT_EQ(0u, first.page);
+  EXPECT_EQ(0u, second.page);
+  EXPECT_EQ(1u, builder.GetPageCount());
+}
+
 }  // namespace

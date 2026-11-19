@@ -49,4 +49,48 @@ int AtlasPacker::NextPowerOfTwo(int value) {
   }
   return result;
 }
+
+AtlasBuilder::AtlasBuilder(int max_size, int padding)
+    : m_max_size(std::max(1, max_size)), m_padding(std::max(0, padding)) {}
+
+AtlasPlacement AtlasBuilder::Add(int width, int height) {
+  AtlasPlacement placement;
+
+  // An image that failed to load has no size, and one larger than a page can
+  // never share one. Neither is an error for the project: the caller draws that
+  // image from an individual texture and the rest keep batching.
+  if (width <= 0 || height <= 0 || width > m_max_size || height > m_max_size) {
+    return placement;
+  }
+
+  for (std::size_t page = 0; page < m_pages.size(); ++page) {
+    if (m_pages[page].Add(width, height, &placement.region)) {
+      placement.page = page;
+      placement.packed = true;
+      return placement;
+    }
+  }
+
+  // No page had room. An image that fits a page always fits an empty one, so a
+  // failure here would be a bug in the precondition above; the empty page is
+  // dropped rather than left behind as a blank texture.
+  m_pages.emplace_back(m_max_size, m_padding);
+
+  if (!m_pages.back().Add(width, height, &placement.region)) {
+    m_pages.pop_back();
+    return placement;
+  }
+
+  placement.page = m_pages.size() - 1;
+  placement.packed = true;
+  return placement;
+}
+
+int AtlasBuilder::GetPageWidth(std::size_t page) const {
+  return page < m_pages.size() ? m_pages[page].GetPageWidth() : 1;
+}
+
+int AtlasBuilder::GetPageHeight(std::size_t page) const {
+  return page < m_pages.size() ? m_pages[page].GetPageHeight() : 1;
+}
 }  // namespace rse

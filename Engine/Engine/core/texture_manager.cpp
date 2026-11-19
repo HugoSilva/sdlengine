@@ -100,71 +100,79 @@ void TextureManager::Init() {
   if (texture_assets.empty()) return;
 
   std::vector<SDL_Surface*> surfaces = LoadAtlasSurfaces(paths);
-  bool can_pack = true;
-  for (SDL_Surface* surface : surfaces) {
-    if (surface == nullptr) {
-      can_pack = false;
-      break;
-    }
-  }
 
   GLint max_texture_size = 0;
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
   const int max_size = std::min(kAtlasMaxSize, static_cast<int>(max_texture_size));
-  AtlasPacker packer(max_size, kAtlasPadding);
-  std::vector<AtlasRegion> regions(surfaces.size());
 
-  if (can_pack) {
+  // The plan says what shares a page and what stands alone. An image that does
+  // not fit a page is uploaded on its own instead of taking the atlas away from
+  // every other texture, and a file that failed to load -- a null surface, which
+  // arrives here as a zero size -- does the same.
+  AtlasBuilder builder(max_size, kAtlasPadding);
+  std::vector<AtlasPlacement> placements;
+  placements.reserve(surfaces.size());
+
+  for (SDL_Surface* surface : surfaces) {
+    placements.push_back(builder.Add(surface == nullptr ? 0 : surface->w, surface == nullptr ? 0 : surface->h));
+  }
+
+  std::vector<std::shared_ptr<TexturePage>> pages;
+
+  for (std::size_t page = 0; page < builder.GetPageCount(); ++page) {
+    const int page_width = builder.GetPageWidth(page);
+    const int page_height = builder.GetPageHeight(page);
+    std::vector<std::uint8_t> pixels(static_cast<std::size_t>(page_width) * page_height * 4, 0);
+
     for (std::size_t i = 0; i < surfaces.size(); ++i) {
-      if (!packer.Add(surfaces[i]->w, surfaces[i]->h, &regions[i])) {
-        can_pack = false;
-        break;
-      }
+      if (!placements[i].packed || placements[i].page != page) continue;
+      CopySurfaceIntoAtlas(surfaces[i], placements[i].region, &pixels, page_width);
     }
+
+    auto texture_page = std::make_shared<TexturePage>();
+    glGenTextures(1, &texture_page->id);
+    glBindTexture(GL_TEXTURE_2D, texture_page->id);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, page_width, page_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    pages.push_back(std::move(texture_page));
   }
 
-  // A project with one unreadable image or one image too large for the page
-  // falls back to independent textures. The scene still opens; it just does not
-  // get the batching win.
-  if (!can_pack) {
-    DestroySurfaces(&surfaces);
-    for (const AssetRegistry::Asset* asset : texture_assets) {
-      const std::string path = Core::ResolveProjectPath(asset->path);
-      s_textures.push_back(std::make_unique<Texture>(asset->id, asset->name, path));
-    }
-    return;
-  }
-
-  const int page_width = packer.GetPageWidth();
-  const int page_height = packer.GetPageHeight();
-  std::vector<std::uint8_t> pixels(static_cast<std::size_t>(page_width) * page_height * 4, 0);
-  for (std::size_t i = 0; i < surfaces.size(); ++i) {
-    CopySurfaceIntoAtlas(surfaces[i], regions[i], &pixels, page_width);
-  }
   DestroySurfaces(&surfaces);
 
-  auto page = std::make_shared<TexturePage>();
-  glGenTextures(1, &page->id);
-  glBindTexture(GL_TEXTURE_2D, page->id);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, page_width, page_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
-  glBindTexture(GL_TEXTURE_2D, 0);
+  std::size_t packed_count = 0;
 
   for (const AssetRegistry::Asset* asset : texture_assets) {
     const std::string path = Core::ResolveProjectPath(asset->path);
     const std::size_t index = path_index[path];
-    const AtlasRegion& region = regions[index];
+    const AtlasPlacement& placement = placements[index];
+
+    // Not on a page: the texture loads and uploads the file itself, so an image
+    // that is too large -- or missing -- costs that sprite and nothing else.
+    if (!placement.packed) {
+      s_textures.push_back(std::make_unique<Texture>(asset->id, asset->name, path));
+      continue;
+    }
+
+    const int page_width = builder.GetPageWidth(placement.page);
+    const int page_height = builder.GetPageHeight(placement.page);
+    const AtlasRegion& region = placement.region;
     const glm::vec4 uv(static_cast<float>(region.x) / page_width, static_cast<float>(region.y) / page_height,
                        static_cast<float>(region.x + region.width) / page_width,
                        static_cast<float>(region.y + region.height) / page_height);
-    s_textures.push_back(std::make_unique<Texture>(asset->id, asset->name, page, uv, region.width, region.height));
+    s_textures.push_back(
+        std::make_unique<Texture>(asset->id, asset->name, pages[placement.page], uv, region.width, region.height));
+    ++packed_count;
   }
 
-  Logger::Log("texture atlas: packed " + std::to_string(texture_assets.size()) + " textures into " +
-              std::to_string(page_width) + "x" + std::to_string(page_height));
+  const std::string page_word = builder.GetPageCount() == 1 ? " page" : " pages";
+
+  Logger::Log("texture atlas: packed " + std::to_string(packed_count) + " of " + std::to_string(texture_assets.size()) +
+              " textures into " + std::to_string(builder.GetPageCount()) + page_word);
 }
 
 void TextureManager::Add(std::unique_ptr<Texture> texture) { s_textures.push_back(std::move(texture)); }

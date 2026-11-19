@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstddef>
+#include <vector>
+
 namespace rse {
 struct AtlasRegion {
   int x{0};
@@ -36,5 +39,37 @@ class AtlasPacker {
   int m_row_height{0};
   int m_used_width{0};
   int m_used_height{0};
+};
+
+// Where one image ended up. `packed` is false when the image cannot share a
+// page at all -- it failed to load, or it is larger than a page -- and the
+// caller has to upload it on its own.
+struct AtlasPlacement {
+  std::size_t page{0};
+  AtlasRegion region;
+  bool packed{false};
+};
+
+// Packs a whole project's images into as many pages as they need. The shelf
+// packer above fills one page; this is the layer that opens the next one
+// instead of giving up, which is what keeps a large asset set batching.
+class AtlasBuilder {
+ public:
+  explicit AtlasBuilder(int max_size, int padding = 1);
+
+  // Packs one image on the first page with room, or on a new page when every
+  // page is full. A width or height of zero or less (an image that failed to
+  // load) and anything larger than a page are left unpacked for the caller to
+  // draw from a texture of its own. The builder is unchanged in that case.
+  AtlasPlacement Add(int width, int height);
+
+  std::size_t GetPageCount() const { return m_pages.size(); }
+  int GetPageWidth(std::size_t page) const;
+  int GetPageHeight(std::size_t page) const;
+
+ private:
+  int m_max_size;
+  int m_padding;
+  std::vector<AtlasPacker> m_pages;
 };
 }  // namespace rse
