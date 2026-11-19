@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <vector>
 
 #include <gtest/gtest.h>
 
@@ -31,32 +32,24 @@ TEST(SpriteBatchTest, GroupsDrawsByTexture) {
   EXPECT_EQ(1u, builder.GetBatches()[0].texture);
   EXPECT_EQ(2u, builder.GetBatches()[1].texture);
   EXPECT_EQ(12u, builder.GetVertices().size());
-  EXPECT_EQ(18u, builder.GetIndices().size());
+  EXPECT_EQ(18u, builder.GetStats().indices);
   // The second batch starts at the fifth vertex, so a shared vertex buffer has
   // to draw it with first_vertex as the base vertex.
   EXPECT_EQ(0u, builder.GetBatches()[0].first_vertex);
   EXPECT_EQ(4u, builder.GetBatches()[1].first_vertex);
-  EXPECT_EQ(0u, builder.GetBatches()[0].first_index);
-  EXPECT_EQ(6u, builder.GetBatches()[1].first_index);
+  EXPECT_EQ(6u, builder.GetBatches()[0].index_count);
+  EXPECT_EQ(12u, builder.GetBatches()[1].index_count);
   EXPECT_EQ(3u, builder.GetStats().submitted);
   EXPECT_EQ(0u, builder.GetStats().culled);
   EXPECT_EQ(2u, builder.GetStats().batches);
 }
 
-TEST(SpriteBatchTest, IndicesAreLocalToEachBatch) {
-  SpriteBatchBuilder builder;
-  builder.Add(MakeDraw(2));
-  builder.Add(MakeDraw(1));
-  builder.Build();
+TEST(SpriteBatchTest, SharedQuadPatternIsLocalToABatch) {
+  std::vector<std::uint16_t> indices(SpriteBatchBuilder::kIndicesPerQuad * 2);
+  SpriteBatchBuilder::WriteQuadIndices(indices.data(), 2);
 
-  ASSERT_EQ(2u, builder.GetBatches().size());
-  for (const SpriteBatch& batch : builder.GetBatches()) {
-    EXPECT_EQ(4u, batch.vertex_count);
-    EXPECT_EQ(6u, batch.index_count);
-    EXPECT_EQ(0u, builder.GetIndices()[batch.first_index]);
-    EXPECT_EQ(0u, builder.GetIndices()[batch.first_index + 5]);
-    EXPECT_EQ(3u, builder.GetIndices()[batch.first_index + 4]);
-  }
+  const std::vector<std::uint16_t> expected = {0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4};
+  EXPECT_EQ(expected, indices);
 }
 
 TEST(SpriteBatchTest, LayersAndDepthOrderGeometry) {
@@ -114,9 +107,8 @@ TEST(SpriteBatchTest, SplitsBatchesAtTheSixteenBitVertexLimit) {
   ASSERT_EQ(2u, builder.GetBatches().size());
   EXPECT_EQ(SpriteBatchBuilder::kMaxVerticesPerBatch, builder.GetBatches()[0].vertex_count);
   EXPECT_EQ(4u, builder.GetBatches()[1].vertex_count);
-  for (std::uint16_t index : builder.GetIndices()) {
-    EXPECT_LT(index, builder.GetVertices().size());
-  }
+  EXPECT_EQ(quads_per_batch * SpriteBatchBuilder::kIndicesPerQuad, builder.GetBatches()[0].index_count);
+  EXPECT_EQ(SpriteBatchBuilder::kIndicesPerQuad, builder.GetBatches()[1].index_count);
 }
 
 TEST(SpriteBatchTest, UntexturedDrawUsesVertexColourPath) {
@@ -187,8 +179,8 @@ TEST(SpriteBatchTest, DifferentMaterialsSplitBatchesEvenWithOneTexture) {
   EXPECT_NE(builder.GetBatches()[0].material, builder.GetBatches()[1].material);
   EXPECT_EQ(7u, builder.GetBatches()[0].texture);
   EXPECT_EQ(7u, builder.GetBatches()[1].texture);
-  EXPECT_EQ(0u, builder.GetBatches()[0].first_index);
-  EXPECT_EQ(6u, builder.GetBatches()[1].first_index);
+  EXPECT_EQ(0u, builder.GetBatches()[0].first_vertex);
+  EXPECT_EQ(4u, builder.GetBatches()[1].first_vertex);
 }
 
 TEST(SpriteBatchTest, TexturedDrawSetsTextureFlag) {

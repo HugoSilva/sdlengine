@@ -40,16 +40,15 @@ struct SpriteVertex {
   std::uint32_t color;
 };
 
-// One draw call's worth of geometry. The indices are local to the batch. A
-// backend that uploads each batch separately can draw them as-is; one that keeps
-// a shared vertex buffer must pass first_vertex as the base vertex (or copy the
-// batch to the start of a scratch buffer first).
+// One draw call's worth of geometry. The indices are the shared quad pattern
+// (see SpriteBatchBuilder::WriteQuadIndices): they are local to the batch and
+// start at zero, so a backend passes first_vertex as the base vertex instead of
+// storing an index range per batch.
 struct SpriteBatch {
   std::uint32_t texture{0};
   MaterialShader* material{nullptr};
   std::size_t first_vertex{0};
   std::size_t vertex_count{0};
-  std::size_t first_index{0};
   std::size_t index_count{0};
 };
 
@@ -63,7 +62,18 @@ struct SpriteBatchStats {
 
 class SpriteBatchBuilder {
  public:
+  // A batch's indices are 16-bit and local to it, so a vertex index has to
+  // stay below 65,536. The limit is rounded down to a whole quad, and every
+  // quad is four vertices and six indices.
+  static constexpr std::size_t kVerticesPerQuad = 4;
+  static constexpr std::size_t kIndicesPerQuad = 6;
   static constexpr std::size_t kMaxVerticesPerBatch = 65532;
+
+  // Writes every quad's six indices, advanced by four per quad: 0,1,2, 2,3,0.
+  // The pattern is the same for every batch, so a backend uploads it once for
+  // the largest batch instead of rebuilding it from the frame's vertices.
+  // `indices` must have room for quad_count * kIndicesPerQuad entries.
+  static void WriteQuadIndices(std::uint16_t* indices, std::size_t quad_count);
 
   void Reset();
 
@@ -80,7 +90,6 @@ class SpriteBatchBuilder {
   void Build();
 
   const std::vector<SpriteVertex>& GetVertices() const { return m_vertices; }
-  const std::vector<std::uint16_t>& GetIndices() const { return m_indices; }
   const std::vector<SpriteBatch>& GetBatches() const { return m_batches; }
   const SpriteBatchStats& GetStats() const { return m_stats; }
 
@@ -90,7 +99,6 @@ class SpriteBatchBuilder {
 
   std::vector<SpriteDraw> m_draws;
   std::vector<SpriteVertex> m_vertices;
-  std::vector<std::uint16_t> m_indices;
   std::vector<SpriteBatch> m_batches;
   SpriteBatchStats m_stats;
 

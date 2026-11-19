@@ -48,13 +48,14 @@ class OpenGLRenderer : public Renderer2D {
 
  private:
   void ApplyFrameUniforms(Shader* shader);
-  void DrawBatch(const SpriteBatch& batch, int base_vertex, std::size_t first_index);
+  // Draws one batch from the shared quad index pattern, which always starts at
+  // index zero; the batch's geometry is selected with the base vertex.
+  void DrawBatch(const SpriteBatch& batch, int base_vertex);
 
   unsigned int m_vao{0};
   unsigned int m_vbo{0};
   unsigned int m_ibo{0};
   std::size_t m_vbo_capacity{0};
-  std::size_t m_ibo_capacity{0};
 
   SpriteBatchBuilder m_builder;
   Renderer2DStats m_stats;

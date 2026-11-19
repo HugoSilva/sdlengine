@@ -10,10 +10,25 @@ namespace rse {
 void SpriteBatchBuilder::Reset() {
   m_draws.clear();
   m_vertices.clear();
-  m_indices.clear();
   m_batches.clear();
   m_stats = {};
   m_next_sequence = 0;
+}
+
+void SpriteBatchBuilder::WriteQuadIndices(std::uint16_t* indices, std::size_t quad_count) {
+  std::uint16_t base = 0;
+
+  for (std::size_t quad = 0; quad < quad_count; ++quad) {
+    indices[0] = static_cast<std::uint16_t>(base + 0);
+    indices[1] = static_cast<std::uint16_t>(base + 1);
+    indices[2] = static_cast<std::uint16_t>(base + 2);
+    indices[3] = static_cast<std::uint16_t>(base + 2);
+    indices[4] = static_cast<std::uint16_t>(base + 3);
+    indices[5] = static_cast<std::uint16_t>(base + 0);
+
+    indices += kIndicesPerQuad;
+    base = static_cast<std::uint16_t>(base + kVerticesPerQuad);
+  }
 }
 
 void SpriteBatchBuilder::SetViewBounds(const glm::vec2& min, const glm::vec2& max) {
@@ -63,7 +78,6 @@ bool SpriteBatchBuilder::IsVisible(const SpriteDraw& draw, const glm::mat4& mode
 
 void SpriteBatchBuilder::Build() {
   m_vertices.clear();
-  m_indices.clear();
   m_batches.clear();
   m_stats = {};
   m_stats.submitted = m_draws.size();
@@ -82,17 +96,16 @@ void SpriteBatchBuilder::Build() {
   });
 
   const auto close_batch = [this](std::uint32_t texture, MaterialShader* material, std::size_t first_vertex,
-                                  std::size_t vertex_count, std::size_t first_index, std::size_t index_count) {
+                                  std::size_t vertex_count) {
     if (vertex_count == 0) return;
-    m_batches.push_back({texture, material, first_vertex, vertex_count, first_index, index_count});
+    m_batches.push_back(
+        {texture, material, first_vertex, vertex_count, vertex_count / kVerticesPerQuad * kIndicesPerQuad});
   };
 
   std::uint32_t batch_texture = 0;
   MaterialShader* batch_material = nullptr;
   std::size_t batch_first_vertex = 0;
   std::size_t batch_vertex_count = 0;
-  std::size_t batch_first_index = 0;
-  std::size_t batch_index_count = 0;
   bool batch_open = false;
 
   for (const SpriteDraw& draw : m_draws) {
@@ -103,21 +116,17 @@ void SpriteBatchBuilder::Build() {
     }
 
     if (!batch_open || draw.texture != batch_texture || draw.material != batch_material ||
-        batch_vertex_count + 4 > SpriteBatchBuilder::kMaxVerticesPerBatch) {
+        batch_vertex_count + kVerticesPerQuad > kMaxVerticesPerBatch) {
       if (batch_open) {
-        close_batch(batch_texture, batch_material, batch_first_vertex, batch_vertex_count, batch_first_index,
-                    batch_index_count);
+        close_batch(batch_texture, batch_material, batch_first_vertex, batch_vertex_count);
       }
       batch_texture = draw.texture;
       batch_material = draw.material;
       batch_first_vertex = m_vertices.size();
       batch_vertex_count = 0;
-      batch_first_index = m_indices.size();
-      batch_index_count = 0;
       batch_open = true;
     }
 
-    const std::uint16_t base = static_cast<std::uint16_t>(batch_vertex_count);
     const float tid = draw.texture == 0 ? 0.0f : 1.0f;
 
     const glm::vec3 positions[4] = {
@@ -154,24 +163,17 @@ void SpriteBatchBuilder::Build() {
       m_vertices.push_back({positions[i], uv[i], tid, draw.color});
     }
 
-    m_indices.push_back(static_cast<std::uint16_t>(base + 0));
-    m_indices.push_back(static_cast<std::uint16_t>(base + 1));
-    m_indices.push_back(static_cast<std::uint16_t>(base + 2));
-    m_indices.push_back(static_cast<std::uint16_t>(base + 2));
-    m_indices.push_back(static_cast<std::uint16_t>(base + 3));
-    m_indices.push_back(static_cast<std::uint16_t>(base + 0));
-
-    batch_vertex_count += 4;
-    batch_index_count += 6;
+    batch_vertex_count += kVerticesPerQuad;
   }
 
   if (batch_open) {
-    close_batch(batch_texture, batch_material, batch_first_vertex, batch_vertex_count, batch_first_index,
-                batch_index_count);
+    close_batch(batch_texture, batch_material, batch_first_vertex, batch_vertex_count);
   }
 
   m_stats.batches = m_batches.size();
   m_stats.vertices = m_vertices.size();
-  m_stats.indices = m_indices.size();
+  // Every batch's index list is the shared quad pattern, so the frame's index
+  // count is the vertex count scaled to six indices per four vertices.
+  m_stats.indices = m_vertices.size() / kVerticesPerQuad * kIndicesPerQuad;
 }
 }  // namespace rse
