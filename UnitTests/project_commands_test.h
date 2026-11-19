@@ -13,6 +13,7 @@
 
 #include <gtest/gtest.h>
 
+#include "scene_test_support.h"
 #include <core/asset_registry.h>
 #include <core/project.h>
 #include <core/scene_manager.h>
@@ -40,7 +41,7 @@ class ProjectCommandsTest : public ::testing::Test {
 
     Core::GetProject() = Project{};
     SceneManager::Clean();
-    ECSManager::ActiveScene().Clear();
+    TestScene().Clear();
     AssetRegistry::Clean();
     CancelPending();
   }
@@ -48,7 +49,7 @@ class ProjectCommandsTest : public ::testing::Test {
   void TearDown() override {
     Core::GetProject() = Project{};
     SceneManager::Clean();
-    ECSManager::ActiveScene().Clear();
+    TestScene().Clear();
     AssetRegistry::Clean();
     TextureManager::Clean();
     SoundManager::Clean();
@@ -58,15 +59,15 @@ class ProjectCommandsTest : public ::testing::Test {
 
   static uint32_t CountEntities() {
     uint32_t entities = 0;
-    ECSManager::GetView<BasicComponent>().each([&entities](auto, BasicComponent&) { ++entities; });
+    TestScene().Registry().view<BasicComponent>().each([&entities](auto, BasicComponent&) { ++entities; });
     return entities;
   }
 
   static uint32_t AddSprite(const glm::vec3& position) {
-    const uint32_t entity = ECSManager::CreateEntity();
-    ECSManager::AddComponent<BasicComponent>(entity, "sprite", false, 0, 0);
-    ECSManager::AddComponent<TransformComponent>(entity, position, glm::vec3(0.0f), glm::vec3(1.0f));
-    ECSManager::AddComponent<SpriteComponent>(entity, new Sprite(position, glm::vec2(8.0f), 0xffffffffu));
+    const uint32_t entity = TestScene().CreateEntity().Handle();
+    TestScene().Registry().assign<BasicComponent>(entity, "sprite", false, 0, 0);
+    TestScene().Registry().assign<TransformComponent>(entity, position, glm::vec3(0.0f), glm::vec3(1.0f));
+    TestScene().Registry().assign<SpriteComponent>(entity, new Sprite(position, glm::vec2(8.0f), 0xffffffffu));
     return entity;
   }
 
@@ -108,8 +109,8 @@ TEST_F(ProjectCommandsTest, SaveProjectWritesTheOpenScene) {
   ASSERT_TRUE(Core::SaveProject(&error)) << error;
   EXPECT_FALSE(SceneManager::IsDirty());
 
-  ECSManager::ActiveScene().Clear();
-  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), SceneManager::GetActiveScene(), &error)) << error;
+  TestScene().Clear();
+  ASSERT_TRUE(SceneIO::Load(TestScene(), SceneManager::GetActiveScene(), &error)) << error;
   EXPECT_EQ(CountEntities(), 1u);
 }
 
@@ -339,10 +340,10 @@ TEST_F(ProjectCommandsTest, DeleteAssetWarnsWhenTheSceneReferencesIt) {
   ASSERT_EQ(AssetRegistry::All().size(), 1u);
   const std::string id = AssetRegistry::All().front().id;
 
-  const uint32_t entity = ECSManager::CreateEntity();
-  ECSManager::AddComponent<BasicComponent>(entity, "crate", false, 0, 0);
-  ECSManager::AddComponent<TransformComponent>(entity, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
-  ECSManager::AddComponent<SpriteComponent>(
+  const uint32_t entity = TestScene().CreateEntity().Handle();
+  TestScene().Registry().assign<BasicComponent>(entity, "crate", false, 0, 0);
+  TestScene().Registry().assign<TransformComponent>(entity, glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
+  TestScene().Registry().assign<SpriteComponent>(
       entity, new Sprite(glm::vec3(0.0f), glm::vec2(8.0f), TextureManager::GetOrLoad(id)));
 
   Logger::Clear();
@@ -541,8 +542,8 @@ TEST_F(ProjectCommandsTest, CreateSceneAtRefusesASceneTheManifestAlreadyLists) {
   EXPECT_EQ(SceneManager::GetActiveSceneName(), "start");
 
   // The file is untouched: one entity, not an empty scene.
-  ECSManager::ActiveScene().Clear();
-  ASSERT_TRUE(SceneIO::Load(ECSManager::ActiveScene(), start, &error)) << error;
+  TestScene().Clear();
+  ASSERT_TRUE(SceneIO::Load(TestScene(), start, &error)) << error;
   EXPECT_EQ(CountEntities(), 1u);
 }
 

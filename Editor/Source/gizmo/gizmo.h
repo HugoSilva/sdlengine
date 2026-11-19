@@ -50,6 +50,7 @@
 #include <glm/glm.hpp>
 
 #include <camera/editor_camera.h>
+#include <scene/editor_scene.h>
 #include <scene/entity_bounds.h>
 
 class Gizmo {
@@ -173,11 +174,11 @@ inline bool Gizmo::Anchor(const EditorCamera& camera, const ImVec2& image_pos, I
 inline TransformComponent* Gizmo::ActiveTransform() const {
   const uint32_t entity = EditorManager::GetSelectedEntity();
 
-  if (entity == INVALID_ENTITY_ID || !rse::ECSManager::HasComponent<TransformComponent>(entity)) {
+  if (entity == INVALID_ENTITY_ID || !EditorScene().Registry().has<TransformComponent>(entity)) {
     return nullptr;
   }
 
-  return &rse::ECSManager::GetComponent<TransformComponent>(entity);
+  return &EditorScene().Registry().get<TransformComponent>(entity);
 }
 
 inline Gizmo::Axis Gizmo::HitTest(glm::vec2 mouse, const ImVec2& origin) const {
@@ -230,11 +231,11 @@ inline void Gizmo::BeginDrag(glm::vec2 mouse, Axis axis) {
   m_grabbed.clear();
 
   for (const uint32_t entity : EditorManager::GetSelectedEntities()) {
-    if (!rse::ECSManager::HasComponent<TransformComponent>(entity)) {
+    if (!EditorScene().Registry().has<TransformComponent>(entity)) {
       continue;
     }
 
-    const TransformComponent& transform = rse::ECSManager::GetComponent<TransformComponent>(entity);
+    const TransformComponent& transform = EditorScene().Registry().get<TransformComponent>(entity);
     m_grabbed.push_back({entity, transform.position, transform.rotation, transform.scale});
   }
 }
@@ -253,7 +254,7 @@ inline void Gizmo::ApplyTranslate(glm::vec2 travel, float world_per_pixel) {
   const bool snapping = ImGui::GetIO().KeyShift;
 
   for (const Grabbed& grabbed : m_grabbed) {
-    TransformComponent& transform = rse::ECSManager::GetComponent<TransformComponent>(grabbed.entity);
+    TransformComponent& transform = EditorScene().Registry().get<TransformComponent>(grabbed.entity);
 
     glm::vec3 moved = grabbed.position;
     moved.x += offset.x;
@@ -294,7 +295,7 @@ inline void Gizmo::ApplyRotate(glm::vec2 mouse) {
   const bool snapping = ImGui::GetIO().KeyShift;
 
   for (const Grabbed& grabbed : m_grabbed) {
-    TransformComponent& transform = rse::ECSManager::GetComponent<TransformComponent>(grabbed.entity);
+    TransformComponent& transform = EditorScene().Registry().get<TransformComponent>(grabbed.entity);
 
     float degrees = grabbed.rotation.z + glm::degrees(m_angle_travelled);
 
@@ -323,7 +324,7 @@ inline void Gizmo::ApplyScale(glm::vec2 travel) {
   const bool snapping = ImGui::GetIO().KeyShift;
 
   for (const Grabbed& grabbed : m_grabbed) {
-    TransformComponent& transform = rse::ECSManager::GetComponent<TransformComponent>(grabbed.entity);
+    TransformComponent& transform = EditorScene().Registry().get<TransformComponent>(grabbed.entity);
 
     glm::vec3 scaled = grabbed.scale;
 

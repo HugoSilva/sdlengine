@@ -15,6 +15,7 @@
 #include <input/input_map.h>
 #include <layout/editor_panel.h>
 #include <render/framebuffer.h>
+#include <scene/editor_scene.h>
 #include <scene/entity_bounds.h>
 
 // ---------------------------------------------------------------------------
@@ -244,7 +245,7 @@ class ViewportPanel : public EditorPanel {
 
     uint32_t hit = INVALID_ENTITY_ID;
 
-    rse::ECSManager::GetView<TransformComponent, SpriteComponent>().each(
+    EditorScene().Registry().view<TransformComponent, SpriteComponent>().each(
         [&hit, &world](uint32_t entity, TransformComponent&, SpriteComponent&) {
           const std::optional<EntityBounds> bounds = editor_bounds::OfEntity(entity);
 

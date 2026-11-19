@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 
+#include "scene_test_support.h"
 #include <audio/sound_manager.h>
 #include <core/scene_manager.h>
 #include <ecs/components/include_list.h>
@@ -42,15 +43,15 @@ class SceneManagerTest : public ::testing::Test {
   }
 
   static uint32_t CreateEntity(const char* name, const glm::vec3& position) {
-    const uint32_t entity = ECSManager::CreateEntity();
-    ECSManager::AddComponent<BasicComponent>(entity, name, false, 0, 0);
-    ECSManager::AddComponent<TransformComponent>(entity, position, glm::vec3(0.f), glm::vec3(1.f));
+    const uint32_t entity = TestScene().CreateEntity().Handle();
+    TestScene().Registry().assign<BasicComponent>(entity, name, false, 0, 0);
+    TestScene().Registry().assign<TransformComponent>(entity, position, glm::vec3(0.f), glm::vec3(1.f));
     return entity;
   }
 
   static uint32_t CountEntities() {
     uint32_t entities = 0;
-    ECSManager::GetView<BasicComponent>().each([&entities](auto, BasicComponent&) { ++entities; });
+    TestScene().Registry().view<BasicComponent>().each([&entities](auto, BasicComponent&) { ++entities; });
     return entities;
   }
 
@@ -59,9 +60,9 @@ class SceneManagerTest : public ::testing::Test {
   static uint32_t FindByUuid(const Uuid& uuid) {
     uint32_t found = static_cast<uint32_t>(entt::null);
 
-    ECSManager::Registry().each([&uuid, &found](entt::DefaultRegistry::entity_type entity) {
-      if (ECSManager::HasComponent<UuidComponent>(entity) &&
-          ECSManager::GetComponent<UuidComponent>(entity).m_uuid == uuid) {
+    TestScene().Registry().each([&uuid, &found](entt::DefaultRegistry::entity_type entity) {
+      if (TestScene().Registry().has<UuidComponent>(entity) &&
+          TestScene().Registry().get<UuidComponent>(entity).m_uuid == uuid) {
         found = entity;
       }
     });
@@ -77,17 +78,17 @@ TEST_F(SceneManagerTest, StartsStopped) {
   EXPECT_FALSE(SceneManager::IsPlaying());
   EXPECT_FALSE(SceneManager::IsPaused());
   EXPECT_FALSE(SceneManager::IsPlayActive());
-  EXPECT_EQ(&SceneManager::ActiveScene(), &SceneManager::OpenScene());
+  EXPECT_EQ(&TestScene(), &SceneManager::OpenScene());
 }
 
 TEST_F(SceneManagerTest, PlayRunsACopyOfTheOpenScene) {
   const uint32_t player = CreateEntity("player", glm::vec3(1.f, 2.f, 0.f));
-  const Uuid uuid = ECSManager::GetComponent<UuidComponent>(player).m_uuid;
+  const Uuid uuid = TestScene().Registry().get<UuidComponent>(player).m_uuid;
 
   SceneManager::Play();
 
   EXPECT_EQ(SceneManager::GetPlayState(), SceneManager::PlayState::kPlaying);
-  EXPECT_NE(&SceneManager::ActiveScene(), &SceneManager::OpenScene());
+  EXPECT_NE(&TestScene(), &SceneManager::OpenScene());
 
   // The copy starts as the open scene did, with the same identity.
   EXPECT_EQ(CountEntities(), 1u);
@@ -95,9 +96,9 @@ TEST_F(SceneManagerTest, PlayRunsACopyOfTheOpenScene) {
   ASSERT_NE(copy, static_cast<uint32_t>(entt::null));
 
   // The scene runs forward in the copy: an entity moved and one appeared.
-  ECSManager::GetComponent<TransformComponent>(copy).position = glm::vec3(9.f, 10.f, 0.f);
+  TestScene().Registry().get<TransformComponent>(copy).position = glm::vec3(9.f, 10.f, 0.f);
   const uint32_t transient = CreateEntity("transient", glm::vec3(5.f, 5.f, 0.f));
-  SceneManager::ActiveScene().GetCamera().zoom = 3.0f;
+  TestScene().GetCamera().zoom = 3.0f;
 
   EXPECT_EQ(CountEntities(), 2u);
 
@@ -110,44 +111,44 @@ TEST_F(SceneManagerTest, PlayRunsACopyOfTheOpenScene) {
 
   // The copy is gone with the session; the open scene's entities are all that
   // is left.
-  EXPECT_TRUE(ECSManager::IsValidEntity(player));
-  EXPECT_FALSE(ECSManager::IsValidEntity(transient));
+  EXPECT_TRUE(TestScene().Registry().valid(player));
+  EXPECT_FALSE(TestScene().Registry().valid(transient));
 }
 
 TEST_F(SceneManagerTest, StopReturnsToTheOpenScene) {
   const uint32_t player = CreateEntity("player", glm::vec3(1.f, 2.f, 0.f));
-  const Uuid uuid = ECSManager::GetComponent<UuidComponent>(player).m_uuid;
+  const Uuid uuid = TestScene().Registry().get<UuidComponent>(player).m_uuid;
 
   SceneManager::Play();
-  ECSManager::GetComponent<TransformComponent>(FindByUuid(uuid)).position = glm::vec3(9.f, 10.f, 0.f);
+  TestScene().Registry().get<TransformComponent>(FindByUuid(uuid)).position = glm::vec3(9.f, 10.f, 0.f);
 
   SceneManager::Stop();
 
   EXPECT_EQ(SceneManager::GetPlayState(), SceneManager::PlayState::kStopped);
   EXPECT_FALSE(SceneManager::IsPlayActive());
-  EXPECT_EQ(&SceneManager::ActiveScene(), &SceneManager::OpenScene());
+  EXPECT_EQ(&TestScene(), &SceneManager::OpenScene());
 
   // The open scene is exactly what Play found: same entity, same values.
   EXPECT_EQ(CountEntities(), 1u);
-  EXPECT_TRUE(ECSManager::IsValidEntity(player));
-  EXPECT_FLOAT_EQ(ECSManager::GetComponent<TransformComponent>(player).position.x, 1.f);
+  EXPECT_TRUE(TestScene().Registry().valid(player));
+  EXPECT_FLOAT_EQ(TestScene().Registry().get<TransformComponent>(player).position.x, 1.f);
 }
 
 // Play after Stop has to start from the open scene again, not from what the
 // discarded copy had become.
 TEST_F(SceneManagerTest, PlayingAgainStartsFromTheOpenScene) {
   const uint32_t player = CreateEntity("player", glm::vec3(1.f, 2.f, 0.f));
-  const Uuid uuid = ECSManager::GetComponent<UuidComponent>(player).m_uuid;
+  const Uuid uuid = TestScene().Registry().get<UuidComponent>(player).m_uuid;
 
   SceneManager::Play();
-  ECSManager::GetComponent<TransformComponent>(FindByUuid(uuid)).position = glm::vec3(9.f, 10.f, 0.f);
+  TestScene().Registry().get<TransformComponent>(FindByUuid(uuid)).position = glm::vec3(9.f, 10.f, 0.f);
   SceneManager::Stop();
 
   SceneManager::Play();
 
   const uint32_t copy = FindByUuid(uuid);
   ASSERT_NE(copy, static_cast<uint32_t>(entt::null));
-  EXPECT_FLOAT_EQ(ECSManager::GetComponent<TransformComponent>(copy).position.x, 1.f);
+  EXPECT_FLOAT_EQ(TestScene().Registry().get<TransformComponent>(copy).position.x, 1.f);
 }
 
 TEST_F(SceneManagerTest, PauseHoldsAndResumeContinues) {
@@ -183,10 +184,10 @@ TEST_F(SceneManagerTest, PauseAndStopWhenStoppedAreNoOps) {
 
 TEST_F(SceneManagerTest, PlayWhenPlayingKeepsTheSameCopy) {
   const uint32_t player = CreateEntity("player", glm::vec3(1.f, 2.f, 0.f));
-  const Uuid uuid = ECSManager::GetComponent<UuidComponent>(player).m_uuid;
+  const Uuid uuid = TestScene().Registry().get<UuidComponent>(player).m_uuid;
 
   SceneManager::Play();
-  ECSManager::GetComponent<TransformComponent>(FindByUuid(uuid)).position = glm::vec3(7.f, 8.f, 0.f);
+  TestScene().Registry().get<TransformComponent>(FindByUuid(uuid)).position = glm::vec3(7.f, 8.f, 0.f);
 
   // A second Play is a no-op: the session is already running, and the copy it
   // started is the one that keeps running.
@@ -194,7 +195,7 @@ TEST_F(SceneManagerTest, PlayWhenPlayingKeepsTheSameCopy) {
   EXPECT_TRUE(SceneManager::IsPlaying());
 
   SceneManager::Stop();
-  EXPECT_FLOAT_EQ(ECSManager::GetComponent<TransformComponent>(player).position.x, 1.f);
+  EXPECT_FLOAT_EQ(TestScene().Registry().get<TransformComponent>(player).position.x, 1.f);
 }
 
 TEST_F(SceneManagerTest, StopReturnsToTheDirtyFlagFromBeforePlay) {
@@ -250,7 +251,7 @@ TEST_F(SceneManagerTest, OpeningASceneDiscardsTheSession) {
 
   EXPECT_EQ(SceneManager::GetPlayState(), SceneManager::PlayState::kStopped);
   EXPECT_FALSE(SceneManager::IsPlayActive());
-  EXPECT_EQ(&SceneManager::ActiveScene(), &SceneManager::OpenScene());
+  EXPECT_EQ(&TestScene(), &SceneManager::OpenScene());
   EXPECT_EQ(SceneManager::OpenScene().EntityCount(), 0u);
 }
 }  // namespace

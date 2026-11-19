@@ -5,6 +5,8 @@
 #include <string>
 
 namespace rse {
+class Scene;
+
 // Reads and writes a prefab: the components of one entity, saved as a project
 // file so the same entity can be placed into any scene.
 //
@@ -29,21 +31,20 @@ class PrefabIO {
   // The oldest prefab format this build still understands.
   static constexpr int kFirstFormatVersion{1};
 
-  // Writes `entity` from the open scene to `file`. The file is written to a
-  // scratch path and renamed into place once the archive has closed, so a
-  // failed save cannot destroy an existing prefab. An entity that no longer
-  // exists is refused.
-  static bool Save(const std::filesystem::path& file, uint32_t entity, std::string* error);
+  // Writes `entity` from `scene` to `file`. The file is written to a scratch
+  // path and renamed into place once the archive has closed, so a failed save
+  // cannot destroy an existing prefab. An entity that no longer exists is
+  // refused.
+  static bool Save(const Scene& scene, const std::filesystem::path& file, uint32_t entity, std::string* error);
 
-  // Copies the prefab into the open scene with fresh entity ids and returns the
-  // first new entity, or entt::null when the file cannot be read. The file is
-  // read into a scratch registry first, so a failure leaves the open scene
-  // untouched.
+  // Copies the prefab into `scene` with fresh entity ids and returns the first
+  // new entity, or entt::null when the file cannot be read. The file is read
+  // into a scratch registry first, so a failure leaves the scene untouched.
   //
   // The entity ids a prefab file carries are deliberately not restored: entt's
   // restore() keeps them, which would overwrite whatever the scene already has
   // at those ids.
-  static uint32_t Instantiate(const std::filesystem::path& file, std::string* error);
+  static uint32_t Instantiate(Scene& scene, const std::filesystem::path& file, std::string* error);
 
  private:
   PrefabIO() {}

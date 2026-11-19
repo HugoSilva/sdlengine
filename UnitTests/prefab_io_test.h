@@ -8,6 +8,7 @@
 
 #include <gtest/gtest.h>
 
+#include "scene_test_support.h"
 #include <audio/sound_manager.h>
 #include <core/texture_manager.h>
 #include <ecs/components/include_list.h>
@@ -38,11 +39,11 @@ class PrefabIOTest : public ::testing::Test {
     m_file = m_directory / "crate.xml";
     m_scratch = std::filesystem::path{m_file}.concat(".tmp");
 
-    ECSManager::ActiveScene().Clear();
+    TestScene().Clear();
   }
 
   void TearDown() override {
-    ECSManager::ActiveScene().Clear();
+    TestScene().Clear();
     TextureManager::Clean();
     SoundManager::Clean();
     std::filesystem::remove_all(m_directory);
@@ -60,27 +61,27 @@ class PrefabIOTest : public ::testing::Test {
 
   static uint32_t CountEntities() {
     uint32_t entities = 0;
-    ECSManager::GetView<BasicComponent>().each([&entities](auto, BasicComponent&) { ++entities; });
+    TestScene().Registry().view<BasicComponent>().each([&entities](auto, BasicComponent&) { ++entities; });
     return entities;
   }
 
   static uint32_t CreateSprite(const char* name, const glm::vec3& position) {
-    const uint32_t entity = ECSManager::CreateEntity();
-    ECSManager::AddComponent<BasicComponent>(entity, name, false, 0, 0);
-    ECSManager::AddComponent<TransformComponent>(entity, position, glm::vec3(0.f), glm::vec3(1.f));
-    ECSManager::AddComponent<SpriteComponent>(entity, new Sprite(position, glm::vec2(8.f, 8.f), 0xff00ff00u));
+    const uint32_t entity = TestScene().CreateEntity().Handle();
+    TestScene().Registry().assign<BasicComponent>(entity, name, false, 0, 0);
+    TestScene().Registry().assign<TransformComponent>(entity, position, glm::vec3(0.f), glm::vec3(1.f));
+    TestScene().Registry().assign<SpriteComponent>(entity, new Sprite(position, glm::vec2(8.f, 8.f), 0xff00ff00u));
     return entity;
   }
 
   static uint32_t CreateTexturedSprite(const char* name, const glm::vec3& position, const std::string& texture,
                                        unsigned int color) {
-    const uint32_t entity = ECSManager::CreateEntity();
-    ECSManager::AddComponent<BasicComponent>(entity, name, false, 0, 0);
-    ECSManager::AddComponent<TransformComponent>(entity, position, glm::vec3(0.f), glm::vec3(1.f));
+    const uint32_t entity = TestScene().CreateEntity().Handle();
+    TestScene().Registry().assign<BasicComponent>(entity, name, false, 0, 0);
+    TestScene().Registry().assign<TransformComponent>(entity, position, glm::vec3(0.f), glm::vec3(1.f));
 
     Sprite* sprite = new Sprite(position, glm::vec2(8.f, 8.f), TextureManager::GetOrLoad(texture));
     sprite->SetColor(color);
-    ECSManager::AddComponent<SpriteComponent>(entity, sprite);
+    TestScene().Registry().assign<SpriteComponent>(entity, sprite);
     return entity;
   }
 
@@ -93,7 +94,7 @@ TEST_F(PrefabIOTest, SavingWritesThePrefabFile) {
   const uint32_t crate = CreateSprite("crate", glm::vec3(1.f, 2.f, 0.f));
 
   std::string error;
-  ASSERT_TRUE(PrefabIO::Save(m_file, crate, &error)) << error;
+  ASSERT_TRUE(PrefabIO::Save(TestScene(), m_file, crate, &error)) << error;
 
   EXPECT_TRUE(std::filesystem::exists(m_file));
   EXPECT_FALSE(std::filesystem::exists(m_scratch));
@@ -113,25 +114,25 @@ TEST_F(PrefabIOTest, SavingWritesThePrefabFile) {
 // placement is a new entity, so it gets a new uuid rather than the source's.
 TEST_F(PrefabIOTest, EveryPlacedCopyGetsItsOwnIdentity) {
   const uint32_t crate = CreateSprite("crate", glm::vec3(1.f, 2.f, 0.f));
-  const std::string source_id = ECSManager::GetComponent<UuidComponent>(crate).m_uuid.ToString();
+  const std::string source_id = TestScene().Registry().get<UuidComponent>(crate).m_uuid.ToString();
 
   std::string error;
-  ASSERT_TRUE(PrefabIO::Save(m_file, crate, &error)) << error;
+  ASSERT_TRUE(PrefabIO::Save(TestScene(), m_file, crate, &error)) << error;
 
   const std::string contents = ReadFile(m_file);
   EXPECT_EQ(contents.find(source_id), std::string::npos);
   EXPECT_NE(contents.find("<formatVersion>5</formatVersion>"), std::string::npos);
 
-  ECSManager::ActiveScene().Clear();
+  TestScene().Clear();
 
-  const uint32_t first = PrefabIO::Instantiate(m_file, &error);
+  const uint32_t first = PrefabIO::Instantiate(TestScene(), m_file, &error);
   ASSERT_NE(first, kNullEntity) << error;
 
-  const uint32_t second = PrefabIO::Instantiate(m_file, &error);
+  const uint32_t second = PrefabIO::Instantiate(TestScene(), m_file, &error);
   ASSERT_NE(second, kNullEntity) << error;
 
-  const std::string first_id = ECSManager::GetComponent<UuidComponent>(first).m_uuid.ToString();
-  const std::string second_id = ECSManager::GetComponent<UuidComponent>(second).m_uuid.ToString();
+  const std::string first_id = TestScene().Registry().get<UuidComponent>(first).m_uuid.ToString();
+  const std::string second_id = TestScene().Registry().get<UuidComponent>(second).m_uuid.ToString();
 
   EXPECT_NE(first_id, second_id);
   EXPECT_NE(first_id, source_id);
@@ -142,16 +143,16 @@ TEST_F(PrefabIOTest, APlacedEntityComesBackWithItsValues) {
   const uint32_t crate = CreateSprite("crate", glm::vec3(12.5f, 34.25f, 0.f));
 
   std::string error;
-  ASSERT_TRUE(PrefabIO::Save(m_file, crate, &error)) << error;
+  ASSERT_TRUE(PrefabIO::Save(TestScene(), m_file, crate, &error)) << error;
 
-  ECSManager::ActiveScene().Clear();
+  TestScene().Clear();
   ASSERT_EQ(CountEntities(), 0u);
 
-  const uint32_t placed = PrefabIO::Instantiate(m_file, &error);
+  const uint32_t placed = PrefabIO::Instantiate(TestScene(), m_file, &error);
   ASSERT_NE(placed, kNullEntity) << error;
   ASSERT_EQ(CountEntities(), 1u);
 
-  ECSManager::GetView<BasicComponent, TransformComponent, SpriteComponent>().each(
+  TestScene().Registry().view<BasicComponent, TransformComponent, SpriteComponent>().each(
       [](auto, BasicComponent& basic, TransformComponent& transform, SpriteComponent& sprite) {
         EXPECT_EQ(basic.m_name, "crate");
         EXPECT_FALSE(basic.m_is_static);
@@ -166,36 +167,36 @@ TEST_F(PrefabIOTest, APlacedEntityComesBackWithItsValues) {
 
 TEST_F(PrefabIOTest, DisabledStateIsCopiedWithThePrefab) {
   const uint32_t crate = CreateSprite("crate", glm::vec3(1.f, 2.f, 0.f));
-  ECSManager::SetEntityEnabled(crate, false);
+  TestScene().SetEntityEnabled(crate, false);
 
   std::string error;
-  ASSERT_TRUE(PrefabIO::Save(m_file, crate, &error)) << error;
+  ASSERT_TRUE(PrefabIO::Save(TestScene(), m_file, crate, &error)) << error;
 
-  ECSManager::ActiveScene().Clear();
-  const uint32_t placed = PrefabIO::Instantiate(m_file, &error);
+  TestScene().Clear();
+  const uint32_t placed = PrefabIO::Instantiate(TestScene(), m_file, &error);
   ASSERT_NE(placed, kNullEntity) << error;
 
-  ASSERT_TRUE(ECSManager::HasComponent<EntityEnabledComponent>(placed));
-  EXPECT_FALSE(ECSManager::GetComponent<EntityEnabledComponent>(placed).m_enabled);
-  EXPECT_FALSE(ECSManager::IsEntityEnabled(placed));
+  ASSERT_TRUE(TestScene().Registry().has<EntityEnabledComponent>(placed));
+  EXPECT_FALSE(TestScene().Registry().get<EntityEnabledComponent>(placed).m_enabled);
+  EXPECT_FALSE(TestScene().IsEntityEnabled(placed));
 }
 
 TEST_F(PrefabIOTest, DisabledComponentStateIsCopiedWithThePrefab) {
   const uint32_t crate = CreateSprite("crate", glm::vec3(1.f, 2.f, 0.f));
-  ECSManager::SetComponentEnabled<SpriteComponent>(crate, false);
-  ECSManager::SetComponentEnabled<AudioComponent>(crate, false);
+  TestScene().SetComponentEnabled<SpriteComponent>(crate, false);
+  TestScene().SetComponentEnabled<AudioComponent>(crate, false);
 
   std::string error;
-  ASSERT_TRUE(PrefabIO::Save(m_file, crate, &error)) << error;
+  ASSERT_TRUE(PrefabIO::Save(TestScene(), m_file, crate, &error)) << error;
 
-  ECSManager::ActiveScene().Clear();
-  const uint32_t placed = PrefabIO::Instantiate(m_file, &error);
+  TestScene().Clear();
+  const uint32_t placed = PrefabIO::Instantiate(TestScene(), m_file, &error);
   ASSERT_NE(placed, kNullEntity) << error;
 
-  ASSERT_TRUE(ECSManager::HasComponent<DisabledComponentsComponent>(placed));
-  EXPECT_FALSE(ECSManager::IsComponentEnabled<SpriteComponent>(placed));
-  EXPECT_FALSE(ECSManager::IsComponentEnabled<AudioComponent>(placed));
-  EXPECT_TRUE(ECSManager::IsComponentEnabled<RigidBodyComponent>(placed));
+  ASSERT_TRUE(TestScene().Registry().has<DisabledComponentsComponent>(placed));
+  EXPECT_FALSE(TestScene().IsComponentEnabled<SpriteComponent>(placed));
+  EXPECT_FALSE(TestScene().IsComponentEnabled<AudioComponent>(placed));
+  EXPECT_TRUE(TestScene().IsComponentEnabled<RigidBodyComponent>(placed));
 }
 
 TEST_F(PrefabIOTest, ASpriteAppearanceIsCopiedWithThePrefab) {
@@ -204,19 +205,19 @@ TEST_F(PrefabIOTest, ASpriteAppearanceIsCopiedWithThePrefab) {
   SpriteAppearanceComponent appearance;
   appearance.flip_x = true;
   appearance.material = "mat_warm";
-  ECSManager::AddComponent<SpriteAppearanceComponent>(crate, appearance);
+  TestScene().Registry().assign<SpriteAppearanceComponent>(crate, appearance);
 
   std::string error;
-  ASSERT_TRUE(PrefabIO::Save(m_file, crate, &error)) << error;
+  ASSERT_TRUE(PrefabIO::Save(TestScene(), m_file, crate, &error)) << error;
 
-  ECSManager::ActiveScene().Clear();
+  TestScene().Clear();
   ASSERT_EQ(CountEntities(), 0u);
 
-  const uint32_t placed = PrefabIO::Instantiate(m_file, &error);
+  const uint32_t placed = PrefabIO::Instantiate(TestScene(), m_file, &error);
   ASSERT_NE(placed, kNullEntity) << error;
-  ASSERT_TRUE(ECSManager::HasComponent<SpriteAppearanceComponent>(placed));
+  ASSERT_TRUE(TestScene().Registry().has<SpriteAppearanceComponent>(placed));
 
-  const SpriteAppearanceComponent& copied = ECSManager::GetComponent<SpriteAppearanceComponent>(placed);
+  const SpriteAppearanceComponent& copied = TestScene().Registry().get<SpriteAppearanceComponent>(placed);
   EXPECT_TRUE(copied.flip_x);
   EXPECT_FALSE(copied.flip_y);
   EXPECT_EQ(copied.material, "mat_warm");
@@ -230,9 +231,9 @@ TEST_F(PrefabIOTest, InstantiatingIntoANonEmptySceneKeepsBothEntities) {
   const uint32_t bystander = CreateSprite("bystander", glm::vec3(100.f, 200.f, 0.f));
 
   std::string error;
-  ASSERT_TRUE(PrefabIO::Save(m_file, original, &error)) << error;
+  ASSERT_TRUE(PrefabIO::Save(TestScene(), m_file, original, &error)) << error;
 
-  const uint32_t placed = PrefabIO::Instantiate(m_file, &error);
+  const uint32_t placed = PrefabIO::Instantiate(TestScene(), m_file, &error);
   ASSERT_NE(placed, kNullEntity) << error;
 
   EXPECT_NE(placed, original);
@@ -244,7 +245,7 @@ TEST_F(PrefabIOTest, InstantiatingIntoANonEmptySceneKeepsBothEntities) {
   int crates = 0;
   int bystanders = 0;
 
-  ECSManager::GetView<BasicComponent, TransformComponent>().each(
+  TestScene().Registry().view<BasicComponent, TransformComponent>().each(
       [&crates, &bystanders](auto, BasicComponent& basic, TransformComponent& transform) {
         if (basic.m_name == "crate") {
           ++crates;
@@ -269,22 +270,22 @@ TEST_F(PrefabIOTest, TwoInstantiationsAreIndependent) {
   const uint32_t source = CreateTexturedSprite("crate", glm::vec3(1.f, 2.f, 0.f), "shared.png", 0xff00ff00u);
 
   std::string error;
-  ASSERT_TRUE(PrefabIO::Save(m_file, source, &error)) << error;
+  ASSERT_TRUE(PrefabIO::Save(TestScene(), m_file, source, &error)) << error;
 
-  ECSManager::ActiveScene().Clear();
+  TestScene().Clear();
   TextureManager::Clean();
 
-  const uint32_t first = PrefabIO::Instantiate(m_file, &error);
+  const uint32_t first = PrefabIO::Instantiate(TestScene(), m_file, &error);
   ASSERT_NE(first, kNullEntity) << error;
-  const uint32_t second = PrefabIO::Instantiate(m_file, &error);
+  const uint32_t second = PrefabIO::Instantiate(TestScene(), m_file, &error);
   ASSERT_NE(second, kNullEntity) << error;
 
   ASSERT_NE(first, second);
   EXPECT_EQ(CountEntities(), 2u);
   EXPECT_EQ(TextureManager::Count(), 1u);
 
-  std::shared_ptr<Sprite>& first_sprite = ECSManager::GetComponent<SpriteComponent>(first).m_sprite;
-  std::shared_ptr<Sprite>& second_sprite = ECSManager::GetComponent<SpriteComponent>(second).m_sprite;
+  std::shared_ptr<Sprite>& first_sprite = TestScene().Registry().get<SpriteComponent>(first).m_sprite;
+  std::shared_ptr<Sprite>& second_sprite = TestScene().Registry().get<SpriteComponent>(second).m_sprite;
 
   ASSERT_NE(first_sprite, nullptr);
   ASSERT_NE(second_sprite, nullptr);
@@ -309,20 +310,20 @@ TEST_F(PrefabIOTest, APrefabWithARigidBodyGetsAFreshBody) {
   Rigidbody* body = new Rigidbody(glm::vec2(640.f, 400.f), glm::vec2(40.f, 40.f));
   body->SetMaterial("0123456789abcdef");
   *body->GetBodyType() = b2_dynamicBody;
-  ECSManager::AddComponent<RigidBodyComponent>(crate, body);
+  TestScene().Registry().assign<RigidBodyComponent>(crate, body);
 
   std::string error;
-  ASSERT_TRUE(PrefabIO::Save(m_file, crate, &error)) << error;
+  ASSERT_TRUE(PrefabIO::Save(TestScene(), m_file, crate, &error)) << error;
 
-  ECSManager::ActiveScene().Clear();
+  TestScene().Clear();
 
-  const uint32_t first = PrefabIO::Instantiate(m_file, &error);
+  const uint32_t first = PrefabIO::Instantiate(TestScene(), m_file, &error);
   ASSERT_NE(first, kNullEntity) << error;
-  const uint32_t second = PrefabIO::Instantiate(m_file, &error);
+  const uint32_t second = PrefabIO::Instantiate(TestScene(), m_file, &error);
   ASSERT_NE(second, kNullEntity) << error;
 
-  std::shared_ptr<Rigidbody>& first_body = ECSManager::GetComponent<RigidBodyComponent>(first).m_rigidbody;
-  std::shared_ptr<Rigidbody>& second_body = ECSManager::GetComponent<RigidBodyComponent>(second).m_rigidbody;
+  std::shared_ptr<Rigidbody>& first_body = TestScene().Registry().get<RigidBodyComponent>(first).m_rigidbody;
+  std::shared_ptr<Rigidbody>& second_body = TestScene().Registry().get<RigidBodyComponent>(second).m_rigidbody;
 
   ASSERT_NE(first_body, nullptr);
   ASSERT_NE(second_body, nullptr);
@@ -338,7 +339,7 @@ TEST_F(PrefabIOTest, AMissingPrefabLeavesTheSceneAlone) {
   CreateSprite("keep", glm::vec3(1.f, 2.f, 0.f));
 
   std::string error;
-  EXPECT_EQ(PrefabIO::Instantiate(m_directory / "missing.xml", &error), kNullEntity);
+  EXPECT_EQ(PrefabIO::Instantiate(TestScene(), m_directory / "missing.xml", &error), kNullEntity);
   EXPECT_NE(error.find("not found"), std::string::npos);
   EXPECT_EQ(CountEntities(), 1u);
 }
@@ -352,7 +353,7 @@ TEST_F(PrefabIOTest, ANewerPrefabIsRefusedWithoutTouchingTheScene) {
   WriteFile("<cereal><formatVersion>" + newer + "</formatVersion><entity><value0>0</value0></entity></cereal>");
 
   std::string error;
-  EXPECT_EQ(PrefabIO::Instantiate(m_file, &error), kNullEntity);
+  EXPECT_EQ(PrefabIO::Instantiate(TestScene(), m_file, &error), kNullEntity);
   EXPECT_NE(error.find(newer), std::string::npos);
   EXPECT_NE(error.find("newer"), std::string::npos);
   EXPECT_EQ(CountEntities(), 1u);
@@ -362,7 +363,7 @@ TEST_F(PrefabIOTest, AVersionZeroPrefabIsNotAPrefabFile) {
   WriteFile("<cereal><formatVersion>0</formatVersion><entity><value0>0</value0></entity></cereal>");
 
   std::string error;
-  EXPECT_EQ(PrefabIO::Instantiate(m_file, &error), kNullEntity);
+  EXPECT_EQ(PrefabIO::Instantiate(TestScene(), m_file, &error), kNullEntity);
   EXPECT_NE(error.find("not a prefab file"), std::string::npos);
 }
 
@@ -372,18 +373,18 @@ TEST_F(PrefabIOTest, APrefabWithNoEntityIsRefused) {
       "<value3>0</value3><value4>0</value4><value5>0</value5></entity></cereal>");
 
   std::string error;
-  EXPECT_EQ(PrefabIO::Instantiate(m_file, &error), kNullEntity);
+  EXPECT_EQ(PrefabIO::Instantiate(TestScene(), m_file, &error), kNullEntity);
   EXPECT_NE(error.find("no entity"), std::string::npos);
 }
 
 TEST_F(PrefabIOTest, SavingAnEntityThatIsNotThereFails) {
   CreateSprite("keep", glm::vec3(1.f, 2.f, 0.f));
 
-  const uint32_t destroyed = ECSManager::CreateEntity();
-  ECSManager::DestroyEntity(destroyed);
+  const uint32_t destroyed = TestScene().CreateEntity().Handle();
+  TestScene().Registry().destroy(destroyed);
 
   std::string error;
-  EXPECT_FALSE(PrefabIO::Save(m_file, destroyed, &error));
+  EXPECT_FALSE(PrefabIO::Save(TestScene(), m_file, destroyed, &error));
   EXPECT_FALSE(error.empty());
   EXPECT_FALSE(std::filesystem::exists(m_file));
   EXPECT_FALSE(std::filesystem::exists(m_scratch));
@@ -395,7 +396,7 @@ TEST_F(PrefabIOTest, AnUnwritablePathReportsFailureWithoutLeavingAScratchFile) {
   const std::filesystem::path missing_scratch = std::filesystem::path{missing}.concat(".tmp");
 
   std::string error;
-  EXPECT_FALSE(PrefabIO::Save(missing, crate, &error));
+  EXPECT_FALSE(PrefabIO::Save(TestScene(), missing, crate, &error));
   EXPECT_FALSE(error.empty());
   EXPECT_FALSE(std::filesystem::exists(missing_scratch));
 }
@@ -406,38 +407,38 @@ TEST_F(PrefabIOTest, APrefabV1FixtureLoads) {
   const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "prefab_v1.xml";
 
   std::string error;
-  const uint32_t crate = PrefabIO::Instantiate(fixture, &error);
+  const uint32_t crate = PrefabIO::Instantiate(TestScene(), fixture, &error);
   ASSERT_NE(crate, kNullEntity) << error;
   ASSERT_EQ(CountEntities(), 1u);
 
-  ASSERT_TRUE(ECSManager::HasComponent<BasicComponent>(crate));
-  ASSERT_TRUE(ECSManager::HasComponent<TransformComponent>(crate));
-  ASSERT_TRUE(ECSManager::HasComponent<SpriteComponent>(crate));
-  ASSERT_TRUE(ECSManager::HasComponent<AudioComponent>(crate));
-  ASSERT_TRUE(ECSManager::HasComponent<RigidBodyComponent>(crate));
-  EXPECT_FALSE(ECSManager::HasComponent<SpriteAppearanceComponent>(crate));
+  ASSERT_TRUE(TestScene().Registry().has<BasicComponent>(crate));
+  ASSERT_TRUE(TestScene().Registry().has<TransformComponent>(crate));
+  ASSERT_TRUE(TestScene().Registry().has<SpriteComponent>(crate));
+  ASSERT_TRUE(TestScene().Registry().has<AudioComponent>(crate));
+  ASSERT_TRUE(TestScene().Registry().has<RigidBodyComponent>(crate));
+  EXPECT_FALSE(TestScene().Registry().has<SpriteAppearanceComponent>(crate));
 
-  const BasicComponent& basic = ECSManager::GetComponent<BasicComponent>(crate);
+  const BasicComponent& basic = TestScene().Registry().get<BasicComponent>(crate);
   EXPECT_EQ(basic.m_name, "crate");
 
-  const TransformComponent& transform = ECSManager::GetComponent<TransformComponent>(crate);
+  const TransformComponent& transform = TestScene().Registry().get<TransformComponent>(crate);
   EXPECT_FLOAT_EQ(transform.position.x, 640.f);
   EXPECT_FLOAT_EQ(transform.position.y, 400.f);
 
-  const SpriteComponent& sprite = ECSManager::GetComponent<SpriteComponent>(crate);
+  const SpriteComponent& sprite = TestScene().Registry().get<SpriteComponent>(crate);
   ASSERT_NE(sprite.m_sprite, nullptr);
   EXPECT_FLOAT_EQ(sprite.m_sprite->GetSize().x, 40.f);
   EXPECT_EQ(sprite.m_sprite->GetColor(), 0xffff0000u);
   EXPECT_EQ(sprite.m_sprite->GetTextureName(), "crate.png");
 
-  const AudioComponent& audio = ECSManager::GetComponent<AudioComponent>(crate);
+  const AudioComponent& audio = TestScene().Registry().get<AudioComponent>(crate);
   ASSERT_NE(audio.m_sound, nullptr);
   EXPECT_EQ(audio.m_sound->GetName(), "effect.wav");
   EXPECT_EQ(audio.volume, 64);
   EXPECT_TRUE(audio.loop);
   EXPECT_FALSE(audio.autoplay);
 
-  const RigidBodyComponent& rigidbody = ECSManager::GetComponent<RigidBodyComponent>(crate);
+  const RigidBodyComponent& rigidbody = TestScene().Registry().get<RigidBodyComponent>(crate);
   ASSERT_NE(rigidbody.m_rigidbody, nullptr);
   EXPECT_FALSE(rigidbody.m_rigidbody->m_init);
   EXPECT_EQ(*rigidbody.m_rigidbody->GetBodyType(), b2_dynamicBody);
@@ -454,21 +455,21 @@ TEST_F(PrefabIOTest, APrefabV2FixtureLoads) {
   const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "prefab_v2.xml";
 
   std::string error;
-  const uint32_t crate = PrefabIO::Instantiate(fixture, &error);
+  const uint32_t crate = PrefabIO::Instantiate(TestScene(), fixture, &error);
   ASSERT_NE(crate, kNullEntity) << error;
   ASSERT_EQ(CountEntities(), 1u);
 
-  ASSERT_TRUE(ECSManager::HasComponent<SpriteAppearanceComponent>(crate));
-  const SpriteAppearanceComponent& appearance = ECSManager::GetComponent<SpriteAppearanceComponent>(crate);
+  ASSERT_TRUE(TestScene().Registry().has<SpriteAppearanceComponent>(crate));
+  const SpriteAppearanceComponent& appearance = TestScene().Registry().get<SpriteAppearanceComponent>(crate);
   EXPECT_TRUE(appearance.flip_x);
   EXPECT_FALSE(appearance.flip_y);
   EXPECT_EQ(appearance.material, "mat_warm");
 
   // Version 2 predates the enabled group: a prefab that has none is enabled.
-  EXPECT_FALSE(ECSManager::HasComponent<EntityEnabledComponent>(crate));
-  EXPECT_TRUE(ECSManager::IsEntityEnabled(crate));
+  EXPECT_FALSE(TestScene().Registry().has<EntityEnabledComponent>(crate));
+  EXPECT_TRUE(TestScene().IsEntityEnabled(crate));
 
-  const BasicComponent& basic = ECSManager::GetComponent<BasicComponent>(crate);
+  const BasicComponent& basic = TestScene().Registry().get<BasicComponent>(crate);
   EXPECT_EQ(basic.m_name, "crate");
 }
 
@@ -478,14 +479,14 @@ TEST_F(PrefabIOTest, APrefabV3FixtureLoadsWithEveryComponentEnabled) {
   const std::filesystem::path fixture = std::filesystem::path{RSE_FIXTURES_DIR} / "prefab_v3.xml";
 
   std::string error;
-  const uint32_t crate = PrefabIO::Instantiate(fixture, &error);
+  const uint32_t crate = PrefabIO::Instantiate(TestScene(), fixture, &error);
   ASSERT_NE(crate, kNullEntity) << error;
   ASSERT_EQ(CountEntities(), 1u);
 
-  EXPECT_FALSE(ECSManager::HasComponent<DisabledComponentsComponent>(crate));
-  EXPECT_TRUE(ECSManager::IsComponentEnabled<SpriteComponent>(crate));
-  EXPECT_TRUE(ECSManager::IsComponentEnabled<AudioComponent>(crate));
-  EXPECT_TRUE(ECSManager::IsComponentEnabled<RigidBodyComponent>(crate));
+  EXPECT_FALSE(TestScene().Registry().has<DisabledComponentsComponent>(crate));
+  EXPECT_TRUE(TestScene().IsComponentEnabled<SpriteComponent>(crate));
+  EXPECT_TRUE(TestScene().IsComponentEnabled<AudioComponent>(crate));
+  EXPECT_TRUE(TestScene().IsComponentEnabled<RigidBodyComponent>(crate));
 }
 
 }  // namespace

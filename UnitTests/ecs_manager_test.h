@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 
+#include "scene_test_support.h"
 #include <ecs/components/include_list.h>
 #include <ecs/ecs_manager.h>
 #include <ecs/entity.h>
@@ -43,12 +44,12 @@ class ECSManagerTest : public ::testing::Test {
  protected:
   void SetUp() override {
     ECSManager::Clean();
-    ECSManager::ActiveScene().Clear();
+    TestScene().Clear();
   }
 
   void TearDown() override {
     ECSManager::Clean();
-    ECSManager::ActiveScene().Clear();
+    TestScene().Clear();
   }
 };
 
@@ -62,15 +63,15 @@ TEST_F(ECSManagerTest, TheRenderPhasesRunWithoutASimulationStep) {
   ECSManager::AddSystem(scene, SystemPhase::kScene);
 
   // A stopped scene: Core still draws it, but owes it no simulation step.
-  ECSManager::Update(1.0f);
+  ECSManager::Update(TestScene(), 1.0f);
 
   EXPECT_EQ(pre_scene->updates, 1);
   EXPECT_EQ(simulation->steps, 0);
   EXPECT_EQ(scene->updates, 1);
 
   // A playing scene: one step, then the frame that draws it.
-  ECSManager::UpdateSimulation(1.0f / 60.0f);
-  ECSManager::Update(0.0f);
+  ECSManager::UpdateSimulation(TestScene(), 1.0f / 60.0f);
+  ECSManager::Update(TestScene(), 0.0f);
 
   EXPECT_EQ(pre_scene->updates, 2);
   EXPECT_EQ(simulation->steps, 1);
@@ -89,84 +90,84 @@ TEST_F(ECSManagerTest, ASystemRunsAgainstTheSceneItIsGiven) {
   system.Update(other, 1.0f);
 
   EXPECT_EQ(system.count, 2u);
-  EXPECT_EQ(ECSManager::ActiveScene().EntityCount(), 0u);
+  EXPECT_EQ(TestScene().EntityCount(), 0u);
 }
 
 TEST_F(ECSManagerTest, ANewEntityIsGivenAnIdentity) {
-  const uint32_t first = ECSManager::CreateEntity();
-  const uint32_t second = ECSManager::CreateEntity();
+  const uint32_t first = TestScene().CreateEntity().Handle();
+  const uint32_t second = TestScene().CreateEntity().Handle();
 
-  ASSERT_TRUE(ECSManager::HasComponent<UuidComponent>(first));
-  ASSERT_TRUE(ECSManager::HasComponent<UuidComponent>(second));
+  ASSERT_TRUE(TestScene().Registry().has<UuidComponent>(first));
+  ASSERT_TRUE(TestScene().Registry().has<UuidComponent>(second));
 
-  const Uuid& first_id = ECSManager::GetComponent<UuidComponent>(first).m_uuid;
-  const Uuid& second_id = ECSManager::GetComponent<UuidComponent>(second).m_uuid;
+  const Uuid& first_id = TestScene().Registry().get<UuidComponent>(first).m_uuid;
+  const Uuid& second_id = TestScene().Registry().get<UuidComponent>(second).m_uuid;
 
   EXPECT_FALSE(first_id.IsNil());
   EXPECT_FALSE(second_id.IsNil());
   EXPECT_NE(first_id, second_id);
 
-  ECSManager::DestroyEntity(first);
-  ECSManager::DestroyEntity(second);
+  TestScene().Registry().destroy(first);
+  TestScene().Registry().destroy(second);
 }
 
 TEST_F(ECSManagerTest, AnEntityIsEnabledUntilItIsDisabled) {
-  const uint32_t entity = ECSManager::CreateEntity();
+  const uint32_t entity = TestScene().CreateEntity().Handle();
 
-  EXPECT_TRUE(ECSManager::IsEntityEnabled(entity));
-  EXPECT_FALSE(ECSManager::HasComponent<EntityEnabledComponent>(entity));
+  EXPECT_TRUE(TestScene().IsEntityEnabled(entity));
+  EXPECT_FALSE(TestScene().Registry().has<EntityEnabledComponent>(entity));
 
-  ECSManager::SetEntityEnabled(entity, false);
-  ASSERT_TRUE(ECSManager::HasComponent<EntityEnabledComponent>(entity));
-  EXPECT_FALSE(ECSManager::IsEntityEnabled(entity));
+  TestScene().SetEntityEnabled(entity, false);
+  ASSERT_TRUE(TestScene().Registry().has<EntityEnabledComponent>(entity));
+  EXPECT_FALSE(TestScene().IsEntityEnabled(entity));
 
-  ECSManager::SetEntityEnabled(entity, true);
-  EXPECT_TRUE(ECSManager::IsEntityEnabled(entity));
+  TestScene().SetEntityEnabled(entity, true);
+  EXPECT_TRUE(TestScene().IsEntityEnabled(entity));
 
-  ECSManager::DestroyEntity(entity);
+  TestScene().Registry().destroy(entity);
 }
 
 TEST_F(ECSManagerTest, AComponentIsEnabledUntilItIsDisabled) {
-  const uint32_t entity = ECSManager::CreateEntity();
-  ECSManager::AddComponent<SpriteComponent>(entity, static_cast<rse::Sprite*>(nullptr));
+  const uint32_t entity = TestScene().CreateEntity().Handle();
+  TestScene().Registry().assign<SpriteComponent>(entity, static_cast<rse::Sprite*>(nullptr));
 
-  EXPECT_TRUE(ECSManager::IsComponentEnabled<SpriteComponent>(entity));
-  EXPECT_FALSE(ECSManager::HasComponent<DisabledComponentsComponent>(entity));
+  EXPECT_TRUE(TestScene().IsComponentEnabled<SpriteComponent>(entity));
+  EXPECT_FALSE(TestScene().Registry().has<DisabledComponentsComponent>(entity));
 
-  ECSManager::SetComponentEnabled<SpriteComponent>(entity, false);
-  ASSERT_TRUE(ECSManager::HasComponent<DisabledComponentsComponent>(entity));
-  EXPECT_FALSE(ECSManager::IsComponentEnabled<SpriteComponent>(entity));
+  TestScene().SetComponentEnabled<SpriteComponent>(entity, false);
+  ASSERT_TRUE(TestScene().Registry().has<DisabledComponentsComponent>(entity));
+  EXPECT_FALSE(TestScene().IsComponentEnabled<SpriteComponent>(entity));
 
   // One component's bit does not switch the others off.
-  EXPECT_TRUE(ECSManager::IsComponentEnabled<AudioComponent>(entity));
-  EXPECT_TRUE(ECSManager::IsComponentEnabled<RigidBodyComponent>(entity));
+  EXPECT_TRUE(TestScene().IsComponentEnabled<AudioComponent>(entity));
+  EXPECT_TRUE(TestScene().IsComponentEnabled<RigidBodyComponent>(entity));
 
-  ECSManager::SetComponentEnabled<SpriteComponent>(entity, true);
-  EXPECT_TRUE(ECSManager::IsComponentEnabled<SpriteComponent>(entity));
-  EXPECT_FALSE(ECSManager::HasComponent<DisabledComponentsComponent>(entity));
+  TestScene().SetComponentEnabled<SpriteComponent>(entity, true);
+  EXPECT_TRUE(TestScene().IsComponentEnabled<SpriteComponent>(entity));
+  EXPECT_FALSE(TestScene().Registry().has<DisabledComponentsComponent>(entity));
 
-  ECSManager::DestroyEntity(entity);
+  TestScene().Registry().destroy(entity);
 }
 
 TEST_F(ECSManagerTest, DisablingTwoComponentsKeepsTheMaskUntilBothAreBack) {
-  const uint32_t entity = ECSManager::CreateEntity();
+  const uint32_t entity = TestScene().CreateEntity().Handle();
 
-  ECSManager::SetComponentEnabled<SpriteComponent>(entity, false);
-  ECSManager::SetComponentEnabled<AudioComponent>(entity, false);
+  TestScene().SetComponentEnabled<SpriteComponent>(entity, false);
+  TestScene().SetComponentEnabled<AudioComponent>(entity, false);
 
-  ASSERT_TRUE(ECSManager::HasComponent<DisabledComponentsComponent>(entity));
-  EXPECT_FALSE(ECSManager::IsComponentEnabled<SpriteComponent>(entity));
-  EXPECT_FALSE(ECSManager::IsComponentEnabled<AudioComponent>(entity));
+  ASSERT_TRUE(TestScene().Registry().has<DisabledComponentsComponent>(entity));
+  EXPECT_FALSE(TestScene().IsComponentEnabled<SpriteComponent>(entity));
+  EXPECT_FALSE(TestScene().IsComponentEnabled<AudioComponent>(entity));
 
-  ECSManager::SetComponentEnabled<SpriteComponent>(entity, true);
-  EXPECT_TRUE(ECSManager::HasComponent<DisabledComponentsComponent>(entity));
-  EXPECT_TRUE(ECSManager::IsComponentEnabled<SpriteComponent>(entity));
-  EXPECT_FALSE(ECSManager::IsComponentEnabled<AudioComponent>(entity));
+  TestScene().SetComponentEnabled<SpriteComponent>(entity, true);
+  EXPECT_TRUE(TestScene().Registry().has<DisabledComponentsComponent>(entity));
+  EXPECT_TRUE(TestScene().IsComponentEnabled<SpriteComponent>(entity));
+  EXPECT_FALSE(TestScene().IsComponentEnabled<AudioComponent>(entity));
 
-  ECSManager::SetComponentEnabled<AudioComponent>(entity, true);
-  EXPECT_FALSE(ECSManager::HasComponent<DisabledComponentsComponent>(entity));
+  TestScene().SetComponentEnabled<AudioComponent>(entity, true);
+  EXPECT_FALSE(TestScene().Registry().has<DisabledComponentsComponent>(entity));
 
-  ECSManager::DestroyEntity(entity);
+  TestScene().Registry().destroy(entity);
 }
 
 TEST_F(ECSManagerTest, UpdateRunsTheRenderPhasesButNotTheSimulation) {
@@ -178,13 +179,13 @@ TEST_F(ECSManagerTest, UpdateRunsTheRenderPhasesButNotTheSimulation) {
   ECSManager::AddSystem(simulation, SystemPhase::kSimulation);
   ECSManager::AddSystem(scene);
 
-  ECSManager::Update(0.f);
+  ECSManager::Update(TestScene(), 0.f);
 
   EXPECT_EQ(pre_scene->updates, 1);
   EXPECT_EQ(simulation->steps, 0);
   EXPECT_EQ(scene->updates, 1);
 
-  ECSManager::UpdateSimulation(1.0f / 60.0f);
+  ECSManager::UpdateSimulation(TestScene(), 1.0f / 60.0f);
 
   EXPECT_EQ(simulation->steps, 1);
   EXPECT_EQ(pre_scene->updates, 1);

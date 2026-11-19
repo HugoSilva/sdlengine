@@ -5,6 +5,7 @@
 #include <span>
 
 #include "editor_settings.h"
+#include <scene/editor_scene.h>
 #define INVALID_ENTITY_ID entt::null
 
 enum class Components { kAudio, kRigidbody, kSprite, kTransform };
@@ -110,14 +111,14 @@ class EditorManager {
   template <typename Component>
   static bool ShowComponentWidget() {
     if (m_selected_entity != INVALID_ENTITY_ID) {
-      return rse::ECSManager::HasComponent<Component>(m_selected_entity);
+      return EditorScene().Registry().has<Component>(m_selected_entity);
     }
     return false;
   }
 
   template <typename Component>
   static Component& GetComponent() {
-    return rse::ECSManager::GetComponent<Component>(m_selected_entity);
+    return EditorScene().Registry().get<Component>(m_selected_entity);
   }
 
   static void HandleCreateEntityEvent(const CreateEntity& event);

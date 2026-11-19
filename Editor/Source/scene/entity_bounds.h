@@ -26,6 +26,7 @@
 #include <glm/glm.hpp>
 
 #include <render/ortho_view.h>
+#include <scene/editor_scene.h>
 
 struct EntityBounds {
   glm::vec2 center{0.0f, 0.0f};
@@ -46,17 +47,17 @@ inline std::optional<EntityBounds> OfEntity(uint32_t entity) {
 
   // A disabled entity is not drawn, so it has nothing to frame, outline or
   // pick. It is still selectable from the hierarchy.
-  if (!rse::ECSManager::IsEntityEnabled(entity)) {
+  if (!EditorScene().IsEntityEnabled(entity)) {
     return std::nullopt;
   }
 
-  if (!rse::ECSManager::HasComponent<TransformComponent>(entity) ||
-      !rse::ECSManager::HasComponent<SpriteComponent>(entity)) {
+  if (!EditorScene().Registry().has<TransformComponent>(entity) ||
+      !EditorScene().Registry().has<SpriteComponent>(entity)) {
     return std::nullopt;
   }
 
-  TransformComponent& transform = rse::ECSManager::GetComponent<TransformComponent>(entity);
-  SpriteComponent& sprite = rse::ECSManager::GetComponent<SpriteComponent>(entity);
+  TransformComponent& transform = EditorScene().Registry().get<TransformComponent>(entity);
+  SpriteComponent& sprite = EditorScene().Registry().get<SpriteComponent>(entity);
 
   if (sprite.m_sprite == nullptr) {
     return std::nullopt;
@@ -77,15 +78,15 @@ inline std::optional<glm::vec2> PositionOf(uint32_t entity) {
     return std::nullopt;
   }
 
-  if (!rse::ECSManager::IsEntityEnabled(entity)) {
+  if (!EditorScene().IsEntityEnabled(entity)) {
     return std::nullopt;
   }
 
-  if (!rse::ECSManager::HasComponent<TransformComponent>(entity)) {
+  if (!EditorScene().Registry().has<TransformComponent>(entity)) {
     return std::nullopt;
   }
 
-  TransformComponent& transform = rse::ECSManager::GetComponent<TransformComponent>(entity);
+  TransformComponent& transform = EditorScene().Registry().get<TransformComponent>(entity);
   return glm::vec2(transform.position.x, transform.position.y);
 }
 
@@ -103,7 +104,7 @@ inline rse::Bounds2D Aabb(const EntityBounds& bounds) { return rse::BoundsOfCorn
 inline std::optional<rse::Bounds2D> OfScene() {
   std::optional<rse::Bounds2D> total;
 
-  rse::ECSManager::GetView<TransformComponent, SpriteComponent>().each(
+  EditorScene().Registry().view<TransformComponent, SpriteComponent>().each(
       [&total](uint32_t entity, TransformComponent&, SpriteComponent&) {
         const std::optional<EntityBounds> bounds = OfEntity(entity);
         if (!bounds) {

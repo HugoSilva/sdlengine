@@ -42,6 +42,15 @@ bool Scene::IsEntityEnabled(uint32_t entity) const {
   return m_registry.get<EntityEnabledComponent>(entity).m_enabled;
 }
 
+void Scene::SetEntityEnabled(uint32_t entity, bool enabled) {
+  if (!m_registry.has<EntityEnabledComponent>(entity)) {
+    m_registry.assign<EntityEnabledComponent>(entity, enabled);
+    return;
+  }
+
+  m_registry.get<EntityEnabledComponent>(entity).m_enabled = enabled;
+}
+
 void Scene::Clear() {
   m_registry.reset();
   m_camera = Camera{};

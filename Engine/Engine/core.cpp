@@ -269,7 +269,7 @@ void Core::Run() {
 
   // The UI is built before the scene is drawn: panels may need to know their
   // own size in order to size a render target (the viewport does this).
-  rse::ECSManager::UpdateUi();
+  rse::ECSManager::UpdateUi(SceneManager::ActiveScene());
 
   // The editor draws the scene into its viewport panel's framebuffer; a game
   // returns nullptr here and draws straight to the window.
@@ -303,7 +303,7 @@ void Core::Run() {
   const int steps = simulate ? m_timestep.Advance(m_delta_time) : 0;
 
   for (int step = 0; step < steps; ++step) {
-    rse::ECSManager::UpdateSimulation(m_timestep.Step());
+    rse::ECSManager::UpdateSimulation(SceneManager::ActiveScene(), m_timestep.Step());
   }
 
   // A stopped scene draws what it contains, not a mix of two steps that never
@@ -311,7 +311,7 @@ void Core::Run() {
   const float alpha = simulate ? m_timestep.Alpha() : 1.0f;
 
   m_renderer->Begin();
-  rse::ECSManager::Update(alpha);
+  rse::ECSManager::Update(SceneManager::ActiveScene(), alpha);
   m_renderer->End();
   m_renderer->Flush();
 

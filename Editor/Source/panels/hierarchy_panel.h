@@ -5,6 +5,7 @@
 #include <imgui.h>
 
 #include <layout/editor_panel.h>
+#include <scene/editor_scene.h>
 
 // ---------------------------------------------------------------------------
 // Entity list for the current scene.
@@ -59,7 +60,7 @@ class HierarchyPanel : public EditorPanel {
     // Counted up front so the toolbar can report it without a second pass.
     uint32_t visible_count = 0;
 
-    rse::ECSManager::GetView<BasicComponent>().each([&](auto entity, BasicComponent& basic) {
+    EditorScene().Registry().view<BasicComponent>().each([&](auto entity, BasicComponent& basic) {
       const uint32_t entity_id = static_cast<uint32_t>(entity);
 
       if (!m_filter.PassFilter(basic.m_name.c_str())) {
@@ -80,7 +81,7 @@ class HierarchyPanel : public EditorPanel {
       // A disabled entity stays in the list so it can be selected and turned
       // back on, but it is greyed out and marked: it is not in the scene the
       // viewport is drawing or the game is running.
-      const bool enabled = rse::ECSManager::IsEntityEnabled(entity_id);
+      const bool enabled = EditorScene().IsEntityEnabled(entity_id);
 
       if (!enabled) {
         ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
