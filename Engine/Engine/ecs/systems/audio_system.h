@@ -8,8 +8,8 @@
 
 // Applies each entity's playback settings to the sound it borrowed, and starts
 // the ones that ask to autoplay. The settings live on the component so they
-// survive a save and load; a Sound is shared, so the mixer track behind it is
-// one track -- playing the same file from two entities at once shares it.
+// survive a save and load; the Sound is shared, but every entity that plays it
+// gets a voice of its own, so two entities on one file are both heard.
 class AudioSystem : public BaseSystem {
  public:
   AudioSystem() : BaseSystem() {}
@@ -27,31 +27,35 @@ class AudioSystem : public BaseSystem {
         return;
       }
 
-      // A disabled entity or audio component is not in the scene, so a sound
-      // it already started has to stop. Clearing the flag lets autoplay start
-      // it again when it is re-enabled. Sound is shared by every entity that
-      // names the same file, so this stops that one track.
+      // A disabled entity or audio component is not in the scene, so the copy
+      // it started has to stop. Only that copy: another entity playing the same
+      // file has its own voice and keeps playing.
       if (!scene.IsEntityEnabled(entity) || !scene.IsComponentEnabled<AudioComponent>(entity)) {
-        if (audio.m_autoplay_started) {
-          sound->Stop();
-          audio.m_autoplay_started = false;
-        }
+        sound->Stop(audio.m_voice);
+        audio.m_voice = {};
+        audio.m_autoplay_started = false;
         return;
       }
 
-      sound->SetVolume(audio.mute ? 0 : std::clamp(audio.volume, 0, 128));
+      const int volume = audio.mute ? 0 : std::clamp(audio.volume, 0, rse::SoundManager::kMaxVolume);
 
       if (audio.autoplay && !audio.m_autoplay_started) {
         audio.m_autoplay_started = true;
-
-        if (audio.loop) {
-          sound->Loop();
-        } else {
-          sound->Play();
-        }
+        audio.m_voice = audio.loop ? sound->Loop() : sound->Play();
       } else if (!audio.autoplay) {
-        // Arming it again from the inspector has to play it again.
+        // Arming it again from the inspector has to play it again, and a loop
+        // that is still running has to be reachable: turning autoplay off
+        // stops the copy this component started.
+        if (audio.m_autoplay_started) sound->Stop(audio.m_voice);
+        audio.m_voice = {};
         audio.m_autoplay_started = false;
+      }
+
+      // A voice keeps the level its entity asked for. If the copy has ended and
+      // somebody else took the track, the handle no longer matches and this is
+      // a no-op, so the new owner's volume is safe.
+      if (audio.m_autoplay_started) {
+        sound->SetVolume(audio.m_voice, volume);
       }
     });
   }

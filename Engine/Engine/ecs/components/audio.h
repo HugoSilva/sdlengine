@@ -38,6 +38,12 @@ struct AudioComponent {
   // ticking it again plays again. Runtime state, never saved.
   bool m_autoplay_started{false};
 
+  // The copy of the shared Sound this entity started. A handle rather than the
+  // sound itself is what lets two entities play one file at once: each has a
+  // track of its own to stop and to set the volume on. Runtime state, never
+  // saved -- a loaded scene starts its own playback.
+  rse::Sound::Voice m_voice{};
+
   template <typename Archive>
   void serialize(Archive& archive) {
     // Saving writes a *reference* to the sound -- the asset registry's id when
