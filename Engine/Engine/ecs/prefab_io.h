@@ -27,8 +27,9 @@ class PrefabIO {
   // material reference. A version 4 prefab still loads with no material because
   // the reader matches fields by name. Version 6 appended the camera component
   // group; a version 5 prefab has no such group, so its entities are not
-  // cameras.
-  static constexpr int kFormatVersion{6};
+  // cameras. Version 7 appended the rigid body's sensor and filter fields; a
+  // version 6 body keeps the defaults a solid, all-colliding fixture had.
+  static constexpr int kFormatVersion{7};
 
   // The oldest prefab format this build still understands.
   static constexpr int kFirstFormatVersion{1};

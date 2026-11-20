@@ -332,6 +332,8 @@ TEST_F(PrefabIOTest, APrefabWithARigidBodyGetsAFreshBody) {
 
   Rigidbody* body = new Rigidbody(glm::vec2(640.f, 400.f), glm::vec2(40.f, 40.f));
   body->SetMaterial("0123456789abcdef");
+  body->SetSensor(true);
+  body->SetFilter(0x0004, 0x0005);
   *body->GetBodyType() = b2_dynamicBody;
   TestScene().Registry().assign<RigidBodyComponent>(crate, body);
 
@@ -356,6 +358,11 @@ TEST_F(PrefabIOTest, APrefabWithARigidBodyGetsAFreshBody) {
   EXPECT_EQ(*first_body->GetBodyType(), b2_dynamicBody);
   EXPECT_EQ(first_body->GetMaterial(), "0123456789abcdef");
   EXPECT_EQ(second_body->GetMaterial(), "0123456789abcdef");
+  EXPECT_TRUE(first_body->IsSensor());
+  EXPECT_EQ(0x0004, first_body->GetCategoryBits());
+  EXPECT_EQ(0x0005, first_body->GetMaskBits());
+  EXPECT_EQ(0x0004, second_body->GetCategoryBits());
+  EXPECT_EQ(0x0005, second_body->GetMaskBits());
 }
 
 TEST_F(PrefabIOTest, AMissingPrefabLeavesTheSceneAlone) {

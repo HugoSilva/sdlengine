@@ -68,6 +68,21 @@ class Rigidbody {
   // after Init they are what the referenced material supplied.
   inline const rse::PhysicsMaterial& GetMaterialValues() const { return m_material_values; }
 
+  // The fixture's contact behaviour. A sensor reports contacts but pushes
+  // nothing; the filter decides which fixtures may touch at all. Both are saved
+  // with the body and applied when PhysicsSystem builds it. On a body that is
+  // already built, the setters update the live fixture, so an inspector edit is
+  // heard on the next step.
+  //
+  // A pair collides when each side's mask accepts the other side's category:
+  // (a.mask & b.category) != 0 and (b.mask & a.category) != 0.
+  inline bool IsSensor() const { return m_sensor; }
+  void SetSensor(bool sensor);
+
+  inline std::uint16_t GetCategoryBits() const { return m_category; }
+  inline std::uint16_t GetMaskBits() const { return m_mask; }
+  void SetFilter(std::uint16_t category, std::uint16_t mask);
+
   // The entity that owns this body. Runtime state, written by PhysicsSystem
   // before the body is built so a contact can name two entities; never saved.
   // kNoEntity until then, and for a body the engine did not build.
@@ -84,7 +99,9 @@ class Rigidbody {
   void save(Archive& archive) const {
     const std::string body_type = BodyTypeName(m_body_type);
     archive(cereal::make_nvp("Position", m_position), cereal::make_nvp("Size", m_size),
-            cereal::make_nvp("BodyType", body_type), cereal::make_nvp("Material", m_material));
+            cereal::make_nvp("BodyType", body_type), cereal::make_nvp("Material", m_material),
+            cereal::make_nvp("Sensor", m_sensor), cereal::make_nvp("Category", m_category),
+            cereal::make_nvp("Mask", m_mask));
   }
 
   // No default constructor: cereal builds the body through this and reads the
@@ -107,6 +124,21 @@ class Rigidbody {
     // older files loading without a fallback to the removed values.
     if (NextNodeIs(archive, "Material")) {
       archive(cereal::make_nvp("Material", construct->m_material));
+    }
+
+    // Sensor and filter were added after the material. A file written before
+    // them has no nodes here; the body keeps the defaults, which is a solid
+    // fixture with category 1 that collides with everything.
+    if (NextNodeIs(archive, "Sensor")) {
+      archive(cereal::make_nvp("Sensor", construct->m_sensor));
+    }
+
+    if (NextNodeIs(archive, "Category")) {
+      archive(cereal::make_nvp("Category", construct->m_category));
+    }
+
+    if (NextNodeIs(archive, "Mask")) {
+      archive(cereal::make_nvp("Mask", construct->m_mask));
     }
   }
 
@@ -131,6 +163,12 @@ class Rigidbody {
   std::string m_material;
   glm::vec2 m_position{0.f, 0.f};
   glm::vec2 m_size{0.f, 0.f};
+
+  // Fixture contact behaviour. The defaults are Box2D's: a solid fixture that
+  // collides with every category. Saved with the body.
+  bool m_sensor{false};
+  std::uint16_t m_category{0x0001};
+  std::uint16_t m_mask{0xFFFF};
 
   // Interpolation state, not saved: it describes the last two steps, which a
   // scene file does not contain.

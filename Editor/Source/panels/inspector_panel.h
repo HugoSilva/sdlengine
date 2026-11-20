@@ -1198,9 +1198,45 @@ class InspectorPanel : public EditorPanel {
 
         EndLabeledRow();
 
+        BeginLabeledRow("rigidbody_sensor", "Sensor");
+        bool sensor = rigidbody->IsSensor();
+        if (ImGui::Checkbox("##sensor", &sensor)) {
+          rigidbody->SetSensor(sensor);
+        }
+        MarkDirtyIfEdited();
+        EndLabeledRow();
+
+        DrawRigidbodyFilter(rigidbody);
+
         DrawRigidbodyMaterial(rigidbody);
       }
     }
+  }
+
+  // The 16-bit filter values are hexadecimal because they are bit masks: typing
+  // 0x0003 as "3" in a bitmask field is the kind of thing that reads wrong.
+  void DrawRigidbodyFilter(Rigidbody* rigidbody) {
+    unsigned short category = rigidbody->GetCategoryBits();
+    BeginLabeledRow("rigidbody_category", "Category");
+    ImGui::SetNextItemWidth(-1.0f);
+    if (ImGui::InputScalar("##category", ImGuiDataType_U16, &category, nullptr, nullptr, "%04X",
+                           ImGuiInputTextFlags_CharsHexadecimal)) {
+      rigidbody->SetFilter(category, rigidbody->GetMaskBits());
+    }
+    MarkDirtyIfEdited();
+    EndLabeledRow();
+
+    unsigned short mask = rigidbody->GetMaskBits();
+    BeginLabeledRow("rigidbody_mask", "Mask");
+    ImGui::SetNextItemWidth(-1.0f);
+    if (ImGui::InputScalar("##mask", ImGuiDataType_U16, &mask, nullptr, nullptr, "%04X",
+                           ImGuiInputTextFlags_CharsHexadecimal)) {
+      rigidbody->SetFilter(rigidbody->GetCategoryBits(), mask);
+    }
+    MarkDirtyIfEdited();
+    EndLabeledRow();
+
+    ImGui::TextDisabled("A pair collides when each mask accepts the other's category.");
   }
 
   // The material field mirrors the sprite's: clicking the name reveals the
