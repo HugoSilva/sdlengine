@@ -166,12 +166,19 @@ void SpriteBatchBuilder::Build() {
   // deliberately not a key any more: a batch's slot table already holds every
   // texture it samples, so ordering by texture would only reorder sprites that
   // overlap at the same depth. Submission order is what an author expects.
-  std::sort(m_draws.begin(), m_draws.end(), [](const SpriteDraw& a, const SpriteDraw& b) {
+  const auto ordered = [](const SpriteDraw& a, const SpriteDraw& b) {
     if (a.layer != b.layer) return a.layer < b.layer;
     if (a.depth != b.depth) return a.depth > b.depth;
     if (a.material != b.material) return std::less<MaterialShader*>{}(a.material, b.material);
     return a.sequence < b.sequence;
-  });
+  };
+
+  // A frame that arrives already ordered -- one layer submitted by one system,
+  // the common case -- would only be shuffled and put back by the sort. Checking
+  // is one pass; sorting is n log n.
+  if (!std::is_sorted(m_draws.begin(), m_draws.end(), ordered)) {
+    std::sort(m_draws.begin(), m_draws.end(), ordered);
+  }
 
   const auto close_batch = [this](const std::array<std::uint32_t, kMaxTextureSlots>& textures,
                                   std::size_t texture_count, MaterialShader* material, std::size_t first_vertex,
