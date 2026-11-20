@@ -484,8 +484,11 @@ to the entity, not to the shared sound: `Volume`, `Mute`, `Loop` and `Autoplay`
 sit beside the reference, so two entities using one file can have different
 volumes, and one can loop while the other plays once. `AudioSystem` applies
 them, and starts a sound that asks to autoplay exactly once -- a one-shot is not
-restarted on the next frame. A file that cannot be loaded does not fail the load
-either: the entity keeps the reference and stays silent.
+restarted on the next frame. An entity that plays a file gets a **voice** of its
+own -- one mixer track from that sound's pool -- so two entities on the same
+file are both heard, and stopping or re-levelling one leaves the other playing.
+A file that cannot be loaded does not fail the load either: the entity keeps the
+reference and stays silent.
 
 `SpriteAppearanceComponent` stores the sprite's flip flags and a **material
 reference**: an asset id, or a name/path that resolves through the registry the
@@ -852,9 +855,11 @@ keeping them in step.
 
 ## Limits and follow-ups
 
-- Audio is 2D and one mixer track per sound: two entities that play the same file
-  at the same time share that track, so the gain applied is the last entity's.
-  The settings themselves are per entity and survive a save.
+- Audio is 2D: a sound plays at the same level everywhere, with no positional or
+  distance model. Each sound pools `Sound::kMaxVoices` (8) mixer tracks; a ninth
+  simultaneous copy takes the oldest voice, so a burst of one-shots eventually
+  cuts the first one off rather than growing without a bound. The settings
+  themselves are per entity and survive a save.
 - Physics is one world with fixed gravity and a fixed time step, owned by
   `PhysicsSystem`; there is no way to change either from a scene yet.
 - There are no input bindings for the mouse or a gamepad: `input` binds keys,
