@@ -8,7 +8,7 @@
 #include <scene/editor_scene.h>
 #define INVALID_ENTITY_ID entt::null
 
-enum class Components { kAudio, kRigidbody, kSprite, kTransform };
+enum class Components { kAudio, kRigidbody, kSprite, kTransform, kCamera };
 
 class EditorManager {
  public:

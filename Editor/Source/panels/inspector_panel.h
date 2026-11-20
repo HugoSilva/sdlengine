@@ -78,6 +78,7 @@ class InspectorPanel : public EditorPanel {
     DrawSprite();
     DrawAudio();
     DrawRigidbody();
+    DrawCamera();
 
     if (EditorManager::ShowComponentWidget<BasicComponent>()) {
       ImGui::Separator();
@@ -1543,6 +1544,34 @@ class InspectorPanel : public EditorPanel {
     return removed;
   }
 
+  // The camera's pose is the entity's transform, so this section only holds the
+  // view's own settings. Several cameras can exist; the enabled one with the
+  // highest priority wins and ties go to the lower entity id.
+  void DrawCamera() {
+    if (!EditorManager::ShowComponentWidget<CameraComponent>()) {
+      return;
+    }
+
+    if (DrawComponentHeaderWithEnabled<CameraComponent>("camera", "Camera", Components::kCamera, true)) {
+      CameraComponent& component = EditorManager::GetComponent<CameraComponent>();
+
+      BeginLabeledRow("camera_zoom", "Zoom");
+      ImGui::SetNextItemWidth(-1.0f);
+      ImGui::DragFloat("##zoom", &component.zoom, 0.01f, rse::kOrthoMinZoom, rse::kOrthoMaxZoom, "%.2f");
+      MarkDirtyIfEdited();
+      EndLabeledRow();
+
+      BeginLabeledRow("camera_priority", "Priority");
+      ImGui::SetNextItemWidth(-1.0f);
+      ImGui::InputInt("##priority", &component.priority);
+      MarkDirtyIfEdited();
+      EndLabeledRow();
+
+      ImGui::TextDisabled("Position comes from the Transform.");
+      ImGui::TextDisabled("The highest priority enabled camera wins.");
+    }
+  }
+
   void DrawAddComponentMenu() {
     if (ImGui::Button("Add Component")) {
       ImGui::OpenPopup("add_component");
@@ -1557,6 +1586,9 @@ class InspectorPanel : public EditorPanel {
       }
       if (ImGui::MenuItem("Sprite")) {
         EventManager::GetEventDispatcher()->trigger<EditorManager::AddComponent>(Components::kSprite);
+      }
+      if (ImGui::MenuItem("Camera")) {
+        EventManager::GetEventDispatcher()->trigger<EditorManager::AddComponent>(Components::kCamera);
       }
       ImGui::EndPopup();
     }
