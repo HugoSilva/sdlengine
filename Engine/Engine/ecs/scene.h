@@ -9,11 +9,13 @@
 #include <glm/glm.hpp>
 
 #include <ecs/components/disabled_components.h>
+#include <physics/collision_event.h>
 
 class b2World;
 
 namespace rse {
 class Entity;
+class CollisionListener;
 
 // The world one scene is made of: every entity and every component it holds,
 // plus the physics world those entities' bodies live in.
@@ -142,6 +144,14 @@ class Scene {
   Camera& GetCamera() { return m_camera; }
   const Camera& GetCamera() const { return m_camera; }
 
+  // The contact events recorded since the current frame's simulation began.
+  // A game system reads this in the scene phase, after the frame's fixed steps
+  // have run; the engine clears it before the next frame's steps, so a contact
+  // is delivered once. See physics/collision_event.h for the shape of an event.
+  CollisionEvents& GetCollisionEvents() { return m_collision_events; }
+  const CollisionEvents& GetCollisionEvents() const { return m_collision_events; }
+  void ClearCollisionEvents() { m_collision_events.Clear(); }
+
   // Fills this scene with a copy of `source`: its camera, then every entity
   // with the uuid it has there. What an entity owns is copied rather than
   // shared -- a Sprite, a Rigidbody -- so writing through one scene never
@@ -170,5 +180,12 @@ class Scene {
   entt::DefaultRegistry m_registry;
 
   Camera m_camera;
+
+  // The contact queue and the listener that fills it. The world holds a raw
+  // pointer to the listener, so the listener is destroyed before the world; it
+  // is declared after the registry and camera for the same reason everything
+  // else is declared after the world -- the world goes last.
+  CollisionEvents m_collision_events;
+  std::unique_ptr<CollisionListener> m_collision_listener;
 };
 }  // namespace rse

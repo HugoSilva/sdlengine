@@ -559,6 +559,16 @@ the same state as one added in the editor, and `PhysicsSystem` creates the
 resolve the body itself against -- unlike a texture or a sound; the physics
 material manager resolves the reference instead.
 
+Contacts are reported as events. `Scene::GetCollisionEvents()` holds the pairs
+that began or stopped touching during the current frame's simulation: two entity
+ids and whether either fixture is a sensor. Box2D's callbacks run in the middle
+of a step, where creating or destroying bodies is forbidden, so the listener
+only records; game code reads the queue in a scene-phase system, after the
+frame's fixed steps have run, and the engine clears it before the next frame's
+steps. The pair follows Box2D's fixture order, so compare the two ids as a set
+rather than expecting a particular first. A body that is destroyed reports its
+contacts as ended before it goes.
+
 ## Prefab files
 
 A prefab is one entity saved on its own, so it can be placed into any scene. Its

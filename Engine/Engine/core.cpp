@@ -302,6 +302,11 @@ void Core::Run() {
   const bool simulate = SceneLogicEnabled();
   const int steps = simulate ? m_timestep.Advance(m_delta_time) : 0;
 
+  // Contacts belong to the frame: the steps below append to an empty queue and
+  // the scene phase after them reads it. Clearing before the loop also means a
+  // frame that runs no step does not replay the previous frame's events.
+  SceneManager::ActiveScene().ClearCollisionEvents();
+
   for (int step = 0; step < steps; ++step) {
     rse::ECSManager::UpdateSimulation(SceneManager::ActiveScene(), m_timestep.Step());
   }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 
 #include <box2d/box2d.h>
@@ -67,6 +68,13 @@ class Rigidbody {
   // after Init they are what the referenced material supplied.
   inline const rse::PhysicsMaterial& GetMaterialValues() const { return m_material_values; }
 
+  // The entity that owns this body. Runtime state, written by PhysicsSystem
+  // before the body is built so a contact can name two entities; never saved.
+  // kNoEntity until then, and for a body the engine did not build.
+  static constexpr std::uint32_t kNoEntity{0xFFFFFFFFu};
+  inline std::uint32_t GetEntity() const { return m_entity; }
+  inline void SetEntity(std::uint32_t entity) { m_entity = entity; }
+
   // Only the inputs are saved: position, size, the body type and the physics
   // material reference. m_body points into a world that does not exist while
   // the scene is a file, and m_init only says Init has run, so both stay out of
@@ -132,4 +140,8 @@ class Rigidbody {
   float m_current_rotation{0.f};
 
   b2BodyType m_body_type{b2_staticBody};
+
+  // The entity that owns the body, for contact events. Not saved: a loaded
+  // body is not in a world yet and gets the entity PhysicsSystem puts it on.
+  std::uint32_t m_entity{kNoEntity};
 };

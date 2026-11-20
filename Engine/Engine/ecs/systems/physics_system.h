@@ -40,6 +40,7 @@ class PhysicsSystem : public BaseSystem {
           }
 
           if (!rigid.m_rigidbody->m_init) {
+            rigid.m_rigidbody->SetEntity(entity);
             const rse::PhysicsMaterialAsset* material =
                 rse::PhysicsMaterialManager::GetOrLoad(rigid.m_rigidbody->GetMaterial());
             rigid.m_rigidbody->Init(world, material != nullptr ? material->material : rse::PhysicsMaterial{});

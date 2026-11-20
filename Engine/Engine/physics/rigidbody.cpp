@@ -37,6 +37,12 @@ void Rigidbody::Init(b2World* world, const rse::PhysicsMaterial& material) {
 
   m_body = world->CreateBody(&body_definition);
 
+  // Contacts name entities, and the listener reaches the entity through the
+  // body. The Rigidbody outlives its body: the destructor destroys the body
+  // before the component releases it. The pointer field is written directly
+  // because this Box2D build does not export SetUserData().
+  m_body->GetUserData().pointer = reinterpret_cast<uintptr_t>(this);
+
   b2PolygonShape dynamic_box;
   dynamic_box.SetAsBox(m_size.x, m_size.y);
 
