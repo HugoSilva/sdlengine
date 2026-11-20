@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 
 #include <gtest/gtest.h>
 
@@ -295,4 +296,81 @@ TEST_F(PhysicsSystemTest, OneSecondOfFallIsTheSameAtEveryFrameRate) {
 
   TestScene().Clear();
 }
+// A contact is reported as a pair of entity ids, whichever fixture Box2D made
+// first, so the comparison here ignores order.
+bool HasEvent(const std::vector<CollisionEvent>& events, uint32_t a, uint32_t b) {
+  for (const CollisionEvent& event : events) {
+    if ((event.entity_a == a && event.entity_b == b) || (event.entity_a == b && event.entity_b == a)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// The first update builds the bodies after the step; the next step is the one
+// that sees them and produces the contact.
+TEST_F(PhysicsSystemTest, OverlappingBodiesProduceABeginEvent) {
+  const uint32_t floor = CreateBody("floor", 0.f, b2_staticBody);
+  const uint32_t crate = CreateBody("crate", 0.f, b2_dynamicBody);
+
+  PhysicsSystem physics;
+  physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
+  physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
+
+  const CollisionEvents& events = TestScene().GetCollisionEvents();
+  ASSERT_EQ(1u, events.begun.size());
+  EXPECT_TRUE(HasEvent(events.begun, floor, crate));
+  EXPECT_FALSE(events.begun[0].sensor);
+
+  // The body names the entity it belongs to, which is what the event carries.
+  EXPECT_EQ(crate, TestScene().Registry().get<RigidBodyComponent>(crate).m_rigidbody->GetEntity());
+}
+
+TEST_F(PhysicsSystemTest, AContactIsReportedOnceWhileItLasts) {
+  CreateBody("floor", 0.f, b2_staticBody);
+  CreateBody("crate", 0.f, b2_dynamicBody);
+
+  PhysicsSystem physics;
+  physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
+
+  for (int step = 0; step < 30; ++step) {
+    physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
+  }
+
+  EXPECT_EQ(1u, TestScene().GetCollisionEvents().begun.size());
+  EXPECT_TRUE(TestScene().GetCollisionEvents().ended.empty());
+}
+
+TEST_F(PhysicsSystemTest, DestroyingABodyEndsItsContacts) {
+  const uint32_t floor = CreateBody("floor", 0.f, b2_staticBody);
+  const uint32_t crate = CreateBody("crate", 0.f, b2_dynamicBody);
+
+  PhysicsSystem physics;
+  physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
+  physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
+  ASSERT_EQ(1u, TestScene().GetCollisionEvents().begun.size());
+
+  // DestroyBody reports EndContact while the contact still exists.
+  TestScene().Registry().destroy(crate);
+
+  const CollisionEvents& events = TestScene().GetCollisionEvents();
+  ASSERT_EQ(1u, events.ended.size());
+  EXPECT_TRUE(HasEvent(events.ended, floor, crate));
+}
+
+TEST_F(PhysicsSystemTest, ClearingTheQueueForgetsTheFrame) {
+  CreateBody("floor", 0.f, b2_staticBody);
+  CreateBody("crate", 0.f, b2_dynamicBody);
+
+  PhysicsSystem physics;
+  physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
+  physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
+  ASSERT_FALSE(TestScene().GetCollisionEvents().Empty());
+
+  TestScene().ClearCollisionEvents();
+
+  EXPECT_TRUE(TestScene().GetCollisionEvents().Empty());
+}
+
 }  // namespace
