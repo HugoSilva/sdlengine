@@ -520,6 +520,8 @@ TEST_F(SceneIOTest, ARigidBodyComponentRoundTrips) {
   const uint32_t crate = CreateSprite("crate", glm::vec3(640.f, 400.f, 0.f));
   Rigidbody* crate_body = new Rigidbody(glm::vec2(640.f, 400.f), glm::vec2(40.f, 40.f));
   crate_body->SetMaterial("0123456789abcdef");
+  crate_body->SetSensor(true);
+  crate_body->SetFilter(0x0002, 0x0003);
   *crate_body->GetBodyType() = b2_dynamicBody;
   TestScene().Registry().assign<RigidBodyComponent>(crate, crate_body);
 
@@ -548,6 +550,9 @@ TEST_F(SceneIOTest, ARigidBodyComponentRoundTrips) {
         } else if (basic.m_name == "crate") {
           EXPECT_EQ(*rigid.m_rigidbody->GetBodyType(), b2_dynamicBody);
           EXPECT_EQ(rigid.m_rigidbody->GetMaterial(), "0123456789abcdef");
+          EXPECT_TRUE(rigid.m_rigidbody->IsSensor());
+          EXPECT_EQ(0x0002, rigid.m_rigidbody->GetCategoryBits());
+          EXPECT_EQ(0x0003, rigid.m_rigidbody->GetMaskBits());
         } else {
           ADD_FAILURE() << "unexpected entity " << basic.m_name;
         }

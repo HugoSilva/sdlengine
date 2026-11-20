@@ -373,4 +373,69 @@ TEST_F(PhysicsSystemTest, ClearingTheQueueForgetsTheFrame) {
   EXPECT_TRUE(TestScene().GetCollisionEvents().Empty());
 }
 
+TEST_F(PhysicsSystemTest, ASensorReportsContactsWithoutPushing) {
+  const uint32_t trigger = CreateBody("trigger", 0.f, b2_staticBody);
+  const uint32_t crate = CreateBody("crate", 0.f, b2_dynamicBody);
+
+  TestScene().Registry().get<RigidBodyComponent>(trigger).m_rigidbody->SetSensor(true);
+
+  PhysicsSystem physics;
+  physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
+  physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
+
+  const CollisionEvents& events = TestScene().GetCollisionEvents();
+  ASSERT_EQ(1u, events.begun.size());
+  EXPECT_TRUE(events.begun[0].sensor);
+
+  for (int step = 0; step < 30; ++step) {
+    physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
+  }
+
+  // A solid trigger would have pushed the crate up out of the 8-unit half
+  // extent. A sensor lets it keep falling through.
+  const TransformComponent& transform = TestScene().Registry().get<TransformComponent>(crate);
+  EXPECT_LT(transform.position.y, 0.f);
+}
+
+TEST_F(PhysicsSystemTest, FilterMasksSuppressContacts) {
+  const uint32_t floor = CreateBody("floor", 0.f, b2_staticBody);
+  const uint32_t crate = CreateBody("crate", 0.f, b2_dynamicBody);
+
+  Rigidbody* floor_body = TestScene().Registry().get<RigidBodyComponent>(floor).m_rigidbody.get();
+  Rigidbody* crate_body = TestScene().Registry().get<RigidBodyComponent>(crate).m_rigidbody.get();
+  ASSERT_NE(floor_body, nullptr);
+  ASSERT_NE(crate_body, nullptr);
+
+  // The floor's mask accepts category 1 only, and the crate is category 2, so
+  // the pair must not collide.
+  crate_body->SetFilter(0x0002, 0xFFFF);
+  floor_body->SetFilter(0x0001, 0x0001);
+
+  PhysicsSystem physics;
+  physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
+  physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
+
+  EXPECT_TRUE(TestScene().GetCollisionEvents().begun.empty());
+}
+
+TEST_F(PhysicsSystemTest, ChangingAFilterEndsAContact) {
+  const uint32_t floor = CreateBody("floor", 0.f, b2_staticBody);
+  const uint32_t crate = CreateBody("crate", 0.f, b2_dynamicBody);
+
+  PhysicsSystem physics;
+  physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
+  physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
+  ASSERT_EQ(1u, TestScene().GetCollisionEvents().begun.size());
+
+  // Refiltering the live fixture destroys the contact; Box2D reports the end
+  // before the pair can collide again.
+  Rigidbody* floor_body = TestScene().Registry().get<RigidBodyComponent>(floor).m_rigidbody.get();
+  ASSERT_NE(floor_body, nullptr);
+  floor_body->SetFilter(0x0001, 0x0000);
+
+  physics.UpdateSimulation(TestScene(), 1.0f / 60.0f);
+
+  EXPECT_EQ(1u, TestScene().GetCollisionEvents().ended.size());
+}
+
 }  // namespace
