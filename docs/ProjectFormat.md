@@ -404,7 +404,8 @@ that writes data, never a pointer, so saving and loading is a round trip:
 - `TransformComponent` -- position, rotation, scale.
 - `SpriteComponent` -- size, colour, texture reference.
 - `AudioComponent` -- sound name, volume, mute, loop, autoplay.
-- `RigidBodyComponent` -- position, size, body type, physics material reference.
+- `RigidBodyComponent` -- position, size, body type, physics material reference,
+  sensor flag, category and mask.
 - `SpriteAppearanceComponent` -- flip X, flip Y, material reference.
 - `EntityEnabledComponent` -- whether the entity takes part in the scene. A
   missing group means enabled, which is what every entity written before
@@ -532,9 +533,11 @@ the rigid body's fields: density and friction moved into a physics material
 asset and the body gained a material reference. The body is still read by field
 name, so a version 9 file opens -- its `<Density>` and `<Friction>` nodes are
 ignored and its body has no material, which uses the defaults. Version 11
-appended the entity uuid group, and version 12 the camera component group. A
-version 10 or 11 file simply has no camera entity, so the framing in its
-`<camera>` is the one it was drawn with. The example above
+appended the entity uuid group, version 12 the camera component group, and
+version 13 the rigid body's `Sensor`, `Category` and `Mask` fields. A version 10
+or 11 file simply has no camera entity, so the framing in its `<camera>` is the
+one it was drawn with; a version 12 body is solid and collides with every
+category, which is what it did before the fields existed. The example above
 is a version 2 file, which is why it has neither the camera nor the audio and
 rigid-body groups, and names its texture; a current file has all of them and
 stores ids. `UnitTests/fixtures/scene_v2.xml` through `scene_v8.xml` are the
@@ -569,6 +572,16 @@ steps. The pair follows Box2D's fixture order, so compare the two ids as a set
 rather than expecting a particular first. A body that is destroyed reports its
 contacts as ended before it goes.
 
+A body's fixture also carries two settings that shape those contacts. `Sensor`
+makes it report contacts without pushing anything, which is what a trigger or
+a pickup area is. `Category` and `Mask` are 16-bit filter values: a pair
+collides when each side's mask accepts the other side's category, so
+`(a.Mask & b.Category) != 0` and `(b.Mask & a.Category) != 0`. The defaults are
+solid, category 1, mask all (`0xFFFF`), which collides with everything; changing
+either on a built body rebuilds the fixture filter immediately. Version 13 added
+the three fields; a version 12 body loads with those defaults, so its contacts
+are unchanged.
+
 ## Prefab files
 
 A prefab is one entity saved on its own, so it can be placed into any scene. Its
@@ -599,7 +612,9 @@ the rigid body's fields with scene version 10: density and friction moved into
 a physics material asset and the body gained a material reference. A version 4
 prefab still loads; its removed density and friction nodes are ignored and its
 body has no material. Version 6 appended the camera component, so a version 5
-prefab places an entity that is not a camera.
+prefab places an entity that is not a camera. Version 7 appended the body's
+sensor and filter fields; a version 6 body is solid and collides with
+everything, as it did before.
 
 The entity ids in the file are **not restored**. `PrefabIO::Instantiate` reads
 the whole file into a scratch registry first, then copies each entity into the

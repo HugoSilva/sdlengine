@@ -26,7 +26,7 @@ class SceneIO {
   // The scene format this build writes, and the newest it can read. Files in
   // [kFirstFormatVersion, kFormatVersion] are read -- older ones through the
   // gates in LoadEntities -- and anything newer is refused.
-  static constexpr int kFormatVersion{12};
+  static constexpr int kFormatVersion{13};
 
   // The oldest scene file this build still understands. Version 2 changed what
   // a sprite stores for its texture -- a name instead of the texture itself --
@@ -52,7 +52,9 @@ class SceneIO {
   // group and every entity gets a generated uuid as it loads, so it keeps
   // playing exactly as it did. Version 12 appended the camera component group;
   // a version 11 scene has no such group, so it keeps the camera it was saved
-  // with and no entity is a camera.
+  // with and no entity is a camera. Version 13 appended the rigid body's sensor
+  // and filter fields; a version 12 body keeps the defaults -- solid, category
+  // 1, mask all -- which is how it collided before.
   static constexpr int kFirstFormatVersion{2};
 
   // Writes `scene`'s registry and camera to `file`. The file is written to a

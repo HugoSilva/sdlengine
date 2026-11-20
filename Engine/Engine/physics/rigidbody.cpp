@@ -9,6 +9,9 @@ Rigidbody* Rigidbody::Clone() const {
   clone->m_material = m_material;
   clone->m_material_values = m_material_values;
   clone->m_body_type = m_body_type;
+  clone->m_sensor = m_sensor;
+  clone->m_category = m_category;
+  clone->m_mask = m_mask;
   return clone;
 }
 
@@ -51,6 +54,9 @@ void Rigidbody::Init(b2World* world, const rse::PhysicsMaterial& material) {
   fixture_def.density = material.density;
   fixture_def.friction = material.friction;
   fixture_def.restitution = material.restitution;
+  fixture_def.isSensor = m_sensor;
+  fixture_def.filter.categoryBits = m_category;
+  fixture_def.filter.maskBits = m_mask;
 
   m_body->CreateFixture(&fixture_def);
 
@@ -71,6 +77,35 @@ void Rigidbody::SetEnabled(bool enabled) {
   }
 
   m_body->SetEnabled(enabled);
+}
+
+void Rigidbody::SetSensor(bool sensor) {
+  m_sensor = sensor;
+
+  if (m_body == nullptr) {
+    return;
+  }
+
+  for (b2Fixture* fixture = m_body->GetFixtureList(); fixture != nullptr; fixture = fixture->GetNext()) {
+    fixture->SetSensor(sensor);
+  }
+}
+
+void Rigidbody::SetFilter(std::uint16_t category, std::uint16_t mask) {
+  m_category = category;
+  m_mask = mask;
+
+  if (m_body == nullptr) {
+    return;
+  }
+
+  for (b2Fixture* fixture = m_body->GetFixtureList(); fixture != nullptr; fixture = fixture->GetNext()) {
+    b2Filter filter = fixture->GetFilterData();
+    filter.categoryBits = category;
+    filter.maskBits = mask;
+    fixture->SetFilterData(filter);
+    fixture->Refilter();
+  }
 }
 
 void Rigidbody::Update(glm::vec3& position, glm::vec3& rotation) {
