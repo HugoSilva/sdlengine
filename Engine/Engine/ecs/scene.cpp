@@ -7,9 +7,13 @@
 #include <ecs/components/uuid.h>
 #include <ecs/entity.h>
 #include <ecs/entity_copy.h>
+#include <physics/collision_listener.h>
 
 namespace rse {
-Scene::Scene() : m_world(std::make_unique<b2World>(b2Vec2{0.0f, -10.0f})) {}
+Scene::Scene() : m_world(std::make_unique<b2World>(b2Vec2{0.0f, -10.0f})) {
+  m_collision_listener = std::make_unique<CollisionListener>(&m_collision_events);
+  m_world->SetContactListener(m_collision_listener.get());
+}
 
 // The registry is destroyed before the world even without this: both are
 // members, and the world is declared first. Keeping the destructor here is what
@@ -54,6 +58,7 @@ void Scene::SetEntityEnabled(uint32_t entity, bool enabled) {
 void Scene::Clear() {
   m_registry.reset();
   m_camera = Camera{};
+  m_collision_events.Clear();
 }
 
 void Scene::CopyFrom(const Scene& source) {
