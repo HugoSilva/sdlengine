@@ -126,6 +126,21 @@ void OpenGLRenderer::SubmitQuad(TransformComponent& transform, glm::vec2 half_ex
   m_builder.Add(draw);
 }
 
+void OpenGLRenderer::SubmitLine(const glm::vec3& start, const glm::vec3& end, float thickness, unsigned int color,
+                                std::int32_t layer) {
+  m_builder.AddLine(start, end, thickness, color, layer);
+}
+
+void OpenGLRenderer::SubmitRect(const glm::vec3& center, glm::vec2 half_extent, float rotation_degrees,
+                                unsigned int color, std::int32_t layer) {
+  m_builder.AddRect(center, half_extent, rotation_degrees, color, layer);
+}
+
+void OpenGLRenderer::SubmitCircle(const glm::vec3& center, float radius, float thickness, unsigned int color,
+                                  int segments, std::int32_t layer) {
+  m_builder.AddCircle(center, radius, thickness, color, segments, layer);
+}
+
 void OpenGLRenderer::End() {
   // Nothing is mapped or copied here any more. The queue is built in Flush,
   // after every system has submitted its frame, which is what makes sorting and

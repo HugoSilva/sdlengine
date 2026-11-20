@@ -31,6 +31,12 @@ class OpenGLRenderer : public Renderer2D {
               const SpriteAppearance& appearance) override;
   void SubmitQuad(TransformComponent& transform, glm::vec2 half_extent, unsigned int color,
                   std::int32_t layer = -1) override;
+  void SubmitLine(const glm::vec3& start, const glm::vec3& end, float thickness, unsigned int color,
+                  std::int32_t layer = -1) override;
+  void SubmitRect(const glm::vec3& center, glm::vec2 half_extent, float rotation_degrees, unsigned int color,
+                  std::int32_t layer = -1) override;
+  void SubmitCircle(const glm::vec3& center, float radius, float thickness, unsigned int color, int segments = 32,
+                    std::int32_t layer = -1) override;
   void End() override;
   void Flush() override;
 

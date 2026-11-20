@@ -84,6 +84,21 @@ class Renderer2D {
   virtual void SubmitQuad(TransformComponent& transform, glm::vec2 half_extent, unsigned int color,
                           std::int32_t layer = -1) {}
 
+  // Wireframe and shape primitives, for gizmos and a physics debug draw. They
+  // are submitted as untextured quads through the same builder as sprites, so a
+  // debug overlay joins the frame's batches instead of adding a draw call.
+  //
+  // A line is a quad from `start` to `end`, `thickness` wide, with the
+  // endpoints' z as its depth. A rect is a filled quad around `center`, turned
+  // by `rotation_degrees` about z. A circle is an outline of `segments` lines.
+  // All three default to the background layer, like SubmitQuad.
+  virtual void SubmitLine(const glm::vec3& start, const glm::vec3& end, float thickness, unsigned int color,
+                          std::int32_t layer = -1) {}
+  virtual void SubmitRect(const glm::vec3& center, glm::vec2 half_extent, float rotation_degrees, unsigned int color,
+                          std::int32_t layer = -1) {}
+  virtual void SubmitCircle(const glm::vec3& center, float radius, float thickness, unsigned int color,
+                            int segments = 32, std::int32_t layer = -1) {}
+
   virtual void End() {}
 
   virtual void Flush() = 0;

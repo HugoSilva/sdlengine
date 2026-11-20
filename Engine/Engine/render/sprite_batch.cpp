@@ -70,6 +70,65 @@ void SpriteBatchBuilder::Add(const SpriteDraw& draw) {
   m_draws.push_back(copy);
 }
 
+void SpriteBatchBuilder::AddLine(const glm::vec3& start, const glm::vec3& end, float thickness, std::uint32_t color,
+                                 std::int32_t layer) {
+  const glm::vec2 delta(end.x - start.x, end.y - start.y);
+  const float length = glm::length(delta);
+
+  // A point has no direction to orient a quad along, and a zero width covers no
+  // pixels. Neither is an error: there is simply nothing to draw.
+  if (length <= 0.0f || thickness <= 0.0f) return;
+
+  SpriteDraw draw;
+  draw.position = (start + end) * 0.5f;
+  draw.rotation = glm::vec3(0.0f, 0.0f, glm::degrees(std::atan2(delta.y, delta.x)));
+  // size is a half extent, so half the line's length and half its width.
+  draw.size = glm::vec2(length * 0.5f, thickness * 0.5f);
+  draw.color = color;
+  draw.texture = 0;
+  draw.layer = layer;
+  draw.depth = draw.position.z;
+  Add(draw);
+}
+
+void SpriteBatchBuilder::AddRect(const glm::vec3& center, const glm::vec2& half_extent, float rotation_degrees,
+                                 std::uint32_t color, std::int32_t layer) {
+  if (half_extent.x <= 0.0f || half_extent.y <= 0.0f) return;
+
+  SpriteDraw draw;
+  draw.position = center;
+  draw.rotation = glm::vec3(0.0f, 0.0f, rotation_degrees);
+  draw.size = half_extent;
+  draw.color = color;
+  draw.texture = 0;
+  draw.layer = layer;
+  draw.depth = center.z;
+  Add(draw);
+}
+
+void SpriteBatchBuilder::AddCircle(const glm::vec3& center, float radius, float thickness, std::uint32_t color,
+                                   int segments, std::int32_t layer) {
+  if (radius <= 0.0f || thickness <= 0.0f) return;
+
+  // Three segments is the fewest that still encloses an area. The upper bound
+  // keeps a mistyped segment count from turning one circle into a million
+  // quads; past a few hundred segments the outline cannot look smoother.
+  const int count = std::clamp(segments, 3, 1024);
+  constexpr float kTwoPi = 6.28318530717958647692f;
+
+  glm::vec2 previous(radius, 0.0f);
+
+  for (int i = 1; i <= count; ++i) {
+    const float angle = kTwoPi * static_cast<float>(i) / static_cast<float>(count);
+    const glm::vec2 next(radius * std::cos(angle), radius * std::sin(angle));
+
+    AddLine(glm::vec3(center.x + previous.x, center.y + previous.y, center.z),
+            glm::vec3(center.x + next.x, center.y + next.y, center.z), thickness, color, layer);
+
+    previous = next;
+  }
+}
+
 glm::mat4 SpriteBatchBuilder::ModelFor(const SpriteDraw& draw) const {
   glm::mat4 model = glm::translate(glm::mat4(1.0f), draw.position);
   model = glm::rotate(model, glm::radians(draw.rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));

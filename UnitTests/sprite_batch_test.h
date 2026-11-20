@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <cstdint>
 #include <vector>
 
@@ -388,6 +389,129 @@ TEST(SpriteBatchTest, SetMaxTextureSlotsStaysWithinTheHeaderLimit) {
   EXPECT_EQ(kMaxTextureSlots, builder.GetMaxTextureSlots());
   builder.SetMaxTextureSlots(0);
   EXPECT_EQ(1u, builder.GetMaxTextureSlots());
+}
+
+TEST(SpriteBatchTest, ALineIsOneUntexturedQuad) {
+  SpriteBatchBuilder builder;
+  builder.AddLine(glm::vec3(0.0f, 0.0f, 0.5f), glm::vec3(4.0f, 0.0f, 0.5f), 1.0f, 0xff00ff00u);
+  builder.Build();
+
+  ASSERT_EQ(4u, builder.GetVertices().size());
+  ASSERT_EQ(1u, builder.GetBatches().size());
+  EXPECT_EQ(0u, builder.GetBatches()[0].texture_count);
+
+  for (const SpriteVertex& vertex : builder.GetVertices()) {
+    EXPECT_FLOAT_EQ(-1.0f, vertex.slot);
+    EXPECT_FLOAT_EQ(0.5f, vertex.position.z);
+    EXPECT_EQ(0xff00ff00u, vertex.color);
+  }
+
+  // A horizontal line is the unrotated fast path: the quad runs from the start
+  // to the end, half a thickness either side of the midpoint.
+  EXPECT_FLOAT_EQ(0.0f, builder.GetVertices()[0].position.x);
+  EXPECT_FLOAT_EQ(-0.5f, builder.GetVertices()[0].position.y);
+  EXPECT_FLOAT_EQ(4.0f, builder.GetVertices()[2].position.x);
+  EXPECT_FLOAT_EQ(0.5f, builder.GetVertices()[2].position.y);
+}
+
+TEST(SpriteBatchTest, ALineTurnsTowardItsEnd) {
+  SpriteBatchBuilder builder;
+  builder.AddLine(glm::vec3(0.0f), glm::vec3(4.0f, 4.0f, 0.0f), 2.0f, 0xffffffffu);
+  builder.Build();
+
+  ASSERT_EQ(4u, builder.GetVertices().size());
+  // The quad's long axis follows (1, 1) and its half width is one, so the
+  // lower-left corner sits a width below the diagonal at its start.
+  EXPECT_NEAR(0.7071f, builder.GetVertices()[0].position.x, 1e-3f);
+  EXPECT_NEAR(-0.7071f, builder.GetVertices()[0].position.y, 1e-3f);
+  EXPECT_NEAR(3.2929f, builder.GetVertices()[2].position.x, 1e-3f);
+  EXPECT_NEAR(4.7071f, builder.GetVertices()[2].position.y, 1e-3f);
+}
+
+TEST(SpriteBatchTest, ARectIsATurnedQuad) {
+  SpriteBatchBuilder builder;
+  builder.AddRect(glm::vec3(2.0f, 3.0f, 0.0f), glm::vec2(1.0f, 2.0f), 90.0f, 0xff0000ffu);
+  builder.Build();
+
+  ASSERT_EQ(4u, builder.GetVertices().size());
+  // A 90 degree turn maps (x, y) to (-y, x), so the half extents swap: the
+  // lower-left corner is two left and one down from the centre, and the
+  // upper-right one is the mirror of that.
+  EXPECT_NEAR(4.0f, builder.GetVertices()[0].position.x, 1e-4f);
+  EXPECT_NEAR(2.0f, builder.GetVertices()[0].position.y, 1e-4f);
+  EXPECT_NEAR(0.0f, builder.GetVertices()[2].position.x, 1e-4f);
+  EXPECT_NEAR(4.0f, builder.GetVertices()[2].position.y, 1e-4f);
+}
+
+TEST(SpriteBatchTest, ACircleOutlineIsOneLinePerSegment) {
+  SpriteBatchBuilder builder;
+  builder.AddCircle(glm::vec3(1.0f, 2.0f, 0.0f), 4.0f, 1.0f, 0xffffffffu, 12);
+  builder.Build();
+
+  EXPECT_EQ(12u * kVerticesPerQuad, builder.GetVertices().size());
+  EXPECT_EQ(1u, builder.GetStats().batches);
+
+  // Every corner is on the ring: the outline follows the radius, give or take
+  // the line's own width.
+  for (const SpriteVertex& vertex : builder.GetVertices()) {
+    const float dx = vertex.position.x - 1.0f;
+    const float dy = vertex.position.y - 2.0f;
+    const float distance = std::sqrt(dx * dx + dy * dy);
+    EXPECT_GE(distance, 3.0f);
+    EXPECT_LE(distance, 5.0f);
+  }
+}
+
+TEST(SpriteBatchTest, PrimitivesJoinTheSpriteBatch) {
+  SpriteBatchBuilder builder;
+  builder.Add(MakeDraw(7));
+  builder.AddLine(glm::vec3(0.0f), glm::vec3(4.0f, 0.0f, 0.0f), 1.0f, 0xffffffffu, 0);
+  builder.AddRect(glm::vec3(0.0f), glm::vec2(2.0f, 1.0f), 0.0f, 0xffffffffu, 0);
+  builder.AddCircle(glm::vec3(0.0f), 5.0f, 0.5f, 0xffffffffu, 16, 0);
+  builder.Build();
+
+  // One quad of sprite, one of line, one of rect and sixteen of circle, all in
+  // one batch that still samples the sprite's texture. A debug overlay therefore
+  // costs no draw call of its own.
+  ASSERT_EQ(1u, builder.GetBatches().size());
+  EXPECT_EQ(1u, builder.GetBatches()[0].texture_count);
+  EXPECT_EQ(7u, builder.GetBatches()[0].textures[0]);
+  EXPECT_EQ((1u + 1u + 1u + 16u) * kVerticesPerQuad, builder.GetVertices().size());
+
+  int textured_vertices = 0;
+  for (const SpriteVertex& vertex : builder.GetVertices()) {
+    if (vertex.slot >= 0.0f) ++textured_vertices;
+  }
+  EXPECT_EQ(static_cast<int>(kVerticesPerQuad), textured_vertices);
+}
+
+TEST(SpriteBatchTest, PrimitivesWithNoSizeDrawNothing) {
+  SpriteBatchBuilder builder;
+  builder.AddLine(glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 0.0f), 1.0f, 0xffffffffu);
+  builder.AddLine(glm::vec3(0.0f), glm::vec3(3.0f, 0.0f, 0.0f), 0.0f, 0xffffffffu);
+  builder.AddRect(glm::vec3(0.0f), glm::vec2(0.0f, 1.0f), 0.0f, 0xffffffffu);
+  builder.AddCircle(glm::vec3(0.0f), 0.0f, 1.0f, 0xffffffffu, 8);
+  builder.Build();
+
+  EXPECT_EQ(0u, builder.GetVertices().size());
+  EXPECT_EQ(0u, builder.GetStats().submitted);
+  EXPECT_EQ(0u, builder.GetStats().batches);
+}
+
+TEST(SpriteBatchTest, PrimitivesCullByTheirOwnExtent) {
+  SpriteBatchBuilder builder;
+  builder.SetViewBounds(glm::vec2(-10.0f), glm::vec2(10.0f));
+
+  // Far to the right and short: outside the view.
+  builder.AddLine(glm::vec3(100.0f, 0.0f, 0.0f), glm::vec3(104.0f, 0.0f, 0.0f), 1.0f, 0xffffffffu);
+  // Centred outside the view, but long enough that its other end reaches in.
+  builder.AddLine(glm::vec3(40.0f, 0.0f, 0.0f), glm::vec3(-5.0f, 0.0f, 0.0f), 1.0f, 0xffffffffu);
+
+  builder.Build();
+
+  EXPECT_EQ(2u, builder.GetStats().submitted);
+  EXPECT_EQ(1u, builder.GetStats().culled);
+  EXPECT_EQ(4u, builder.GetVertices().size());
 }
 
 }  // namespace

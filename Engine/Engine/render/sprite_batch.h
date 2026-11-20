@@ -98,6 +98,24 @@ class SpriteBatchBuilder {
 
   void Add(const SpriteDraw& draw);
 
+  // Wireframe and shape primitives, expressed as untextured quads so they share
+  // the sprite path -- and therefore the sprite sort and batch -- instead of
+  // needing a draw call of their own. They are what a physics debug draw and a
+  // gizmo are made of.
+  //
+  // A line is a quad from `start` to `end`; `thickness` is its full width, and
+  // the z of the midpoint is its depth (a line is 2D, so both endpoints are
+  // expected to share a z). A zero length or zero thickness draws nothing. A
+  // rect is the same axis-aligned quad SubmitQuad builds, turned by
+  // `rotation_degrees` about z. A circle is an outline of `segments` lines, so
+  // it culls and batches segment by segment.
+  void AddLine(const glm::vec3& start, const glm::vec3& end, float thickness, std::uint32_t color,
+               std::int32_t layer = -1);
+  void AddRect(const glm::vec3& center, const glm::vec2& half_extent, float rotation_degrees, std::uint32_t color,
+               std::int32_t layer = -1);
+  void AddCircle(const glm::vec3& center, float radius, float thickness, std::uint32_t color, int segments = 32,
+                 std::int32_t layer = -1);
+
   // Sorts, culls, and builds the vertex/index arrays and batch ranges. Safe to
   // call more than once; each call rebuilds from the submitted draws.
   void Build();
