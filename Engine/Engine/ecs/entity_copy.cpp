@@ -46,6 +46,10 @@ entt::DefaultRegistry::entity_type CopyEntity(const entt::DefaultRegistry& sourc
     target.assign<RigidBodyComponent>(copy, RigidBodyComponent{body_copy});
   }
 
+  if (source.has<CameraComponent>(entity)) {
+    target.assign<CameraComponent>(copy, source.get<CameraComponent>(entity));
+  }
+
   return copy;
 }
 }  // namespace rse

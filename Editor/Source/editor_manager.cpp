@@ -157,6 +157,15 @@ void EditorManager::HandleAddComponentEvent(const AddComponent& event) {
         SceneManager::MarkDirty();
       }
       break;
+    case Components::kCamera:
+      if (EditorScene().Registry().has<CameraComponent>(m_selected_entity)) {
+        Logger::Error("Already existing camera component");
+      } else {
+        EditorScene().Registry().assign<CameraComponent>(m_selected_entity);
+        EditorScene().SetComponentEnabled<CameraComponent>(m_selected_entity, true);
+        SceneManager::MarkDirty();
+      }
+      break;
     default:
       break;
   }
@@ -200,6 +209,15 @@ void EditorManager::HandleRemoveComponentEvent(const RemoveComponent& event) {
         EditorScene().Registry().remove<SpriteAppearanceComponent>(m_selected_entity);
       }
       EditorScene().SetComponentEnabled<SpriteComponent>(m_selected_entity, true);
+      SceneManager::MarkDirty();
+      break;
+    case Components::kCamera:
+      if (!EditorScene().Registry().has<CameraComponent>(m_selected_entity)) {
+        Logger::Error("Missing camera component");
+        break;
+      }
+      EditorScene().Registry().remove<CameraComponent>(m_selected_entity);
+      EditorScene().SetComponentEnabled<CameraComponent>(m_selected_entity, true);
       SceneManager::MarkDirty();
       break;
     default:
@@ -252,6 +270,14 @@ void EditorManager::HandleResetComponentEvent(const ResetComponent& event) {
           .Registry()
           .get<RigidBodyComponent>(m_selected_entity)
           .m_rigidbody.reset(CreateDefaultRigidbody(m_selected_entity));
+      SceneManager::MarkDirty();
+      break;
+    case Components::kCamera:
+      if (!EditorScene().Registry().has<CameraComponent>(m_selected_entity)) {
+        Logger::Error("Missing camera component");
+        break;
+      }
+      EditorScene().Registry().get<CameraComponent>(m_selected_entity) = CameraComponent{};
       SceneManager::MarkDirty();
       break;
     default:

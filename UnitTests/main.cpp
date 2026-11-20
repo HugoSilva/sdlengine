@@ -4,6 +4,7 @@
 
 #include "asset_registry_test.h"
 #include "audio_voice_test.h"
+#include "camera_component_test.h"
 #include "camera_test.h"
 #include "ecs_manager_test.h"
 #include "editor_settings_test.h"

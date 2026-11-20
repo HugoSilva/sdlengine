@@ -101,7 +101,8 @@ TEST_F(PrefabIOTest, SavingWritesThePrefabFile) {
 
   const std::string contents = ReadFile(m_file);
 
-  EXPECT_NE(contents.find("<formatVersion>5</formatVersion>"), std::string::npos);
+  EXPECT_NE(contents.find("<formatVersion>" + std::to_string(PrefabIO::kFormatVersion) + "</formatVersion>"),
+            std::string::npos);
 
   // One entity, not a scene: no camera, and the entity block has the same
   // component shape a scene's <entities> has.
@@ -112,6 +113,27 @@ TEST_F(PrefabIOTest, SavingWritesThePrefabFile) {
 
 // A prefab file names no identity: the format did not move for this, and every
 // placement is a new entity, so it gets a new uuid rather than the source's.
+TEST_F(PrefabIOTest, ACameraComponentRoundTrips) {
+  const uint32_t view = CreateSprite("view", glm::vec3(10.f, 20.f, 0.f));
+
+  CameraComponent camera;
+  camera.zoom = 2.5f;
+  camera.priority = 4;
+  TestScene().Registry().assign<CameraComponent>(view, camera);
+
+  std::string error;
+  ASSERT_TRUE(PrefabIO::Save(TestScene(), m_file, view, &error)) << error;
+  TestScene().Clear();
+
+  const uint32_t placed = PrefabIO::Instantiate(TestScene(), m_file, &error);
+  ASSERT_NE(placed, kNullEntity) << error;
+  ASSERT_TRUE(TestScene().Registry().has<CameraComponent>(placed));
+
+  const CameraComponent& loaded = TestScene().Registry().get<CameraComponent>(placed);
+  EXPECT_FLOAT_EQ(2.5f, loaded.zoom);
+  EXPECT_EQ(4, loaded.priority);
+}
+
 TEST_F(PrefabIOTest, EveryPlacedCopyGetsItsOwnIdentity) {
   const uint32_t crate = CreateSprite("crate", glm::vec3(1.f, 2.f, 0.f));
   const std::string source_id = TestScene().Registry().get<UuidComponent>(crate).m_uuid.ToString();
@@ -121,7 +143,8 @@ TEST_F(PrefabIOTest, EveryPlacedCopyGetsItsOwnIdentity) {
 
   const std::string contents = ReadFile(m_file);
   EXPECT_EQ(contents.find(source_id), std::string::npos);
-  EXPECT_NE(contents.find("<formatVersion>5</formatVersion>"), std::string::npos);
+  EXPECT_NE(contents.find("<formatVersion>" + std::to_string(PrefabIO::kFormatVersion) + "</formatVersion>"),
+            std::string::npos);
 
   TestScene().Clear();
 

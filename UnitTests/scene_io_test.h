@@ -114,7 +114,8 @@ TEST_F(SceneIOTest, SavingWritesTheSceneFile) {
   EXPECT_FALSE(std::filesystem::exists(m_scratch));
 
   const std::string contents = ReadFile(m_file);
-  EXPECT_NE(contents.find("<formatVersion>11</formatVersion>"), std::string::npos);
+  EXPECT_NE(contents.find("<formatVersion>" + std::to_string(SceneIO::kFormatVersion) + "</formatVersion>"),
+            std::string::npos);
   EXPECT_NE(contents.find("<camera>"), std::string::npos);
   EXPECT_NE(contents.find("<entities>"), std::string::npos);
 }
@@ -397,6 +398,28 @@ TEST_F(SceneIOTest, AnUntexturedSpriteComesBackWithoutATexture) {
     EXPECT_EQ(component.m_sprite->GetTextureName(), "");
     EXPECT_EQ(component.m_sprite->GetTId(), 0u);
   });
+}
+
+TEST_F(SceneIOTest, ACameraComponentRoundTrips) {
+  const uint32_t entity = CreateSprite("view", glm::vec3(10.f, 20.f, 0.f));
+
+  CameraComponent camera;
+  camera.zoom = 2.5f;
+  camera.priority = 4;
+  TestScene().Registry().assign<CameraComponent>(entity, camera);
+
+  std::string error;
+  ASSERT_TRUE(SceneIO::Save(TestScene(), m_file, &error)) << error;
+  TestScene().Clear();
+  ASSERT_TRUE(SceneIO::Load(TestScene(), m_file, &error)) << error;
+
+  int cameras = 0;
+  TestScene().Registry().view<CameraComponent>().each([&cameras](auto, CameraComponent& loaded) {
+    ++cameras;
+    EXPECT_FLOAT_EQ(2.5f, loaded.zoom);
+    EXPECT_EQ(4, loaded.priority);
+  });
+  EXPECT_EQ(1, cameras);
 }
 
 TEST_F(SceneIOTest, AnAudioComponentRoundTrips) {
