@@ -28,7 +28,8 @@ struct SaveEntity {
     registry.snapshot()
         .entities(archive)
         .component<BasicComponent, TransformComponent, SpriteComponent, AudioComponent, RigidBodyComponent,
-                   SpriteAppearanceComponent, EntityEnabledComponent, DisabledComponentsComponent>(archive);
+                   SpriteAppearanceComponent, EntityEnabledComponent, DisabledComponentsComponent, CameraComponent>(
+            archive);
   }
 };
 
@@ -58,6 +59,10 @@ struct LoadEntity {
 
     if (format_version >= 4) {
       loader.component<DisabledComponentsComponent>(archive);
+    }
+
+    if (format_version >= 6) {
+      loader.component<CameraComponent>(archive);
     }
   }
 };

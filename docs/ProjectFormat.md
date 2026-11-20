@@ -410,18 +410,23 @@ that writes data, never a pointer, so saving and loading is a round trip:
   missing group means enabled, which is what every entity written before
   version 8 gets.
 - `DisabledComponentsComponent` -- which optional components are switched off
-  on the entity. The group stores a bit mask for the sprite, audio and
-  rigid-body components. A missing group means every component is enabled,
+  on the entity. The group stores a bit mask for the sprite, audio, rigid-body
+  and camera components. A missing group means every component is enabled,
   which is what every entity written before version 9 gets.
 - `UuidComponent` -- the entity's stable identity, written as the canonical
   36-character uuid text. Version 11 appended the group. A missing group means
   the entity has no identity yet, which is what every entity written before
   version 11 gets: one is generated as the scene loads, so two entities never
   share one.
-
-The nine component groups above are written in that order and read in that
-order, after the scene's camera. Anything added later is appended as a tenth
-group, read only from the version that introduced it; see [Versions](#versions).
+- `CameraComponent` -- zoom and priority. The entity's `TransformComponent` is
+  the camera's pose, so the group carries only the view's own settings. Version
+  12 appended the group; a version 11 scene has no camera entity and keeps the
+  framing stored in `<camera>`.
+ 
+The ten component groups above are written in that order and read in that
+order, after the scene's camera. Anything added later is appended as an
+eleventh group, read only from the version that introduced it; see
+[Versions](#versions).
 
 A scene also stores its **camera**, which is scene-root data rather than a
 component: there is one per scene, and it sits beside `<entities>` so a reader
@@ -447,9 +452,19 @@ in it is zoomed and what colour the frame is cleared to:
 how much of the 1280x720 reference rectangle is shown (1 shows all of it), and
 `Background` is the colour the renderer clears to every frame. Those three values
 are what the engine framed and cleared to before a scene could say, so a scene
-that does not set them looks exactly as it did. The game applies the camera once
-when it starts and then leaves the arrow keys alone; the editor viewport keeps
-its own editor camera and only uses the background.
+that does not set them looks exactly as it did.
+
+The saved camera is the framing a scene opens with. A scene can also put a
+**camera on an entity**: a `CameraComponent` plus a `TransformComponent` makes
+that entity the view, with the transform as the pose and the component's zoom
+and priority as settings. `CameraSystem` resolves the enabled camera with the
+highest priority (ties go to the lower entity id) and writes its pose into the
+scene's camera every simulation step. The game resolves the component again
+just before uploading the view, so a camera that moved this step does not lag.
+A scene with no camera entity keeps the saved camera; the game's arrow-key
+camera is the fallback for exactly that case. The editor viewport keeps its own
+free camera, so it still edits a scene without looking through the game's
+camera.
 
 A sprite stores a **reference** to its texture, not the texture itself. At
 format 6 that reference is the asset registry's id:
@@ -516,7 +531,10 @@ enabled: that is the behaviour it had when it was written. Version 10 changed
 the rigid body's fields: density and friction moved into a physics material
 asset and the body gained a material reference. The body is still read by field
 name, so a version 9 file opens -- its `<Density>` and `<Friction>` nodes are
-ignored and its body has no material, which uses the defaults. The example above
+ignored and its body has no material, which uses the defaults. Version 11
+appended the entity uuid group, and version 12 the camera component group. A
+version 10 or 11 file simply has no camera entity, so the framing in its
+`<camera>` is the one it was drawn with. The example above
 is a version 2 file, which is why it has neither the camera nor the audio and
 rigid-body groups, and names its texture; a current file has all of them and
 stores ids. `UnitTests/fixtures/scene_v2.xml` through `scene_v8.xml` are the
@@ -570,7 +588,8 @@ version 3 prefab still loads with every component enabled. Version 5 changed
 the rigid body's fields with scene version 10: density and friction moved into
 a physics material asset and the body gained a material reference. A version 4
 prefab still loads; its removed density and friction nodes are ignored and its
-body has no material.
+body has no material. Version 6 appended the camera component, so a version 5
+prefab places an entity that is not a camera.
 
 The entity ids in the file are **not restored**. `PrefabIO::Instantiate` reads
 the whole file into a scratch registry first, then copies each entity into the
@@ -877,9 +896,11 @@ keeping them in step.
 - A placed prefab is a copy, not a linked instance: editing the prefab file does
   not update entities already placed, and editing a placed entity does not
   update the file.
-- The game applies the scene camera when it starts; the game has no runtime scene
-  switch yet, and the editor viewport deliberately keeps its own editor camera, so
-  it does not preview the scene's camera.
+- The game's view comes from a camera entity when the scene has one; without
+  one it applies the saved camera once at startup and the arrow keys move it.
+  The editor viewport deliberately keeps its own free camera, so it does not
+  preview the scene's camera or a camera component, and a play session's camera
+  entity moves in the simulation without moving the viewport.
 - The editor's session state -- open panels, the layout version, the five most
   recent projects, the last scene, the grid and the gizmo -- is not part of the
   project: it lives in `editor.cfg` in the working directory, and the dock

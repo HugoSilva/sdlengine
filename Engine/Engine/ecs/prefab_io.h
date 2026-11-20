@@ -25,8 +25,10 @@ class PrefabIO {
   // changed the rigid body's fields the same way scene version 10 did: density
   // and friction moved into a physics material asset and the body gained a
   // material reference. A version 4 prefab still loads with no material because
-  // the reader matches fields by name.
-  static constexpr int kFormatVersion{5};
+  // the reader matches fields by name. Version 6 appended the camera component
+  // group; a version 5 prefab has no such group, so its entities are not
+  // cameras.
+  static constexpr int kFormatVersion{6};
 
   // The oldest prefab format this build still understands.
   static constexpr int kFirstFormatVersion{1};

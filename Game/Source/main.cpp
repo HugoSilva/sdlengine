@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 
 #include <ecs/scene_io.h>
+#include <ecs/systems/camera_system.h>
 
 #if _WIN32
 extern "C" {
@@ -44,9 +45,25 @@ class Game : public Core {
     rse::FontManager::Add(new rse::Font("Arial", Core::ResolveResource("arial.ttf"), 24));
   }
 
-  void Update(float delta_time) override { m_camera->Update(delta_time); }
+  void Update(float delta_time) override {
+    // A scene with a camera entity owns the view. Without one, the sample's
+    // WASD camera keeps working exactly as before.
+    if (!CameraSystem::Resolve(SceneManager::ActiveScene(), nullptr)) {
+      m_camera->Update(delta_time);
+    }
+  }
 
   void Render() override {
+    // Resolve before uploading: the camera entity may have moved since the
+    // scene camera was written, and the view has to match the transforms this
+    // frame draws.
+    CameraSystem::View camera_view;
+
+    if (CameraSystem::Resolve(SceneManager::ActiveScene(), &camera_view)) {
+      m_camera->SetPosition(glm::vec3(camera_view.position, m_camera->GetPosition().z));
+      m_camera->SetZoom(camera_view.zoom);
+    }
+
     m_shader->Enable();
     // The batched renderer binds every batch to texture unit 0.
     m_shader->SetUniform1i("texture0", 0);

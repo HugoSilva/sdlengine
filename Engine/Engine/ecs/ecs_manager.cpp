@@ -5,6 +5,7 @@
 #include <ecs/scene.h>
 #include <ecs/systems/audio_system.h>
 #include <ecs/systems/base_system.h>
+#include <ecs/systems/camera_system.h>
 #include <ecs/systems/physics_system.h>
 #include <ecs/systems/sprite_render_system.h>
 
@@ -18,6 +19,10 @@ void ECSManager::Init() {
   AddSystem(audio_system, SystemPhase::kSimulation);
   PhysicsSystem* physics_system = new PhysicsSystem();
   AddSystem(physics_system, SystemPhase::kSimulation);
+  // After physics: a camera entity that follows a body should see this step's
+  // pose, not the previous one.
+  CameraSystem* camera_system = new CameraSystem();
+  AddSystem(camera_system, SystemPhase::kSimulation);
   SpriteRenderSystem* sprite_system = new SpriteRenderSystem(Core::GetRenderer());
   AddSystem(sprite_system);
 }

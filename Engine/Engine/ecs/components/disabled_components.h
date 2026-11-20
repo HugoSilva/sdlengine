@@ -13,6 +13,7 @@ struct DisabledComponentsComponent {
     kSprite = 1u << 0,
     kAudio = 1u << 1,
     kRigidbody = 1u << 2,
+    kCamera = 1u << 3,
   };
 
   uint32_t m_mask{0};
@@ -36,6 +37,7 @@ struct DisabledComponentsComponent {
 struct SpriteComponent;
 struct AudioComponent;
 struct RigidBodyComponent;
+struct CameraComponent;
 
 // The inspector, the add/remove handlers and the systems all name a component
 // by type, so the mapping from type to mask bit lives in one place.
@@ -55,4 +57,9 @@ struct ComponentDisabledBit<AudioComponent> {
 template <>
 struct ComponentDisabledBit<RigidBodyComponent> {
   static constexpr DisabledComponentsComponent::Bit kValue = DisabledComponentsComponent::kRigidbody;
+};
+
+template <>
+struct ComponentDisabledBit<CameraComponent> {
+  static constexpr DisabledComponentsComponent::Bit kValue = DisabledComponentsComponent::kCamera;
 };
