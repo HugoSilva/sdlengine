@@ -103,11 +103,11 @@ void SoundManager::SetVolumes(int master, int music, int sfx) {
   s_music_volume = std::clamp(music, 0, kMaxVolume);
   s_sfx_volume = std::clamp(sfx, 0, kMaxVolume);
 
-  // A volume is heard now, not on the next Play: re-gain everything that is
-  // already loaded. SetVolume keeps the per-source volume and only recomputes
-  // the gain, which is why it is the call used here.
+  // A volume is heard now, not on the next Play: recompute the gain of every
+  // voice that is already loaded. Per-voice levels are kept, so changing the
+  // mix does not overwrite what a scene set on one entity.
   for (const std::unique_ptr<Sound>& sound : s_sounds) {
-    sound->SetVolume(sound->GetVolume());
+    sound->RefreshGain();
   }
 
   for (const std::unique_ptr<Music>& music_track : s_music) {
@@ -131,7 +131,7 @@ float SoundManager::MusicGain(int volume) {
 
 void SoundManager::PauseAll() {
   for (const std::unique_ptr<Sound>& sound : s_sounds) {
-    sound->Pause();
+    sound->PauseAll();
   }
 
   for (const std::unique_ptr<Music>& music_track : s_music) {
@@ -141,7 +141,7 @@ void SoundManager::PauseAll() {
 
 void SoundManager::ResumeAll() {
   for (const std::unique_ptr<Sound>& sound : s_sounds) {
-    sound->Resume();
+    sound->ResumeAll();
   }
 
   for (const std::unique_ptr<Music>& music_track : s_music) {
@@ -151,7 +151,7 @@ void SoundManager::ResumeAll() {
 
 void SoundManager::StopAll() {
   for (const std::unique_ptr<Sound>& sound : s_sounds) {
-    sound->Stop();
+    sound->StopAll();
   }
 
   for (const std::unique_ptr<Music>& music_track : s_music) {
